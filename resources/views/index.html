@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+        
+    <!-- Título optimizado (60 caracteres máx.) -->
+     <title>Lifegas company | Taller de Conversión a Gas Vehicular en Lima</title>
+
+    <!-- Descripción meta (150-160 caracteres) -->
+    <meta name="description" content="Lifegas: Taller autorizado por el MTC en Lima. Conversión a gas vehicular con calidad garantizada, soporte y técnicos certificados.">
+
+     <!-- Palabras clave (ya no tan relevantes, pero puede ayudar en buscadores locales) -->
+    <meta name="keywords" content="taller conversión gas vehicular Lima, conversión GNV, conversión GLP, Lifegas company, taller GNV autorizado MTC">
+
+    <!-- Autor -->
+    <meta name="author" content="Lifegas company">
+
+    <!-- Open Graph para redes sociales -->
+    <meta property="og:title" content="Lifegas company | Taller de Conversión a Gas Vehicular en Lima">
+    <meta property="og:description" content="Convierte tu vehículo con Lifegas. Taller autorizado por el MTC, calidad y soporte garantizados.">
+    <meta property="og:image" content="https://lifegascompany.com/images/logo.png">
+    <meta property="og:url" content="https://lifegascompany.com">
+    <meta property="og:type" content="website">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="images/logo.png" />
+
+    <!-- Canonical (evita contenido duplicado) -->
+    <link rel="canonical" href="https://lifegascompany.com">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Swiper CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
+    <!-- Enlace al archivo de estilos -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- Header -->
+    <header id="main-header" class="fixed top-0 w-full z-50 py-4 transition-all duration-300">
+        <div class="container mx-auto px-6 flex justify-between items-center">
+            <a href="#" class="flex items-center space-x-3">
+                <img src="images/images2.png" alt="Logo Lifegas" class="h-16 w-auto">
+            </a>
+            <nav class="hidden md:flex items-center space-x-8 text-white">
+                <a href="#hero" class="hover:text-gray-200 font-medium transition duration-300">Inicio</a>
+                <a href="#about" class="hover:text-gray-200 font-medium transition duration-300">Nosotros</a>
+                <a href="#contact" class="hover:text-gray-200 font-medium transition duration-300">Contacto</a>
+                <a href="/login"
+                    class="px-6 py-2 bg-green-400 text-blue-700 rounded-full font-semibold hover:bg-green-500 transition duration-300 shadow-md">
+                    Iniciar Sesión
+                </a>
+            </nav>
+
+            <!-- Mobile menu button -->
+            <div class="md:hidden">
+                <button id="mobile-menu-button" class="text-white focus:outline-none">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white/50 px-6 py-4 shadow-md rounded-2xl mt-4">
+            <div class="flex flex-col space-y-4 text-gray-700">
+                <a href="#hero" class="hover:text-blue-700 transition duration-300">Inicio</a>
+                <a href="#about" class="hover:text-blue-700 transition duration-300">Nosotros</a>
+                <a href="#contact" class="hover:text-blue-700 transition duration-300">Contacto</a>
+                <a href="/login"
+                    class="px-6 py-2 text-center bg-green-400 text-blue-700 rounded-full font-semibold hover:bg-blue-600 transition duration-300">
+                    Iniciar Sesión
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Sección Principal (Hero) -->
+        <section id="hero" class="pt-10 relative text-white">
+            <!-- Contenedor del fondo dinámico -->
+            <div id="background-slider" class="hero-background-container">
+                <img src="images/fondo.png" alt="Fondo 1" class="hero-bg-image active">
+                <img src="images/fondo2.png" alt="Fondo 2" class="hero-bg-image">
+                <img src="images/fondo3.png" alt="Fondo 3" class="hero-bg-image">
+            </div>
+
+            <!-- Contenido principal y animación del tecnico -->
+            <div
+                class="hero-content container mx-auto px-6 md:flex md:flex-row-reverse md:justify-between md:items-center">
+                <div id="car-animation-container">
+                    <img id="car-image" src="images/tecnico4.png" alt="Vehículo convertido a gas">
+                </div>
+
+                <div class="pt-12 hero-text-content z-10 p-6 rounded-3xl md:w-1/2 md:text-left">
+                    <h1 class="text-3xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-4">
+                        Taller de Conversión a Gas Vehicular en Lima
+                    </h1>
+                    <p class="text-lg md:text-xl font-light max-w-2xl mx-auto mb-8 md:mx-0">
+                        Convierte tu vehículo en nuestro taller y empieza a sentir la diferencia de recorrido con la
+                        conversión a gas vehicular.
+                    </p>
+                    <div
+                        class="flex flex-col sm:flex-row justify-center md:justify-start items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                        <a href="#about"
+                            class="px-8 py-3 bg-green-400 text-blue-700 font-bold rounded-full shadow-lg transition duration-300 transform hover:scale-105 hover:bg-green-500">
+                            Empezar
+                        </a>
+                        <a href="#"
+                            class="px-8 py-3 border-2 border-green-400 text-white font-semibold rounded-full hover:bg-green-400 hover:text-blue-600 transition duration-300 transform hover:scale-105 flex items-center">
+                            <i class="fas fa-play-circle mr-2 text-lg"></i>
+                            Video
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controles para cambiar el fondo -->
+            <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-20 flex space-x-4">
+                <button id="prev-btn"
+                    class="p-3 bg-white bg-opacity-30 rounded-full hover:bg-opacity-50 transition duration-300 focus:outline-none">
+                    <i class="fas fa-chevron-left text-white"></i>
+                </button>
+                <button id="next-btn"
+                    class="p-3 bg-white bg-opacity-30 rounded-full hover:bg-opacity-50 transition duration-300 focus:outline-none">
+                    <i class="fas fa-chevron-right text-white"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- Sección de Nosotros (About) -->
+        <section id="about" class="py-20 md:py-24">
+            <div class="container mx-auto px-6 text-center max-w-6xl">
+                <h2 class="text-3xl md:text-4xl font-bold text-blue-700 mb-2">Sobre Nosotros</h2>
+                <div class="w-24 h-1 bg-green-500 mx-auto rounded-full mb-6"></div>
+                <p class="text-gray-600 max-w-2xl mx-auto mb-12">
+                    Nuestra historia, valores y lo que nos hace líderes en el sector.
+                </p>
+                <div class="flex flex-col md:flex-row items-center space-y-10 md:space-y-0 md:space-x-12">
+                    <div class="md:w-1/2">
+                        <img src="images/flyer.jpeg" class="rounded-3xl shadow-2xl w-full" alt="Equipo de taller">
+                    </div>
+                    <div class="md:w-1/2 text-left space-y-6">
+                        <div id="about-content" class="animated-section space-y-6">
+                            <h3 class="text-2xl md:text-3xl font-semibold text-gray-800">
+                                Taller de conversión a gas autorizado por MTC.
+                            </h3>
+                            <p class="text-gray-600">
+                                Somos uno de los mejores talleres especializados en conversión a gas en Lima, con un
+                                enfoque
+                                en calidad, seguridad y satisfacción del cliente.
+                            </p>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <!-- Card 1: Calidad -->
+                                <div
+                                    class="bg-white p-6 rounded-2xl shadow-md transform hover:scale-105 transition duration-300">
+                                    <div class="text-green-500 text-3xl mb-4">
+                                        <i class="fas fa-gem"></i>
+                                    </div>
+                                    <h4 class="text-lg font-semibold text-gray-800 mb-2">Calidad Garantizada</h4>
+                                    <p class="text-sm text-gray-600">Utilizamos componentes originales de marcas
+                                        líderes, asegurando la máxima durabilidad y eficiencia.</p>
+                                </div>
+                                <!-- Card 2: Instalación -->
+                                <div
+                                    class="bg-white p-6 rounded-2xl shadow-md transform hover:scale-105 transition duration-300">
+                                    <div class="text-blue-500 text-3xl mb-4">
+                                        <i class="fas fa-tools"></i>
+                                    </div>
+                                    <h4 class="text-lg font-semibold text-gray-800 mb-2">Instalación Certificada</h4>
+                                    <p class="text-sm text-gray-600">Nuestro equipo de técnicos está altamente
+                                        capacitado y certificado, garantizando un servicio profesional.</p>
+                                </div>
+                                <!-- Card 3: Soporte -->
+                                <div
+                                    class="bg-white p-6 rounded-2xl shadow-md transform hover:scale-105 transition duration-300">
+                                    <div class="text-green-500 text-3xl mb-4">
+                                        <i class="fas fa-award"></i>
+                                    </div>
+                                    <h4 class="text-lg font-semibold text-gray-800 mb-2">Soporte y Garantía</h4>
+                                    <p class="text-sm text-gray-600">Ofrecemos una garantía completa en todos nuestros
+                                        servicios para tu tranquilidad y confianza.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección de Parallax con Contador -->
+        <section id="parallax-counter" class="parallax-section h-[300px] flex items-center justify-center relative">
+            <div class="absolute inset-0 bg-gray-900 opacity-60"></div>
+            <div class="container mx-auto px-6 z-10 text-center text-white">
+                <div id="counter-row"
+                    class="flex flex-col md:flex-row justify-center md:space-x-16 space-y-8 md:space-y-0">
+                    <!-- Talleres -->
+                    <div class="counter-container">
+                        <h3 class="text-5xl md:text-6xl font-extrabold text-green-400">
+                            <span class="counter" data-target="100">0</span>+
+                        </h3>
+                        <p class="mt-2 text-xl md:text-2xl font-semibold">Talleres</p>
+                    </div>
+                    <!-- Clientes -->
+                    <div class="counter-container">
+                        <h3 class="text-5xl md:text-6xl font-extrabold text-green-400">
+                            <span class="counter" data-target="500">0</span>+
+                        </h3>
+                        <p class="mt-2 text-xl md:text-2xl font-semibold">Clientes</p>
+                    </div>
+                    <!-- Conversiones -->
+                    <div class="counter-container">
+                        <h3 class="text-5xl md:text-6xl font-extrabold text-green-400">
+                            <span class="counter" data-target="500">0</span>+
+                        </h3>
+                        <p class="mt-2 text-xl md:text-2xl font-semibold">Conversiones</p>
+                    </div>
+                    <!-- Bonos -->
+                    <div class="counter-container">
+                        <h3 class="text-5xl md:text-6xl font-extrabold text-green-400">
+                            <span class="counter" data-target="200">0</span>+
+                        </h3>
+                        <p class="mt-2 text-xl md:text-2xl font-semibold">Bonos</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección Álbum de Flyers -->
+        <section id="album" class="py-20 bg-gray-100">
+            <div class="container mx-auto px-6 max-w-6xl">
+                <h2 class="text-3xl md:text-4xl font-bold text-blue-700 text-center mb-2">Beneficios</h2>
+                <div class="w-24 h-1 bg-green-500 mx-auto rounded-full mb-4"></div>
+                <p class="text-gray-600 max-w-2xl mx-auto text-center mb-10">
+                    Nuestra historia, valores y lo que nos hace líderes en el sector.
+                </p>
+
+                <!-- Carrusel -->
+                <div class="swiper flyers-carousel">
+                    <div class="swiper-wrapper">
+                        <!-- Flyer 1 -->
+                        <div class="swiper-slide group relative overflow-hidden rounded-2xl shadow-lg">
+                            <img src="images/flyer.jpeg" alt="Flyer 1" class="w-full h-[400px] object-cover">
+                        </div>
+
+                        <!-- Flyer 2 -->
+                        <div class="swiper-slide group relative overflow-hidden rounded-2xl shadow-lg">
+                            <img src="images/flyer2.jpeg" alt="Flyer 2" class="w-full h-[400px] object-cover">
+                        </div>
+
+                        <!-- Flyer 3 -->
+                        <div class="swiper-slide group relative overflow-hidden rounded-2xl shadow-lg">
+                            <img src="images/flyer3.jpeg" alt="Flyer 3" class="w-full h-[400px] object-cover">
+                        </div>
+
+                        <!-- Flyer 4 -->
+                        <div class="swiper-slide group relative overflow-hidden rounded-2xl shadow-lg">
+                            <img src="images/flyer4.jpeg" alt="Flyer 4" class="w-full h-[400px] object-cover">
+                        </div>
+
+                        <!-- Flyer 5 -->
+                        <div class="swiper-slide group relative overflow-hidden rounded-2xl shadow-lg">
+                            <img src="images/flyer5.jpeg" alt="Flyer 5" class="w-full h-[400px] object-cover">
+                        </div>
+                    </div>
+
+                    <!-- Paginación -->
+                    <div class="swiper-pagination mt-6"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección de Contacto -->
+        <section id="contact" class="bg-gray-900 py-20 md:py-24 text-white">
+            <div class="container mx-auto px-6 text-center max-w-6xl">
+                <h2 class="text-3xl md:text-4xl font-bold text-blue-700 mb-2">Contáctanos</h2>
+                <div class="w-24 h-1 bg-green-500 mx-auto rounded-full mb-6"></div>
+                <p class="text-gray-400 max-w-2xl mx-auto mb-12">
+                    Estamos aquí para resolver tus dudas y ayudarte a dar el siguiente paso.
+                </p>
+                <div class="flex flex-col md:flex-row md:space-x-12 space-y-4 md:space-y-0 text-left">
+                    <!-- Información de Contacto -->
+                    <div class="md:w-1/2 space-y-6 p-6 bg-gray-800 rounded-3xl shadow-lg">
+                        <h3 class="text-2xl font-bold text-gray-200 text-center mb-4">Nuestros Datos</h3>
+                        <!-- Horario -->
+                        <div class="flex items-center space-x-4">
+                            <i class="fas fa-clock text-2xl text-green-500"></i>
+                            <div>
+                                <h4 class="font-semibold text-gray-200">Horario</h4>
+                                <p class="text-gray-400">Lunes a Viernes: 8:30 am - 5:30 pm <br> Sábado: 8:30 am - 12:30 pm</p>
+                            </div>
+                        </div>
+                        <!-- Teléfono -->
+                        <div class="flex items-center space-x-4">
+                            <i class="fas fa-phone-alt text-2xl text-green-500"></i>
+                            <div>
+                                <h4 class="font-semibold text-gray-200">Teléfono</h4>
+                                <p class="text-gray-400">+51 938 684 174</p>
+                            </div>
+                        </div>
+                        <!-- Correo Electrónico -->
+                        <div class="flex items-center space-x-4">
+                            <i class="fas fa-envelope text-2xl text-green-500"></i>
+                            <div>
+                                <h4 class="font-semibold text-gray-200">Correo Electrónico</h4>
+                                <p class="text-gray-400">administracion@lifegascompany.com</p>
+                            </div>
+                        </div>
+                        <!-- Ubicación -->
+                        <div class="flex items-center space-x-4">
+                            <i class="fas fa-map-marker-alt text-2xl text-green-500"></i>
+                            <div>
+                                <h4 class="font-semibold text-gray-200">Ubicación</h4>
+                                <p class="text-gray-400">Las Limas #220, MZ L, lote 14B - Urb. Canto Bello, SJL - Lima
+                                </p>
+                            </div>
+                        </div>
+                        <!-- Mapa de Google -->
+                        <div class="w-full h-40 rounded-xl overflow-hidden shadow-lg mt-2">
+                            <iframe
+                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1201.9007847969062!2d-77.01408400541993!3d-11.97917686294282!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105cf8979665557%3A0x895648bdbbe90265!2sLas%20Limas%2C%20San%20Juan%20de%20Lurigancho!5e1!3m2!1ses-419!2spe!4v1756907941535!5m2!1ses-419!2spe"
+                                width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"
+                                referrerpolicy="no-referrer-when-downgrade">
+                            </iframe>
+                        </div>
+                    </div>
+
+                    <!-- Formulario de Contacto -->
+                    <div class="md:w-1/2 p-6 bg-gray-800 rounded-3xl shadow-lg">
+                        <h3 class="text-2xl font-bold text-gray-200 text-center mb-6">Envíanos un Mensaje</h3>
+                        <form class="space-y-6">
+                            <div>
+                                <label for="name" class="block text-gray-400 font-semibold mb-2">Nombre Completo</label>
+                                <input type="text" id="name" name="name"
+                                    class="w-full p-4 rounded-xl border border-gray-600 bg-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-600 transition duration-300">
+                            </div>
+                            <div>
+                                <label for="email" class="block text-gray-400 font-semibold mb-2">Correo
+                                    Electrónico</label>
+                                <input type="email" id="email" name="email"
+                                    class="w-full p-4 rounded-xl border border-gray-600 bg-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-600 transition duration-300">
+                            </div>
+                            <div>
+                                <label for="message" class="block text-gray-400 font-semibold mb-2">Mensaje</label>
+                                <textarea id="message" name="message" rows="5"
+                                    class="w-full p-4 rounded-xl border border-gray-600 bg-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-600 transition duration-300"></textarea>
+                            </div>
+                            <div class="text-center">
+                                <button type="submit"
+                                    class="px-8 py-3 bg-green-500 text-white font-bold rounded-full hover:bg-green-600 transition duration-300 shadow-lg transform hover:scale-105">
+                                    Enviar Mensaje
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-gray-400 py-6">
+        <div class="container mx-auto px-6 text-center">
+            <p>Lifegas Company &copy; <span id="current-year"></span> | Todos los derechos reservados.</p>
+            <div class="mt-6 flex justify-center space-x-8">
+                <a href="https://www.facebook.com/profile.php?id=61579382198811" class="hover:text-blue-500 transition duration-300"><i class="fab fa-facebook-f text-2xl"></i></a>
+                <a href="https://www.tiktok.com/@life.gas.company.oficial?_t=ZS-8zzyH7zyHxf&_r=1" class="hover:text-black transition duration-300"><i class="fab fa-tiktok text-2xl"></i></a>
+                <a href="https://www.instagram.com/lifegascompanyoficial?igsh=cjVlb2Zmbmw2ajY4" class="hover:text-red-500 transition duration-300"><i class="fab fa-instagram text-2xl"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Botón flotante de WhatsApp -->
+    <a href="https://wa.me/51938684174" target="_blank"
+        class="fixed bottom-6 right-6 z-50 bg-green-500 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg transition-transform transform hover:scale-110">
+        <i class="fab fa-whatsapp text-3xl"></i>
+    </a>
+
+    <!-- Swiper JS -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    
+    <!-- Enlace al archivo de scripts -->
+    <script src="js/script.js"></script> 
+
+    
+
+</body>
+
+</html>

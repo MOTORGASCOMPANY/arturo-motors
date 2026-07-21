@@ -1,0 +1,491 @@
+-- Creación de tablas principales
+
+CREATE TABLE clientes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    apellido VARCHAR(100) NOT NULL,
+    documento VARCHAR(20) UNIQUE NOT NULL,
+    telefono VARCHAR(20),
+    email VARCHAR(100),
+    direccion VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE vehiculos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    cliente_id INT NOT NULL,
+    placa VARCHAR(10) UNIQUE NOT NULL,
+    marca VARCHAR(50) NOT NULL,
+    modelo VARCHAR(50) NOT NULL,
+    anio YEAR NOT NULL,    
+    serie VARCHAR(50),
+    color VARCHAR(30),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_vehiculos_clientes FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE CASCADE
+);
+
+ALTER TABLE vehiculos ADD COLUMN combustible VARCHAR(50) NULL AFTER placa;
+
+
+-- Creación de tablas proceso
+
+
+
+-- Tabla para guardar los detalles de la evaluacion
+CREATE TABLE evaluaciones (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    expediente_id BIGINT UNSIGNED NOT NULL,
+    tecnico_id BIGINT UNSIGNED NOT NULL,
+    fecha_evaluacion DATE NOT NULL,
+    resultado ENUM('apto', 'no apto') NOT NULL,
+    observaciones TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_evaluaciones_expediente FOREIGN KEY (expediente_id) REFERENCES expedientes(id) ON DELETE CASCADE,
+    CONSTRAINT fk_evaluaciones_tecnico FOREIGN KEY (tecnico_id) REFERENCES users(id) ON DELETE RESTRICT
+);
+
+-- Tabla para el seguimiento de la conversion
+CREATE TABLE conversiones (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    expediente_id BIGINT UNSIGNED NOT NULL,
+    tecnico_id BIGINT UNSIGNED NOT NULL,
+    fecha_inicio DATE NOT NULL,
+    fecha_fin DATE,
+    estado ENUM('en_proceso', 'completado', 'certificado') DEFAULT 'en_proceso',
+    observaciones TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_conversiones_expediente FOREIGN KEY (expediente_id) REFERENCES expedientes(id) ON DELETE CASCADE,
+    CONSTRAINT fk_conversiones_tecnico FOREIGN KEY (tecnico_id) REFERENCES users(id) ON DELETE RESTRICT
+);
+
+
+CREATE TABLE control_calidad (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    conversion_id BIGINT UNSIGNED NOT NULL,
+    jefe_taller_id BIGINT UNSIGNED NOT NULL,
+    fecha_control DATE NOT NULL,
+    resultado ENUM('aprobado', 'rechazado') NOT NULL,
+    observaciones TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_control_conversion FOREIGN KEY (conversion_id) REFERENCES conversiones(id) ON DELETE CASCADE,
+    CONSTRAINT fk_control_jefe FOREIGN KEY (jefe_taller_id) REFERENCES users(id) ON DELETE RESTRICT
+);
+
+
+
+
+-- Insertar los roles a la tabla roles
+INSERT INTO roles (name, guard_name, created_at, updated_at) VALUES
+('Administrador del sistema', 'web', NOW(), NOW()),
+('Cliente', 'web', NOW(), NOW()),
+('Vendedor', 'web', NOW(), NOW()),
+('Jefe de Taller', 'web', NOW(), NOW()),
+('Tecnico', 'web', NOW(), NOW()),
+('Almacen', 'web', NOW(), NOW());
+
+
+
+CREATE TABLE citas (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    cliente_id INT NOT NULL,
+    vehiculo_id INT NULL,
+    asesor_id BIGINT UNSIGNED NOT NULL,
+    fecha_cita DATETIME NOT NULL,
+    motivo TEXT,
+    estado ENUM('pendiente', 'aceptada', 'rechazada', 'cancelada') DEFAULT 'pendiente',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_citas_cliente FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE CASCADE,
+    CONSTRAINT fk_citas_vehiculo FOREIGN KEY (vehiculo_id) REFERENCES vehiculos(id) ON DELETE SET NULL,
+    CONSTRAINT fk_citas_asesor FOREIGN KEY (asesor_id) REFERENCES users(id) ON DELETE RESTRICT
+);
+
+-- actualizar el campo fecha_cita
+ALTER TABLE citas MODIFY fecha_cita DATE NOT NULL;
+
+
+
+CREATE TABLE expedientes (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    cliente_id INT NOT NULL,
+    vehiculo_id INT NULL,
+    cita_id BIGINT UNSIGNED NULL,
+    estado INT(11) NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_expediente_cliente FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE CASCADE,
+    CONSTRAINT fk_expediente_vehiculo FOREIGN KEY (vehiculo_id) REFERENCES vehiculos(id) ON DELETE SET NULL,
+    CONSTRAINT fk_expediente_cita FOREIGN KEY (cita_id) REFERENCES citas(id) ON DELETE SET NULL
+);
+
+CREATE TABLE tipos_documento (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    nombre_tipo VARCHAR(100) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE documentos_expediente (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    expediente_id BIGINT UNSIGNED NOT NULL,
+    tipo_documento_id BIGINT UNSIGNED NOT NULL,
+    nombre VARCHAR(200) NOT NULL,
+    ruta VARCHAR(500) NOT NULL,
+    extension VARCHAR(10) NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_documentos_expediente_expediente FOREIGN KEY (expediente_id) REFERENCES expedientes(id) ON DELETE CASCADE,
+    CONSTRAINT fk_documentos_expediente_tipo FOREIGN KEY (tipo_documento_id) REFERENCES tipos_documento(id) ON DELETE RESTRICT
+);
+
+
+
+-- Para el registro de la consulta y respuesta del FISE.
+
+CREATE TABLE fise_solicitudes (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    cliente_id INT NOT NULL,
+    vehiculo_id INT NOT NULL,
+    fecha_solicitud DATETIME NOT NULL,
+    fecha_respuesta DATETIME NULL,
+    estado ENUM('pendiente', 'aprobado', 'rechazado') DEFAULT 'pendiente',
+    observaciones TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_fise_cliente FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE CASCADE,
+    CONSTRAINT fk_fise_vehiculo FOREIGN KEY (vehiculo_id) REFERENCES vehiculos(id) ON DELETE CASCADE
+);
+
+
+
+
+--  Tablas expedientes y control_calidad aun no han sido reemplazadas pero considerar nuevos campos.
+-- Tu tabla expedientes (ajustada para ser el centro del proceso)
+CREATE TABLE expedientes (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    cita_id BIGINT UNSIGNED NOT NULL,
+    cliente_id INT NOT NULL,
+    vehiculo_id INT NOT NULL,
+    jefe_taller_id BIGINT UNSIGNED,
+    tecnico_id BIGINT UNSIGNED,
+    estado ENUM('en_evaluacion', 'evaluacion_rechazada', 'aprobado_conversion', 'en_conversion', 'conversion_completada', 'en_control_calidad', 'listo_para_entrega', 'entregado', 'cancelado') DEFAULT 'en_evaluacion',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_expediente_cita FOREIGN KEY (cita_id) REFERENCES citas(id) ON DELETE CASCADE,
+    CONSTRAINT fk_expediente_cliente FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE CASCADE,
+    CONSTRAINT fk_expediente_vehiculo FOREIGN KEY (vehiculo_id) REFERENCES vehiculos(id) ON DELETE CASCADE,
+    CONSTRAINT fk_expediente_jefe_taller FOREIGN KEY (jefe_taller_id) REFERENCES users(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_expediente_tecnico FOREIGN KEY (tecnico_id) REFERENCES users(id) ON DELETE RESTRICT
+);
+-- Tabla para el control de calidad
+CREATE TABLE control_calidad (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    expediente_id BIGINT UNSIGNED NOT NULL,
+    jefe_taller_id BIGINT UNSIGNED NOT NULL,
+    fecha_control DATE NOT NULL,
+    resultado ENUM('aprobado', 'rechazado') NOT NULL,
+    observaciones TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_control_expediente FOREIGN KEY (expediente_id) REFERENCES expedientes(id) ON DELETE CASCADE,
+    CONSTRAINT fk_control_jefe FOREIGN KEY (jefe_taller_id) REFERENCES users(id) ON DELETE RESTRICT
+);
+
+
+
+
+-- 1. Crear la tabla `repuestos`
+-- Esta tabla almacena un catálogo de todos los repuestos disponibles.
+
+CREATE TABLE repuestos (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(255) NOT NULL,
+    descripcion TEXT NULL,
+    precio DECIMAL(8, 2) NOT NULL,
+    stock INT UNSIGNED NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- 2. Crear la tabla `conversion_detalles`
+-- Esta es la tabla pivote que relaciona conversiones con repuestos.
+
+CREATE TABLE conversion_detalles (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    conversion_id BIGINT UNSIGNED NOT NULL,
+    repuesto_id BIGINT UNSIGNED NOT NULL,
+    cantidad_utilizada INT UNSIGNED NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    CONSTRAINT fk_conversion_detalles_conversion_id
+        FOREIGN KEY (conversion_id)
+        REFERENCES conversiones (id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_conversion_detalles_repuesto_id
+        FOREIGN KEY (repuesto_id)
+        REFERENCES repuestos (id)
+        ON DELETE RESTRICT
+);
+
+
+
+
+
+
+
+-- Tabla para vendedores externos
+CREATE TABLE asesores_externos (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(150) NOT NULL,
+    telefono VARCHAR(20) NULL,
+    email VARCHAR(150) NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Para poder eliminar foreign key para eliminar tabla citas
+ALTER TABLE expedientes DROP FOREIGN KEY fk_expediente_cita;
+
+-- Eliminar tabla citas
+DROP TABLE citas;
+
+-- Crear tabla citas con nuevo campo y FOREIGN KEY
+CREATE TABLE citas (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    cliente_id INT NOT NULL,
+    vehiculo_id INT NULL,
+    asesor_id BIGINT UNSIGNED NULL, -- interno (users)
+    asesor_externo_id BIGINT UNSIGNED NULL, -- externo (asesores_externos)
+    fecha_cita DATETIME NOT NULL,
+    motivo TEXT,
+    estado ENUM('pendiente', 'aceptada', 'rechazada', 'cancelada') DEFAULT 'pendiente',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    -- Relaciones
+    CONSTRAINT fk_citas_cliente FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE CASCADE,
+    CONSTRAINT fk_citas_vehiculo FOREIGN KEY (vehiculo_id) REFERENCES vehiculos(id) ON DELETE SET NULL,
+    CONSTRAINT fk_citas_asesor FOREIGN KEY (asesor_id) REFERENCES users(id) ON DELETE SET NULL,
+    CONSTRAINT fk_citas_asesor_externo FOREIGN KEY (asesor_externo_id) REFERENCES asesores_externos(id) ON DELETE SET NULL
+);
+
+
+
+
+ALTER TABLE expedientes
+ADD CONSTRAINT fk_expediente_cita FOREIGN KEY (cita_id) REFERENCES citas(id) ON DELETE CASCADE;
+
+
+
+-- Crear tabla para detalles de evaluación
+CREATE TABLE detalles_evaluacion (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    evaluacion_id BIGINT UNSIGNED NOT NULL,
+    
+    tarjeta_propiedad BOOLEAN NULL,
+    soat BOOLEAN NULL,
+    llave_contacto BOOLEAN NULL,
+    espejos BOOLEAN NULL,
+    antena BOOLEAN NULL,
+    plumillas BOOLEAN NULL,
+    vasos BOOLEAN NULL,
+    emblemas BOOLEAN NULL,
+    tapa_combustible BOOLEAN NULL,
+    bateria BOOLEAN NULL,
+    seguro_bateria BOOLEAN NULL,
+    claxon BOOLEAN NULL,
+    tapa_aceite BOOLEAN NULL,
+    tapa_radiador BOOLEAN NULL,
+    barita_capot BOOLEAN NULL,
+    espejo_anterior BOOLEAN NULL,
+    tapasoles BOOLEAN NULL,
+    radio BOOLEAN NULL,
+    reproductor_cd BOOLEAN NULL,
+    parlantes BOOLEAN NULL,
+    cenicero BOOLEAN NULL,
+    encendedor BOOLEAN NULL,
+    pisos BOOLEAN NULL,
+    fundas_forros BOOLEAN NULL,
+    cinturones BOOLEAN NULL,
+    llanta_repuesto BOOLEAN NULL,
+    gata_palanca BOOLEAN NULL,
+    llave_ruedas BOOLEAN NULL,
+    triangulo BOOLEAN NULL,
+    extintor BOOLEAN NULL,
+    linterna BOOLEAN NULL,
+    herramientas BOOLEAN NULL,
+    botiquin BOOLEAN NULL,
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    CONSTRAINT fk_detalles_evaluacion_evaluacion FOREIGN KEY (evaluacion_id) REFERENCES evaluaciones(id) ON DELETE CASCADE
+);
+
+
+-- CREAR TABLA CONTRATOS
+CREATE TABLE `contratos` (
+  `id` BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `user_id` BIGINT UNSIGNED NOT NULL,
+
+  `fecha_ingreso` DATE NOT NULL,
+  `fecha_inicio_contrato` DATE NOT NULL,
+  `fecha_vencimiento` DATE DEFAULT NULL,  
+
+  `cargo` VARCHAR(150) NOT NULL,
+  `tipo_contrato` VARCHAR(100) DEFAULT 'Plazo Fijo',
+  
+  `sueldo_bruto` DECIMAL(10, 2) NOT NULL DEFAULT '0.00',
+  `sueldo_neto` DECIMAL(10, 2) NOT NULL DEFAULT '0.00',
+  
+  `status` ENUM('Activo', 'Vencido', 'Finalizado') DEFAULT 'Activo',
+  `contrato_path` VARCHAR(255) DEFAULT NULL,
+  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ 
+  CONSTRAINT `fk_contratos_user` FOREIGN KEY (`user_id`) 
+    REFERENCES `users` (`id`) ON DELETE CASCADE
+);
+
+
+-- AGREGAR CAMPOS TABLA USERS
+ALTER TABLE `users` 
+ADD COLUMN `dni` VARCHAR(15) UNIQUE AFTER `profile_photo_path`,
+ADD COLUMN `celular` VARCHAR(20) NULL AFTER `dni`,
+ADD COLUMN `direccion` VARCHAR(255) NULL AFTER `celular`,
+ADD COLUMN `fecha_nacimiento` DATE NULL AFTER `direccion`,
+ADD COLUMN `numero_cuenta` VARCHAR(50) NULL AFTER `fecha_nacimiento`,
+ADD COLUMN `sistema_pensionario` VARCHAR(50) NULL AFTER `numero_cuenta`,
+ADD COLUMN `asignacion_familiar` TINYINT(1) DEFAULT 0 AFTER `sistema_pensionario`,
+ADD COLUMN `beneficios` VARCHAR(250) DEFAULT 'General' AFTER `asignacion_familiar`,
+ADD COLUMN `ruta_firma` VARCHAR(2048) NULL AFTER `beneficios`;
+
+
+-- 1. Tabla de saldos de vacaciones
+CREATE TABLE `vacaciones` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `idContrato` BIGINT UNSIGNED NOT NULL,
+  `dias_ganados` INT NOT NULL DEFAULT 0,
+  `dias_tomados` INT NOT NULL DEFAULT 0,
+  `dias_restantes` INT NOT NULL DEFAULT 0,
+  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `vacaciones_idcontrato_foreign` (`idContrato`)
+);
+
+
+
+-- 2. Tabla de detalle de vacaciones asignadas/tomadas
+CREATE TABLE `vacacion_asignada` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `idVacacion` BIGINT UNSIGNED NOT NULL,
+  `tipo` VARCHAR(255) DEFAULT NULL,
+  `razon` TEXT DEFAULT NULL,
+  `d_tomados` INT DEFAULT NULL,
+  `f_inicio` DATE DEFAULT NULL,
+  `observacion` TEXT DEFAULT NULL,
+  `especial` TINYINT(1) DEFAULT 0, -- 1 para sí, 0 para no
+  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `vacacion_asignada_idvacacion_foreign` (`idVacacion`)
+);
+
+
+
+-- 1. Tabla de Tipos de Documentos
+-- Permite clasificar qué se está subiendo (DNI, Antecedentes, etc.)
+CREATE TABLE tipo_documentos (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    requerido BOOLEAN DEFAULT FALSE,
+    vencible BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- 2. Tabla de Documentos de Usuarios (Legajo Digital)
+-- Almacena la información de los archivos físicos
+CREATE TABLE documentos_usuarios (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT UNSIGNED NOT NULL,
+    tipo_documento_id BIGINT UNSIGNED NOT NULL,
+    nombre VARCHAR(255),
+    ruta VARCHAR(255) NOT NULL,
+    extension VARCHAR(10),
+    fecha_emision DATE NULL,
+    fecha_expiracion DATE NULL,
+    estado ENUM('Pendiente', 'Aprobado', 'Rechazado') DEFAULT 'Pendiente',
+    observaciones TEXT NULL,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_documentos_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_documentos_tipo FOREIGN KEY (tipo_documento_id) REFERENCES tipo_documentos(id)
+);
+
+
+INSERT INTO tipo_documentos (nombre, requerido, vencible, created_at, updated_at) VALUES 
+('DNI (Copia Legible)', 1, 1, NOW(), NOW()),
+('Antecedentes Penales', 1, 1, NOW(), NOW()),
+('Antecedentes Policiales', 1, 1, NOW(), NOW()),
+('Certificado de Estudios', 0, 0, NOW(), NOW()),
+('Currículum Vitae (CV)', 1, 0, NOW(), NOW());
+
+
+INSERT INTO tipo_documentos (nombre, requerido, vencible, created_at, updated_at) 
+VALUES ('Contrato Firmado', 1, 0, NOW(), NOW());
+
+
+-- Tabla Principal de Planillas
+CREATE TABLE planillas (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    contrato_id BIGINT UNSIGNED NOT NULL,
+    periodo DATE NOT NULL,
+
+    sueldo_base DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+
+    asignacion_familiar DECIMAL(10, 2) DEFAULT 0.00,
+    horas_extras DECIMAL(10, 2) DEFAULT 0.00,
+    movilidad DECIMAL(10, 2) DEFAULT 0.00,
+    otros_ingresos DECIMAL(10, 2) DEFAULT 0.00,
+    
+    otros_descuentos DECIMAL(10, 2) DEFAULT 0.00,
+    
+    total_pagado DECIMAL(10, 2) GENERATED ALWAYS AS (
+        sueldo_base + asignacion_familiar + horas_extras + movilidad + otros_ingresos - otros_descuentos
+    ) VIRTUAL,
+
+    planilla VARCHAR(255) NULL,
+    estado_pago TINYINT(1) DEFAULT 0 COMMENT '0 = Pendiente, 1 = Pagado',
+    fecha_pago DATE NULL,
+    numero_cuenta VARCHAR(50) NULL,
+    observacion TEXT NULL,
+
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (contrato_id) REFERENCES contratos(id) ON DELETE CASCADE
+);
+
+-- Tabla de Archivos/Documentos de Planilla
+CREATE TABLE planilla_archivos (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    planilla_id BIGINT UNSIGNED NOT NULL,
+    tipo ENUM('boleta', 'comprobante', 'otros') DEFAULT 'boleta',
+    nombre VARCHAR(255) NOT NULL,
+    ruta VARCHAR(255) NOT NULL,
+    extension VARCHAR(10) NOT NULL,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (planilla_id) REFERENCES planillas(id) ON DELETE CASCADE
+);
