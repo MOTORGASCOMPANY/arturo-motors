@@ -1,0 +1,223 @@
+/*
+ * Paleta de colores de la marca:
+ * Azul: #3498DB (y variaciones)
+ * Verde: #2ECC71 (y variaciones)
+ */
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f8f9fa;
+}
+
+/*main {
+    padding-top: 80px;
+}*/
+
+
+#hero {
+    position: relative;
+    /*height: 100vh;*/
+    overflow: hidden;
+    min-height: 100dvh;
+    /* en lugar de height */
+    height: auto;
+}
+
+.hero-background-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.hero-bg-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+}
+
+.hero-bg-image.active {
+    opacity: 1;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 10;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.4);
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 2rem;
+}
+
+@media (max-width: 768px) {
+    .hero-content {
+        flex-direction: column-reverse;
+        /* texto arriba, imagen abajo */
+        text-align: center;
+    }
+}
+
+.header-bg {
+    transition: background-color 0.3s ease-in-out;
+}
+
+.header-bg.scrolled {
+    background-color: rgba(255, 255, 255, 0.6);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.header-bg.scrolled .text-white {
+    color: #000000;
+}
+
+#car-animation-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#car-image {
+    width: 70%;
+    max-width: 700px;
+    height: auto;
+    animation: diamond-float 8s ease-in-out infinite;
+}
+
+@media (max-width: 768px) {
+    #car-image {
+        width: 80%;
+        max-width: 350px;
+    }
+}
+
+@keyframes diamond-float {
+    0% {
+        transform: translateY(0px) rotate(0deg);
+    }
+
+    25% {
+        transform: translate(-10px, -15px) rotate(-1deg);
+    }
+
+    50% {
+        transform: translateY(-30px) rotate(0deg);
+    }
+
+    75% {
+        transform: translate(10px, -15px) rotate(1deg);
+    }
+
+    100% {
+        transform: translateY(0px) rotate(0deg);
+    }
+}
+
+/* Estilos para la sección de parallax */
+/* Agregamos la imagen de fondo y el efecto de paralaje */
+.parallax-section {
+    background-image: url('../images/flyer6.jpeg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    /* Efecto parallax para PC */
+    min-height: 300px;
+    /* Altura mínima responsive */
+    position: relative;
+}
+
+/* Animación para los contadores al aparecer */
+.counter-container.animated {
+    animation: bounceIn 1s ease-out;
+}
+
+@keyframes bounceIn {
+    0% {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+
+    50% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Estilo de la paginación del carrusel */
+.flyers-carousel .swiper-pagination {
+    position: relative !important;
+    /* Saca los puntos de encima de las imágenes */
+    margin-top: 20px;
+    /* Espacio entre imágenes y paginación */
+    text-align: center;
+}
+
+.flyers-carousel .swiper-pagination-bullet {
+    width: 12px;
+    height: 12px;
+    background-color: #5174a8;
+    /* gris claro para los inactivos */
+    opacity: 1;
+    transition: all 0.3s ease;
+}
+
+.flyers-carousel .swiper-pagination-bullet-active {
+    background-color: #22c55e;
+    /* verde Tailwind (green-500) */
+    transform: scale(1.2);
+    /* un poco más grande para resaltar */
+}
+
+
+
+/* Responsive móviles */
+@media (max-width: 768px) {
+    .hero-content {
+        flex-direction: column;
+        justify-content: flex-end;
+    }
+
+    .hero-text-content {
+        order: -1;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    #car-animation-container {
+        order: 1;
+    }
+
+    .parallax-section {
+        min-height: 500px;
+    }
+}
+
+/* Responsive tablets (768px – 1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .hero-content {
+        min-height: 80vh;
+        /* ocupa más alto de pantalla */
+        justify-content: center;
+        /* centrado vertical */
+    }
+
+    #car-image {
+        width: 80%;
+        /* un poco más compacto */
+        max-width: 500px;
+    }
+}

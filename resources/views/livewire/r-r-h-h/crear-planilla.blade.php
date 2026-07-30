@@ -2,7 +2,7 @@
     <x-dialog-modal wire:model="abierto" maxWidth="6xl">
         <x-slot name="title">
             <div class="flex justify-between items-center border-b border-gray-200 pb-3">
-                <span class="font-extrabold text-gray-800 tracking-wider text-sm uppercase">
+                <span class="font-extrabold text-white tracking-wider text-sm uppercase">
                     <i class="fas fa-layer-group mr-2 text-orange-500"></i>GENERACIÓN DE PLANILLA
                 </span>
                 <div class="flex items-center gap-3 bg-gray-100 p-1 px-3 rounded-full border border-gray-200">
@@ -15,6 +15,7 @@
 
         <x-slot name="content">
             @if($periodo && count($lista_planilla) > 0)
+
                 <div class="px-4 py-3 bg-blue-50 border-l-4 border-blue-400 mt-2 rounded-r-lg">
                     <div class="flex items-start">
                         <div class="flex-shrink-0 mt-1">
@@ -26,19 +27,21 @@
                             </p>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-[11px] text-blue-700 leading-tight">
                                 <div>
-                                    <p class="font-bold border-b border-blue-200 mb-1">Cálculo Banco (1ra Q / Finde):</p>
+                                    <p class="font-bold border-b border-blue-200 mb-1">Cálculo:</p>
                                     <ul class="list-disc ml-4 space-y-1">
                                         <li><strong>Sueldo Base:</strong> (Sueldo real con descuentos AFP/ONP) / 2.</li>
-                                        <li><strong>BANCO 1Q:</strong> Base + Asignación + Horas Extras + Otros - Descuentos.</li>
+                                        <li><strong>TOTAL:</strong> Base + Asignación + Horas Extras + Otros - Descuentos.</li>
                                     </ul>
                                 </div>
-                                <div>
-                                    <p class="font-bold border-b border-blue-200 mb-1">Cálculo Efectivo y Consolidado:</p>
-                                    <ul class="list-disc ml-4 space-y-1">
-                                        <li><strong>EFECTIVO:</strong> Corresponde únicamente al monto de Movilidad.</li>
-                                        <li><strong>TOTAL:</strong> Banco + Efectivo (Suma de todos los conceptos y beneficios).</li>
-                                    </ul>
-                                </div>
+                                {{-- 
+                                    <div>
+                                        <p class="font-bold border-b border-blue-200 mb-1">Cálculo Efectivo y Consolidado:</p>
+                                        <ul class="list-disc ml-4 space-y-1">
+                                            <li><strong>EFECTIVO:</strong> Corresponde únicamente al monto de Movilidad.</li>
+                                            <li><strong>TOTAL:</strong> Banco + Efectivo (Suma de todos los conceptos y beneficios).</li>
+                                        </ul>
+                                    </div>
+                                --}}
                             </div>
                             <p class="text-[10px] text-blue-700 italic">
                                 * Nota: La asignación familiar se calcula internamente según ley vigente aplicada al periodo.
@@ -46,9 +49,10 @@
                         </div>
                     </div>
                 </div>
+
                 <div class="mt-4 shadow-sm rounded-xl border border-gray-200 overflow-hidden">
                     <table class="min-w-full table-fixed divide-y divide-gray-200">
-                        <thead class="bg-accent text-xs font-bold text-white uppercase tracking-wider">
+                        <thead class="bg-slate-600 text-xs font-bold text-white uppercase tracking-wider">
                             <tr>
                                 {{-- Empleado: Ancho reducido --}}
                                 <th class="w-auto px-4 py-3 text-left">EMPLEADO</th>
@@ -63,10 +67,11 @@
                                 {{-- Observación: Espacio ampliado --}}
                                 <th class="w-72 px-2 py-3 text-left">OBSERVACIONES</th>
 
-                                <th class="w-20 px-1 py-3 text-center bg-green-800">TOTAL</th>
-
+                                <th class="w-20 px-1 py-3 text-center bg-blue-600">TOTAL</th>
+                                {{-- 
                                 <th class="w-20 px-1 py-3 text-center bg-yellow-600">BANCO 1Q</th>
                                 <th class="w-20 px-1 py-3 text-center bg-green-700">EFECTIVO</th>
+                                --}}
 
                             </tr>
                         </thead>
@@ -116,15 +121,17 @@
                                             wire:model.live.blur="lista_planilla.{{ $index }}.observacion"  />
                                     </td>
                                     <!-- Total Calculado -->
-                                    <td class="px-4 py-1 text-center font-black text-white bg-green-800 italic">
+                                    <td class="px-4 py-1 text-center font-black text-white bg-blue-600 italic">
                                         {{ number_format($item['total'], 2) }}
                                     </td>
+                                    {{-- 
                                     <td class="px-4 py-1 text-center font-black text-white bg-yellow-600 italic">
                                         {{ number_format($item['banco'], 2) }}
                                     </td>
                                     <td class="px-4 py-1 text-center font-black text-white bg-green-700 italic">
                                         {{ number_format($item['efectivo'], 2) }}
                                     </td>
+                                    --}}
                                 </tr>
                             @endforeach
                         </tbody>

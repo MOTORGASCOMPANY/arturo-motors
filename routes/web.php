@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ComprobanteController;
 use App\Http\Controllers\PdfController;
 use App\Livewire\AdminPermisos;
 use App\Livewire\AdminRoles;
@@ -18,6 +19,7 @@ use App\Livewire\RRHH\GestionarVacaciones;
 use App\Livewire\RRHH\GestionDocumentos;
 use App\Livewire\RRHH\ListaPlanilla;
 use App\Livewire\RRHH\MisPlanillas;
+use App\Livewire\ServiceOrders\CrearSimple;
 use App\Livewire\SolicitudRepuestos;
 use App\Livewire\Usuarios;
 use Illuminate\Support\Facades\RateLimiter;
@@ -29,17 +31,17 @@ use Illuminate\Support\Facades\Route;
     return view('welcome');
 });*/
 
-Route::get('/', function () {
-    return redirect()->to('/login');
-});
-
 /*Route::get('/', function () {
+    return redirect()->to('/login');
+});*/
+
+Route::get('/', function () {
     return view('index');
 });
 
 Route::get('index', function () {
     return view('index');
-});*/
+});
 
 Route::get('phpmyinfo', function () {
     phpinfo();
@@ -86,6 +88,9 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',
     // Clientes
     Route::get('/lista-clientes', ListaClientes::class)->name('ListaClientes');
 
+    // Rutas de servicios
+    Route::get('/ordenes/simple/crear', CrearSimple::class)->name('ordenes.simple.crear');
+
     // Rutas modulo de recursos humanos
     Route::get('/rrhh/contratos', Contratos::class)->middleware('can:rrhh.contratos')->name('rrhh.contratos');
     Route::get('/rrhh/vacaciones/contrato/{idContrato}', GestionarVacaciones::class)->name('rrhh.vacaciones.index');
@@ -108,6 +113,8 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',
 
     Route::get('/rrhh/contrato/{id}/pdf', [PdfController::class, 'generarContrato'])->name('rrhh.contrato.pdf');
     //Route::get('/rrhh/contrato/{id}/pdf', 'generarContrato')->name('rrhh.contrato.pdf');
+
+    Route::get('/comprobantes/{ordenId}/pdf', [ComprobanteController::class, 'pdf'])->name('comprobantes.pdf');
 
 
 });

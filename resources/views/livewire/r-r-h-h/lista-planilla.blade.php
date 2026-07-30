@@ -55,13 +55,15 @@
                         <tr class="bg-gray-100 text-left text-xs font-bold uppercase text-gray-500 border-b whitespace-nowrap">
                             <th class="px-3 py-4">TRABAJADOR</th>
                             <th class="px-2 py-4 text-center">INGRESO</th>
-                            <th class="px-2 py-4 text-right">BASE</th> <th class="px-2 py-4 text-right text-green-600">EXTRAS</th>
+                            <th class="px-2 py-4 text-right">BASE</th> <th class="px-2 py-4 text-right text-blue-600">EXTRAS</th>
                             <th class="px-2 py-4 text-right text-red-600">DSCTOS.</th>
                             <th class="px-2 py-4 text-left w-62 min-w-[220px]">OBSERVACIÓN</th>
                             <th class="px-2 py-4 text-center">N° CUENTA</th>
-                            <th class="px-1 py-4 text-center bg-green-800 text-white">TOTAL</th>
+                            <th class="px-1 py-4 text-center bg-blue-600 text-white">TOTAL</th>
+                            {{--
                             <th class="px-1 py-4 text-center bg-yellow-600 text-white">BANCO 1Q</th>
-                            <th class="px-1 py-4 text-center bg-green-700 text-white">EFECTIVO</th>
+                            <th class="px-1 py-4 text-center bg-blue-700 text-white">EFECTIVO</th>
+                            --}}
                             <th class="px-2 py-4 text-center">PAGADO</th>
                             <th class="px-3 py-4 text-center">BOLETAS</th>
                         </tr>
@@ -79,7 +81,7 @@
                                 <td class="px-2 py-3 text-right text-xs whitespace-nowrap">
                                     S/ {{ number_format($item->sueldo_base, 2) }}
                                 </td>
-                                <td class="px-2 py-3 text-right text-xs text-green-600 whitespace-nowrap">
+                                <td class="px-2 py-3 text-right text-xs text-blue-600 whitespace-nowrap">
                                     +{{ number_format($item->horas_extras + $item->movilidad + $item->otros_ingresos + $item->asignacion_familiar, 2) }}
                                 </td>
                                 <td class="px-2 py-3 text-right text-xs text-red-600 whitespace-nowrap">
@@ -101,7 +103,7 @@
                                             @endif
 
                                             @if($item->horas_extras > 0)
-                                                <span class="px-1.5 py-0.5 bg-green-100 text-green-700 rounded text-[10px] font-bold whitespace-nowrap">
+                                                <span class="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px] font-bold whitespace-nowrap">
                                                     H.E: {{ number_format($item->horas_extras, 2) }}
                                                 </span>
                                             @endif
@@ -133,15 +135,17 @@
                                 <td class="px-2 py-3 text-center font-mono text-[13px] text-gray-600">
                                     {{ $item->contrato->user->numero_cuenta ?? '-' }}
                                 </td>
-                                <td class="px-2 py-3 text-center font-black bg-green-800 text-white text-sm whitespace-nowrap">
+                                <td class="px-2 py-3 text-center font-black bg-blue-600 text-white text-sm whitespace-nowrap">
                                     S/ {{ number_format($item->total_pagado, 2) }}
                                 </td>
+                                {{-- 
                                 <td class="px-2 py-3 text-center font-black bg-yellow-600 text-white text-sm whitespace-nowrap">
                                     S/ {{ number_format($item->pago_banco, 2) }}
-                                </td>
-                                <td class="px-2 py-3 text-center font-black bg-green-700 text-white text-sm whitespace-nowrap">
+                                </td>                                
+                                <td class="px-2 py-3 text-center font-black bg-blue-700 text-white text-sm whitespace-nowrap">
                                     S/ {{ number_format($item->pago_efectivo, 2) }}
                                 </td>
+                                --}}
                                 <td class="px-2 py-3 text-center">
                                     <x-checkbox
                                         wire:click="togglePago({{ $item->id }})"
@@ -171,20 +175,22 @@
                                 <span class="text-gray-500 font-bold uppercase text-xs">Total Periodo:</span>
                             </td>
                             <td class="px-2 py-3 text-center">
-                                <span class="text-[15px] font-black text-green-800 border-b-4 border-green-300">
+                                <span class="text-[15px] font-black text-blue-800 border-b-4 border-blue-300">
                                     S/ {{ number_format($totales['general'], 2) }}
                                 </span>
                             </td>
+                            {{-- 
                             <td class="px-2 py-3 text-center">
                                 <span class="text-[15px] font-black text-yellow-800 border-b-4 border-yellow-300">
                                     S/ {{ number_format($totales['banco'], 2) }}
                                 </span>
                             </td>
                             <td class="px-2 py-3 text-center">
-                                <span class="text-[15px] font-black text-green-700 border-b-4 border-green-200">
+                                <span class="text-[15px] font-black text-blue-700 border-b-4 border-blue-200">
                                     S/ {{ number_format($totales['efectivo'], 2) }}
                                 </span>
                             </td>
+                            --}}
                             <td></td>
                             <td></td>
                         </tr>

@@ -92,8 +92,9 @@ class ListaPlanilla extends Component
             //$totalGeneral = (clone $query)->sum('total_pagado');
             // Calculamos los 3 totales del periodo seleccionado de una sola vez
             $totales['general']  = (clone $query)->sum('total_pagado');
-            $totales['banco']    = (clone $query)->sum('pago_banco');
-            $totales['efectivo'] = (clone $query)->sum('pago_efectivo');
+
+            //$totales['banco']    = (clone $query)->sum('pago_banco');
+            //$totales['efectivo'] = (clone $query)->sum('pago_efectivo');
 
             $planillas = $query->with(['contrato.user'])
                 ->orderBy('created_at', 'desc')

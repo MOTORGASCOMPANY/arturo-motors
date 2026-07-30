@@ -16,7 +16,9 @@ class PlanillaArchivos extends Component
     public $open = false;
     public $planilla;
     public $archivo;
-    public $tipo = 'boleta';
+    //public $tipo = 'boleta';
+    public $tipo = 'comprobante';
+
 
     #[On('abrir-modal-archivos')]
     public function loadPlanilla($id)

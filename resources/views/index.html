@@ -3,395 +3,705 @@
 
 <head>
     <meta charset="utf-8">
-    <meta content="width=device-width, initial-scale=1.0" name="viewport">
-        
-    <!-- Título optimizado (60 caracteres máx.) -->
-     <title>Lifegas company | Taller de Conversión a Gas Vehicular en Lima</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arturo Motors | Conversiones GNV/GLP y Mantenimiento Automotriz</title>
 
-    <!-- Descripción meta (150-160 caracteres) -->
-    <meta name="description" content="Lifegas: Taller autorizado por el MTC en Lima. Conversión a gas vehicular con calidad garantizada, soporte y técnicos certificados.">
+    <meta name="description" content="Especialistas en conversiones GNV y GLP, certificaciones y mantenimiento automotriz en Perú.">
+    <meta name="author" content="Arturo Motors">
 
-     <!-- Palabras clave (ya no tan relevantes, pero puede ayudar en buscadores locales) -->
-    <meta name="keywords" content="taller conversión gas vehicular Lima, conversión GNV, conversión GLP, Lifegas company, taller GNV autorizado MTC">
-
-    <!-- Autor -->
-    <meta name="author" content="Lifegas company">
-
-    <!-- Open Graph para redes sociales -->
-    <meta property="og:title" content="Lifegas company | Taller de Conversión a Gas Vehicular en Lima">
-    <meta property="og:description" content="Convierte tu vehículo con Lifegas. Taller autorizado por el MTC, calidad y soporte garantizados.">
-    <meta property="og:image" content="https://lifegascompany.com/images/logo.png">
-    <meta property="og:url" content="https://lifegascompany.com">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Arturo Motors | Conversiones GNV/GLP">
+    <meta property="og:description" content="Certificaciones, conversiones y mantenimiento automotriz.">
+    <meta property="og:image" content="https://arturomotorsperu.com/images/icon.png">
+    <meta property="og:url" content="https://arturomotorsperu.com">
     <meta property="og:type" content="website">
 
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="images/logo.png" />
+    <link rel="icon" type="image/png" href="images/icon.png" />
 
-    <!-- Canonical (evita contenido duplicado) -->
-    <link rel="canonical" href="https://lifegascompany.com">
+    <!-- Google Fonts (Poppins) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Font Awesome for icons -->
+    <!-- FontAwesome (Iconos) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
     <!-- Swiper CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 
-    <!-- Enlace al archivo de estilos -->
+    <!-- Estilos Personalizados -->
     <link rel="stylesheet" href="css/style.css">
 </head>
 
-<body class="bg-gray-50 text-gray-800">
-
-    <!-- Header -->
-    <header id="main-header" class="fixed top-0 w-full z-50 py-4 transition-all duration-300">
-        <div class="container mx-auto px-6 flex justify-between items-center">
-            <a href="#" class="flex items-center space-x-3">
-                <img src="images/images2.png" alt="Logo Lifegas" class="h-16 w-auto">
+<body>
+    <!-- Navegación Ultra-Moderna (Glassmorphism) -->
+    <nav class="navbar navbar-expand-lg fixed-top custom-navbar">
+        <div class="container">
+            <!-- Brand / Logo -->
+            <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+                <div class="brand-icon">
+                    <!--<i class="fa-solid fa-gauge-high"></i>-->
+                    <img src="images/icon.png" alt="Icono ARTURO MOTORS" href="images/icon.png" style="width: 35px; height: 35px;">
+                </div>
+                <div class="brand-text-container">
+                    <span class="brand-title">ARTURO <span class="text-blue">MOTORS</span></span>
+                    <span class="brand-subtitle">TECNOLOGÍA AUTOMOTRIZ</span>
+                </div>
             </a>
-            <nav class="hidden md:flex items-center space-x-8 text-white">
-                <a href="#hero" class="hover:text-gray-200 font-medium transition duration-300">Inicio</a>
-                <a href="#about" class="hover:text-gray-200 font-medium transition duration-300">Nosotros</a>
-                <a href="#contact" class="hover:text-gray-200 font-medium transition duration-300">Contacto</a>
-                <a href="/login"
-                    class="px-6 py-2 bg-green-400 text-blue-700 rounded-full font-semibold hover:bg-green-500 transition duration-300 shadow-md">
-                    Iniciar Sesión
-                </a>
-            </nav>
 
-            <!-- Mobile menu button -->
-            <div class="md:hidden">
-                <button id="mobile-menu-button" class="text-white focus:outline-none">
-                    <i class="fas fa-bars text-2xl"></i>
-                </button>
+            <!-- Toggle Button -->
+            <button class="navbar-toggler custom-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Links -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center gap-lg-2">
+                    <li class="nav-item"><a class="nav-link custom-link active" href="#inicio">Inicio</a></li>
+                    <li class="nav-item"><a class="nav-link custom-link" href="#nosotros">Nosotros</a></li>
+                    <li class="nav-item"><a class="nav-link custom-link" href="#servicios">Servicios</a></li>
+                    <li class="nav-item"><a class="nav-link custom-link" href="#contacto">Contacto</a></li>
+                </ul>
+                <!--
+                <div class="ms-lg-3 mt-3 mt-lg-0 text-center">
+                    <a href="https://wa.me/51943694464" target="_blank" class="btn btn-glow rounded-pill px-4 py-2 fw-bold">
+                        <i class="fa-brands fa-whatsapp me-2"></i>Cotización Rápida
+                    </a>
+                </div>
+                -->
+                <!-- Grupo de Botones CTA & Login -->
+                <div class="d-flex flex-column flex-lg-row align-items-center gap-2 ms-lg-3 mt-3 mt-lg-0">
+                    <a href="https://wa.me/51943694464" target="_blank" class="btn btn-glow rounded-pill px-3 py-2 fw-bold text-nowrap w-100 w-lg-auto">
+                        <i class="fa-brands fa-whatsapp me-2"></i>Cotización Rápida
+                    </a>
+                    
+                    <!-- Botón Login -->
+                    <a href="/login" class="btn btn-glass rounded-pill px-3 py-2 fw-bold text-nowrap w-100 w-lg-auto">
+                        <i class="fa-solid fa-user-lock me-2"></i>Iniciar Sesión
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dynamic Hero Section con Swiper Slider -->
+    <section id="inicio" class="hero-wrapper">
+        
+        <!-- Swiper Background Slider -->
+        <div class="swiper hero-slider">
+            <div class="swiper-wrapper">
+                <!-- Slide 1 -->
+                <div class="swiper-slide slide-1"></div>
+                <!-- Slide 2 -->
+                <div class="swiper-slide slide-2"></div>
+                <!-- Slide 3 -->
+                <div class="swiper-slide slide-3"></div>
             </div>
         </div>
 
-        <!-- Mobile menu -->
-        <div id="mobile-menu" class="hidden md:hidden bg-white/50 px-6 py-4 shadow-md rounded-2xl mt-4">
-            <div class="flex flex-col space-y-4 text-gray-700">
-                <a href="#hero" class="hover:text-blue-700 transition duration-300">Inicio</a>
-                <a href="#about" class="hover:text-blue-700 transition duration-300">Nosotros</a>
-                <a href="#contact" class="hover:text-blue-700 transition duration-300">Contacto</a>
-                <a href="/login"
-                    class="px-6 py-2 text-center bg-green-400 text-blue-700 rounded-full font-semibold hover:bg-blue-600 transition duration-300">
-                    Iniciar Sesión
-                </a>
+        <!-- Hero Overlay Content -->
+        <div class="hero-overlay d-flex align-items-center">
+            <div class="container">
+                <div class="row align-items-center gy-5">
+                    
+                    <!-- Lado Izquierdo: Textos y CTA -->
+                    <div class="col-lg-7 text-lg-start text-center" data-aos="fade-right" data-aos-duration="1000">
+                        <div class="badge-tech mb-3">
+                            <span class="pulse-dot"></span> Taller Autorizado & Certificado
+                        </div>
+                        <h1 class="hero-heading">
+                            Potencia tu Vehículo con <br>
+                            <span class="gradient-text">GNV & GLP de 5ta Gen</span>
+                        </h1>
+                        <p class="hero-lead">
+                            Conversiones de alta precisión, certificaciones oficiales y mantenimiento especializado. Ahorra hasta un 60% en combustible con total seguridad.
+                        </p>
+                        
+                        <div class="d-flex flex-column flex-sm-row gap-3 justify-content-lg-start justify-content-center mt-4">
+                            <a href="https://wa.me/51943694464" target="_blank" class="btn btn-main btn-lg rounded-pill">
+                                <i class="fa-solid fa-calendar-check me-2"></i>Agendar Cita
+                            </a>
+                            <a href="#servicios" class="btn btn-glass btn-lg rounded-pill">
+                                <i class="fa-solid fa-sliders me-2"></i>Nuestros Servicios
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Lado Derecho: Tarjetas Flotantes con Métricas (Efecto Glassmorphism) -->
+                    <div class="col-lg-5" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="200">
+                        <div class="hero-glass-card shadow-2xl">
+                            <div class="card-header-badge">
+                                <i class="fa-solid fa-certificate"></i> Garantía & Calidad
+                            </div>
+                            
+                            <div class="metrics-grid">
+                                <div class="metric-item">
+                                    <h3 class="metric-number">+100%</h3>
+                                    <p class="metric-label">Garantía en Conversión</p>
+                                </div>
+                                <div class="metric-item">
+                                    <h3 class="metric-number">60%</h3>
+                                    <p class="metric-label">Ahorro Promedio</p>
+                                </div>
+                            </div>
+
+                            <hr class="divider">
+
+                            <div class="features-list">
+                                <div class="feature-line">
+                                    <i class="fa-solid fa-circle-check text-blue"></i>
+                                    <span>Certificación Anual y Quinquenal al instante.</span>
+                                </div>
+                                <div class="feature-line">
+                                    <i class="fa-solid fa-circle-check text-blue"></i>
+                                    <span>Equipos e Inyectores de última generación.</span>
+                                </div>
+                                <div class="feature-line">
+                                    <i class="fa-solid fa-circle-check text-blue"></i>
+                                    <span>Diagnóstico Computarizado por Escáner.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
             </div>
         </div>
-    </header>
+    </section>
 
-    <main>
-        <!-- Sección Principal (Hero) -->
-        <section id="hero" class="pt-10 relative text-white">
-            <!-- Contenedor del fondo dinámico -->
-            <div id="background-slider" class="hero-background-container">
-                <img src="images/fondo.png" alt="Fondo 1" class="hero-bg-image active">
-                <img src="images/fondo2.png" alt="Fondo 2" class="hero-bg-image">
-                <img src="images/fondo3.png" alt="Fondo 3" class="hero-bg-image">
-            </div>
+    <!-- Sección Nosotros -->
+    <section id="nosotros" class="about-section py-6">
+        <div class="container py-lg-5">
+            <div class="row align-items-center gy-5">
+                
+                <!-- Columna Izquierda: Grilla de Imágenes + Badge Flotante -->
+                <div class="col-lg-6" data-aos="fade-right" data-aos-duration="1000">
+                    <div class="about-image-wrapper">
+                        <!-- Imagen Principal -->
+                        <div class="main-img-box">
+                            <img src="https://images.unsplash.com/photo-1530046339160-ce3e530c7d2f?q=80&w=800" alt="Taller Mecánico Arturo Motors" class="img-fluid rounded-4 shadow-lg">
+                        </div>
+                        
+                        <!-- Imagen Secundaria Flotante -->
+                        <div class="secondary-img-box d-none d-sm-block">
+                            <img src="https://images.unsplash.com/photo-1625047509168-a7026f36de04?q=80&w=500" alt="Diagnóstico Computarizado" class="img-fluid rounded-4 shadow-2xl">
+                        </div>
 
-            <!-- Contenido principal y animación del tecnico -->
-            <div
-                class="hero-content container mx-auto px-6 md:flex md:flex-row-reverse md:justify-between md:items-center">
-                <div id="car-animation-container">
-                    <img id="car-image" src="images/tecnico4.png" alt="Vehículo convertido a gas">
+                        <!-- Badge Experiencia -->
+                        <div class="experience-badge shadow-lg">
+                            <h3 class="badge-number">+10</h3>
+                            <p class="badge-text">Años de <br>Experiencia</p>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="pt-12 hero-text-content z-10 p-6 rounded-3xl md:w-1/2 md:text-left">
-                    <h1 class="text-3xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-4">
-                        Taller de Conversión a Gas Vehicular en Lima
-                    </h1>
-                    <p class="text-lg md:text-xl font-light max-w-2xl mx-auto mb-8 md:mx-0">
-                        Convierte tu vehículo en nuestro taller y empieza a sentir la diferencia de recorrido con la
-                        conversión a gas vehicular.
+                <!-- Columna Derecha: Información y Ventajas -->
+                <div class="col-lg-6" data-aos="fade-left" data-aos-duration="1000">
+                    <div class="ps-lg-4">
+                        <div class="badge-tech mb-3">
+                            <i class="fa-solid fa-users me-1"></i> Sobre Arturo Motors
+                        </div>
+                        <h2 class="section-title fw-bold mb-4">
+                            Líderes en Conversiones y <br>
+                            <span class="gradient-text">Soluciones Automotrices</span>
+                        </h2>
+                        <p class="text-sub mb-4">
+                            En **Arturo Motors** nos dedicamos a transformar la movilidad de nuestros clientes ofreciendo soluciones de conversión a GNV y GLP con los más altos estándares de calidad y seguridad.
+                        </p>
+                        <p class="text-sub mb-4">
+                            Contamos con equipos de diagnóstico de última generación y un equipo de técnicos certificados enfocados en maximizar el rinde de tu motor y garantizar tu ahorro diario.
+                        </p>
+
+                        <!-- Tarjetas de Pilares Clave -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-sm-6">
+                                <div class="about-feature-card">
+                                    <div class="feature-icon">
+                                        <i class="fa-solid fa-microchip"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="fw-bold text-white mb-1">Tecnología de Punta</h5>
+                                        <p class="small text-sub mb-0">Escáneres y software de calibración precisos.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="about-feature-card">
+                                    <div class="feature-icon">
+                                        <i class="fa-solid fa-award"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="fw-bold text-white mb-1">Certificación Oficial</h5>
+                                        <p class="small text-sub mb-0">Trámites y revisiones 100% legales.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Checkmarks Lista -->
+                        <div class="d-flex flex-column gap-2 mb-4">
+                            <div class="feature-line">
+                                <i class="fa-solid fa-square-check text-blue"></i>
+                                <span>Garantía escrita en cada conversión e instalación.</span>
+                            </div>
+                            <div class="feature-line">
+                                <i class="fa-solid fa-square-check text-blue"></i>
+                                <span>Atención personalizada y asesoría técnica directa.</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección Servicios -->
+    <section id="servicios" class="services-section py-6">
+        <div class="container py-lg-5">
+            
+            <!-- Encabezado de la Sección -->
+            <div class="text-center mb-5" data-aos="fade-up" data-aos-duration="1000">
+                <div class="badge-tech mb-3 mx-auto">
+                    <i class="fa-solid fa-wrench me-1"></i> Lo Que Ofrecemos
+                </div>
+                <h2 class="section-title fw-bold">
+                    Nuestros Servicios <span class="gradient-text">Especializados</span>
+                </h2>
+                <p class="text-sub mx-auto" style="max-width: 600px;">
+                    Tecnología de última generación y personal altamente capacitado para garantizar el máximo rendimiento de tu vehículo.
+                </p>
+            </div>
+
+            <!-- Grilla de Servicios (Cards) -->
+            <div class="row g-4">
+
+                <!-- Servicio 1: Conversión GNV/GLP -->
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
+                    <div class="service-card h-100">
+                        <div class="service-icon-wrapper">
+                            <i class="fa-solid fa-gas-pump"></i>
+                        </div>
+                        <h4 class="service-title">Conversión a GNV / GLP</h4>
+                        <p class="service-desc">
+                            Instalación de sistemas de 5ta generación con ECU calibrada por computadora. Garantizamos un ahorro de hasta el 60% en combustible.
+                        </p>
+                        <ul class="service-list list-unstyled">
+                            <li><i class="fa-solid fa-check text-blue me-2"></i>Equipos de marcas italianas</li>
+                            <li><i class="fa-solid fa-check text-blue me-2"></i>Garantía escrita de 1 año</li>
+                            <li><i class="fa-solid fa-check text-blue me-2"></i>Incluye certificación inicial</li>
+                        </ul>
+                        <a href="https://wa.me/51943694464?text=Hola,%20deseo%20cotizar%20una%20conversión%20a%20GNV/GLP" target="_blank" class="btn btn-service w-100 mt-auto">
+                            Cotizar Conversión <i class="fa-solid fa-arrow-right ms-2"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Servicio 2: Certificaciones Anuales/Quinquenales -->
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
+                    <div class="service-card h-100">
+                        <div class="service-icon-wrapper">
+                            <i class="fa-solid fa-file-signature"></i>
+                        </div>
+                        <h4 class="service-title">Certificaciones Oficiales</h4>
+                        <p class="service-desc">
+                            Emisión e inspección técnica para certificación anual de GNV/GLP y prueba hidráulica quinquenal de cilindros de manera rápida.
+                        </p>
+                        <ul class="service-list list-unstyled">
+                            <li><i class="fa-solid fa-check text-blue me-2"></i>Revisión de fuga y hermeticidad</li>
+                            <li><i class="fa-solid fa-check text-blue me-2"></i>Aprobación en sistema oficial</li>
+                            <li><i class="fa-solid fa-check text-blue me-2"></i>Trámite en 30 minutos</li>
+                        </ul>
+                        <a href="https://wa.me/51943694464?text=Hola,%20necesito%20información%20sobre%20certificación%20anual/quinquenal" target="_blank" class="btn btn-service w-100 mt-auto">
+                            Agendar Inspección <i class="fa-solid fa-arrow-right ms-2"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Servicio 3: Mantenimiento de Gas -->
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
+                    <div class="service-card h-100">
+                        <div class="service-icon-wrapper">
+                            <i class="fa-solid fa-sliders"></i>
+                        </div>
+                        <h4 class="service-title">Mantenimiento de Sistema a Gas</h4>
+                        <p class="service-desc">
+                            Mantenimiento preventivo y correctivo para inyectores, cambio de filtros de gas, reductor y calibración fina de mapas de inyección.
+                        </p>
+                        <ul class="service-list list-unstyled">
+                            <li><i class="fa-solid fa-check text-blue me-2"></i>Limpieza ultrasónica de inyectores</li>
+                            <li><i class="fa-solid fa-check text-blue me-2"></i>Cambio de filtros de fase líquida/gas</li>
+                            <li><i class="fa-solid fa-check text-blue me-2"></i>Ajuste de presión de regulador</li>
+                        </ul>
+                        <a href="https://wa.me/51943694464?text=Hola,%20busco%20mantenimiento%20para%20mi%20equipo%20de%20gas" target="_blank" class="btn btn-service w-100 mt-auto">
+                            Consultar Servicio <i class="fa-solid fa-arrow-right ms-2"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Servicio 4: Mecánica General y Mantenimiento -->
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
+                    <div class="service-card h-100">
+                        <div class="service-icon-wrapper">
+                            <i class="fa-solid fa-screwdriver-wrench"></i>
+                        </div>
+                        <h4 class="service-title">Mecánica General</h4>
+                        <p class="service-desc">
+                            Servicios integrales para el motor de tu auto: afinamiento electrónico, cambio de aceite, frenos, embragues y suspensión.
+                        </p>
+                        <ul class="service-list list-unstyled">
+                            <li><i class="fa-solid fa-check text-blue me-2"></i>Afinamiento de motor</li>
+                            <li><i class="fa-solid fa-check text-blue me-2"></i>Sistema de frenos y suspensión</li>
+                            <li><i class="fa-solid fa-check text-blue me-2"></i>Mantenimiento por kilometraje</li>
+                        </ul>
+                        <a href="https://wa.me/51943694464?text=Hola,%20quisiera%20cotizar%20mantenimiento%20mecánico" target="_blank" class="btn btn-service w-100 mt-auto">
+                            Solicitar Cotización <i class="fa-solid fa-arrow-right ms-2"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Servicio 5: Diagnóstico con Escáner -->
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
+                    <div class="service-card h-100">
+                        <div class="service-icon-wrapper">
+                            <i class="fa-solid fa-laptop-code"></i>
+                        </div>
+                        <h4 class="service-title">Diagnóstico Computarizado</h4>
+                        <p class="service-desc">
+                            Lectura y borrado de códigos de error (Check Engine), análisis de sensores en tiempo real y diagnóstico multimarca.
+                        </p>
+                        <ul class="service-list list-unstyled">
+                            <li><i class="fa-solid fa-check text-blue me-2"></i>Escáner profesional multimarca</li>
+                            <li><i class="fa-solid fa-check text-blue me-2"></i>Reporte detallado de fallas</li>
+                            <li><i class="fa-solid fa-check text-blue me-2"></i>Prueba de sensores y actuadores</li>
+                        </ul>
+                        <a href="https://wa.me/51943694464?text=Hola,%20deseo%20un%20diagnóstico%20por%20escáner" target="_blank" class="btn btn-service w-100 mt-auto">
+                            Reservar Escaneo <i class="fa-solid fa-arrow-right ms-2"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Servicio 6: Mantenimiento de Inyectores -->
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
+                    <div class="service-card h-100">
+                        <div class="service-icon-wrapper">
+                            <i class="fa-solid fa-filter-circle-xmark"></i>
+                        </div>
+                        <h4 class="service-title">Lavado de Inyectores</h4>
+                        <p class="service-desc">
+                            Prueba de estanqueidad, abanico y entrega de flujo en banco de pruebas con tina ultrasónica para inyectores de gasolina.
+                        </p>
+                        <ul class="service-list list-unstyled">
+                            <li><i class="fa-solid fa-check text-blue me-2"></i>Limpieza por Ultrasonido</li>
+                            <li><i class="fa-solid fa-check text-blue me-2"></i>Reemplazo de Microfiltros y O-rings</li>
+                            <li><i class="fa-solid fa-check text-blue me-2"></i>Prueba en banco computarizado</li>
+                        </ul>
+                        <a href="https://wa.me/51943694464?text=Hola,%20quisiera%20información%20sobre%20lavado%20de%20inyectores" target="_blank" class="btn btn-service w-100 mt-auto">
+                            Consultar Precio <i class="fa-solid fa-arrow-right ms-2"></i>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección Por Qué Elegirnos & Proceso -->
+    <section id="proceso" class="process-section py-6">
+        <div class="container py-lg-5 ">
+            
+            <!-- PARTE 1: POR QUÉ ELEGIRNOS -->
+            <div class="row align-items-center mb-6 gy-5">
+                <div class="col-lg-5" data-aos="fade-right" data-aos-duration="1000">
+                    <div class="badge-tech mb-3">
+                        <i class="fa-solid fa-shield-halved me-1"></i> Ventajas Competitivas
+                    </div>
+                    <h2 class="section-title fw-bold mb-4">
+                        ¿Por qué confiar tu vehículo en <br>
+                        <span class="gradient-text">Arturo Motors?</span>
+                    </h2>
+                    <p class="text-sub mb-4">
+                        Nos enfocamos en brindar un servicio transparente, rápido y respaldado por normativas vigentes para que conduzcas con total tranquilidad y máximo ahorro.
                     </p>
-                    <div
-                        class="flex flex-col sm:flex-row justify-center md:justify-start items-center space-y-4 sm:space-y-0 sm:space-x-4">
-                        <a href="#about"
-                            class="px-8 py-3 bg-green-400 text-blue-700 font-bold rounded-full shadow-lg transition duration-300 transform hover:scale-105 hover:bg-green-500">
-                            Empezar
-                        </a>
-                        <a href="#"
-                            class="px-8 py-3 border-2 border-green-400 text-white font-semibold rounded-full hover:bg-green-400 hover:text-blue-600 transition duration-300 transform hover:scale-105 flex items-center">
-                            <i class="fas fa-play-circle mr-2 text-lg"></i>
-                            Video
-                        </a>
+                    <a href="https://wa.me/51943694464?text=Hola,%20quisiera%20más%20información%20sobre%20sus%20garantías" target="_blank" class="btn btn-main rounded-pill px-4 py-3 fw-semibold">
+                        <i class="fa-solid fa-comments me-2"></i>Hablar con un Asesor
+                    </a>
+                </div>
+
+                <div class="col-lg-7" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="200">
+                    <div class="row g-3">
+                        <!-- Razón 1 -->
+                        <div class="col-sm-6">
+                            <div class="why-card">
+                                <div class="why-icon"><i class="fa-solid fa-microchip"></i></div>
+                                <h5 class="fw-bold text-white mb-2">Escáner & Diagnóstico</h5>
+                                <p class="small text-sub mb-0">Calibración por computadora para no perder potencia en el motor.</p>
+                            </div>
+                        </div>
+                        <!-- Razón 2 -->
+                        <div class="col-sm-6">
+                            <div class="why-card">
+                                <div class="why-icon"><i class="fa-solid fa-file-contract"></i></div>
+                                <h5 class="fw-bold text-white mb-2">Certificación Legal</h5>
+                                <p class="small text-sub mb-0">Aprobaciones oficiales al instante para circular sin multas.</p>
+                            </div>
+                        </div>
+                        <!-- Razón 3 -->
+                        <div class="col-sm-6">
+                            <div class="why-card">
+                                <div class="why-icon"><i class="fa-solid fa-piggy-bank"></i></div>
+                                <h5 class="fw-bold text-white mb-2">Máximo Ahorro</h5>
+                                <p class="small text-sub mb-0">Optimización de consumo para reducir gastos hasta en un 60%.</p>
+                            </div>
+                        </div>
+                        <!-- Razón 4 -->
+                        <div class="col-sm-6">
+                            <div class="why-card">
+                                <div class="why-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                                <h5 class="fw-bold text-white mb-2">Entrega Puntual</h5>
+                                <p class="small text-sub mb-0">Respetamos los tiempos de trabajo pactados desde el inicio.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Controles para cambiar el fondo -->
-            <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-20 flex space-x-4">
-                <button id="prev-btn"
-                    class="p-3 bg-white bg-opacity-30 rounded-full hover:bg-opacity-50 transition duration-300 focus:outline-none">
-                    <i class="fas fa-chevron-left text-white"></i>
-                </button>
-                <button id="next-btn"
-                    class="p-3 bg-white bg-opacity-30 rounded-full hover:bg-opacity-50 transition duration-300 focus:outline-none">
-                    <i class="fas fa-chevron-right text-white"></i>
-                </button>
-            </div>
-        </section>
+            <!-- PARTE 2: PROCESO DE TRABAJO (TIMELINE) -->
+            <div class="mt-4 pt-5 border-top border-secondary-subtle">
+                <div class="text-center mb-5" data-aos="fade-up">
+                    <div class="badge-tech mb-3 mx-auto">
+                        <i class="fa-solid fa-route me-1"></i> Paso a Paso
+                    </div>
+                    <h2 class="section-title fw-bold">
+                        Nuestro Proceso de <span class="gradient-text">Trabajo</span>
+                    </h2>
+                    <p class="text-sub mx-auto" style="max-width: 550px;">
+                        Un flujo transparente y seguro desde la recepción hasta la entrega de tu auto.
+                    </p>
+                </div>
 
-        <!-- Sección de Nosotros (About) -->
-        <section id="about" class="py-20 md:py-24">
-            <div class="container mx-auto px-6 text-center max-w-6xl">
-                <h2 class="text-3xl md:text-4xl font-bold text-blue-700 mb-2">Sobre Nosotros</h2>
-                <div class="w-24 h-1 bg-green-500 mx-auto rounded-full mb-6"></div>
-                <p class="text-gray-600 max-w-2xl mx-auto mb-12">
-                    Nuestra historia, valores y lo que nos hace líderes en el sector.
+                <div class="row g-4 position-relative">
+                    
+                    <!-- Paso 1 -->
+                    <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="100">
+                        <div class="step-card">
+                            <div class="step-number">01</div>
+                            <h5 class="fw-bold text-white mb-2">Diagnóstico Inicial</h5>
+                            <p class="small text-sub mb-0">Evaluamos el estado del motor y del sistema eléctrico antes de intervenir.</p>
+                        </div>
+                    </div>
+
+                    <!-- Paso 2 -->
+                    <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="200">
+                        <div class="step-card">
+                            <div class="step-number">02</div>
+                            <h5 class="fw-bold text-white mb-2">Instalación / Servicio</h5>
+                            <p class="small text-sub mb-0">Montaje de equipos o mantenimiento técnico siguiendo normas de fábrica.</p>
+                        </div>
+                    </div>
+
+                    <!-- Paso 3 -->
+                    <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="300">
+                        <div class="step-card">
+                            <div class="step-number">03</div>
+                            <h5 class="fw-bold text-white mb-2">Calibración & Pruebas</h5>
+                            <p class="small text-sub mb-0">Ajuste fino de parámetros por computadora y prueba de fuga/seguridad.</p>
+                        </div>
+                    </div>
+
+                    <!-- Paso 4 -->
+                    <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="400">
+                        <div class="step-card">
+                            <div class="step-number">04</div>
+                            <h5 class="fw-bold text-white mb-2">Certificado y Entrega</h5>
+                            <p class="small text-sub mb-0">Te entregamos tu vehículo verificado con su documentación oficial lista.</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Sección Contacto & Ubicación -->
+    <section id="contacto" class="contact-section py-6">
+        <div class="container py-lg-5">
+            
+            <div class="text-center mb-5" data-aos="fade-up">
+                <div class="badge-tech mb-3 mx-auto">
+                    <i class="fa-solid fa-location-dot me-1"></i> Encuéntranos Fácilmente
+                </div>
+                <h2 class="section-title fw-bold">
+                    Visítanos o <span class="gradient-text">Ponte en Contacto</span>
+                </h2>
+                <p class="text-sub mx-auto" style="max-width: 550px;">
+                    Estamos listos para atender tus consultas, certificar tu auto o agendar tu conversión.
                 </p>
-                <div class="flex flex-col md:flex-row items-center space-y-10 md:space-y-0 md:space-x-12">
-                    <div class="md:w-1/2">
-                        <img src="images/flyer.jpeg" class="rounded-3xl shadow-2xl w-full" alt="Equipo de taller">
-                    </div>
-                    <div class="md:w-1/2 text-left space-y-6">
-                        <div id="about-content" class="animated-section space-y-6">
-                            <h3 class="text-2xl md:text-3xl font-semibold text-gray-800">
-                                Taller de conversión a gas autorizado por MTC.
-                            </h3>
-                            <p class="text-gray-600">
-                                Somos uno de los mejores talleres especializados en conversión a gas en Lima, con un
-                                enfoque
-                                en calidad, seguridad y satisfacción del cliente.
-                            </p>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <!-- Card 1: Calidad -->
-                                <div
-                                    class="bg-white p-6 rounded-2xl shadow-md transform hover:scale-105 transition duration-300">
-                                    <div class="text-green-500 text-3xl mb-4">
-                                        <i class="fas fa-gem"></i>
-                                    </div>
-                                    <h4 class="text-lg font-semibold text-gray-800 mb-2">Calidad Garantizada</h4>
-                                    <p class="text-sm text-gray-600">Utilizamos componentes originales de marcas
-                                        líderes, asegurando la máxima durabilidad y eficiencia.</p>
-                                </div>
-                                <!-- Card 2: Instalación -->
-                                <div
-                                    class="bg-white p-6 rounded-2xl shadow-md transform hover:scale-105 transition duration-300">
-                                    <div class="text-blue-500 text-3xl mb-4">
-                                        <i class="fas fa-tools"></i>
-                                    </div>
-                                    <h4 class="text-lg font-semibold text-gray-800 mb-2">Instalación Certificada</h4>
-                                    <p class="text-sm text-gray-600">Nuestro equipo de técnicos está altamente
-                                        capacitado y certificado, garantizando un servicio profesional.</p>
-                                </div>
-                                <!-- Card 3: Soporte -->
-                                <div
-                                    class="bg-white p-6 rounded-2xl shadow-md transform hover:scale-105 transition duration-300">
-                                    <div class="text-green-500 text-3xl mb-4">
-                                        <i class="fas fa-award"></i>
-                                    </div>
-                                    <h4 class="text-lg font-semibold text-gray-800 mb-2">Soporte y Garantía</h4>
-                                    <p class="text-sm text-gray-600">Ofrecemos una garantía completa en todos nuestros
-                                        servicios para tu tranquilidad y confianza.</p>
-                                </div>
+            </div>
+
+            <div class="row g-4 align-items-stretch">
+                
+                <!-- Columna Izquierda: Tarjetas de Información -->
+                <div class="col-lg-5" data-aos="fade-right" data-aos-duration="1000">
+                    <div class="d-flex flex-column gap-3 h-100 justify-content-between">
+                        
+                        <!-- Tarjeta Dirección -->
+                        <div class="contact-info-card">
+                            <div class="contact-icon"><i class="fa-solid fa-map-location-dot"></i></div>
+                            <div>
+                                <h6 class="fw-bold text-white mb-1">Dirección del Taller</h6>
+                                <p class="small text-sub mb-0">Prolongación Av. Perú 5176, Callao, Peru</p>
                             </div>
                         </div>
+
+                        <!-- Tarjeta Teléfono / WhatsApp -->
+                        <div class="contact-info-card">
+                            <div class="contact-icon"><i class="fa-solid fa-phone"></i></div>
+                            <div>
+                                <h6 class="fw-bold text-white mb-1">Teléfonos de Atención</h6>
+                                <p class="small text-sub mb-0">+51 943 694 464 / 943 694 464</p>
+                            </div>
+                        </div>
+
+                        <!-- Tarjeta Horario -->
+                        <div class="contact-info-card">
+                            <div class="contact-icon"><i class="fa-solid fa-clock"></i></div>
+                            <div>
+                                <h6 class="fw-bold text-white mb-1">Horario de Atención</h6>
+                                <p class="small text-sub mb-0">Lunes a Sábado: 8:00 AM - 6:00 PM</p>
+                            </div>
+                        </div>
+
+                        <!-- Banner directo a WhatsApp -->
+                        <div class="whatsapp-cta-box text-center p-4 rounded-4 mt-2">
+                            <i class="fa-brands fa-whatsapp text-success display-5 mb-2"></i>
+                            <h5 class="fw-bold text-white mb-2">¿Atención Inmediata?</h5>
+                            <p class="small text-sub mb-3">Escríbenos directamente para consultar disponibilidad de citas en tiempo real.</p>
+                            <a href="https://wa.me/51943694464?text=Hola,%20quisiera%20agendar%20una%20cita%20en%20el%20taller" target="_blank" class="btn btn-success rounded-pill w-100 fw-bold py-2">
+                                Chatear con un Asesor
+                            </a>
+                        </div>
+
                     </div>
                 </div>
-            </div>
-        </section>
 
-        <!-- Sección de Parallax con Contador -->
-        <section id="parallax-counter" class="parallax-section h-[300px] flex items-center justify-center relative">
-            <div class="absolute inset-0 bg-gray-900 opacity-60"></div>
-            <div class="container mx-auto px-6 z-10 text-center text-white">
-                <div id="counter-row"
-                    class="flex flex-col md:flex-row justify-center md:space-x-16 space-y-8 md:space-y-0">
-                    <!-- Talleres -->
-                    <div class="counter-container">
-                        <h3 class="text-5xl md:text-6xl font-extrabold text-green-400">
-                            <span class="counter" data-target="100">0</span>+
-                        </h3>
-                        <p class="mt-2 text-xl md:text-2xl font-semibold">Talleres</p>
-                    </div>
-                    <!-- Clientes -->
-                    <div class="counter-container">
-                        <h3 class="text-5xl md:text-6xl font-extrabold text-green-400">
-                            <span class="counter" data-target="500">0</span>+
-                        </h3>
-                        <p class="mt-2 text-xl md:text-2xl font-semibold">Clientes</p>
-                    </div>
-                    <!-- Conversiones -->
-                    <div class="counter-container">
-                        <h3 class="text-5xl md:text-6xl font-extrabold text-green-400">
-                            <span class="counter" data-target="500">0</span>+
-                        </h3>
-                        <p class="mt-2 text-xl md:text-2xl font-semibold">Conversiones</p>
-                    </div>
-                    <!-- Bonos -->
-                    <div class="counter-container">
-                        <h3 class="text-5xl md:text-6xl font-extrabold text-green-400">
-                            <span class="counter" data-target="200">0</span>+
-                        </h3>
-                        <p class="mt-2 text-xl md:text-2xl font-semibold">Bonos</p>
+                <!-- Columna Derecha: Mapa de Google Maps Interactivo -->
+                <div class="col-lg-7" data-aos="fade-left" data-aos-duration="1000">
+                    <div class="map-wrapper h-100 rounded-4 overflow-hidden border border-secondary-subtle">
+                        <!-- Reemplazar el src con el iFrame exacto de Google Maps de la ubicación del taller -->
+                        <iframe 
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d975.5839857865125!2d-77.10123263037826!3d-12.020377599263401!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105ce9f965ce71b%3A0x39248294a3841558!2sAv.%20Per%C3%BA%205176%2C%20Callao%2007036!5e0!3m2!1ses-419!2spe!4v1785440284486!5m2!1ses-419!2spe"
+                            width="100%" 
+                            height="100%" 
+                            style="border:0; min-height: 400px;" 
+                            allowfullscreen="" 
+                            loading="lazy" 
+                            referrerpolicy="no-referrer-when-downgrade">
+                        </iframe>
                     </div>
                 </div>
+
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- Sección Álbum de Flyers -->
-        <section id="album" class="py-20 bg-gray-100">
-            <div class="container mx-auto px-6 max-w-6xl">
-                <h2 class="text-3xl md:text-4xl font-bold text-blue-700 text-center mb-2">Beneficios</h2>
-                <div class="w-24 h-1 bg-green-500 mx-auto rounded-full mb-4"></div>
-                <p class="text-gray-600 max-w-2xl mx-auto text-center mb-10">
-                    Nuestra historia, valores y lo que nos hace líderes en el sector.
-                </p>
-
-                <!-- Carrusel -->
-                <div class="swiper flyers-carousel">
-                    <div class="swiper-wrapper">
-                        <!-- Flyer 1 -->
-                        <div class="swiper-slide group relative overflow-hidden rounded-2xl shadow-lg">
-                            <img src="images/flyer.jpeg" alt="Flyer 1" class="w-full h-[400px] object-cover">
+    <!-- Footer Corporativo -->
+    <footer class="main-footer py-5">
+        <div class="container">
+            <div class="row gy-4 align-items-center">
+                <!-- Brand Footer -->
+                <div class="col-md-4 text-center text-md-start">
+                    <a class="d-inline-flex align-items-center gap-2 text-decoration-none mb-2" href="#">
+                        <div class="brand-icon">
+                            <!--<i class="fa-solid fa-gauge-high"></i>-->
+                            <img src="images/icon.png" alt="Icono ARTURO MOTORS" href="images/icon.png" style="width: 35px; height: 35px;">
                         </div>
-
-                        <!-- Flyer 2 -->
-                        <div class="swiper-slide group relative overflow-hidden rounded-2xl shadow-lg">
-                            <img src="images/flyer2.jpeg" alt="Flyer 2" class="w-full h-[400px] object-cover">
-                        </div>
-
-                        <!-- Flyer 3 -->
-                        <div class="swiper-slide group relative overflow-hidden rounded-2xl shadow-lg">
-                            <img src="images/flyer3.jpeg" alt="Flyer 3" class="w-full h-[400px] object-cover">
-                        </div>
-
-                        <!-- Flyer 4 -->
-                        <div class="swiper-slide group relative overflow-hidden rounded-2xl shadow-lg">
-                            <img src="images/flyer4.jpeg" alt="Flyer 4" class="w-full h-[400px] object-cover">
-                        </div>
-
-                        <!-- Flyer 5 -->
-                        <div class="swiper-slide group relative overflow-hidden rounded-2xl shadow-lg">
-                            <img src="images/flyer5.jpeg" alt="Flyer 5" class="w-full h-[400px] object-cover">
-                        </div>
-                    </div>
-
-                    <!-- Paginación -->
-                    <div class="swiper-pagination mt-6"></div>
+                        <span class="brand-title">ARTURO <span class="text-blue">MOTORS</span></span>
+                    </a>
+                    <p class="small text-sub mb-0 mt-2">Especialistas en conversiones GNV/GLP, certificaciones oficiales y mecánica integral.</p>
                 </div>
-            </div>
-        </section>
 
-        <!-- Sección de Contacto -->
-        <section id="contact" class="bg-gray-900 py-20 md:py-24 text-white">
-            <div class="container mx-auto px-6 text-center max-w-6xl">
-                <h2 class="text-3xl md:text-4xl font-bold text-blue-700 mb-2">Contáctanos</h2>
-                <div class="w-24 h-1 bg-green-500 mx-auto rounded-full mb-6"></div>
-                <p class="text-gray-400 max-w-2xl mx-auto mb-12">
-                    Estamos aquí para resolver tus dudas y ayudarte a dar el siguiente paso.
-                </p>
-                <div class="flex flex-col md:flex-row md:space-x-12 space-y-4 md:space-y-0 text-left">
-                    <!-- Información de Contacto -->
-                    <div class="md:w-1/2 space-y-6 p-6 bg-gray-800 rounded-3xl shadow-lg">
-                        <h3 class="text-2xl font-bold text-gray-200 text-center mb-4">Nuestros Datos</h3>
-                        <!-- Horario -->
-                        <div class="flex items-center space-x-4">
-                            <i class="fas fa-clock text-2xl text-green-500"></i>
-                            <div>
-                                <h4 class="font-semibold text-gray-200">Horario</h4>
-                                <p class="text-gray-400">Lunes a Viernes: 8:30 am - 5:30 pm <br> Sábado: 8:30 am - 12:30 pm</p>
-                            </div>
-                        </div>
-                        <!-- Teléfono -->
-                        <div class="flex items-center space-x-4">
-                            <i class="fas fa-phone-alt text-2xl text-green-500"></i>
-                            <div>
-                                <h4 class="font-semibold text-gray-200">Teléfono</h4>
-                                <p class="text-gray-400">+51 938 684 174</p>
-                            </div>
-                        </div>
-                        <!-- Correo Electrónico -->
-                        <div class="flex items-center space-x-4">
-                            <i class="fas fa-envelope text-2xl text-green-500"></i>
-                            <div>
-                                <h4 class="font-semibold text-gray-200">Correo Electrónico</h4>
-                                <p class="text-gray-400">administracion@lifegascompany.com</p>
-                            </div>
-                        </div>
-                        <!-- Ubicación -->
-                        <div class="flex items-center space-x-4">
-                            <i class="fas fa-map-marker-alt text-2xl text-green-500"></i>
-                            <div>
-                                <h4 class="font-semibold text-gray-200">Ubicación</h4>
-                                <p class="text-gray-400">Las Limas #220, MZ L, lote 14B - Urb. Canto Bello, SJL - Lima
-                                </p>
-                            </div>
-                        </div>
-                        <!-- Mapa de Google -->
-                        <div class="w-full h-40 rounded-xl overflow-hidden shadow-lg mt-2">
-                            <iframe
-                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1201.9007847969062!2d-77.01408400541993!3d-11.97917686294282!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105cf8979665557%3A0x895648bdbbe90265!2sLas%20Limas%2C%20San%20Juan%20de%20Lurigancho!5e1!3m2!1ses-419!2spe!4v1756907941535!5m2!1ses-419!2spe"
-                                width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"
-                                referrerpolicy="no-referrer-when-downgrade">
-                            </iframe>
-                        </div>
-                    </div>
-
-                    <!-- Formulario de Contacto -->
-                    <div class="md:w-1/2 p-6 bg-gray-800 rounded-3xl shadow-lg">
-                        <h3 class="text-2xl font-bold text-gray-200 text-center mb-6">Envíanos un Mensaje</h3>
-                        <form class="space-y-6">
-                            <div>
-                                <label for="name" class="block text-gray-400 font-semibold mb-2">Nombre Completo</label>
-                                <input type="text" id="name" name="name"
-                                    class="w-full p-4 rounded-xl border border-gray-600 bg-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-600 transition duration-300">
-                            </div>
-                            <div>
-                                <label for="email" class="block text-gray-400 font-semibold mb-2">Correo
-                                    Electrónico</label>
-                                <input type="email" id="email" name="email"
-                                    class="w-full p-4 rounded-xl border border-gray-600 bg-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-600 transition duration-300">
-                            </div>
-                            <div>
-                                <label for="message" class="block text-gray-400 font-semibold mb-2">Mensaje</label>
-                                <textarea id="message" name="message" rows="5"
-                                    class="w-full p-4 rounded-xl border border-gray-600 bg-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-600 transition duration-300"></textarea>
-                            </div>
-                            <div class="text-center">
-                                <button type="submit"
-                                    class="px-8 py-3 bg-green-500 text-white font-bold rounded-full hover:bg-green-600 transition duration-300 shadow-lg transform hover:scale-105">
-                                    Enviar Mensaje
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                <!-- Links Rápidos -->
+                <div class="col-md-4 text-center">
+                    <ul class="list-inline mb-0">
+                        <li class="list-inline-item mx-2"><a href="#inicio" class="text-sub text-decoration-none small hover-blue">Inicio</a></li>
+                        <li class="list-inline-item mx-2"><a href="#nosotros" class="text-sub text-decoration-none small hover-blue">Nosotros</a></li>
+                        <li class="list-inline-item mx-2"><a href="#servicios" class="text-sub text-decoration-none small hover-blue">Servicios</a></li>
+                        <li class="list-inline-item mx-2"><a href="#proceso" class="text-sub text-decoration-none small hover-blue">Proceso</a></li>
+                    </ul>
                 </div>
-            </div>
-        </section>
-    </main>
 
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-gray-400 py-6">
-        <div class="container mx-auto px-6 text-center">
-            <p>Lifegas Company &copy; <span id="current-year"></span> | Todos los derechos reservados.</p>
-            <div class="mt-6 flex justify-center space-x-8">
-                <a href="https://www.facebook.com/profile.php?id=61579382198811" class="hover:text-blue-500 transition duration-300"><i class="fab fa-facebook-f text-2xl"></i></a>
-                <a href="https://www.tiktok.com/@life.gas.company.oficial?_t=ZS-8zzyH7zyHxf&_r=1" class="hover:text-black transition duration-300"><i class="fab fa-tiktok text-2xl"></i></a>
-                <a href="https://www.instagram.com/lifegascompanyoficial?igsh=cjVlb2Zmbmw2ajY4" class="hover:text-red-500 transition duration-300"><i class="fab fa-instagram text-2xl"></i></a>
+                <!-- Redes Sociales / Copyright -->
+                <div class="col-md-4 text-center text-md-end">
+                    <div class="d-flex justify-content-center justify-content-md-end gap-3 mb-2">
+                        <a href="#" class="social-link"><i class="fa-brands fa-facebook-f"></i></a>
+                        <a href="#" class="social-link"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="https://wa.me/51943694464" target="_blank" class="social-link"><i class="fa-brands fa-whatsapp"></i></a>
+                    </div>
+                    <p class="small text-sub mb-0">&copy; 2026 Arturo Motors. Todos los derechos reservados.</p>
+                </div>
             </div>
         </div>
     </footer>
 
-    <!-- Botón flotante de WhatsApp -->
-    <a href="https://wa.me/51938684174" target="_blank"
-        class="fixed bottom-6 right-6 z-50 bg-green-500 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg transition-transform transform hover:scale-110">
-        <i class="fab fa-whatsapp text-3xl"></i>
+    <!-- Sección Servicios (Ejemplo de Animaciones en Grilla)
+    <section id="servicios" class="py-5 bg-light">
+        <div class="container py-4">
+            <div class="text-center mb-5" data-aos="fade-up">
+                <h6 class="text-warning fw-bold text-uppercase">Lo que ofrecemos</h6>
+                <h2 class="fw-bold">Nuestros Servicios Destacados</h2>
+            </div>            
+            <div class="row g-4">
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="card card-custom h-100 p-4 border-0 shadow-sm text-center">
+                        <div class="icon-box mb-3 text-warning fs-1">
+                            <i class="fa-solid fa-gas-pump"></i>
+                        </div>
+                        <h4 class="fw-bold">Conversiones a GNV / GLP</h4>
+                        <p class="text-muted">Instalación de equipos de última generación con garantía y máximo ahorro.</p>
+                    </div>
+                </div>
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="card card-custom h-100 p-4 border-0 shadow-sm text-center">
+                        <div class="icon-box mb-3 text-warning fs-1">
+                            <i class="fa-solid fa-file-signature"></i>
+                        </div>
+                        <h4 class="fw-bold">Certificaciones</h4>
+                        <p class="text-muted">Certificación anual y revisión quinquenal aprobadas para circular legalmente.</p>
+                    </div>
+                </div>
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="card card-custom h-100 p-4 border-0 shadow-sm text-center">
+                        <div class="icon-box mb-3 text-warning fs-1">
+                            <i class="fa-solid fa-wrench"></i>
+                        </div>
+                        <h4 class="fw-bold">Mecanica General</h4>
+                        <p class="text-muted">Mantenimiento preventivo, afinamiento electrónico, frenos y diagnóstico por escáner.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>-->
+
+    <!-- Botón Flotante WhatsApp con Efecto Pulse -->
+    <a href="https://wa.me/51943694464" target="_blank" class="whatsapp-btn-pulse" aria-label="Contacto WhatsApp">
+        <i class="fab fa-whatsapp"></i>
     </a>
 
-    <!-- Swiper JS -->
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    
-    <!-- Enlace al archivo de scripts -->
-    <script src="js/script.js"></script> 
-
-    
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="js/main.js"></script>  
 
 </body>
-
 </html>

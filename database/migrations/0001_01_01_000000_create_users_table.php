@@ -20,6 +20,18 @@ return new class extends Migration
             $table->rememberToken();
             $table->foreignId('current_team_id')->nullable();
             $table->string('profile_photo_path', 2048)->nullable();
+
+            // --- NUEVOS CAMPOS DE RRHH ---
+            $table->string('dni', 15)->unique()->nullable();
+            $table->string('celular', 20)->nullable();
+            $table->string('direccion', 255)->nullable();
+            $table->date('fecha_nacimiento')->nullable();
+            $table->string('numero_cuenta', 50)->nullable();
+            $table->string('sistema_pensionario', 50)->nullable();
+            $table->boolean('asignacion_familiar')->default(false);
+            $table->string('beneficios', 250)->default('General');
+            $table->string('ruta_firma', 2048)->nullable();
+
             $table->timestamps();
         });
 

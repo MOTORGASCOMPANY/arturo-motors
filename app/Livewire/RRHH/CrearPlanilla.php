@@ -77,8 +77,8 @@ class CrearPlanilla extends Component
                 'numero_cuenta'       => $contrato->user->numero_cuenta,
                 'observacion'         => '',
                 'total'               => number_format($sueldoQuincenal + $asignacionQuincenal, 2, '.', ''),
-                'banco'               => number_format($sueldoQuincenal + $asignacionQuincenal, 2, '.', ''),
-                'efectivo'            => 0
+                //'banco'               => number_format($sueldoQuincenal + $asignacionQuincenal, 2, '.', ''),
+                //'efectivo'            => 0
             ];
         }
 
@@ -123,14 +123,14 @@ class CrearPlanilla extends Component
         $totalVal = ($s_base + $asign + $h_ext + $movil + $otros) - $dctos;
 
         // BANCO: Todo excepto movilidad, menos descuentos
-        $bancoVal = ($s_base + $asign + $h_ext + $otros) - $dctos;
+        //$bancoVal = ($s_base + $asign + $h_ext + $otros) - $dctos;
 
         // EFECTIVO: Solo movilidad
-        $efectivoVal = $movil;
+        //$efectivoVal = $movil;
 
         $fila['total'] = number_format($totalVal, 2, '.', '');
-        $fila['banco'] = number_format($bancoVal, 2, '.', '');
-        $fila['efectivo'] = number_format($efectivoVal, 2, '.', '');
+        //$fila['banco'] = number_format($bancoVal, 2, '.', '');
+        //$fila['efectivo'] = number_format($efectivoVal, 2, '.', '');
     }
 
     public function guardarMasivo()

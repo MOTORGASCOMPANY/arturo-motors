@@ -489,3 +489,27 @@ CREATE TABLE planilla_archivos (
     
     FOREIGN KEY (planilla_id) REFERENCES planillas(id) ON DELETE CASCADE
 );
+
+
+-- Tablas creadas por script 
+contratos
+documentos_usuarios
+planillas
+planilla_archivos
+vacaciones
+vacacion_asignada
+tipo_documentos
+-- campos nuevos a tbala users
+
+
+-- Tablas eliminadas de lógica
+control_calidad
+conversiones
+conversion_detalles
+detalles_evaluacion
+documentos_expediente	
+evaluaciones
+expedientes
+fise_solicitudes
+repuestos
+tipos_documento

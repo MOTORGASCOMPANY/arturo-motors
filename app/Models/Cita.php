@@ -46,10 +46,21 @@ class Cita extends Model
         return $this->belongsTo(AsesorExterno::class, 'asesor_externo_id');
     }
 
-    public function expediente()
+    /**
+     * Se eliminara la tabla expediente, ya no existe logica expediente. 
+     * Expediente lo fusionamos en ServiceOrder (o como hayas nombrado tu modelo — revisa si ya corriste
+     * make:model ServiceOrder como vimos antes). Corrígelo así:
+    */
+
+    /*public function expediente()
     {
         return $this->hasOne(Expediente::class, 'cita_id');
+    }*/
+    public function serviceOrder()
+    {
+        return $this->hasOne(ServiceOrder::class, 'cita_id');
     }
+
 
 
     public function getNombreAsesorAttribute()
