@@ -9,6 +9,7 @@ use App\Models\ServiceOrder;
 use App\Models\SesionCaja;
 use App\Models\MovimientoCaja;
 use App\Models\Comprobante;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
@@ -25,6 +26,13 @@ class CrearSimple extends Component
     public string $nuevaPlaca = '';
     public string $nuevaMarca = '';
     public string $nuevoModelo = '';
+
+    // Paso 1: cliente nuevo
+    public bool $creandoClienteNuevo = false;
+    public string $nuevoNombre = '';
+    public string $nuevoApellido = '';
+    public string $nuevoDocumento = '';
+    public string $nuevoTelefono = '';
 
     // Paso 2: servicio y precio
     public ?int $serviceId = null;
@@ -75,6 +83,28 @@ class CrearSimple extends Component
             $this->clientesEncontrados = []; // Oculta la lista desplegable
             $this->vehiculoId = null;
         }
+    }
+
+    public function guardarClienteNuevo()
+    {
+        $this->validate([
+            'nuevoNombre' => 'required|string|max:100',
+            'nuevoApellido' => 'nullable|string|max:100',
+            'nuevoDocumento' => 'required|string|unique:clientes,documento',
+            'nuevoTelefono' => 'nullable|string|max:20',
+        ]);
+
+        $cliente = Cliente::create([
+            'nombre' => $this->nuevoNombre,
+            'apellido' => $this->nuevoApellido,
+            'documento' => $this->nuevoDocumento,
+            'telefono' => $this->nuevoTelefono,
+        ]);
+
+        $this->clienteId = $cliente->id;
+        $this->buscarCliente = trim($cliente->nombre . ' ' . $cliente->apellido);
+        $this->creandoClienteNuevo = false;
+        $this->clientesEncontrados = [];
     }
 
     public function getVehiculosProperty()
@@ -138,7 +168,7 @@ class CrearSimple extends Component
 
     public function procesarCobro()
     {
-        $sesion = SesionCaja::abierta()->first();
+        $sesion = SesionCaja::abierta()->orderByDesc('abierta_en')->first();
 
         if (!$sesion) {
             $this->addError('caja', 'No hay una caja abierta. Pide al cajero que abra caja antes de cobrar.');
@@ -147,39 +177,57 @@ class CrearSimple extends Component
 
         $this->validate(['metodoPago' => 'required|in:efectivo,tarjeta,transferencia,otro']);
 
-        DB::transaction(function () use ($sesion) {
-            $orden = ServiceOrder::create([
-                'cliente_id' => $this->clienteId,
-                'vehiculo_id' => $this->vehiculoId,
-                'service_id' => $this->serviceId,
-                'estado' => 'entregada', // servicio simple: se cobra y entrega en un solo paso
-                'precio_lista' => $this->precioLista,
-                'precio_final' => $this->precioFinal,
-                'descuento_motivo' => bccomp($this->precioFinal, $this->precioLista, 2) !== 0
-                    ? $this->descuentoMotivo : null,
-                'creado_por' => auth()->id(),
-            ]);
+        // Defensa extra: revalida todo el estado antes de tocar la BD,
+        // por si el navegador quedó con datos viejos entre pasos
+        $this->validate([
+            'clienteId' => 'required|exists:clientes,id',
+            'vehiculoId' => 'required|exists:vehiculos,id',
+            'serviceId' => 'required|exists:services,id',
+            'precioFinal' => 'required|numeric|min:0',
+        ]);
 
-            MovimientoCaja::create([
-                'sesion_caja_id' => $sesion->id,
-                'tipo' => 'ingreso',
-                'monto' => $this->precioFinal,
-                'concepto' => 'Cobro orden #' . $orden->id . ' - ' . $orden->service->nombre,
-                'service_order_id' => $orden->id,
-                'usuario_id' => auth()->id(),
-            ]);
+        try {
+            DB::transaction(function () use ($sesion) {
+                $orden = ServiceOrder::create([
+                    'cliente_id' => $this->clienteId,
+                    'vehiculo_id' => $this->vehiculoId,
+                    'service_id' => $this->serviceId,
+                    'estado' => 'entregada',
+                    'precio_lista' => $this->precioLista,
+                    'precio_final' => $this->precioFinal,
+                    'descuento_motivo' => bccomp($this->precioFinal, $this->precioLista, 2) !== 0
+                        ? $this->descuentoMotivo : null,
+                    //'creado_por' => auth()->id(), Auth::id(),
+                    'creado_por' => Auth::id(),
+                ]);
 
-            $comprobante = Comprobante::create([
-                'service_order_id' => $orden->id,
-                'folio' => Comprobante::generarFolio(),
-                'monto' => $this->precioFinal,
-                'metodo_pago' => $this->metodoPago,
-                'emitido_por' => auth()->id(),
-            ]);
+                MovimientoCaja::create([
+                    'sesion_caja_id' => $sesion->id,
+                    'tipo' => 'ingreso',
+                    'monto' => $this->precioFinal,
+                    'concepto' => 'Cobro orden #' . $orden->id . ' - ' . $orden->service->nombre,
+                    'service_order_id' => $orden->id,
+                    //'usuario_id' => auth()->id(),
+                    'usuario_id' => Auth::id(),
+                ]);
 
-            $this->ordenCreadaId = $orden->id;
-            $this->folioGenerado = $comprobante->folio;
-        });
+                $comprobante = Comprobante::create([
+                    'service_order_id' => $orden->id,
+                    'folio' => Comprobante::generarFolio(),
+                    'monto' => $this->precioFinal,
+                    'metodo_pago' => $this->metodoPago,
+                    //'emitido_por' => auth()->id(),
+                    'emitido_por' => Auth::id(),
+                ]);
+
+                $this->ordenCreadaId = $orden->id;
+                $this->folioGenerado = $comprobante->folio;
+            });
+        } catch (\Throwable $e) {
+            report($e); // queda en tu log de Laravel para que lo revises
+            $this->addError('caja', 'Ocurrió un error al procesar el cobro. Intenta de nuevo, si persiste avisa al administrador.');
+            return;
+        }
 
         $this->paso = 4;
     }

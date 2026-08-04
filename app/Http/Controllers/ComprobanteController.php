@@ -13,7 +13,8 @@ class ComprobanteController extends Controller
     {
         $orden = ServiceOrder::with(['cliente', 'vehiculo', 'service', 'comprobante'])->findOrFail($ordenId);
 
-        $pdf = Pdf::loadView('pdfs.comprobante', ['orden' => $orden]);
+        // $pdf = Pdf::loadView('pdfs.comprobante', ['orden' => $orden]);
+        $pdf = Pdf::loadView('pdfs.comprobante', ['orden' => $orden])->setOption(['isRemoteEnabled' => true, 'isHtml5ParserEnabled' => true]);
 
         $path = 'comprobantes/' . $orden->comprobante->folio . '.pdf';
 

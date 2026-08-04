@@ -4,6 +4,9 @@ use App\Http\Controllers\ComprobanteController;
 use App\Http\Controllers\PdfController;
 use App\Livewire\AdminPermisos;
 use App\Livewire\AdminRoles;
+use App\Livewire\Caja\AbrirCaja;
+use App\Livewire\Caja\CerrarCaja;
+use App\Livewire\Caja\RegistrarEgreso;
 use App\Livewire\CrearCitas;
 use App\Livewire\ExpedienteModal;
 use App\Livewire\GestorRepuestos;
@@ -90,6 +93,11 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',
 
     // Rutas de servicios
     Route::get('/ordenes/simple/crear', CrearSimple::class)->name('ordenes.simple.crear');
+
+    // Rutas modulo de caja
+    Route::get('/caja/abrir', AbrirCaja::class)->name('caja.abrir');
+    Route::get('/caja/egreso', RegistrarEgreso::class)->name('caja.egreso');
+    Route::get('/caja/cerrar', CerrarCaja::class)->name('caja.cerrar');
 
     // Rutas modulo de recursos humanos
     Route::get('/rrhh/contratos', Contratos::class)->middleware('can:rrhh.contratos')->name('rrhh.contratos');

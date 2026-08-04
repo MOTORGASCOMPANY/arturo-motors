@@ -13,7 +13,7 @@ class MovimientoCaja extends Model
 
     protected $fillable = [
         'sesion_caja_id',
-        'tipo',
+        'tipo', // ingreso o egreso
         'monto',
         'concepto',
         'service_order_id',
