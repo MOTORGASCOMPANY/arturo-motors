@@ -136,28 +136,33 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <x-label for="placa" value="Placa" />
-                    <x-input id="placa" type="text" class="mt-1 block w-full" wire:model.live="placa" />
+                    <x-input id="placa" type="text" class="mt-1 block w-full" wire:model.live="placa" placeholder="Ej: ABC-123" />
                     @error('placa')
                         <span class="text-red-500 text-sm">{{ $message }}</span>
                     @enderror
                 </div>
                 <div>
                     <x-label for="marca" value="Marca" />
-                    <x-input id="marca" type="text" class="mt-1 block w-full" wire:model.live="marca" />
+                    <x-input id="marca" type="text" class="mt-1 block w-full" wire:model.live="marca" placeholder="Ej: Toyota, Hyundai" />
                     @error('marca')
                         <span class="text-red-500 text-sm">{{ $message }}</span>
                     @enderror
                 </div>
                 <div>
                     <x-label for="modelo" value="Modelo" />
-                    <x-input id="modelo" type="text" class="mt-1 block w-full" wire:model.live="modelo" />
+                    <x-input id="modelo" type="text" class="mt-1 block w-full" wire:model.live="modelo" placeholder="Ej: Corolla, Accent" />
                     @error('modelo')
                         <span class="text-red-500 text-sm">{{ $message }}</span>
                     @enderror
                 </div>
                 <div>
                     <x-label for="anio" value="Año" />
-                    <x-input id="anio" type="number" class="mt-1 block w-full" wire:model.live="anio" />
+                    <select id="anio" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" wire:model.live="anio">
+                        <option value="">Seleccione un año</option>
+                        @for($year = date('Y'); $year >= 1900; $year--)
+                            <option value="{{ $year }}">{{ $year }}</option>
+                        @endfor
+                    </select>
                     @error('anio')
                         <span class="text-red-500 text-sm">{{ $message }}</span>
                     @enderror
@@ -165,21 +170,21 @@
                 <div>
                     <x-label for="combustible" value="Combustible" />
                     <x-input id="combustible" type="text" class="mt-1 block w-full"
-                        wire:model.live="combustible" />
+                        wire:model.live="combustible" placeholder="Ej: Gasolina, Gas, Híbrido" />
                     @error('combustible')
                         <span class="text-red-500 text-sm">{{ $message }}</span>
                     @enderror
                 </div>
                 <div>
                     <x-label for="serie" value="Serie" />
-                    <x-input id="serie" type="text" class="mt-1 block w-full" wire:model.live="serie" />
+                    <x-input id="serie" type="text" class="mt-1 block w-full" wire:model.live="serie" placeholder="Ej: N° de serie del motor" />
                     @error('serie')
                         <span class="text-red-500 text-sm">{{ $message }}</span>
                     @enderror
                 </div>
                 <div>
                     <x-label for="color" value="Color" />
-                    <x-input id="color" type="text" class="mt-1 block w-full" wire:model.live="color" />
+                    <x-input id="color" type="text" class="mt-1 block w-full" wire:model.live="color" placeholder="Ej: Blanco, Negro, Plata" />
                     @error('color')
                         <span class="text-red-500 text-sm">{{ $message }}</span>
                     @enderror
@@ -217,49 +222,54 @@
                 </div>
                 <div>
                     <x-label for="createPlaca" value="Placa" />
-                    <x-input id="createPlaca" type="text" class="mt-1 block w-full" wire:model.live="createPlaca" />
+                    <x-input id="createPlaca" type="text" class="mt-1 block w-full" wire:model.live="createPlaca" placeholder="Ej: ABC-123" />
                     @error('createPlaca')
                         <span class="text-red-500 text-sm">{{ $message }}</span>
                     @enderror
                 </div>
                 <div>
                     <x-label for="createMarca" value="Marca" />
-                    <x-input id="createMarca" type="text" class="mt-1 block w-full" wire:model.live="createMarca" />
+                    <x-input id="createMarca" type="text" class="mt-1 block w-full" wire:model.live="createMarca" placeholder="Ej: Toyota, Hyundai" />
                     @error('createMarca')
                         <span class="text-red-500 text-sm">{{ $message }}</span>
                     @enderror
                 </div>
                 <div>
                     <x-label for="createModelo" value="Modelo" />
-                    <x-input id="createModelo" type="text" class="mt-1 block w-full" wire:model.live="createModelo" />
+                    <x-input id="createModelo" type="text" class="mt-1 block w-full" wire:model.live="createModelo" placeholder="Ej: Corolla, Accent" />
                     @error('createModelo')
                         <span class="text-red-500 text-sm">{{ $message }}</span>
                     @enderror
                 </div>
                 <div>
                     <x-label for="createAnio" value="Año" />
-                    <x-input id="createAnio" type="number" class="mt-1 block w-full" wire:model.live="createAnio" />
+                    <select id="createAnio" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" wire:model.live="createAnio">
+                        <option value="">Seleccione un año</option>
+                        @for($year = date('Y'); $year >= 1900; $year--)
+                            <option value="{{ $year }}">{{ $year }}</option>
+                        @endfor
+                    </select>
                     @error('createAnio')
                         <span class="text-red-500 text-sm">{{ $message }}</span>
                     @enderror
                 </div>
                 <div>
                     <x-label for="createCombustible" value="Combustible" />
-                    <x-input id="createCombustible" type="text" class="mt-1 block w-full" wire:model.live="createCombustible" />
+                    <x-input id="createCombustible" type="text" class="mt-1 block w-full" wire:model.live="createCombustible" placeholder="Ej: Gasolina, Gas, Híbrido" />
                     @error('createCombustible')
                         <span class="text-red-500 text-sm">{{ $message }}</span>
                     @enderror
                 </div>
                 <div>
                     <x-label for="createSerie" value="Serie" />
-                    <x-input id="createSerie" type="text" class="mt-1 block w-full" wire:model.live="createSerie" />
+                    <x-input id="createSerie" type="text" class="mt-1 block w-full" wire:model.live="createSerie" placeholder="Ej: N° de serie del motor" />
                     @error('createSerie')
                         <span class="text-red-500 text-sm">{{ $message }}</span>
                     @enderror
                 </div>
                 <div>
                     <x-label for="createColor" value="Color" />
-                    <x-input id="createColor" type="text" class="mt-1 block w-full" wire:model.live="createColor" />
+                    <x-input id="createColor" type="text" class="mt-1 block w-full" wire:model.live="createColor" placeholder="Ej: Blanco, Negro, Plata" />
                     @error('createColor')
                         <span class="text-red-500 text-sm">{{ $message }}</span>
                     @enderror
