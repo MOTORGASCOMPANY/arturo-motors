@@ -195,4 +195,84 @@
             </x-button>
         </x-slot>
     </x-dialog-modal>
+
+    <!-- Dialog Modal para crear nuevo vehículo -->
+    <x-dialog-modal wire:model="openCreate" wire:loading.attr="disabled" wire:target="openCreate">
+        <x-slot name="title">
+            Agregar Nuevo Vehículo
+        </x-slot>
+        <x-slot name="content">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="md:col-span-2">
+                    <x-label for="cliente_id" value="Cliente" />
+                    <select id="cliente_id" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" wire:model.live="cliente_id">
+                        <option value="">Seleccione un cliente</option>
+                        @foreach($clientes as $cliente)
+                            <option value="{{ $cliente->id }}">{{ $cliente->nombre }} {{ $cliente->apellido }} - {{ $cliente->documento }}</option>
+                        @endforeach
+                    </select>
+                    @error('cliente_id')
+                        <span class="text-red-500 text-sm">{{ $message }}</span>
+                    @enderror
+                </div>
+                <div>
+                    <x-label for="createPlaca" value="Placa" />
+                    <x-input id="createPlaca" type="text" class="mt-1 block w-full" wire:model.live="createPlaca" />
+                    @error('createPlaca')
+                        <span class="text-red-500 text-sm">{{ $message }}</span>
+                    @enderror
+                </div>
+                <div>
+                    <x-label for="createMarca" value="Marca" />
+                    <x-input id="createMarca" type="text" class="mt-1 block w-full" wire:model.live="createMarca" />
+                    @error('createMarca')
+                        <span class="text-red-500 text-sm">{{ $message }}</span>
+                    @enderror
+                </div>
+                <div>
+                    <x-label for="createModelo" value="Modelo" />
+                    <x-input id="createModelo" type="text" class="mt-1 block w-full" wire:model.live="createModelo" />
+                    @error('createModelo')
+                        <span class="text-red-500 text-sm">{{ $message }}</span>
+                    @enderror
+                </div>
+                <div>
+                    <x-label for="createAnio" value="Año" />
+                    <x-input id="createAnio" type="number" class="mt-1 block w-full" wire:model.live="createAnio" />
+                    @error('createAnio')
+                        <span class="text-red-500 text-sm">{{ $message }}</span>
+                    @enderror
+                </div>
+                <div>
+                    <x-label for="createCombustible" value="Combustible" />
+                    <x-input id="createCombustible" type="text" class="mt-1 block w-full" wire:model.live="createCombustible" />
+                    @error('createCombustible')
+                        <span class="text-red-500 text-sm">{{ $message }}</span>
+                    @enderror
+                </div>
+                <div>
+                    <x-label for="createSerie" value="Serie" />
+                    <x-input id="createSerie" type="text" class="mt-1 block w-full" wire:model.live="createSerie" />
+                    @error('createSerie')
+                        <span class="text-red-500 text-sm">{{ $message }}</span>
+                    @enderror
+                </div>
+                <div>
+                    <x-label for="createColor" value="Color" />
+                    <x-input id="createColor" type="text" class="mt-1 block w-full" wire:model.live="createColor" />
+                    @error('createColor')
+                        <span class="text-red-500 text-sm">{{ $message }}</span>
+                    @enderror
+                </div>
+            </div>
+        </x-slot>
+        <x-slot name="footer">
+            <x-secondary-button wire:click="$set('openCreate', false)" class="mx-2">
+                Cerrar
+            </x-secondary-button>
+            <x-button wire:click="storeVehiculo" wire:loading.attr="disabled" wire:target="storeVehiculo">
+                Guardar
+            </x-button>
+        </x-slot>
+    </x-dialog-modal>
 </div>
