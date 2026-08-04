@@ -157,12 +157,7 @@
                 </div>
                 <div>
                     <x-label for="anio" value="Año" />
-                    <select id="anio" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" wire:model.live="anio">
-                        <option value="">Seleccione un año</option>
-                        @for($year = date('Y'); $year >= 1900; $year--)
-                            <option value="{{ $year }}">{{ $year }}</option>
-                        @endfor
-                    </select>
+                    <x-input id="anio" type="number" min="1900" max="2099" class="mt-1 block w-full" wire:model.live="anio" placeholder="Ej: 2024" />
                     @error('anio')
                         <span class="text-red-500 text-sm">{{ $message }}</span>
                     @enderror
@@ -243,12 +238,7 @@
                 </div>
                 <div>
                     <x-label for="createAnio" value="Año" />
-                    <select id="createAnio" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" wire:model.live="createAnio">
-                        <option value="">Seleccione un año</option>
-                        @for($year = date('Y'); $year >= 1900; $year--)
-                            <option value="{{ $year }}">{{ $year }}</option>
-                        @endfor
-                    </select>
+                    <x-input id="createAnio" type="number" min="1900" max="2099" class="mt-1 block w-full" wire:model.live="createAnio" placeholder="Ej: 2024" />
                     @error('createAnio')
                         <span class="text-red-500 text-sm">{{ $message }}</span>
                     @enderror
