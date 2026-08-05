@@ -44,25 +44,25 @@
                     <table class="min-w-full leading-normal rounded-md overflow-hidden">
                         <thead>
                             <tr>
-                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase">
-                                    ID</th>
-                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase">
+                                <th class="px-6 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase w-16">
+                                    #</th>
+                                <th class="px-6 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase">
                                     Nombre</th>
-                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase">
+                                <th class="px-6 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase">
                                     Permisos</th>
-                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase">
+                                <th class="px-6 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase">
                                     Fecha de Creación</th>
-                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-right text-xs font-semibold text-gray-600 uppercase">
+                                <th class="px-6 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase w-20">
                                     Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($roles as $item)
                                 <tr wire:key="role-{{ $item->id }}">
-                                    <td class="px-4 py-4 border-b border-gray-200 bg-white text-sm">
+                                    <td class="px-6 py-4 border-b border-gray-200 bg-white text-sm text-center font-medium text-gray-500">
                                         {{ $loop->iteration }}
                                     </td>
-                                    <td class="px-4 py-4 border-b border-gray-200 bg-white text-sm">
+                                    <td class="px-6 py-4 border-b border-gray-200 bg-white text-sm">
                                         <div class="flex items-center">
                                             <div class="flex-shrink-0 w-10 h-10">
                                                 <div class="w-full h-full rounded-full bg-indigo-100 flex items-center justify-center">
@@ -74,7 +74,7 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="px-4 py-4 border-b border-gray-200 bg-white text-sm">
+                                    <td class="px-6 py-4 border-b border-gray-200 bg-white text-sm">
                                         <div class="flex flex-wrap gap-1 items-center">
                                             @forelse ($item->permissions->take(3) as $permiso)
                                                 <span class="px-2 py-0.5 text-xs font-medium rounded bg-indigo-100 text-indigo-700">
@@ -91,19 +91,17 @@
                                             @endif
                                         </div>
                                     </td>
-                                    <td class="px-4 py-4 border-b border-gray-200 bg-white text-sm">
+                                    <td class="px-6 py-4 border-b border-gray-200 bg-white text-sm">
                                         <div class="flex flex-col">
                                             <span class="font-medium text-gray-900">{{ optional($item->created_at)->format('d/m/Y') }}</span>
                                             <span class="text-xs text-gray-500">{{ optional($item->created_at)->format('h:i A') }}</span>
                                         </div>
                                     </td>
-                                    <td class="px-4 py-4 border-b border-gray-200 bg-white text-sm text-right">
-                                        <div>
-                                            <button wire:click="editaRol({{ $item->id }})"
-                                                class="py-2 px-3 rounded-md bg-lime-500 font-bold text-white hover:bg-lime-600 transition">
-                                                <i class="fa-solid fa-pencil"></i>
-                                            </button>
-                                        </div>
+                                    <td class="px-6 py-4 border-b border-gray-200 bg-white text-sm text-center">
+                                        <button wire:click="editaRol({{ $item->id }})"
+                                            class="py-2 px-3 rounded-md bg-lime-500 font-bold text-white hover:bg-lime-600 transition">
+                                            <i class="fa-solid fa-pencil"></i>
+                                        </button>
                                     </td>
                                 </tr>
                             @endforeach
