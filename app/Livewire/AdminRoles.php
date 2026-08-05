@@ -24,6 +24,11 @@ class AdminRoles extends Component
     public $selectedPermisos = [];     // permisos seleccionados por nombre
     public $permisos = [];             // colección de permisos para el modal
 
+    // Modal ver todos los permisos
+    public $openPermisos = false;
+    public $rolPermisos = [];
+    public $rolNombre = '';
+
     protected $rules=[
         "name"=>"required",
         "selectedPermisos"=>"array|min:1",
@@ -66,6 +71,14 @@ class AdminRoles extends Component
         $this->selectedPermisos = $rol->permissions()->pluck('name')->all();
 
         $this->editando = true;
+    }
+
+    public function verPermisos($id)
+    {
+        $rol = Role::findOrFail($id);
+        $this->rolNombre = $rol->name;
+        $this->rolPermisos = $rol->permissions->pluck('name')->toArray();
+        $this->openPermisos = true;
     }
 
     public function actualizar()

@@ -75,7 +75,7 @@
                                         </div>
                                     </td>
                                     <td class="px-4 py-4 border-b border-gray-200 bg-white text-sm">
-                                        <div class="flex flex-wrap gap-1">
+                                        <div class="flex flex-wrap gap-1 items-center">
                                             @forelse ($item->permissions->take(3) as $permiso)
                                                 <span class="px-2 py-0.5 text-xs font-medium rounded bg-indigo-100 text-indigo-700">
                                                     {{ $permiso->name }}
@@ -84,9 +84,10 @@
                                                 <span class="text-gray-400 italic text-xs">Sin permisos</span>
                                             @endforelse
                                             @if($item->permissions->count() > 3)
-                                                <span class="px-2 py-0.5 text-xs font-medium rounded bg-gray-200 text-gray-600">
-                                                    +{{ $item->permissions->count() - 3 }}
-                                                </span>
+                                                <button wire:click="verPermisos({{ $item->id }})"
+                                                    class="px-2 py-0.5 text-xs font-medium rounded bg-orange-100 text-orange-700 hover:bg-orange-200 transition cursor-pointer">
+                                                    Ver todo
+                                                </button>
                                             @endif
                                         </div>
                                     </td>
@@ -160,5 +161,28 @@
 
         </x-slot>
 
+    </x-dialog-modal>
+
+    {{-- MODAL VER TODOS LOS PERMISOS --}}
+    <x-dialog-modal wire:model="openPermisos" wire:loading.attr="disabled">
+        <x-slot name="title">
+            <h1 class="text-xl font-bold"><i class="fa-solid fa-key text-white"></i> &nbsp;Permisos de {{ $rolNombre }}</h1>
+        </x-slot>
+
+        <x-slot name="content">
+            <div class="flex flex-wrap gap-2">
+                @foreach ($rolPermisos as $permiso)
+                    <span class="px-3 py-1.5 text-sm font-medium rounded bg-indigo-100 text-indigo-700">
+                        {{ $permiso }}
+                    </span>
+                @endforeach
+            </div>
+        </x-slot>
+
+        <x-slot name="footer">
+            <x-secondary-button wire:click="$set('openPermisos', false)" class="mx-2">
+                Cerrar
+            </x-secondary-button>
+        </x-slot>
     </x-dialog-modal>
 </div>
