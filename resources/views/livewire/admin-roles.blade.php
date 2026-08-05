@@ -60,7 +60,7 @@
                             @foreach ($roles as $item)
                                 <tr wire:key="role-{{ $item->id }}">
                                     <td class="px-4 py-4 border-b border-gray-200 bg-white text-sm">
-                                        {{ $item->id }}
+                                        {{ $loop->iteration }}
                                     </td>
                                     <td class="px-4 py-4 border-b border-gray-200 bg-white text-sm">
                                         <div class="flex items-center">
