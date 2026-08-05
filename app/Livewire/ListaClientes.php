@@ -65,7 +65,7 @@ class ListaClientes extends Component
                 'max:8', 
                 Rule::unique('clientes')->ignore($this->editingCliente->id)
             ],
-            'telefono' => 'required|string|digits_between:1,9',
+            'telefono' => 'required|string|digits:9',
             'email' => [
                 'required', 
                 'string', 
@@ -108,7 +108,7 @@ class ListaClientes extends Component
                 'max:8', 
                 Rule::unique('clientes', 'documento')
             ],
-            'createTelefono' => 'required|string|digits_between:1,9',
+            'createTelefono' => 'required|string|digits:9',
             'createEmail' => [
                 'required', 
                 'string', 
