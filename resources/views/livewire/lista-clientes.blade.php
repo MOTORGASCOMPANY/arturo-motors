@@ -112,37 +112,31 @@
                 <div>
                     <x-label for="nombre" value="Nombre" />
                     <x-input id="nombre" type="text" class="mt-1 block w-full" wire:model="nombre" placeholder="Ej: Juan" />
-                    <x-input-error for="nombre" class="mt-2" />
                 </div>
                 <!-- Apellido -->
                 <div>
                     <x-label for="apellido" value="Apellido" />
                     <x-input id="apellido" type="text" class="mt-1 block w-full" wire:model="apellido" placeholder="Ej: Pérez" />
-                    <x-input-error for="apellido" class="mt-2" />
                 </div>
                 <!-- Documento -->
                 <div>
                     <x-label for="documento" value="Documento (DNI)" />
                     <x-input id="documento" type="text" class="mt-1 block w-full" wire:model="documento" placeholder="Ej: 12345678" maxlength="8" />
-                    <x-input-error for="documento" class="mt-2" />
                 </div>
                 <!-- Teléfono -->
                 <div>
                     <x-label for="telefono" value="Teléfono (máx. 9 dígitos)" />
                     <x-input id="telefono" type="tel" class="mt-1 block w-full" wire:model="telefono" placeholder="Ej: 912345678" maxlength="9" />
-                    <x-input-error for="telefono" class="mt-2" />
                 </div>
                 <!-- Email -->
                 <div class="md:col-span-2">
                     <x-label for="email" value="Correo Electrónico" />
                     <x-input id="email" type="email" class="mt-1 block w-full" wire:model="email" placeholder="Ej: juan@email.com" />
-                    <x-input-error for="email" class="mt-2" />
                 </div>
                 <!-- Dirección -->
                 <div class="md:col-span-2">
                     <x-label for="direccion" value="Dirección" />
                     <x-input id="direccion" type="text" class="mt-1 block w-full" wire:model="direccion" placeholder="Ej: Av. Principal 123" />
-                    <x-input-error for="direccion" class="mt-2" />
                 </div>
             </div>
         </x-slot>
@@ -167,49 +161,31 @@
                 <div>
                     <x-label for="createNombre" value="Nombre" />
                     <x-input id="createNombre" type="text" class="mt-1 block w-full" wire:model.live="createNombre" placeholder="Ej: Juan" />
-                    @error('createNombre')
-                        <span class="text-red-500 text-sm">{{ $message }}</span>
-                    @enderror
                 </div>
                 <!-- Apellido -->
                 <div>
                     <x-label for="createApellido" value="Apellido" />
                     <x-input id="createApellido" type="text" class="mt-1 block w-full" wire:model.live="createApellido" placeholder="Ej: Pérez" />
-                    @error('createApellido')
-                        <span class="text-red-500 text-sm">{{ $message }}</span>
-                    @enderror
                 </div>
                 <!-- Documento -->
                 <div>
                     <x-label for="createDocumento" value="Documento (DNI)" />
                     <x-input id="createDocumento" type="text" class="mt-1 block w-full" wire:model.live="createDocumento" placeholder="Ej: 12345678" maxlength="8" />
-                    @error('createDocumento')
-                        <span class="text-red-500 text-sm">{{ $message }}</span>
-                    @enderror
                 </div>
                 <!-- Teléfono -->
                 <div>
                     <x-label for="createTelefono" value="Teléfono (máx. 9 dígitos)" />
                     <x-input id="createTelefono" type="tel" class="mt-1 block w-full" wire:model.live="createTelefono" placeholder="Ej: 912345678" maxlength="9" />
-                    @error('createTelefono')
-                        <span class="text-red-500 text-sm">{{ $message }}</span>
-                    @enderror
                 </div>
                 <!-- Email -->
                 <div class="md:col-span-2">
                     <x-label for="createEmail" value="Correo Electrónico" />
                     <x-input id="createEmail" type="email" class="mt-1 block w-full" wire:model.live="createEmail" placeholder="Ej: juan@email.com" />
-                    @error('createEmail')
-                        <span class="text-red-500 text-sm">{{ $message }}</span>
-                    @enderror
                 </div>
                 <!-- Dirección -->
                 <div class="md:col-span-2">
                     <x-label for="createDireccion" value="Dirección" />
                     <x-input id="createDireccion" type="text" class="mt-1 block w-full" wire:model.live="createDireccion" placeholder="Ej: Av. Principal 123" />
-                    @error('createDireccion')
-                        <span class="text-red-500 text-sm">{{ $message }}</span>
-                    @enderror
                 </div>
             </div>
         </x-slot>
