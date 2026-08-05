@@ -13,6 +13,7 @@ use App\Livewire\ListaClientes;
 use App\Livewire\ListaConversiones;
 use App\Livewire\ListaExpedientes;
 use App\Livewire\ListaVehiculos;
+use App\Livewire\ListaServicios;
 use App\Livewire\Reportes\ReporteCitas;
 use App\Livewire\RRHH\Contratos;
 use App\Livewire\RRHH\GestionarVacaciones;
@@ -87,6 +88,9 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',
 
     // Clientes
     Route::get('/lista-clientes', ListaClientes::class)->name('ListaClientes');
+
+    // Servicios
+    Route::get('/lista-servicios', ListaServicios::class)->name('ListaServicios');
 
     // Rutas de servicios
     Route::get('/ordenes/simple/crear', CrearSimple::class)->name('ordenes.simple.crear');
