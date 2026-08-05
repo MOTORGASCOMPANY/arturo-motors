@@ -92,7 +92,10 @@
                                         </div>
                                     </td>
                                     <td class="px-4 py-4 border-b border-gray-200 bg-white text-sm">
-                                        {{ optional($item->created_at)->format('d/m/Y H:i') }}
+                                        <div class="flex flex-col">
+                                            <span class="font-medium text-gray-900">{{ optional($item->created_at)->format('d/m/Y') }}</span>
+                                            <span class="text-xs text-gray-500">{{ optional($item->created_at)->format('h:i A') }}</span>
+                                        </div>
                                     </td>
                                     <td class="px-4 py-4 border-b border-gray-200 bg-white text-sm text-right">
                                         <div>
