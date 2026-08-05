@@ -7,7 +7,7 @@
                 <span class="text-xs text-gray-500">Todos los registros de clientes</span>
             </x-slot>
             <x-slot name="btnAgregar">
-                <button wire:click=""
+                <button wire:click="openCreateModal()"
                     class="bg-slate-600 px-6 py-4 rounded-md text-white font-semibold tracking-wide cursor-pointer">Agregar</button>
             </x-slot>
             <x-slot name="contenido">
@@ -33,7 +33,7 @@
                                         <div class="flex items-center">
                                             <div
                                                 class="bg-indigo-200 rounded-md w-7 h-7 flex flex-shrink-0 justify-center items-center text-indigo-900">
-                                                {{ $cli->id }}
+                                                {{ $loop->iteration }}
                                             </div>
                                         </div>
                                     </td>
@@ -104,48 +104,39 @@
     <!-- Dialog Modal para actualizar -->
     <x-dialog-modal wire:model="open" wire:loading.attr="disabled" wire:target="open">
         <x-slot name="title">
-            Editar Conversión
+            Editar Cliente
         </x-slot>
         <x-slot name="content">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!-- Nombre -->
-                <div class="">
+                <div>
                     <x-label for="nombre" value="Nombre" />
-                    <x-input id="nombre" type="text" class="mt-1 block w-full rounded-lg" wire:model="nombre" />
-                    <x-input-error for="nombre" class="mt-2" />
+                    <x-input id="nombre" type="text" class="mt-1 block w-full" wire:model="nombre" placeholder="Ej: Juan" />
                 </div>
                 <!-- Apellido -->
-                <div class="">
+                <div>
                     <x-label for="apellido" value="Apellido" />
-                    <x-input id="apellido" type="text" class="mt-1 block w-full rounded-lg" wire:model="apellido" />
-                    <x-input-error for="apellido" class="mt-2" />
+                    <x-input id="apellido" type="text" class="mt-1 block w-full" wire:model="apellido" placeholder="Ej: Pérez" />
                 </div>
                 <!-- Documento -->
-                <div class="">
-                    <x-label for="documento" value="Documento" />
-                    <x-input id="documento" type="text" class="mt-1 block w-full rounded-lg"
-                        wire:model="documento" />
-                    <x-input-error for="documento" class="mt-2" />
+                <div>
+                    <x-label for="documento" value="Documento (DNI)" />
+                    <x-input id="documento" type="text" class="mt-1 block w-full" wire:model="documento" placeholder="Ej: 12345678" maxlength="8" />
                 </div>
                 <!-- Teléfono -->
-                <div class="">
-                    <x-label for="telefono" value="Teléfono" />
-                    <x-input id="telefono" type="tel" class="mt-1 block w-full rounded-lg" wire:model="telefono" />
-                    <x-input-error for="telefono" class="mt-2" />
+                <div>
+                    <x-label for="telefono" value="Teléfono (máx. 9 dígitos)" />
+                    <x-input id="telefono" type="tel" class="mt-1 block w-full" wire:model="telefono" placeholder="Ej: 912345678" maxlength="9" />
                 </div>
                 <!-- Email -->
                 <div class="md:col-span-2">
-                    <x-label for="email" value="Email" />
-                    <x-input id="email" type="email" class="mt-1 block w-full rounded-lg"
-                        wire:model="email" />
-                    <x-input-error for="email" class="mt-2" />
+                    <x-label for="email" value="Correo Electrónico" />
+                    <x-input id="email" type="email" class="mt-1 block w-full" wire:model="email" placeholder="Ej: juan@email.com" />
                 </div>
                 <!-- Dirección -->
                 <div class="md:col-span-2">
                     <x-label for="direccion" value="Dirección" />
-                    <x-input id="direccion" type="text" class="mt-1 block w-full rounded-lg"
-                        wire:model="direccion" />
-                    <x-input-error for="direccion" class="mt-2" />
+                    <x-input id="direccion" type="text" class="mt-1 block w-full" wire:model="direccion" placeholder="Ej: Av. Principal 123" />
                 </div>
             </div>
         </x-slot>
@@ -155,6 +146,55 @@
             </x-secondary-button>
             <x-button wire:click="updateCliente" wire:loading.attr="disabled" wire:target="updateCliente">
                 Actualizar
+            </x-button>
+        </x-slot>
+    </x-dialog-modal>
+
+    <!-- Dialog Modal para crear nuevo cliente -->
+    <x-dialog-modal wire:model="openCreate" wire:loading.attr="disabled" wire:target="openCreate">
+        <x-slot name="title">
+            Agregar Nuevo Cliente
+        </x-slot>
+        <x-slot name="content">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Nombre -->
+                <div>
+                    <x-label for="createNombre" value="Nombre" />
+                    <x-input id="createNombre" type="text" class="mt-1 block w-full" wire:model.live="createNombre" placeholder="Ej: Juan" />
+                </div>
+                <!-- Apellido -->
+                <div>
+                    <x-label for="createApellido" value="Apellido" />
+                    <x-input id="createApellido" type="text" class="mt-1 block w-full" wire:model.live="createApellido" placeholder="Ej: Pérez" />
+                </div>
+                <!-- Documento -->
+                <div>
+                    <x-label for="createDocumento" value="Documento (DNI)" />
+                    <x-input id="createDocumento" type="text" class="mt-1 block w-full" wire:model.live="createDocumento" placeholder="Ej: 12345678" maxlength="8" />
+                </div>
+                <!-- Teléfono -->
+                <div>
+                    <x-label for="createTelefono" value="Teléfono (máx. 9 dígitos)" />
+                    <x-input id="createTelefono" type="tel" class="mt-1 block w-full" wire:model.live="createTelefono" placeholder="Ej: 912345678" maxlength="9" />
+                </div>
+                <!-- Email -->
+                <div class="md:col-span-2">
+                    <x-label for="createEmail" value="Correo Electrónico" />
+                    <x-input id="createEmail" type="email" class="mt-1 block w-full" wire:model.live="createEmail" placeholder="Ej: juan@email.com" />
+                </div>
+                <!-- Dirección -->
+                <div class="md:col-span-2">
+                    <x-label for="createDireccion" value="Dirección" />
+                    <x-input id="createDireccion" type="text" class="mt-1 block w-full" wire:model.live="createDireccion" placeholder="Ej: Av. Principal 123" />
+                </div>
+            </div>
+        </x-slot>
+        <x-slot name="footer">
+            <x-secondary-button wire:click="$set('openCreate', false)" class="mx-2">
+                Cerrar
+            </x-secondary-button>
+            <x-button wire:click="storeCliente" wire:loading.attr="disabled" wire:target="storeCliente">
+                Guardar
             </x-button>
         </x-slot>
     </x-dialog-modal>
