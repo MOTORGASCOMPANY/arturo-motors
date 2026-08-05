@@ -75,14 +75,14 @@
                                         </div>
                                     </td>
                                     <td class="px-4 py-4 border-b border-gray-200 bg-white text-sm">
-                                        @forelse ($item->permissions as $permiso)
-                                            <span
-                                                class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 mr-1 mb-1">
-                                                {{ $permiso->name }}
+                                        @php $count = $item->permissions->count(); @endphp
+                                        @if($count > 0)
+                                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                {{ $count }} permiso{{ $count > 1 ? 's' : '' }}
                                             </span>
-                                        @empty
+                                        @else
                                             <span class="text-gray-400 italic text-xs">Sin permisos</span>
-                                        @endforelse
+                                        @endif
                                     </td>
                                     <td class="px-4 py-4 border-b border-gray-200 bg-white text-sm">
                                         {{ optional($item->created_at)->format('d/m/Y H:i') }}
