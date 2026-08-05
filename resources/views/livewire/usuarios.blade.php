@@ -46,25 +46,25 @@
                     <table class="min-w-full leading-normal rounded-md overflow-hidden">
                         <thead>
                             <tr>
-                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase">
-                                    ID</th>
-                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase">
+                                <th class="px-6 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase w-16">
+                                    #</th>
+                                <th class="px-6 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase">
                                     Nombre</th>
-                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase">
+                                <th class="px-6 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase">
                                     Correo</th>
-                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase">
+                                <th class="px-6 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase">
                                     Roles</th>
-                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-right text-xs font-semibold text-gray-600 uppercase">
+                                <th class="px-6 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase w-20">
                                     Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($usuarios as $item)
                                 <tr wire:key="user-{{ $item->id }}">
-                                    <td class="px-4 py-4 border-b border-gray-200 bg-white text-sm">
+                                    <td class="px-6 py-4 border-b border-gray-200 bg-white text-sm text-center font-medium text-gray-500">
                                         {{ $loop->iteration }}
                                     </td>
-                                    <td class="px-4 py-4 border-b border-gray-200 bg-white text-sm">
+                                    <td class="px-6 py-4 border-b border-gray-200 bg-white text-sm">
                                         <div class="flex items-center">
                                             <div class="flex-shrink-0 w-10 h-10">
                                                 <img class="w-full h-full rounded-full object-cover"
@@ -75,10 +75,10 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="px-4 py-4 border-b border-gray-200 bg-white text-sm">
+                                    <td class="px-6 py-4 border-b border-gray-200 bg-white text-sm">
                                         {{ $item->email }}
                                     </td>
-                                    <td class="px-4 py-4 border-b border-gray-200 bg-white text-sm">
+                                    <td class="px-6 py-4 border-b border-gray-200 bg-white text-sm">
                                         @forelse ($item->roles as $role)
                                             <span
                                                 class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800 mr-1">
@@ -88,13 +88,11 @@
                                             <span class="text-gray-400 italic text-xs">Sin roles</span>
                                         @endforelse
                                     </td>
-                                    <td class="px-4 py-4 border-b border-gray-200 bg-white text-sm text-right">
-                                        <div>
-                                            <button wire:click="editarUsuario({{ $item->id }})"
-                                                class="py-2 px-3 rounded-md bg-lime-500 font-bold text-white hover:bg-lime-600 transition">
-                                                <i class="fa-solid fa-pencil"></i>
-                                            </button>
-                                        </div>
+                                    <td class="px-6 py-4 border-b border-gray-200 bg-white text-sm text-center">
+                                        <button wire:click="editarUsuario({{ $item->id }})"
+                                            class="py-2 px-3 rounded-md bg-lime-500 font-bold text-white hover:bg-lime-600 transition">
+                                            <i class="fa-solid fa-pencil"></i>
+                                        </button>
                                     </td>
                                 </tr>
                             @endforeach
