@@ -16,12 +16,17 @@ class ListaClientes extends Component
     public $open = false;
     public $editingCliente, $nombre, $apellido, $documento, $telefono, $email, $direccion;
 
+    // Propiedades para el modal de creación
+    public $openCreate = false;
+    public $createNombre, $createApellido, $createDocumento, $createTelefono, $createEmail, $createDireccion;
+
     public function mount()
     {
         $this->direction = 'desc';
         $this->sort = 'id';
         $this->cant = 10;
         $this->open = false;
+        $this->openCreate = false;
     }
 
     public function order($sort)
@@ -60,7 +65,7 @@ class ListaClientes extends Component
                 'max:8', 
                 Rule::unique('clientes')->ignore($this->editingCliente->id)
             ],
-            'telefono' => 'required|string|max:20',
+            'telefono' => 'required|string|digits_between:1,9',
             'email' => [
                 'required', 
                 'string', 
@@ -82,6 +87,56 @@ class ListaClientes extends Component
 
         $this->reset(['open', 'nombre', 'apellido', 'documento', 'telefono', 'email', 'direccion']);
         $this->dispatch('minAlert', titulo: "¡BUEN TRABAJO!", mensaje: "Cliente actualizado correctamente", icono: "success");
+    }
+
+    // Método para abrir el modal de creación
+    public function openCreateModal()
+    {
+        $this->resetCreateForm();
+        $this->openCreate = true;
+    }
+
+    // Método para guardar un nuevo cliente
+    public function storeCliente()
+    {
+        $this->validate([
+            'createNombre' => 'required|string|max:50',
+            'createApellido' => 'required|string|max:50',
+            'createDocumento' => [
+                'required', 
+                'string', 
+                'max:8', 
+                Rule::unique('clientes', 'documento')
+            ],
+            'createTelefono' => 'required|string|digits_between:1,9',
+            'createEmail' => [
+                'required', 
+                'string', 
+                'email', 
+                'max:50', 
+                Rule::unique('clientes', 'email')
+            ],
+            'createDireccion' => 'nullable|string|max:100',
+        ]);
+
+        Cliente::create([
+            'nombre' => $this->createNombre,
+            'apellido' => $this->createApellido,
+            'documento' => $this->createDocumento,
+            'telefono' => $this->createTelefono,
+            'email' => $this->createEmail,
+            'direccion' => $this->createDireccion,
+        ]);
+
+        $this->resetCreateForm();
+        $this->openCreate = false;
+        $this->dispatch('minAlert', titulo: "¡BUEN TRABAJO!", mensaje: "Cliente creado correctamente", icono: "success");
+    }
+
+    // Método para limpiar el formulario de creación
+    public function resetCreateForm()
+    {
+        $this->reset(['createNombre', 'createApellido', 'createDocumento', 'createTelefono', 'createEmail', 'createDireccion']);
     }
 
     public function render()

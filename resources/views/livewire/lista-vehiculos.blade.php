@@ -23,7 +23,7 @@
                                     <div class="flex items-center">
                                         <div
                                             class="bg-indigo-200 rounded-md w-7 h-7 flex flex-shrink-0 justify-center items-center text-indigo-900">
-                                            {{ $veh->id }}
+                                            {{ $loop->iteration }}
                                         </div>
                                     </div>
                                 </td>
