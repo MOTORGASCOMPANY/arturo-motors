@@ -28,7 +28,7 @@
             </div>
 
             <div class="flex rounded-md mb-4">
-                <button wire:click=""
+                <button wire:click="openCreateModal()"
                     class="bg-slate-600 px-6 py-4 rounded-md text-white font-semibold tracking-wide cursor-pointer">Agregar</button>
             </div>
 

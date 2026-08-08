@@ -19,7 +19,7 @@ class PdfController extends Controller
         $vehiculo = Vehiculo::findOrFail($id);
 
         $meses = array("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre");
-        $fechaCert = is_string($vehiculo->expediente->created_at) ? new DateTime($vehiculo->expediente->created_at) : $vehiculo->expediente->created_at;
+        $fechaCert = is_string($vehiculo->created_at) ? new DateTime($vehiculo->created_at) : $vehiculo->created_at;
         $fechaForma = $fechaCert->format('d') . ' de ' . $meses[$fechaCert->format('m') - 1] . ' del ' . $fechaCert->format('Y');
 
         $data = [

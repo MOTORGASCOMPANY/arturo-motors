@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Vehiculo;
+use App\Models\Cliente;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\Attributes\On;
@@ -11,9 +12,15 @@ class ListaVehiculos extends Component
 {
     use WithPagination;
     public $sort, $order, $cant, $search, $direction;
-    // Propiedades para el modal y el formulario de edición
+    
+    // Propiedades para el modal de edición
     public $open = false;
     public $editingVehiculo, $placa, $marca, $modelo, $anio, $combustible, $serie, $color;
+
+    // Propiedades para el modal de creación
+    public $openCreate = false;
+    public $cliente_id, $clientes = [];
+    public $createPlaca, $createMarca, $createModelo, $createAnio, $createCombustible, $createSerie, $createColor;
 
     public function mount()
     {
@@ -21,6 +28,8 @@ class ListaVehiculos extends Component
         $this->sort = 'id';
         $this->cant = 10;
         $this->open = false;
+        $this->openCreate = false;
+        $this->clientes = Cliente::all();
     }
 
     public function order($sort)
@@ -31,10 +40,10 @@ class ListaVehiculos extends Component
             $this->sort = $sort;
             $this->direction = 'asc';
         }
-        $this->resetPage(); // Resetear paginación al cambiar el orden
+        $this->resetPage();
     }
 
-    // Método para cargar los datos del vehículo y abrir el modal
+    // Método para cargar los datos del vehículo y abrir el modal de edición
     public function edit(Vehiculo $vehiculo)
     {
         $this->editingVehiculo = $vehiculo;
@@ -72,8 +81,50 @@ class ListaVehiculos extends Component
         ]);
 
         $this->reset(['open', 'placa', 'marca', 'modelo', 'anio', 'combustible', 'serie', 'color']);
-        //$this->dispatch('updated-vehiculo'); // Emite un evento si es necesario
         $this->dispatch('minAlert', titulo: "¡BUEN TRABAJO!", mensaje: "Vehiculo actualizado correctamente", icono: "success");
+    }
+
+    // Método para abrir el modal de creación
+    public function openCreateModal()
+    {
+        $this->resetCreateForm();
+        $this->openCreate = true;
+    }
+
+    // Método para guardar un nuevo vehículo
+    public function storeVehiculo()
+    {
+        $this->validate([
+            'cliente_id' => 'required|exists:clientes,id',
+            'createPlaca' => 'required|max:20|unique:vehiculos,placa',
+            'createMarca' => 'required|max:50',
+            'createModelo' => 'required|max:50',
+            'createAnio' => 'required|integer|min:1900|max:2099',
+            'createCombustible' => 'required|max:20',
+            'createSerie' => 'required|max:50',
+            'createColor' => 'required|max:50',
+        ]);
+
+        Vehiculo::create([
+            'cliente_id' => $this->cliente_id,
+            'placa' => $this->createPlaca,
+            'marca' => $this->createMarca,
+            'modelo' => $this->createModelo,
+            'anio' => $this->createAnio,
+            'combustible' => $this->createCombustible,
+            'serie' => $this->createSerie,
+            'color' => $this->createColor,
+        ]);
+
+        $this->resetCreateForm();
+        $this->openCreate = false;
+        $this->dispatch('minAlert', titulo: "¡BUEN TRABAJO!", mensaje: "Vehiculo creado correctamente", icono: "success");
+    }
+
+    // Método para limpiar el formulario de creación
+    public function resetCreateForm()
+    {
+        $this->reset(['cliente_id', 'createPlaca', 'createMarca', 'createModelo', 'createAnio', 'createCombustible', 'createSerie', 'createColor']);
     }
 
     public function render()
