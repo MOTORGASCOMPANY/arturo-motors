@@ -234,14 +234,20 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                                         aria-label="submenu">
 
                                         <li class="transition-colors duration-150">
+                                            <x-responsive-nav-link class="text-sm" href="{{ route('ordenes.listado') }}"
+                                                :active="request()->routeIs('ordenes.listado')">
+                                                Listado de ordenes                                                
+                                            </x-responsive-nav-link>
+                                        </li>
+                                        <li class="transition-colors duration-150">
                                             <x-responsive-nav-link class="text-sm" href="{{ route('ordenes.simple.crear') }}"
                                                 :active="request()->routeIs('ordenes.simple.crear')">
                                                 Crear orden de servicio
                                             </x-responsive-nav-link>
                                         </li>
                                         <li class="transition-colors duration-150">
-                                            <x-responsive-nav-link class="text-sm" href="{{ route('ordenes.simple.crear') }}"
-                                                :active="request()->routeIs('ordenes.simple.crear')">
+                                            <x-responsive-nav-link class="text-sm" href="{{ route('conversiones.crear') }}"
+                                                :active="request()->routeIs('conversiones.crear')">
                                                 Crear orden de conversión
                                             </x-responsive-nav-link>
                                         </li>

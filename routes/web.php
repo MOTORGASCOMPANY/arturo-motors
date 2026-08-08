@@ -9,6 +9,10 @@ use App\Livewire\Caja\CerrarCaja;
 use App\Livewire\Caja\DetalleSesion;
 use App\Livewire\Caja\HistorialSesiones;
 use App\Livewire\Caja\RegistrarEgreso;
+use App\Livewire\Conversiones\AsignarTecnico;
+use App\Livewire\Conversiones\Crear;
+use App\Livewire\Conversiones\Evaluar;
+use App\Livewire\Conversiones\MisAsignadas;
 use App\Livewire\CrearCitas;
 use App\Livewire\ExpedienteModal;
 use App\Livewire\GestorRepuestos;
@@ -25,6 +29,7 @@ use App\Livewire\RRHH\GestionDocumentos;
 use App\Livewire\RRHH\ListaPlanilla;
 use App\Livewire\RRHH\MisPlanillas;
 use App\Livewire\ServiceOrders\CrearSimple;
+use App\Livewire\ServiceOrders\Listado;
 use App\Livewire\SolicitudRepuestos;
 use App\Livewire\Usuarios;
 use Illuminate\Support\Facades\RateLimiter;
@@ -95,6 +100,18 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',
 
     // Rutas de servicios
     Route::get('/ordenes/simple/crear', CrearSimple::class)->name('ordenes.simple.crear');
+    
+
+    Route::get('/ordenes', Listado::class)->name('ordenes.listado');
+
+    Route::get('/conversiones/crear', Crear::class)->name('conversiones.crear'); // P1: Crear orden de conversión (Vendedor)
+    Route::get('/conversiones/asignar', AsignarTecnico::class)->name('conversiones.asignar'); // P2: Asignar técnico (Jefe de taller) — ve todas las órdenes creada
+    Route::get('/conversiones/mis-asignadas', MisAsignadas::class)->name('conversiones.mis-asignadas'); // P3: Mis conversiones asignadas (Técnico) — filtra por tecnico_id
+    Route::get('/conversiones/{ordenId}/evaluar', Evaluar::class)->name('conversiones.evaluar'); // P4: Evaluación (Técnico) — checklist + apto/no apto
+    // P5: Asignar equipos (Almacenero) — vincula items_serializados a la orden
+    // P6: Realizar conversión (Técnico) — inicia, marca instalado, finaliza
+    // P7: Entrega y cobro (Cajero) — reutiliza la lógica de cobro que ya armamos en CrearSimple
+    // PLUS: componente hijo reutilizable <livewire:selector-cliente-vehiculo>  "buscar/crear cliente y vehículo" respecto a CrearSimple
 
     // Rutas modulo de caja
     Route::get('/caja/abrir', AbrirCaja::class)->name('caja.abrir');
