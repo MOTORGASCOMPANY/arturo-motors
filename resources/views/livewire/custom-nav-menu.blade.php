@@ -479,6 +479,70 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                             </li>
                         @endcan
 
+                        {{--            OPCIONES PARA CMS LANDING PAGE                  --}}
+                        @can('opciones.cms')
+                            <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
+                                x-data="{ Open: false }">
+                                <div class="inline-flex items-center justify-between w-full transition-colors duration-150 text-gray-500 cursor-pointer"
+                                    x-on:click="Open = !Open">
+                                    <span class="inline-flex items-center space-x-6 text-sm text-white">
+                                        <i class="fa-solid fa-globe"></i>
+                                        <span class="select-none">CMS Landing</span>
+                                    </span>
+                                    <i class="fa-solid fa-caret-down ml-1 text-white w-4 h-4" x-show="!Open"></i>
+                                    <i class="fa-solid fa-caret-up ml-1 text-white w-4 h-4" x-show="Open"></i>
+                                </div>
+                                <div x-show.transition="Open" style="display:none;">
+                                    <ul x-transition:enter="transition-all ease-in-out duration-300"
+                                        x-transition:enter-start="opacity-25 max-h-0"
+                                        x-transition:enter-end="opacity-100 max-h-xl"
+                                        x-transition:leave="transition-all ease-in-out duration-300"
+                                        x-transition:leave-start="opacity-100 max-h-xl"
+                                        x-transition:leave-end="opacity-0 max-h-0"
+                                        class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
+                                        aria-label="submenu">
+
+                                        <li class="transition-colors duration-150">
+                                            <x-responsive-nav-link class="text-sm" href="{{ route('cms.contenido') }}"
+                                                :active="request()->routeIs('cms.contenido')">
+                                                Contenido
+                                            </x-responsive-nav-link>
+                                        </li>
+                                        <li class="transition-colors duration-150">
+                                            <x-responsive-nav-link class="text-sm" href="{{ route('cms.servicios') }}"
+                                                :active="request()->routeIs('cms.servicios')">
+                                                Servicios
+                                            </x-responsive-nav-link>
+                                        </li>
+                                        <li class="transition-colors duration-150">
+                                            <x-responsive-nav-link class="text-sm" href="{{ route('cms.pasos') }}"
+                                                :active="request()->routeIs('cms.pasos')">
+                                                Pasos
+                                            </x-responsive-nav-link>
+                                        </li>
+                                        <li class="transition-colors duration-150">
+                                            <x-responsive-nav-link class="text-sm" href="{{ route('cms.porque') }}"
+                                                :active="request()->routeIs('cms.porque')">
+                                                Por Qué Elegirnos
+                                            </x-responsive-nav-link>
+                                        </li>
+                                        <li class="transition-colors duration-150">
+                                            <x-responsive-nav-link class="text-sm" href="{{ route('cms.contacto') }}"
+                                                :active="request()->routeIs('cms.contacto')">
+                                                Contacto
+                                            </x-responsive-nav-link>
+                                        </li>
+                                        <li class="transition-colors duration-150">
+                                            <x-responsive-nav-link class="text-sm" href="{{ route('cms.redes') }}"
+                                                :active="request()->routeIs('cms.redes')">
+                                                Redes Sociales
+                                            </x-responsive-nav-link>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                        @endcan
+
                         {{--            OPCIONES PARA USUARIOS Y ROLES                  --}}
                         @can('opciones.usuarios')
                             <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"

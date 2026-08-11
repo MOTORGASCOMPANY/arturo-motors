@@ -23,6 +23,13 @@ use App\Livewire\RRHH\MisPlanillas;
 use App\Livewire\ServiceOrders\CrearSimple;
 use App\Livewire\SolicitudRepuestos;
 use App\Livewire\Usuarios;
+use App\Livewire\Cms\GestionarContenido;
+use App\Livewire\Cms\GestionarServicios;
+use App\Livewire\Cms\GestionarPasos;
+use App\Livewire\Cms\GestionarContacto;
+use App\Livewire\Cms\GestionarRedes;
+use App\Livewire\Cms\GestionarPorQue;
+use App\Http\Controllers\LandingController;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -36,13 +43,13 @@ use Illuminate\Support\Facades\Route;
     return redirect()->to('/login');
 });*/
 
-Route::get('/', function () {
-    return view('index');
+Route::get('/', [LandingController::class, 'index'])->name('landing');
+
+Route::get('/home', function () {
+    return redirect()->route('landing');
 });
 
-Route::get('index', function () {
-    return view('index');
-});
+Route::get('index', [LandingController::class, 'index'])->name('landing.index');
 
 Route::get('phpmyinfo', function () {
     phpinfo();
@@ -106,6 +113,14 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',
     Route::get('/Usuarios', Usuarios::class)->name('usuarios');
     Route::get('/Roles', AdminRoles::class)->name('usuarios.roles');
     Route::get('/Permisos', AdminPermisos::class)->name('usuarios.permisos');
+
+    // CMS Landing Page
+    Route::get('/admin/contenido', GestionarContenido::class)->name('cms.contenido');
+    Route::get('/admin/servicios', GestionarServicios::class)->name('cms.servicios');
+    Route::get('/admin/pasos', GestionarPasos::class)->name('cms.pasos');
+    Route::get('/admin/contacto', GestionarContacto::class)->name('cms.contacto');
+    Route::get('/admin/redes', GestionarRedes::class)->name('cms.redes');
+    Route::get('/admin/por-que', GestionarPorQue::class)->name('cms.porque');
 
     
 

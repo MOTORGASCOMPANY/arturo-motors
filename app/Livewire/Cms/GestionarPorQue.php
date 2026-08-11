@@ -1,0 +1,94 @@
+<?php
+
+namespace App\Livewire\Cms;
+
+use Livewire\Component;
+use App\Models\WhyCard;
+
+class GestionarPorQue extends Component
+{
+    public $cards = [];
+    public $editingId = null;
+    public $title = '';
+    public $description = '';
+    public $icon = '';
+    public $active = true;
+    public $showForm = false;
+
+    public function mount()
+    {
+        $this->loadCards();
+    }
+
+    public function loadCards()
+    {
+        $this->cards = WhyCard::orderBy('sort_order')->get()->toArray();
+    }
+
+    public function create()
+    {
+        $this->resetForm();
+        $this->showForm = true;
+    }
+
+    public function edit($id)
+    {
+        $card = WhyCard::findOrFail($id);
+        $this->editingId = $id;
+        $this->title = $card->title;
+        $this->description = $card->description;
+        $this->icon = $card->icon;
+        $this->active = $card->is_active;
+        $this->showForm = true;
+    }
+
+    public function save()
+    {
+        $this->validate([
+            'title' => 'required|string|max:255',
+        ]);
+
+        $data = [
+            'title' => $this->title,
+            'description' => $this->description,
+            'icon' => $this->icon,
+            'is_active' => $this->active,
+        ];
+
+        if ($this->editingId) {
+            WhyCard::findOrFail($this->editingId)->update($data);
+            session()->flash('success', 'Tarjeta actualizada');
+        } else {
+            $data['sort_order'] = WhyCard::max('sort_order') + 1;
+            WhyCard::create($data);
+            session()->flash('success', 'Tarjeta creada');
+        }
+
+        $this->resetForm();
+        $this->loadCards();
+    }
+
+    public function delete($id)
+    {
+        WhyCard::findOrFail($id)->delete();
+        $this->loadCards();
+        session()->flash('success', 'Tarjeta eliminada');
+    }
+
+    public function toggleActive($id)
+    {
+        $card = WhyCard::findOrFail($id);
+        $card->update(['is_active' => !$card->is_active]);
+        $this->loadCards();
+    }
+
+    public function resetForm()
+    {
+        $this->reset(['editingId', 'title', 'description', 'icon', 'active', 'showForm']);
+    }
+
+    public function render()
+    {
+        return view('livewire.cms.gestionar-por-que');
+    }
+}
