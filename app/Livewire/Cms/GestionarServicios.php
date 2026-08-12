@@ -18,6 +18,8 @@ class GestionarServicios extends Component
     public $active = true;
     public $showForm = false;
 
+    public $successMessage = '';
+
     public $serviceIcons = [
         'gnv' => 'fa-solid fa-gas-pump',
         'glp' => 'fa-solid fa-gas-pump',
@@ -73,6 +75,11 @@ class GestionarServicios extends Component
         $this->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'ctaLink' => 'nullable|url',
+        ], [
+            'title.required' => 'El campo Título es obligatorio',
+            'title.max' => 'El campo Título no debe exceder 255 caracteres',
+            'ctaLink.url' => 'La URL debe ser válida (ej: https://ejemplo.com)',
         ]);
 
         $featuresArray = array_filter(array_map('trim', explode("\n", $this->features)));
@@ -89,10 +96,12 @@ class GestionarServicios extends Component
 
         if ($this->editingId) {
             SiteService::findOrFail($this->editingId)->update($data);
+            $this->successMessage = 'Servicio actualizado correctamente';
             session()->flash('success', 'Servicio actualizado');
         } else {
             $data['sort_order'] = SiteService::max('sort_order') + 1;
             SiteService::create($data);
+            $this->successMessage = 'Servicio creado correctamente';
             session()->flash('success', 'Servicio creado');
         }
 
@@ -104,6 +113,7 @@ class GestionarServicios extends Component
     {
         SiteService::findOrFail($id)->delete();
         $this->loadServices();
+        $this->successMessage = 'Servicio eliminado';
         session()->flash('success', 'Servicio eliminado');
     }
 
@@ -144,6 +154,11 @@ class GestionarServicios extends Component
     public function resetForm()
     {
         $this->reset(['editingId', 'title', 'description', 'icon', 'features', 'ctaText', 'ctaLink', 'active', 'showForm']);
+    }
+
+    public function clearSuccessMessage()
+    {
+        $this->successMessage = '';
     }
 
     public function render()

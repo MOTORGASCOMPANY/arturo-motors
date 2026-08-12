@@ -122,6 +122,45 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',
     Route::get('/admin/redes', GestionarRedes::class)->name('cms.redes');
     Route::get('/admin/por-que', GestionarPorQue::class)->name('cms.porque');
 
+    // CMS Upload (bypasses Livewire to avoid iframe re-render)
+    Route::post('/admin/cms/upload', function (\Illuminate\Http\Request $request) {
+        $request->validate([
+            'file' => 'required|image|max:5120',
+            'section_id' => 'required|integer',
+        ]);
+
+        $limits = ['hero' => 5, 'about' => 2];
+        $section = \App\Models\PageSection::findOrFail($request->section_id);
+
+        if (!isset($limits[$section->key])) {
+            return response()->json(['error' => 'Esta sección no admite imágenes'], 422);
+        }
+
+        $currentCount = \App\Models\PageMedia::where('page_section_id', $section->id)->count();
+        if ($currentCount >= $limits[$section->key]) {
+            return response()->json(['error' => 'Límite de ' . $limits[$section->key] . ' imágenes alcanzado'], 422);
+        }
+
+        $path = $request->file->store('cms', 'public');
+
+        $media = \App\Models\Media::create([
+            'name' => $request->file->getClientOriginalName(),
+            'file_path' => $path,
+            'file_type' => 'image',
+            'mime_type' => $request->file->getMimeType(),
+            'file_size' => $request->file->getSize(),
+        ]);
+
+        \App\Models\PageMedia::create([
+            'page_section_id' => $section->id,
+            'media_id' => $media->id,
+            'usage' => 'gallery',
+            'sort_order' => $currentCount,
+        ]);
+
+        return response()->json(['success' => true, 'path' => $path]);
+    })->name('cms.upload-media');
+
     
 
     // PDF Routes

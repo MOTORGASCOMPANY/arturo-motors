@@ -448,5 +448,44 @@
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script src="js/main.js"></script>
+    <script>
+        (function() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('highlight') === '1' && window.location.hash) {
+                const sectionId = window.location.hash.substring(1);
+                const section = document.getElementById(sectionId);
+                if (section) {
+                    // Add highlight styles
+                    section.style.transition = 'box-shadow 0.3s ease, outline 0.3s ease';
+                    section.style.outline = '3px solid #3b82f6';
+                    section.style.outlineOffset = '-3px';
+                    section.style.boxShadow = '0 0 20px rgba(59, 130, 246, 0.5)';
+                    section.style.borderRadius = '12px';
+                    section.style.position = 'relative';
+
+                    // Add label
+                    const label = document.createElement('div');
+                    label.textContent = 'Sección modificada';
+                    label.style.cssText = 'position: absolute; top: -28px; left: 0; background: #3b82f6; color: white; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; z-index: 10; white-space: nowrap;';
+                    section.style.position = 'relative';
+                    section.prepend(label);
+
+                    // Scroll to section
+                    setTimeout(() => {
+                        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 100);
+
+                    // Remove highlight after 3 seconds
+                    setTimeout(() => {
+                        section.style.outline = '';
+                        section.style.outlineOffset = '';
+                        section.style.boxShadow = '';
+                        section.style.borderRadius = '';
+                        if (label.parentNode) label.remove();
+                    }, 3000);
+                }
+            }
+        })();
+    </script>
 </body>
 </html>

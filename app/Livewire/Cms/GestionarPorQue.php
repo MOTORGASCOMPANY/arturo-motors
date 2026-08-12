@@ -15,6 +15,8 @@ class GestionarPorQue extends Component
     public $active = true;
     public $showForm = false;
 
+    public $successMessage = '';
+
     public function mount()
     {
         $this->loadCards();
@@ -46,6 +48,9 @@ class GestionarPorQue extends Component
     {
         $this->validate([
             'title' => 'required|string|max:255',
+        ], [
+            'title.required' => 'El campo Título es obligatorio',
+            'title.max' => 'El campo Título no debe exceder 255 caracteres',
         ]);
 
         $data = [
@@ -57,10 +62,12 @@ class GestionarPorQue extends Component
 
         if ($this->editingId) {
             WhyCard::findOrFail($this->editingId)->update($data);
+            $this->successMessage = 'Tarjeta actualizada correctamente';
             session()->flash('success', 'Tarjeta actualizada');
         } else {
             $data['sort_order'] = WhyCard::max('sort_order') + 1;
             WhyCard::create($data);
+            $this->successMessage = 'Tarjeta creada correctamente';
             session()->flash('success', 'Tarjeta creada');
         }
 
@@ -72,6 +79,7 @@ class GestionarPorQue extends Component
     {
         WhyCard::findOrFail($id)->delete();
         $this->loadCards();
+        $this->successMessage = 'Tarjeta eliminada';
         session()->flash('success', 'Tarjeta eliminada');
     }
 
@@ -85,6 +93,11 @@ class GestionarPorQue extends Component
     public function resetForm()
     {
         $this->reset(['editingId', 'title', 'description', 'icon', 'active', 'showForm']);
+    }
+
+    public function clearSuccessMessage()
+    {
+        $this->successMessage = '';
     }
 
     public function render()

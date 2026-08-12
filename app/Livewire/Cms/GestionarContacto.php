@@ -16,6 +16,8 @@ class GestionarContacto extends Component
     public $active = true;
     public $showForm = false;
 
+    public $successMessage = '';
+
     public $types = [
         'address' => 'Dirección',
         'phone' => 'Teléfono',
@@ -68,6 +70,12 @@ class GestionarContacto extends Component
             'type' => 'required|in:address,phone,schedule,whatsapp,map_iframe',
             'label' => 'required|string|max:255',
             'value' => 'required|string',
+        ], [
+            'type.required' => 'El campo Tipo es obligatorio',
+            'type.in' => 'Seleccioná un tipo válido',
+            'label.required' => 'El campo Etiqueta es obligatorio',
+            'label.max' => 'El campo Etiqueta no debe exceder 255 caracteres',
+            'value.required' => 'El campo Valor es obligatorio',
         ]);
 
         $data = [
@@ -80,10 +88,12 @@ class GestionarContacto extends Component
 
         if ($this->editingId) {
             ContactInfo::findOrFail($this->editingId)->update($data);
+            $this->successMessage = 'Contacto actualizado correctamente';
             session()->flash('success', 'Contacto actualizado');
         } else {
             $data['sort_order'] = ContactInfo::max('sort_order') + 1;
             ContactInfo::create($data);
+            $this->successMessage = 'Contacto creado correctamente';
             session()->flash('success', 'Contacto creado');
         }
 
@@ -95,6 +105,7 @@ class GestionarContacto extends Component
     {
         ContactInfo::findOrFail($id)->delete();
         $this->loadContacts();
+        $this->successMessage = 'Contacto eliminado';
         session()->flash('success', 'Contacto eliminado');
     }
 
@@ -113,6 +124,11 @@ class GestionarContacto extends Component
     public function resetForm()
     {
         $this->reset(['editingId', 'type', 'label', 'value', 'icon', 'active', 'showForm']);
+    }
+
+    public function clearSuccessMessage()
+    {
+        $this->successMessage = '';
     }
 
     public function render()

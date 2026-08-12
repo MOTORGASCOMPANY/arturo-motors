@@ -16,6 +16,8 @@ class GestionarPasos extends Component
     public $active = true;
     public $showForm = false;
 
+    public $successMessage = '';
+
     public function mount()
     {
         $this->loadSteps();
@@ -50,6 +52,11 @@ class GestionarPasos extends Component
         $this->validate([
             'title' => 'required|string|max:255',
             'stepNumber' => 'required|string|max:10',
+        ], [
+            'title.required' => 'El campo Título es obligatorio',
+            'title.max' => 'El campo Título no debe exceder 255 caracteres',
+            'stepNumber.required' => 'El campo Número de paso es obligatorio',
+            'stepNumber.max' => 'El campo Número de paso no debe exceder 10 caracteres',
         ]);
 
         $data = [
@@ -62,10 +69,12 @@ class GestionarPasos extends Component
 
         if ($this->editingId) {
             ProcessStep::findOrFail($this->editingId)->update($data);
+            $this->successMessage = 'Paso actualizado correctamente';
             session()->flash('success', 'Paso actualizado');
         } else {
             $data['sort_order'] = ProcessStep::max('sort_order') + 1;
             ProcessStep::create($data);
+            $this->successMessage = 'Paso creado correctamente';
             session()->flash('success', 'Paso creado');
         }
 
@@ -77,6 +86,7 @@ class GestionarPasos extends Component
     {
         ProcessStep::findOrFail($id)->delete();
         $this->loadSteps();
+        $this->successMessage = 'Paso eliminado';
         session()->flash('success', 'Paso eliminado');
     }
 
@@ -90,6 +100,11 @@ class GestionarPasos extends Component
     public function resetForm()
     {
         $this->reset(['editingId', 'title', 'description', 'stepNumber', 'icon', 'active', 'showForm']);
+    }
+
+    public function clearSuccessMessage()
+    {
+        $this->successMessage = '';
     }
 
     public function render()

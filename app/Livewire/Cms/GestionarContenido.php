@@ -4,6 +4,7 @@ namespace App\Livewire\Cms;
 
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Livewire\Attributes\On;
 use App\Models\Page;
 use App\Models\PageSection;
 use App\Models\Media;
@@ -15,20 +16,28 @@ class GestionarContenido extends Component
 
     public $pageTitle = '';
     public $sections = [];
-    public $editingSection = null;
-    public $sectionTitle = '';
-    public $sectionSubtitle = '';
-    public $sectionDescription = '';
-    public $sectionKey = '';
-    public $sectionActive = true;
+    public $sectionData = [];
 
     public $uploadSection = null;
     public $uploadUsage = 'image';
     public $uploadFile;
 
+    public $successMessage = '';
+    public $refreshKey = '';
+    public $highlightSection = '';
+
     public function mount()
     {
         $this->loadSections();
+    }
+
+    #[On('mediaUploaded')]
+    public function refreshAfterUpload($sectionId)
+    {
+        $this->loadSections();
+        $this->refreshKey = time();
+        $section = PageSection::find($sectionId);
+        $this->highlightSection = $section ? $section->key : '';
     }
 
     public function loadSections()
@@ -66,33 +75,51 @@ class GestionarContenido extends Component
     public function editSection($id)
     {
         $section = PageSection::findOrFail($id);
-        $this->editingSection = $section->id;
-        $this->sectionTitle = $section->title;
-        $this->sectionSubtitle = $section->subtitle;
-        $this->sectionDescription = $section->description;
-        $this->sectionKey = $section->key;
-        $this->sectionActive = $section->is_active;
+        $this->sectionData[$id] = [
+            'title' => $section->title,
+            'subtitle' => $section->subtitle,
+            'description' => $section->description,
+            'is_active' => (bool) $section->is_active,
+        ];
     }
 
-    public function saveSection()
+    public function saveSection($id)
     {
-        PageSection::findOrFail($this->editingSection)->update([
-            'title' => $this->sectionTitle,
-            'subtitle' => $this->sectionSubtitle,
-            'description' => $this->sectionDescription,
-            'is_active' => $this->sectionActive,
+        $data = $this->sectionData[$id] ?? null;
+        if (!$data) return;
+
+        $this->validate([
+            "sectionData.{$id}.title" => 'required|max:255',
+        ], [
+            "sectionData.{$id}.title.required" => 'El campo Título es obligatorio',
+            "sectionData.{$id}.title.max" => 'El campo Título no debe exceder 255 caracteres',
         ]);
 
-        $this->editingSection = null;
-        $this->reset(['sectionTitle', 'sectionSubtitle', 'sectionDescription', 'sectionKey']);
+        PageSection::findOrFail($id)->update([
+            'title' => $data['title'],
+            'subtitle' => $data['subtitle'] ?? '',
+            'description' => $data['description'] ?? '',
+            'is_active' => $data['is_active'] ?? true,
+        ]);
+
+        $section = PageSection::find($id);
+        $this->highlightSection = $section ? $section->key : '';
         $this->loadSections();
+        $this->refreshKey = time();
+        $this->successMessage = 'Sección actualizada correctamente';
         session()->flash('success', 'Sección actualizada');
     }
 
     public function uploadMedia($sectionId)
     {
+        $this->dispatch('uploading');
+
         $this->validate([
             'uploadFile' => 'required|image|max:5120',
+        ], [
+            'uploadFile.required' => 'Seleccioná una imagen para subir',
+            'uploadFile.image' => 'La imagen debe ser JPG, PNG o WebP',
+            'uploadFile.max' => 'La imagen no debe exceder 5MB',
         ]);
 
         $path = $this->uploadFile->store('cms', 'public');
@@ -105,16 +132,34 @@ class GestionarContenido extends Component
             'file_size' => $this->uploadFile->getSize(),
         ]);
 
-        PageMedia::create([
+        $pageMedia = PageMedia::create([
             'page_section_id' => $sectionId,
             'media_id' => $media->id,
             'usage' => $this->uploadUsage,
             'sort_order' => 0,
         ]);
 
+        // Update local state without full reload
+        foreach ($this->sections as &$section) {
+            if ($section['id'] == $sectionId) {
+                $section['media_items'][] = [
+                    'id' => $pageMedia->id,
+                    'media' => [
+                        'file_path' => $path,
+                    ],
+                ];
+                break;
+            }
+        }
+        unset($section);
+
+        $section = PageSection::find($sectionId);
+        $this->highlightSection = $section ? $section->key : '';
         $this->reset(['uploadFile', 'uploadUsage']);
-        $this->loadSections();
+        $this->successMessage = 'Imagen subida correctamente';
         session()->flash('success', 'Imagen subida');
+
+        $this->dispatch('upload-done');
     }
 
     public function removeMedia($pageMediaId)
@@ -123,7 +168,14 @@ class GestionarContenido extends Component
         $pm->media->delete();
         $pm->delete();
         $this->loadSections();
+        $this->refreshKey = time();
+        $this->successMessage = 'Imagen eliminada';
         session()->flash('success', 'Imagen eliminada');
+    }
+
+    public function clearSuccessMessage()
+    {
+        $this->successMessage = '';
     }
 
     public function render()

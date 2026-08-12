@@ -1,7 +1,7 @@
 <?php $attributes ??= new \Illuminate\View\ComponentAttributeBag;
 
 $__newAttributes = [];
-$__propNames = \Illuminate\View\ComponentAttributeBag::extractPropNames((['section']));
+$__propNames = \Illuminate\View\ComponentAttributeBag::extractPropNames((['section', 'refreshKey' => '', 'highlight' => false]));
 
 foreach ($attributes->all() as $__key => $__value) {
     if (in_array($__key, $__propNames)) {
@@ -16,7 +16,7 @@ $attributes = new \Illuminate\View\ComponentAttributeBag($__newAttributes);
 unset($__propNames);
 unset($__newAttributes);
 
-foreach (array_filter((['section']), 'is_string', ARRAY_FILTER_USE_KEY) as $__key => $__value) {
+foreach (array_filter((['section', 'refreshKey' => '', 'highlight' => false]), 'is_string', ARRAY_FILTER_USE_KEY) as $__key => $__value) {
     $$__key = $$__key ?? $__value;
 }
 
@@ -28,11 +28,34 @@ foreach ($attributes->all() as $__key => $__value) {
 
 unset($__defined_vars, $__key, $__value); ?>
 
+<?php
+    $anchorMap = [
+        'hero' => 'inicio',
+        'about' => 'nosotros',
+        'services' => 'servicios',
+        'why' => 'proceso',
+        'process' => 'proceso',
+        'contact' => 'contacto',
+    ];
+    $anchor = $anchorMap[$section['key']] ?? 'contacto';
+    $baseUrl = url('/');
+    $params = [];
+    if ($refreshKey) {
+        $params[] = "v={$refreshKey}";
+    }
+    if ($highlight) {
+        $params[] = 'highlight=1';
+    }
+    $queryString = $params ? '?' . implode('&', $params) : '';
+    $iframeUrl = "{$baseUrl}{$queryString}#{$anchor}";
+?>
 
-<div class="rounded-xl overflow-hidden border border-gray-200 bg-white relative" style="height: 500px;">
+
+<div wire:ignore.self class="rounded-xl overflow-hidden border border-gray-200 bg-white relative" style="height: 500px;">
     <div style="width: 100%; height: 100%; overflow: hidden;">
         <iframe
-            src="<?php echo e(url('/')); ?>#<?php echo e($section['key'] === 'hero' ? 'inicio' : ($section['key'] === 'about' ? 'nosotros' : ($section['key'] === 'services' ? 'servicios' : ($section['key'] === 'why' ? 'proceso' : ($section['key'] === 'process' ? 'proceso' : 'contacto'))))); ?>"
+            wire:ignore
+            src="<?php echo e($iframeUrl); ?>"
             class="border-0"
             style="width: 200%; height: 200%; transform: scale(0.5); transform-origin: top left; pointer-events: none;"
             loading="lazy"

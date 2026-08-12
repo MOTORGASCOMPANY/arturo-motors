@@ -4,6 +4,7 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 -->
 <div>
     <style>
+        [x-cloak] { display: none !important; }
         ul.breadcrumb li+li::before {
             content: "";
             padding-left: 8px;
@@ -204,7 +205,7 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                         
                         <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('opciones.servicios')): ?>
                             <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
-                                x-data="{ Open: false }">
+                                x-data="{ Open: false }" wire:ignore>
                                 <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
                                     x-on:click="Open = !Open">
                                     <span class="inline-flex items-center space-x-6  text-sm text-white ">
@@ -214,14 +215,13 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                                     <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
                                     <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
                                 </div>
-                                <div x-show.transition="Open" style="display:none;">
-                                    <ul x-transition:enter="transition-all ease-in-out duration-300"
-                                        x-transition:enter-start="opacity-25 max-h-0"
-                                        x-transition:enter-end="opacity-100 max-h-xl"
-                                        x-transition:leave="transition-all ease-in-out duration-300"
-                                        x-transition:leave-start="opacity-100 max-h-xl"
-                                        x-transition:leave-end="opacity-0 max-h-0"
-                                        class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
+                                <div x-show="Open" x-cloak x-transition:enter="transition-all ease-in-out duration-300"
+                                    x-transition:enter-start="opacity-0 max-h-0"
+                                    x-transition:enter-end="opacity-100 max-h-xl"
+                                    x-transition:leave="transition-all ease-in-out duration-300"
+                                    x-transition:leave-start="opacity-100 max-h-xl"
+                                    x-transition:leave-end="opacity-0 max-h-0">
+                                    <ul class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
                                         aria-label="submenu">
 
                                         <li class="transition-colors duration-150">
@@ -255,7 +255,7 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                         
                         <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('opciones.conversiones')): ?>
                             <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
-                                x-data="{ Open: false }">
+                                x-data="{ Open: false }" wire:ignore>
                                 <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
                                     x-on:click="Open = !Open">
                                     <span class="inline-flex items-center space-x-6  text-sm text-white ">
@@ -265,14 +265,13 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                                     <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
                                     <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
                                 </div>
-                                <div x-show.transition="Open" style="display:none;">
-                                    <ul x-transition:enter="transition-all ease-in-out duration-300"
-                                        x-transition:enter-start="opacity-25 max-h-0"
-                                        x-transition:enter-end="opacity-100 max-h-xl"
-                                        x-transition:leave="transition-all ease-in-out duration-300"
-                                        x-transition:leave-start="opacity-100 max-h-xl"
-                                        x-transition:leave-end="opacity-0 max-h-0"
-                                        class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
+                                <div x-show="Open" x-cloak x-transition:enter="transition-all ease-in-out duration-300"
+                                    x-transition:enter-start="opacity-0 max-h-0"
+                                    x-transition:enter-end="opacity-100 max-h-xl"
+                                    x-transition:leave="transition-all ease-in-out duration-300"
+                                    x-transition:leave-start="opacity-100 max-h-xl"
+                                    x-transition:leave-end="opacity-0 max-h-0">
+                                    <ul class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
                                         aria-label="submenu">
 
                                         <li class="transition-colors duration-150">
@@ -306,7 +305,7 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                         
                         <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('opciones.expedientes')): ?>
                             <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
-                                x-data="{ Open: false }">
+                                x-data="{ Open: false }" wire:ignore>
                                 <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
                                     x-on:click="Open = !Open">
                                     <span class="inline-flex items-center space-x-6  text-sm text-white ">
@@ -316,14 +315,13 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                                     <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
                                     <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
                                 </div>
-                                <div x-show.transition="Open" style="display:none;">
-                                    <ul x-transition:enter="transition-all ease-in-out duration-300"
-                                        x-transition:enter-start="opacity-25 max-h-0"
-                                        x-transition:enter-end="opacity-100 max-h-xl"
-                                        x-transition:leave="transition-all ease-in-out duration-300"
-                                        x-transition:leave-start="opacity-100 max-h-xl"
-                                        x-transition:leave-end="opacity-0 max-h-0"
-                                        class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
+                                <div x-show="Open" x-cloak x-transition:enter="transition-all ease-in-out duration-300"
+                                    x-transition:enter-start="opacity-0 max-h-0"
+                                    x-transition:enter-end="opacity-100 max-h-xl"
+                                    x-transition:leave="transition-all ease-in-out duration-300"
+                                    x-transition:leave-start="opacity-100 max-h-xl"
+                                    x-transition:leave-end="opacity-0 max-h-0">
+                                    <ul class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
                                         aria-label="submenu">
 
                                         <li class="transition-colors duration-150">
@@ -357,7 +355,7 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                         
                         <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('opciones.egresos')): ?>
                             <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
-                                x-data="{ Open: false }">
+                                x-data="{ Open: false }" wire:ignore>
                                 <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
                                     x-on:click="Open = !Open">
                                     <span class="inline-flex items-center space-x-6  text-sm text-white ">
@@ -367,14 +365,13 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                                     <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
                                     <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
                                 </div>
-                                <div x-show.transition="Open" style="display:none;">
-                                    <ul x-transition:enter="transition-all ease-in-out duration-300"
-                                        x-transition:enter-start="opacity-25 max-h-0"
-                                        x-transition:enter-end="opacity-100 max-h-xl"
-                                        x-transition:leave="transition-all ease-in-out duration-300"
-                                        x-transition:leave-start="opacity-100 max-h-xl"
-                                        x-transition:leave-end="opacity-0 max-h-0"
-                                        class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
+                                <div x-show="Open" x-cloak x-transition:enter="transition-all ease-in-out duration-300"
+                                    x-transition:enter-start="opacity-0 max-h-0"
+                                    x-transition:enter-end="opacity-100 max-h-xl"
+                                    x-transition:leave="transition-all ease-in-out duration-300"
+                                    x-transition:leave-start="opacity-100 max-h-xl"
+                                    x-transition:leave-end="opacity-0 max-h-0">
+                                    <ul class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
                                         aria-label="submenu">
 
                                         <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
@@ -411,7 +408,7 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                         
                         <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('opciones.almacen')): ?>
                             <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
-                                x-data="{ Open: false }">
+                                x-data="{ Open: false }" wire:ignore>
                                 <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
                                     x-on:click="Open = !Open">
                                     <span class="inline-flex items-center space-x-6  text-sm text-white ">
@@ -421,14 +418,13 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                                     <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
                                     <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
                                 </div>
-                                <div x-show.transition="Open" style="display:none;">
-                                    <ul x-transition:enter="transition-all ease-in-out duration-300"
-                                        x-transition:enter-start="opacity-25 max-h-0"
-                                        x-transition:enter-end="opacity-100 max-h-xl"
-                                        x-transition:leave="transition-all ease-in-out duration-300"
-                                        x-transition:leave-start="opacity-100 max-h-xl"
-                                        x-transition:leave-end="opacity-0 max-h-0"
-                                        class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
+                                <div x-show="Open" x-cloak x-transition:enter="transition-all ease-in-out duration-300"
+                                    x-transition:enter-start="opacity-0 max-h-0"
+                                    x-transition:enter-end="opacity-100 max-h-xl"
+                                    x-transition:leave="transition-all ease-in-out duration-300"
+                                    x-transition:leave-start="opacity-100 max-h-xl"
+                                    x-transition:leave-end="opacity-0 max-h-0">
+                                    <ul class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
                                         aria-label="submenu">
 
                                         <li class="transition-colors duration-150">
@@ -462,7 +458,7 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                         
                         <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('opciones.rrhh')): ?>
                             <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
-                                x-data="{ Open: false }">
+                                x-data="{ Open: false }" wire:ignore>
                                 <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
                                     x-on:click="Open = !Open">
                                     <span class="inline-flex items-center space-x-6  text-sm text-white ">
@@ -472,14 +468,13 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                                     <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
                                     <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
                                 </div>
-                                <div x-show.transition="Open" style="display:none;">
-                                    <ul x-transition:enter="transition-all ease-in-out duration-300"
-                                        x-transition:enter-start="opacity-25 max-h-0"
-                                        x-transition:enter-end="opacity-100 max-h-xl"
-                                        x-transition:leave="transition-all ease-in-out duration-300"
-                                        x-transition:leave-start="opacity-100 max-h-xl"
-                                        x-transition:leave-end="opacity-0 max-h-0"
-                                        class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
+                                <div x-show="Open" x-cloak x-transition:enter="transition-all ease-in-out duration-300"
+                                    x-transition:enter-start="opacity-0 max-h-0"
+                                    x-transition:enter-end="opacity-100 max-h-xl"
+                                    x-transition:leave="transition-all ease-in-out duration-300"
+                                    x-transition:leave-start="opacity-100 max-h-xl"
+                                    x-transition:leave-end="opacity-0 max-h-0">
+                                    <ul class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
                                         aria-label="submenu">
                                         
                                         <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('rrhh.contratos')): ?>
@@ -562,7 +557,7 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                         
                         <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('opciones.reportes')): ?>
                             <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
-                                x-data="{ Open: false }">
+                                x-data="{ Open: false }" wire:ignore>
                                 <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
                                     x-on:click="Open = !Open">
                                     <span class="inline-flex items-center space-x-6  text-sm text-white ">
@@ -572,14 +567,13 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                                     <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
                                     <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
                                 </div>
-                                <div x-show.transition="Open" style="display:none;">
-                                    <ul x-transition:enter="transition-all ease-in-out duration-300"
-                                        x-transition:enter-start="opacity-25 max-h-0"
-                                        x-transition:enter-end="opacity-100 max-h-xl"
-                                        x-transition:leave="transition-all ease-in-out duration-300"
-                                        x-transition:leave-start="opacity-100 max-h-xl"
-                                        x-transition:leave-end="opacity-0 max-h-0"
-                                        class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
+                                <div x-show="Open" x-cloak x-transition:enter="transition-all ease-in-out duration-300"
+                                    x-transition:enter-start="opacity-0 max-h-0"
+                                    x-transition:enter-end="opacity-100 max-h-xl"
+                                    x-transition:leave="transition-all ease-in-out duration-300"
+                                    x-transition:leave-start="opacity-100 max-h-xl"
+                                    x-transition:leave-end="opacity-0 max-h-0">
+                                    <ul class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
                                         aria-label="submenu">
 
                                         <li class="transition-colors duration-150">
@@ -613,7 +607,7 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                         
                         <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('opciones.vehiculos')): ?>
                             <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
-                                x-data="{ Open: false }">
+                                x-data="{ Open: false }" wire:ignore>
                                 <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
                                     x-on:click="Open = !Open">
                                     <span class="inline-flex items-center space-x-6  text-sm text-white ">
@@ -623,14 +617,13 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                                     <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
                                     <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
                                 </div>
-                                <div x-show.transition="Open" style="display:none;">
-                                    <ul x-transition:enter="transition-all ease-in-out duration-300"
-                                        x-transition:enter-start="opacity-25 max-h-0"
-                                        x-transition:enter-end="opacity-100 max-h-xl"
-                                        x-transition:leave="transition-all ease-in-out duration-300"
-                                        x-transition:leave-start="opacity-100 max-h-xl"
-                                        x-transition:leave-end="opacity-0 max-h-0"
-                                        class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
+                                <div x-show="Open" x-cloak x-transition:enter="transition-all ease-in-out duration-300"
+                                    x-transition:enter-start="opacity-0 max-h-0"
+                                    x-transition:enter-end="opacity-100 max-h-xl"
+                                    x-transition:leave="transition-all ease-in-out duration-300"
+                                    x-transition:leave-start="opacity-100 max-h-xl"
+                                    x-transition:leave-end="opacity-0 max-h-0">
+                                    <ul class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
                                         aria-label="submenu">
 
                                         <li class="transition-colors duration-150">
@@ -687,7 +680,7 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                         
                         <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('opciones.cms')): ?>
                             <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
-                                x-data="{ Open: false }">
+                                x-data="{ Open: false }" wire:ignore>
                                 <div class="inline-flex items-center justify-between w-full transition-colors duration-150 text-gray-500 cursor-pointer"
                                     x-on:click="Open = !Open">
                                     <span class="inline-flex items-center space-x-6 text-sm text-white">
@@ -697,14 +690,13 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                                     <i class="fa-solid fa-caret-down ml-1 text-white w-4 h-4" x-show="!Open"></i>
                                     <i class="fa-solid fa-caret-up ml-1 text-white w-4 h-4" x-show="Open"></i>
                                 </div>
-                                <div x-show.transition="Open" style="display:none;">
-                                    <ul x-transition:enter="transition-all ease-in-out duration-300"
-                                        x-transition:enter-start="opacity-25 max-h-0"
-                                        x-transition:enter-end="opacity-100 max-h-xl"
-                                        x-transition:leave="transition-all ease-in-out duration-300"
-                                        x-transition:leave-start="opacity-100 max-h-xl"
-                                        x-transition:leave-end="opacity-0 max-h-0"
-                                        class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
+                                <div x-show="Open" x-cloak x-transition:enter="transition-all ease-in-out duration-300"
+                                    x-transition:enter-start="opacity-0 max-h-0"
+                                    x-transition:enter-end="opacity-100 max-h-xl"
+                                    x-transition:leave="transition-all ease-in-out duration-300"
+                                    x-transition:leave-start="opacity-100 max-h-xl"
+                                    x-transition:leave-end="opacity-0 max-h-0">
+                                    <ul class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
                                         aria-label="submenu">
 
                                         <li class="transition-colors duration-150">
@@ -853,7 +845,7 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                         
                         <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('opciones.usuarios')): ?>
                             <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
-                                x-data="{ Open: false }">
+                                x-data="{ Open: false }" wire:ignore>
                                 <div class="inline-flex  items-center justify-between w-full  transition-colors duration-150 text-gray-500  cursor-pointer"
                                     x-on:click="Open = !Open">
                                     <span class="inline-flex items-center space-x-6  text-sm  text-white ">
@@ -863,14 +855,13 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                                     <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
                                     <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
                                 </div>
-                                <div x-show.transition="Open" style="display:none;">
-                                    <ul x-transition:enter="transition-all ease-in-out duration-300"
-                                        x-transition:enter-start="opacity-25 max-h-0"
-                                        x-transition:enter-end="opacity-100 max-h-xl"
-                                        x-transition:leave="transition-all ease-in-out duration-300"
-                                        x-transition:leave-start="opacity-100 max-h-xl"
-                                        x-transition:leave-end="opacity-0 max-h-0"
-                                        class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
+                                <div x-show="Open" x-cloak x-transition:enter="transition-all ease-in-out duration-300"
+                                    x-transition:enter-start="opacity-0 max-h-0"
+                                    x-transition:enter-end="opacity-100 max-h-xl"
+                                    x-transition:leave="transition-all ease-in-out duration-300"
+                                    x-transition:leave-start="opacity-100 max-h-xl"
+                                    x-transition:leave-end="opacity-0 max-h-0">
+                                    <ul class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
                                         aria-label="submenu">
 
                                         <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('usuarios')): ?>

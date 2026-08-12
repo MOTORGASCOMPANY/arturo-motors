@@ -15,6 +15,8 @@ class GestionarRedes extends Component
     public $active = true;
     public $showForm = false;
 
+    public $successMessage = '';
+
     public $platforms = [
         'facebook' => 'Facebook',
         'instagram' => 'Instagram',
@@ -71,10 +73,14 @@ class GestionarRedes extends Component
     {
         $this->validate([
             'platform' => 'required|string|max:50',
-            'url' => 'required|string|max:255',
+            'url' => 'required|url',
+        ], [
+            'platform.required' => 'El campo Plataforma es obligatorio',
+            'platform.max' => 'El campo Plataforma no debe exceder 50 caracteres',
+            'url.required' => 'El campo URL es obligatorio',
+            'url.url' => 'La URL debe ser válida (ej: https://ejemplo.com)',
         ]);
 
-        // Auto-prepend https:// if missing
         if ($this->url && !preg_match('/^https?:\/\//i', $this->url)) {
             $this->url = 'https://' . $this->url;
         }
@@ -88,10 +94,12 @@ class GestionarRedes extends Component
 
         if ($this->editingId) {
             SocialLink::findOrFail($this->editingId)->update($data);
+            $this->successMessage = 'Red social actualizada correctamente';
             session()->flash('success', 'Red actualizada');
         } else {
             $data['sort_order'] = SocialLink::max('sort_order') + 1;
             SocialLink::create($data);
+            $this->successMessage = 'Red social creada correctamente';
             session()->flash('success', 'Red creada');
         }
 
@@ -103,6 +111,7 @@ class GestionarRedes extends Component
     {
         SocialLink::findOrFail($id)->delete();
         $this->loadLinks();
+        $this->successMessage = 'Red social eliminada';
         session()->flash('success', 'Red eliminada');
     }
 
@@ -116,6 +125,11 @@ class GestionarRedes extends Component
     public function resetForm()
     {
         $this->reset(['editingId', 'platform', 'url', 'icon', 'active', 'showForm']);
+    }
+
+    public function clearSuccessMessage()
+    {
+        $this->successMessage = '';
     }
 
     public function render()

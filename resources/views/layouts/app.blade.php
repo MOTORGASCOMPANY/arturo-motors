@@ -31,6 +31,7 @@
 
         @stack('modals')
         @livewireScripts
+        @include('components.confirm-modal')
 
         <footer class="border-t border-gray-200 mt-8">
             <div class="px-8 py-4 text-xs text-slate-400 text-right max-w-[1400px] mx-auto">
