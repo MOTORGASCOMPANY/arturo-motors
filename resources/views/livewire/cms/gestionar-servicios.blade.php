@@ -1,4 +1,4 @@
-<div>
+<div class="bg-gray-50 min-h-screen">
     <style>
         @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
         @keyframes errorSlideIn { 0% { opacity: 0; transform: translateY(-20px); } 60% { transform: translateX(6px); } 80% { transform: translateX(-4px); } 100% { opacity: 1; transform: translateY(0) translateX(0); } }
@@ -6,7 +6,6 @@
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes emptyPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
         @keyframes cardEntry { from { opacity: 0; transform: translateY(20px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
-        @keyframes deleteShake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-4px); } 40% { transform: translateX(4px); } 60% { transform: translateX(-2px); } 80% { transform: translateX(2px); } }
     </style>
 
     <div class="flex justify-between items-center mb-8 pb-4 border-b border-gray-200 m-4">
@@ -22,16 +21,16 @@
     @if($successMessage)
         <div x-data="{ show: true }" x-init="setTimeout(() => { show = false; $wire.clearSuccessMessage() }, 3000)"
              x-show="show" x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-             class="bg-green-50 border border-green-200 text-green-700 px-5 py-3.5 rounded-xl mb-6 flex justify-between items-center shadow-sm" style="animation: successFlash 0.4s ease-out">
+             class="bg-blue-50 border border-blue-200 text-blue-700 px-5 py-3.5 rounded-xl mb-6 mx-4 flex justify-between items-center shadow-sm" style="animation: successFlash 0.4s ease-out">
             <span class="flex items-center gap-2 font-medium"><i class="fa-solid fa-circle-check"></i>{{ $successMessage }}</span>
-            <button @click="show = false; $wire.clearSuccessMessage()" class="text-green-500 hover:text-green-700"><i class="fa-solid fa-xmark"></i></button>
+            <button @click="show = false; $wire.clearSuccessMessage()" class="text-blue-500 hover:text-blue-700"><i class="fa-solid fa-xmark"></i></button>
         </div>
     @endif
 
     @if (session()->has('success') && !$successMessage)
-        <div class="bg-green-50 border border-green-200 text-green-700 px-5 py-3.5 rounded-xl mb-6 flex justify-between items-center shadow-sm" style="animation: successFlash 0.4s ease-out">
+        <div class="bg-blue-50 border border-blue-200 text-blue-700 px-5 py-3.5 rounded-xl mb-6 mx-4 flex justify-between items-center shadow-sm" style="animation: successFlash 0.4s ease-out">
             <span class="flex items-center gap-2 font-medium"><i class="fa-solid fa-circle-check"></i>{{ session('success') }}</span>
-            <button onclick="this.parentElement.remove()" class="text-green-500 hover:text-green-700"><i class="fa-solid fa-xmark"></i></button>
+            <button onclick="this.parentElement.remove()" class="text-blue-500 hover:text-blue-700"><i class="fa-solid fa-xmark"></i></button>
         </div>
     @endif
 
@@ -43,7 +42,7 @@
                         <div class="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 text-xl border border-blue-100">
                             <i class="{{ $service['icon'] ?? 'fa-solid fa-cog' }}"></i>
                         </div>
-                        <span class="text-xs font-semibold px-3 py-1 rounded-full {{ $service['is_active'] ? 'bg-green-50 text-green-600 border border-green-200' : 'bg-gray-50 text-gray-400 border border-gray-200' }}">
+                        <span class="text-xs font-semibold px-3 py-1 rounded-full {{ $service['is_active'] ? 'bg-blue-50 text-blue-600 border border-blue-200' : 'bg-gray-50 text-gray-400 border border-gray-200' }}">
                             {{ $service['is_active'] ? 'Activo' : 'Inactivo' }}
                         </span>
                     </div>
@@ -62,22 +61,24 @@
                 </div>
                 <div class="border-t border-gray-100 bg-gray-50/80 px-6 py-3.5 flex items-center justify-between">
                     <div class="flex gap-2">
-                        <button class="w-9 h-9 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-400 hover:text-gray-600 hover:border-gray-300 transition-all" wire:click="moveUp({{ $service['id'] }})" title="Subir">
+                        <button class="w-9 h-9 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-400 hover:text-blue-600 hover:border-blue-300 transition-all" wire:click="moveUp({{ $service['id'] }})" title="Subir">
                             <i class="fa-solid fa-arrow-up text-xs"></i>
                         </button>
-                        <button class="w-9 h-9 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-400 hover:text-gray-600 hover:border-gray-300 transition-all" wire:click="moveDown({{ $service['id'] }})" title="Bajar">
+                        <button class="w-9 h-9 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-400 hover:text-blue-600 hover:border-blue-300 transition-all" wire:click="moveDown({{ $service['id'] }})" title="Bajar">
                             <i class="fa-solid fa-arrow-down text-xs"></i>
                         </button>
                     </div>
                     <div class="flex gap-2">
-                        <button class="w-9 h-9 flex items-center justify-center rounded-lg bg-amber-50 border border-amber-200 text-amber-600 hover:bg-amber-100 transition-all" wire:click="edit({{ $service['id'] }})">
+                        <button class="w-9 h-9 flex items-center justify-center rounded-lg bg-blue-50 border border-blue-200 text-blue-600 hover:bg-blue-100 transition-all" wire:click="edit({{ $service['id'] }})" title="Editar">
                             <i class="fa-solid fa-pen text-xs"></i>
                         </button>
-                        <button class="w-9 h-9 flex items-center justify-center rounded-lg border transition-all {{ $service['is_active'] ? 'bg-gray-50 border-gray-200 text-gray-400 hover:bg-gray-100' : 'bg-green-50 border-green-200 text-green-600 hover:bg-green-100' }}" wire:click="toggleActive({{ $service['id'] }})">
+                        <button class="w-9 h-9 flex items-center justify-center rounded-lg border transition-all {{ $service['is_active'] ? 'bg-gray-50 border-gray-200 text-gray-400 hover:bg-gray-100' : 'bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100' }}" wire:click="toggleActive({{ $service['id'] }})" title="{{ $service['is_active'] ? 'Desactivar' : 'Activar' }}">
                             <i class="fa-solid fa-{{ $service['is_active'] ? 'eye-slash' : 'eye' }} text-xs"></i>
                         </button>
                         <button class="w-9 h-9 flex items-center justify-center rounded-lg bg-red-50 border border-red-200 text-red-500 hover:bg-red-100 transition-all"
-                                onclick="window.dispatchEvent(new CustomEvent('confirm-modal:show', { detail: { title: 'Eliminar servicio', message: '¿Seguro que querés eliminar este servicio? Esta acción no se puede deshacer.', action: { componentId: $wire.__instance.id, method: 'delete', params: [{{ $service['id'] }}] } } }))">
+                                wire:click="delete({{ $service['id'] }})"
+                                wire:confirm="¿Seguro que querés eliminar este servicio? Esta acción no se puede deshacer."
+                                title="Eliminar">
                             <i class="fa-solid fa-trash text-xs"></i>
                         </button>
                     </div>
@@ -130,7 +131,7 @@
                         </div>
                         <div class="md:col-span-2">
                             <label class="block text-sm font-semibold text-gray-700 mb-1.5">Features (una por línea)</label>
-                            <textarea class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" rows="3" wire:model="features" placeholder="Equipos italianas&#10;Garantía 1 año&#10;Certificación inicial"></textarea>
+                            <textarea class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" rows="3" wire:model="features" placeholder="Equipos italianos&#10;Garantía 1 año&#10;Certificación inicial"></textarea>
                         </div>
                         <div class="md:col-span-2">
                             <label class="block text-sm font-semibold text-gray-700 mb-1.5">Link del Botón (WhatsApp)</label>

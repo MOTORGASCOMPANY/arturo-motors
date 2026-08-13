@@ -2,17 +2,23 @@
 
 namespace App\Livewire\Cms;
 
-use Livewire\Component;
 use App\Models\WhyCard;
+use Livewire\Component;
 
 class GestionarPorQue extends Component
 {
     public $cards = [];
+
     public $editingId = null;
+
     public $title = '';
+
     public $description = '';
+
     public $icon = '';
+
     public $active = true;
+
     public $showForm = false;
 
     public $successMessage = '';
@@ -63,12 +69,10 @@ class GestionarPorQue extends Component
         if ($this->editingId) {
             WhyCard::findOrFail($this->editingId)->update($data);
             $this->successMessage = 'Tarjeta actualizada correctamente';
-            session()->flash('success', 'Tarjeta actualizada');
         } else {
             $data['sort_order'] = WhyCard::max('sort_order') + 1;
             WhyCard::create($data);
             $this->successMessage = 'Tarjeta creada correctamente';
-            session()->flash('success', 'Tarjeta creada');
         }
 
         $this->resetForm();
@@ -80,13 +84,12 @@ class GestionarPorQue extends Component
         WhyCard::findOrFail($id)->delete();
         $this->loadCards();
         $this->successMessage = 'Tarjeta eliminada';
-        session()->flash('success', 'Tarjeta eliminada');
     }
 
     public function toggleActive($id)
     {
         $card = WhyCard::findOrFail($id);
-        $card->update(['is_active' => !$card->is_active]);
+        $card->update(['is_active' => ! $card->is_active]);
         $this->loadCards();
     }
 

@@ -13,25 +13,34 @@ class AdminRoles extends Component
 
     // Listado
     public $sort = 'id';
+
     public $direction = 'desc';
+
     public $cant = 10;
+
     public $search = '';
 
     // Edición
     public $editando = false;
+
     public $rol = null;                // rol actual en edición
+
     public $name = '';                 // nombre editable del rol
+
     public $selectedPermisos = [];     // permisos seleccionados por nombre
+
     public $permisos = [];             // colección de permisos para el modal
 
     // Modal ver todos los permisos
     public $openPermisos = false;
+
     public $rolPermisos = [];
+
     public $rolNombre = '';
 
-    protected $rules=[
-        "name"=>"required",
-        "selectedPermisos"=>"array|min:1",
+    protected $rules = [
+        'name' => 'required',
+        'selectedPermisos' => 'array|min:1',
 
     ];
 
@@ -95,7 +104,7 @@ class AdminRoles extends Component
         $nombre = $rol->name;
 
         $this->reset(['editando', 'rol', 'name', 'selectedPermisos', 'permisos']);
-        $this->dispatch('minAlert', titulo: "¡BUEN TRABAJO!", mensaje: "Se actualizó correctamente el Rol de {$nombre}", icono: "success");
+        $this->dispatch('minAlert', titulo: '¡BUEN TRABAJO!', mensaje: "Se actualizó correctamente el Rol de {$nombre}", icono: 'success');
     }
 
     public function render()
@@ -109,5 +118,4 @@ class AdminRoles extends Component
 
         return view('livewire.admin-roles', compact('roles'));
     }
-
 }

@@ -2,24 +2,36 @@
 
 namespace App\Livewire\RRHH;
 
-use Livewire\Component;
 use App\Models\Contrato;
-use App\Models\Vacacion;
 use App\Models\VacacionAsignada;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\On;
+use Livewire\Component;
 
 class AsignarVacacion extends Component
 {
     public $abierto = false;
+
     public $asignacionId; // Si existe, estamos editando
+
     public $idContrato;
+
     public $contrato;
+
     public $vacacionMaestra;
 
     // Campos del formulario
     public $tipo = 'Vacaciones';
-    public $razon, $d_tomados, $f_inicio, $observacion, $especial = false;
+
+    public $razon;
+
+    public $d_tomados;
+
+    public $f_inicio;
+
+    public $observacion;
+
+    public $especial = false;
 
     protected function rules()
     {
@@ -29,12 +41,12 @@ class AsignarVacacion extends Component
             'd_tomados' => [
                 'required', 'integer', 'min:1',
                 function ($attribute, $value, $fail) {
-                    if (!$this->especial && $this->vacacionMaestra) {
+                    if (! $this->especial && $this->vacacionMaestra) {
                         $original = 0;
                         if ($this->asignacionId) {
                             $asig = VacacionAsignada::find($this->asignacionId);
                             // Solo recuperamos para el cálculo si el registro original descontaba saldo
-                            $original = ($asig && !$asig->especial) ? $asig->d_tomados : 0;
+                            $original = ($asig && ! $asig->especial) ? $asig->d_tomados : 0;
                         }
                         $disponibleReal = $this->vacacionMaestra->dias_restantes + $original;
 
@@ -42,7 +54,7 @@ class AsignarVacacion extends Component
                             $fail("El empleado solo tiene {$disponibleReal} días disponibles.");
                         }
                     }
-                }
+                },
             ],
             'f_inicio' => 'required|date',
             'observacion' => 'nullable|string',
@@ -76,7 +88,7 @@ class AsignarVacacion extends Component
         $this->d_tomados = $asignacion->d_tomados;
         $this->f_inicio = $asignacion->f_inicio->format('Y-m-d');
         $this->observacion = $asignacion->observacion;
-        $this->especial = (bool)$asignacion->especial;
+        $this->especial = (bool) $asignacion->especial;
 
         $this->vacacionMaestra = $asignacion->vacacion;
 
@@ -85,7 +97,7 @@ class AsignarVacacion extends Component
             $this->contrato = Contrato::with('user')->find($this->idContrato);
             $this->abierto = true;
         } else {
-            $this->dispatch('minAlert', titulo: "Error", mensaje: "No se encontró el registro maestro.", icono: "error");
+            $this->dispatch('minAlert', titulo: 'Error', mensaje: 'No se encontró el registro maestro.', icono: 'error');
         }
     }
 
@@ -102,7 +114,7 @@ class AsignarVacacion extends Component
                     $asignacion = VacacionAsignada::lockForUpdate()->find($this->asignacionId);
 
                     // 1. Revertir saldo anterior SOLO si el registro era REGULAR
-                    if (!$asignacion->getOriginal('especial')) {
+                    if (! $asignacion->getOriginal('especial')) {
                         $this->vacacionMaestra->increment('dias_restantes', $asignacion->getOriginal('d_tomados'));
                         $this->vacacionMaestra->decrement('dias_tomados', $asignacion->getOriginal('d_tomados'));
                     }
@@ -131,7 +143,7 @@ class AsignarVacacion extends Component
                 }
 
                 // 3. Aplicar nuevo saldo SOLO si el nuevo estado es REGULAR
-                if (!$this->especial) {
+                if (! $this->especial) {
                     $this->vacacionMaestra->decrement('dias_restantes', $this->d_tomados);
                     $this->vacacionMaestra->increment('dias_tomados', $this->d_tomados);
                 }
@@ -141,10 +153,10 @@ class AsignarVacacion extends Component
 
             $this->abierto = false;
             $this->dispatch('refresh-gestionar-vacaciones');
-            $this->dispatch('minAlert', titulo: "¡ÉXITO!", mensaje: "Procesado correctamente.", icono: "success");
+            $this->dispatch('minAlert', titulo: '¡ÉXITO!', mensaje: 'Procesado correctamente.', icono: 'success');
 
         } catch (\Exception $e) {
-            $this->dispatch('minAlert', titulo: "Error", mensaje: "Error: " . $e->getMessage(), icono: "error");
+            $this->dispatch('minAlert', titulo: 'Error', mensaje: 'Error: '.$e->getMessage(), icono: 'error');
         }
     }
 

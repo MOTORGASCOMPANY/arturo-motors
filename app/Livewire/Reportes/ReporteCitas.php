@@ -10,15 +10,26 @@ class ReporteCitas extends Component
 {
     use WithPagination;
 
-    public $sort = 'fecha_cita', $direction = 'desc', $cant = 10;
-    public $search, $estado, $fechaInicio, $fechaFin;
+    public $sort = 'fecha_cita';
+
+    public $direction = 'desc';
+
+    public $cant = 10;
+
+    public $search;
+
+    public $estado;
+
+    public $fechaInicio;
+
+    public $fechaFin;
 
     public function mount()
     {
         $this->estado = 'todos';
         // donde debemos inicializar fechaInicio y fechaFin
-        //$this->fechaInicio = now()->subMonth()->format('Y-m-d');
-        //$this->fechaFin = now()->format('Y-m-d');
+        // $this->fechaInicio = now()->subMonth()->format('Y-m-d');
+        // $this->fechaFin = now()->format('Y-m-d');
     }
 
     public function updating($property)

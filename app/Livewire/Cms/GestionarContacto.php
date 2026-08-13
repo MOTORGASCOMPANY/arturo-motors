@@ -2,18 +2,25 @@
 
 namespace App\Livewire\Cms;
 
-use Livewire\Component;
 use App\Models\ContactInfo;
+use Livewire\Component;
 
 class GestionarContacto extends Component
 {
     public $contacts = [];
+
     public $editingId = null;
+
     public $type = 'address';
+
     public $label = '';
+
     public $value = '';
+
     public $icon = '';
+
     public $active = true;
+
     public $showForm = false;
 
     public $successMessage = '';
@@ -91,6 +98,8 @@ class GestionarContacto extends Component
             $this->successMessage = 'Contacto actualizado correctamente';
             session()->flash('success', 'Contacto actualizado');
         } else {
+            // NOTA: si tu tabla contact_infos NO tiene columna sort_order,
+            // borrá la línea de abajo antes de usar este archivo.
             $data['sort_order'] = ContactInfo::max('sort_order') + 1;
             ContactInfo::create($data);
             $this->successMessage = 'Contacto creado correctamente';
@@ -112,7 +121,7 @@ class GestionarContacto extends Component
     public function toggleActive($id)
     {
         $contact = ContactInfo::findOrFail($id);
-        $contact->update(['is_active' => !$contact->is_active]);
+        $contact->update(['is_active' => ! $contact->is_active]);
         $this->loadContacts();
     }
 

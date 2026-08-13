@@ -2,27 +2,39 @@
 
 namespace App\Livewire;
 
+use App\Models\Repuesto;
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Models\Repuesto;
-use App\Models\ConversionDetalle;
 
 class GestorRepuestos extends Component
 {
     use WithPagination;
 
     // Propiedades del formulario
-    public $nombre, $descripcion, $precio, $stock, $repuesto_id;
+    public $nombre;
+
+    public $descripcion;
+
+    public $precio;
+
+    public $stock;
+
+    public $repuesto_id;
 
     // Propiedades para la búsqueda y paginación
     public $search = '';
+
     public $cant = 10;
+
     public $sort = 'nombre';
+
     public $direction = 'asc';
 
     // Propiedades de estado de la interfaz de usuario
     public $open_form = false;
+
     public $confirming_delete = false;
+
     public $repuesto_to_delete = null;
 
     protected $rules = [
@@ -32,13 +44,13 @@ class GestorRepuestos extends Component
         'stock' => 'required|integer|min:0',
     ];
 
-    //Resetea las propiedades del formulario.
+    // Resetea las propiedades del formulario.
     public function resetForm()
     {
         $this->reset(['nombre', 'descripcion', 'precio', 'stock', 'repuesto_id', 'open_form']);
     }
 
-    //Guarda o actualiza un repuesto.
+    // Guarda o actualiza un repuesto.
     public function save()
     {
         $this->validate();
@@ -56,13 +68,13 @@ class GestorRepuestos extends Component
         );
 
         $this->resetForm();
-        //$this->dispatch('saved');
+        // $this->dispatch('saved');
         // Determina el mensaje de éxito basándose en si se ha creado o actualizado.
-        $message = $is_new ? "¡El repuesto se ha creado con éxito!" : "¡El repuesto se ha actualizado con éxito!";        
-        $this->dispatch('minAlert', titulo: "¡BUEN TRABAJO!", mensaje: $message, icono: "success");
+        $message = $is_new ? '¡El repuesto se ha creado con éxito!' : '¡El repuesto se ha actualizado con éxito!';
+        $this->dispatch('minAlert', titulo: '¡BUEN TRABAJO!', mensaje: $message, icono: 'success');
     }
 
-    //Edita un repuesto existente.
+    // Edita un repuesto existente.
     public function edit(Repuesto $repuesto)
     {
         $this->repuesto_id = $repuesto->id;
@@ -74,30 +86,31 @@ class GestorRepuestos extends Component
         $this->open_form = true;
     }
 
-    //Confirma la eliminación de un repuesto.
+    // Confirma la eliminación de un repuesto.
     public function confirmDelete(Repuesto $repuesto)
     {
         $this->confirming_delete = true;
         $this->repuesto_to_delete = $repuesto;
     }
-    //Elimina el repuesto seleccionado.
+
+    // Elimina el repuesto seleccionado.
     public function delete()
     {
         if ($this->repuesto_to_delete) {
             $this->repuesto_to_delete->delete();
             $this->confirming_delete = false;
             $this->repuesto_to_delete = null;
-            //$this->dispatch('deleted');
-            $this->dispatch('minAlert', titulo: "¡ELIMINADO!", mensaje: "Se ha eliminado con éxito.", icono: "success");
+            // $this->dispatch('deleted');
+            $this->dispatch('minAlert', titulo: '¡ELIMINADO!', mensaje: 'Se ha eliminado con éxito.', icono: 'success');
         }
     }
 
-    //Renderiza la vista del componente.
+    // Renderiza la vista del componente.
     public function render()
     {
         // Consulta los repuestos con filtros de búsqueda y paginación
-        $repuestos = Repuesto::where('nombre', 'like', '%' . $this->search . '%')
-            ->orWhere('descripcion', 'like', '%' . $this->search . '%')
+        $repuestos = Repuesto::where('nombre', 'like', '%'.$this->search.'%')
+            ->orWhere('descripcion', 'like', '%'.$this->search.'%')
             ->orderBy($this->sort, $this->direction)
             ->paginate($this->cant);
 

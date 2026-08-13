@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\SiteService;
-use App\Models\ProcessStep;
-use App\Models\WhyCard;
 use App\Models\ContactInfo;
-use App\Models\SocialLink;
 use App\Models\PageSection;
+use App\Models\ProcessStep;
+use App\Models\SiteService;
+use App\Models\SocialLink;
+use App\Models\WhyCard;
 
 class LandingController extends Controller
 {

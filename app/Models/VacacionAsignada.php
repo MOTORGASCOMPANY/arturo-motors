@@ -18,7 +18,7 @@ class VacacionAsignada extends Model
         'd_tomados',
         'f_inicio',
         'observacion',
-        'especial'
+        'especial',
     ];
 
     // Casts para fechas y booleanos

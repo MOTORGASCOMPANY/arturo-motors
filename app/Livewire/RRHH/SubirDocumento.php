@@ -3,27 +3,31 @@
 namespace App\Livewire\RRHH;
 
 use App\Http\Controllers\PdfController;
-use Livewire\Component;
-use Livewire\WithFileUploads;
 use App\Models\DocumentoUsuario;
 use App\Models\User;
-use App\Models\TipoDocumento;
 use Illuminate\Support\Facades\Storage;
-use setasign\Fpdi\Fpdi;
 use Livewire\Attributes\On;
+use Livewire\Component;
+use Livewire\WithFileUploads;
+use setasign\Fpdi\Fpdi;
 
 class SubirDocumento extends Component
 {
     use WithFileUploads;
 
     public $mostrarModal = false;
+
     public $userId;
+
     public $tipoId;
+
     public $nombreTipo;
 
     // Campos del formulario
     public $archivo;
+
     public $fecha_emision;
+
     public $fecha_expiracion;
 
     // Añadir esta propiedad
@@ -45,7 +49,8 @@ class SubirDocumento extends Component
     {
         // LÓGICA A: CONTRATO FIRMADO DIGITALMENTE
         if ($this->nombreTipo === 'Contrato Firmado') {
-            $this->validate(['autorizaFirma' => 'accepted',], ['autorizaFirma.accepted' => 'Debes autorizar el estampado de tu firma.']);
+            $this->validate(['autorizaFirma' => 'accepted'], ['autorizaFirma.accepted' => 'Debes autorizar el estampado de tu firma.']);
+
             return $this->procesarFirmaDigital();
         }
 
@@ -57,7 +62,7 @@ class SubirDocumento extends Component
         ]);
 
         // Guardar físicamente
-        $ruta = $this->archivo->store('legajosUsuarios/' . $this->userId, 'public');
+        $ruta = $this->archivo->store('legajosUsuarios/'.$this->userId, 'public');
 
         // Guardar en BD
         DocumentoUsuario::updateOrCreate(
@@ -68,19 +73,20 @@ class SubirDocumento extends Component
                 'extension' => $this->archivo->getClientOriginalExtension(),
                 'fecha_emision' => $this->fecha_emision,
                 'fecha_expiracion' => $this->fecha_expiracion,
-                'estado' => 'Pendiente'
+                'estado' => 'Pendiente',
             ]
         );
 
-        $this->finalizarProceso("Documento cargado correctamente.");
+        $this->finalizarProceso('Documento cargado correctamente.');
     }
 
     private function procesarFirmaDigital()
     {
         $usuario = User::find($this->userId);
 
-        if (!$usuario || !$usuario->ruta_firma) {
-            $this->dispatch('minAlert', titulo: "SIN FIRMA", mensaje: "No tienes una firma registrada en tu perfil.", icono: "error");
+        if (! $usuario || ! $usuario->ruta_firma) {
+            $this->dispatch('minAlert', titulo: 'SIN FIRMA', mensaje: 'No tienes una firma registrada en tu perfil.', icono: 'error');
+
             return;
         }
 
@@ -89,7 +95,7 @@ class SubirDocumento extends Component
 
         // Instanciamos FPDI (Intelephense puede marcar rojo, pero funcionará)
         /** @var mixed $pdf */ // Al declararlo como mixed, Intelephense dejará de validar si los métodos existen
-        $pdf = new Fpdi();
+        $pdf = new Fpdi;
 
         $tmpFile = tempnam(sys_get_temp_dir(), 'pdf');
         file_put_contents($tmpFile, $pdfBaseContenido);
@@ -103,7 +109,7 @@ class SubirDocumento extends Component
                 $pdf->useTemplate($tplIdx, 0, 0, null, null, true);
 
                 if ($i === $pageCount) {
-                    $rutaFirmaFisica = storage_path('app/public/' . $usuario->ruta_firma);
+                    $rutaFirmaFisica = storage_path('app/public/'.$usuario->ruta_firma);
 
                     if (file_exists($rutaFirmaFisica)) {
                         // 1. Estampamos la imagen de la firma
@@ -121,7 +127,7 @@ class SubirDocumento extends Component
                         // Si la imagen mide aprox 15-20mm de alto, sumamos eso a posY
                         $pdf->SetXY($posX - 5, $posY + 22);
 
-                        $textoFirma = "Firmado digitalmente por: " . mb_strtoupper($usuario->name);
+                        $textoFirma = 'Firmado digitalmente por: '.mb_strtoupper($usuario->name);
                         $pdf->Cell($anchoFirma + 10, 5, utf8_decode($textoFirma), 0, 0, 'C');
                     }
                 }
@@ -129,7 +135,8 @@ class SubirDocumento extends Component
 
             $pdfFinalContenido = $pdf->Output('S');
         } catch (\Exception $e) {
-            $this->dispatch('minAlert', titulo: "ERROR", mensaje: "Error al procesar el PDF: " . $e->getMessage(), icono: "error");
+            $this->dispatch('minAlert', titulo: 'ERROR', mensaje: 'Error al procesar el PDF: '.$e->getMessage(), icono: 'error');
+
             return;
         } finally {
             if (file_exists($tmpFile)) {
@@ -137,8 +144,8 @@ class SubirDocumento extends Component
             }
         }
 
-        $nombreArchivo = 'contrato_firmado_' . time() . '.pdf';
-        $rutaDestino = 'legajosUsuarios/' . $this->userId . '/' . $nombreArchivo;
+        $nombreArchivo = 'contrato_firmado_'.time().'.pdf';
+        $rutaDestino = 'legajosUsuarios/'.$this->userId.'/'.$nombreArchivo;
 
         Storage::disk('public')->put($rutaDestino, $pdfFinalContenido);
 
@@ -153,14 +160,14 @@ class SubirDocumento extends Component
             ]
         );
 
-        $this->finalizarProceso("Contrato firmado y guardado correctamente.");
+        $this->finalizarProceso('Contrato firmado y guardado correctamente.');
     }
 
     private function finalizarProceso($mensaje)
     {
         $this->mostrarModal = false;
         $this->dispatch('refresh-legajo');
-        $this->dispatch('minAlert', titulo: "EXITO", mensaje: $mensaje, icono: "success");
+        $this->dispatch('minAlert', titulo: 'EXITO', mensaje: $mensaje, icono: 'success');
     }
 
     public function render()

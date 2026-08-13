@@ -24,7 +24,7 @@ class Media extends Model
 
     public function url()
     {
-        return asset('storage/' . $this->file_path);
+        return asset('storage/'.$this->file_path);
     }
 
     public function scopeByType($query, $type)

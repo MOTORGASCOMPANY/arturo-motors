@@ -9,8 +9,9 @@ class ListaRoles extends Component
 {
     public $roles;
 
-    public function mount(){
-        //$this->roles=Roles::all();
+    public function mount()
+    {
+        // $this->roles=Roles::all();
         // Obtiene todos los roles excepto el que se llama 'Administrador del sistema'
         $this->roles = Roles::where('name', '!=', 'Administrador del sistema')->get();
     }

@@ -2,25 +2,64 @@
 
 namespace App\Livewire;
 
-use App\Models\Vehiculo;
 use App\Models\Cliente;
+use App\Models\Vehiculo;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Livewire\Attributes\On;
 
 class ListaVehiculos extends Component
 {
     use WithPagination;
-    public $sort, $order, $cant, $search, $direction;
-    
+
+    public $sort;
+
+    public $order;
+
+    public $cant;
+
+    public $search;
+
+    public $direction;
+
     // Propiedades para el modal de edición
     public $open = false;
-    public $editingVehiculo, $placa, $marca, $modelo, $anio, $combustible, $serie, $color;
+
+    public $editingVehiculo;
+
+    public $placa;
+
+    public $marca;
+
+    public $modelo;
+
+    public $anio;
+
+    public $combustible;
+
+    public $serie;
+
+    public $color;
 
     // Propiedades para el modal de creación
     public $openCreate = false;
-    public $cliente_id, $clientes = [];
-    public $createPlaca, $createMarca, $createModelo, $createAnio, $createCombustible, $createSerie, $createColor;
+
+    public $cliente_id;
+
+    public $clientes = [];
+
+    public $createPlaca;
+
+    public $createMarca;
+
+    public $createModelo;
+
+    public $createAnio;
+
+    public $createCombustible;
+
+    public $createSerie;
+
+    public $createColor;
 
     public function mount()
     {
@@ -81,7 +120,7 @@ class ListaVehiculos extends Component
         ]);
 
         $this->reset(['open', 'placa', 'marca', 'modelo', 'anio', 'combustible', 'serie', 'color']);
-        $this->dispatch('minAlert', titulo: "¡BUEN TRABAJO!", mensaje: "Vehiculo actualizado correctamente", icono: "success");
+        $this->dispatch('minAlert', titulo: '¡BUEN TRABAJO!', mensaje: 'Vehiculo actualizado correctamente', icono: 'success');
     }
 
     // Método para abrir el modal de creación
@@ -118,7 +157,7 @@ class ListaVehiculos extends Component
 
         $this->resetCreateForm();
         $this->openCreate = false;
-        $this->dispatch('minAlert', titulo: "¡BUEN TRABAJO!", mensaje: "Vehiculo creado correctamente", icono: "success");
+        $this->dispatch('minAlert', titulo: '¡BUEN TRABAJO!', mensaje: 'Vehiculo creado correctamente', icono: 'success');
     }
 
     // Método para limpiar el formulario de creación

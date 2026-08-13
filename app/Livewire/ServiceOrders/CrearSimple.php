@@ -3,12 +3,12 @@
 namespace App\Livewire\ServiceOrders;
 
 use App\Models\Cliente;
-use App\Models\Vehiculo;
+use App\Models\Comprobante;
+use App\Models\MovimientoCaja;
 use App\Models\Service;
 use App\Models\ServiceOrder;
 use App\Models\SesionCaja;
-use App\Models\MovimientoCaja;
-use App\Models\Comprobante;
+use App\Models\Vehiculo;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
@@ -18,18 +18,28 @@ class CrearSimple extends Component
 
     // Paso 1: cliente y vehículo
     public string $buscarCliente = '';
+
     public ?int $clienteId = null;
+
     public array $clientesEncontrados = [];
+
     public ?int $vehiculoId = null;
+
     public bool $creandoVehiculoNuevo = false;
+
     public string $nuevaPlaca = '';
+
     public string $nuevaMarca = '';
+
     public string $nuevoModelo = '';
 
     // Paso 2: servicio y precio
     public ?int $serviceId = null;
+
     public $precioLista = 0;
+
     public $precioFinal = 0;
+
     public string $descuentoMotivo = '';
 
     // Paso 3: cobro
@@ -37,6 +47,7 @@ class CrearSimple extends Component
 
     // Resultado
     public ?int $ordenCreadaId = null;
+
     public ?string $folioGenerado = null;
 
     // En lugar de public function buscar(), usa este hook:
@@ -50,6 +61,7 @@ class CrearSimple extends Component
 
         if (strlen($termino) < 3) {
             $this->clientesEncontrados = [];
+
             return;
         }
 
@@ -61,17 +73,17 @@ class CrearSimple extends Component
 
     public function seleccionarCliente(int $clienteId)
     {
-        //$this->clienteId = $clienteId;
-        //$this->clientesEncontrados = [];
-        //$this->buscarCliente = Cliente::find($clienteId)->nombre;
-        //$this->vehiculoId = null;
+        // $this->clienteId = $clienteId;
+        // $this->clientesEncontrados = [];
+        // $this->buscarCliente = Cliente::find($clienteId)->nombre;
+        // $this->vehiculoId = null;
 
         $cliente = Cliente::find($clienteId);
 
         if ($cliente) {
             $this->clienteId = $cliente->id;
             // Mostramos el nombre completo en el input
-            $this->buscarCliente = trim($cliente->nombre . ' ' . $cliente->apellido);
+            $this->buscarCliente = trim($cliente->nombre.' '.$cliente->apellido);
             $this->clientesEncontrados = []; // Oculta la lista desplegable
             $this->vehiculoId = null;
         }
@@ -130,6 +142,7 @@ class CrearSimple extends Component
 
         if (bccomp($this->precioFinal, $this->precioLista, 2) !== 0 && empty($this->descuentoMotivo)) {
             $this->addError('descuentoMotivo', 'Indica el motivo del ajuste de precio.');
+
             return;
         }
 
@@ -140,8 +153,9 @@ class CrearSimple extends Component
     {
         $sesion = SesionCaja::abierta()->first();
 
-        if (!$sesion) {
+        if (! $sesion) {
             $this->addError('caja', 'No hay una caja abierta. Pide al cajero que abra caja antes de cobrar.');
+
             return;
         }
 
@@ -164,7 +178,7 @@ class CrearSimple extends Component
                 'sesion_caja_id' => $sesion->id,
                 'tipo' => 'ingreso',
                 'monto' => $this->precioFinal,
-                'concepto' => 'Cobro orden #' . $orden->id . ' - ' . $orden->service->nombre,
+                'concepto' => 'Cobro orden #'.$orden->id.' - '.$orden->service->nombre,
                 'service_order_id' => $orden->id,
                 'usuario_id' => auth()->id(),
             ]);

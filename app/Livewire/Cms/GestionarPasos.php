@@ -2,18 +2,25 @@
 
 namespace App\Livewire\Cms;
 
-use Livewire\Component;
 use App\Models\ProcessStep;
+use Livewire\Component;
 
 class GestionarPasos extends Component
 {
     public $steps = [];
+
     public $editingId = null;
+
     public $title = '';
+
     public $description = '';
+
     public $stepNumber = '';
+
     public $icon = '';
+
     public $active = true;
+
     public $showForm = false;
 
     public $successMessage = '';
@@ -69,12 +76,12 @@ class GestionarPasos extends Component
 
         if ($this->editingId) {
             ProcessStep::findOrFail($this->editingId)->update($data);
-            $this->successMessage = 'Paso actualizado correctamente';
+        
             session()->flash('success', 'Paso actualizado');
         } else {
             $data['sort_order'] = ProcessStep::max('sort_order') + 1;
             ProcessStep::create($data);
-            $this->successMessage = 'Paso creado correctamente';
+    
             session()->flash('success', 'Paso creado');
         }
 
@@ -93,7 +100,7 @@ class GestionarPasos extends Component
     public function toggleActive($id)
     {
         $step = ProcessStep::findOrFail($id);
-        $step->update(['is_active' => !$step->is_active]);
+        $step->update(['is_active' => ! $step->is_active]);
         $this->loadSteps();
     }
 

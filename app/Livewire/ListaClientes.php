@@ -4,21 +4,55 @@ namespace App\Livewire;
 
 use App\Models\Cliente;
 use Illuminate\Validation\Rule;
-use Livewire\WithPagination;
-use Livewire\Attributes\On;
+use Illuminate\Validation\ValidationException;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class ListaClientes extends Component
 {
     use WithPagination;
-    public $sort, $order, $cant, $search, $direction;
+
+    public $sort;
+
+    public $order;
+
+    public $cant;
+
+    public $search;
+
+    public $direction;
+
     // Propiedades para el modal y el formulario de edición
     public $open = false;
-    public $editingCliente, $nombre, $apellido, $documento, $telefono, $email, $direccion;
+
+    public $editingCliente;
+
+    public $nombre;
+
+    public $apellido;
+
+    public $documento;
+
+    public $telefono;
+
+    public $email;
+
+    public $direccion;
 
     // Propiedades para el modal de creación
     public $openCreate = false;
-    public $createNombre, $createApellido, $createDocumento, $createTelefono, $createEmail, $createDireccion;
+
+    public $createNombre;
+
+    public $createApellido;
+
+    public $createDocumento;
+
+    public $createTelefono;
+
+    public $createEmail;
+
+    public $createDireccion;
 
     public function mount()
     {
@@ -62,18 +96,18 @@ class ListaClientes extends Component
                     'nombre' => 'required|string|max:50',
                     'apellido' => 'required|string|max:50',
                     'documento' => [
-                        'required', 
-                        'string', 
-                        'max:8', 
-                        Rule::unique('clientes')->ignore($this->editingCliente->id)
+                        'required',
+                        'string',
+                        'max:8',
+                        Rule::unique('clientes')->ignore($this->editingCliente->id),
                     ],
                     'telefono' => 'required|string|digits:9',
                     'email' => [
-                        'required', 
-                        'string', 
-                        'email', 
-                        'max:50', 
-                        Rule::unique('clientes')->ignore($this->editingCliente->id)
+                        'required',
+                        'string',
+                        'email',
+                        'max:50',
+                        Rule::unique('clientes')->ignore($this->editingCliente->id),
                     ],
                     'direccion' => 'nullable|string|max:100',
                 ],
@@ -104,8 +138,8 @@ class ListaClientes extends Component
             ]);
 
             $this->reset(['open', 'nombre', 'apellido', 'documento', 'telefono', 'email', 'direccion']);
-            $this->dispatch('minAlert', titulo: "¡BUEN TRABAJO!", mensaje: "Cliente actualizado correctamente", icono: "success");
-        } catch (\Illuminate\Validation\ValidationException $e) {
+            $this->dispatch('minAlert', titulo: '¡BUEN TRABAJO!', mensaje: 'Cliente actualizado correctamente', icono: 'success');
+        } catch (ValidationException $e) {
             $errores = $e->errors();
             $campos = [
                 'nombre' => 'Nombre',
@@ -118,9 +152,9 @@ class ListaClientes extends Component
             $lista = [];
             foreach ($errores as $campo => $mensajes) {
                 $nombre = $campos[$campo] ?? $campo;
-                $lista[] = "- " . $nombre . ": " . $mensajes[0];
+                $lista[] = '- '.$nombre.': '.$mensajes[0];
             }
-            $this->dispatch('minAlert', titulo: "Error de validación", mensaje: "Corrija los siguientes campos:\n" . implode("\n", $lista), icono: "error");
+            $this->dispatch('minAlert', titulo: 'Error de validación', mensaje: "Corrija los siguientes campos:\n".implode("\n", $lista), icono: 'error');
         }
     }
 
@@ -140,18 +174,18 @@ class ListaClientes extends Component
                     'createNombre' => 'required|string|max:50',
                     'createApellido' => 'required|string|max:50',
                     'createDocumento' => [
-                        'required', 
-                        'string', 
-                        'max:8', 
-                        Rule::unique('clientes', 'documento')
+                        'required',
+                        'string',
+                        'max:8',
+                        Rule::unique('clientes', 'documento'),
                     ],
                     'createTelefono' => 'required|string|digits:9',
                     'createEmail' => [
-                        'required', 
-                        'string', 
-                        'email', 
-                        'max:50', 
-                        Rule::unique('clientes', 'email')
+                        'required',
+                        'string',
+                        'email',
+                        'max:50',
+                        Rule::unique('clientes', 'email'),
                     ],
                     'createDireccion' => 'nullable|string|max:100',
                 ],
@@ -183,8 +217,8 @@ class ListaClientes extends Component
 
             $this->resetCreateForm();
             $this->openCreate = false;
-            $this->dispatch('minAlert', titulo: "¡BUEN TRABAJO!", mensaje: "Cliente creado correctamente", icono: "success");
-        } catch (\Illuminate\Validation\ValidationException $e) {
+            $this->dispatch('minAlert', titulo: '¡BUEN TRABAJO!', mensaje: 'Cliente creado correctamente', icono: 'success');
+        } catch (ValidationException $e) {
             $errores = $e->errors();
             $campos = [
                 'createNombre' => 'Nombre',
@@ -197,9 +231,9 @@ class ListaClientes extends Component
             $lista = [];
             foreach ($errores as $campo => $mensajes) {
                 $nombre = $campos[$campo] ?? $campo;
-                $lista[] = "- " . $nombre . ": " . $mensajes[0];
+                $lista[] = '- '.$nombre.': '.$mensajes[0];
             }
-            $this->dispatch('minAlert', titulo: "Error de validación", mensaje: "Corrija los siguientes campos:\n" . implode("\n", $lista), icono: "error");
+            $this->dispatch('minAlert', titulo: 'Error de validación', mensaje: "Corrija los siguientes campos:\n".implode("\n", $lista), icono: 'error');
         }
     }
 
@@ -216,7 +250,6 @@ class ListaClientes extends Component
             ->ordenar($this->sort, $this->direction)
             ->paginate($this->cant);
 
-            return view('livewire.lista-clientes', compact('clientes'));
+        return view('livewire.lista-clientes', compact('clientes'));
     }
-
 }

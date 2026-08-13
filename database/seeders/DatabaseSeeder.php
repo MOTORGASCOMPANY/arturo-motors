@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);*/
-    
+
         // Crea el usuario solo si no existe
         User::firstOrCreate(
             ['email' => 'test@example.com'],

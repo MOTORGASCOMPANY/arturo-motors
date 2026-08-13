@@ -2,29 +2,69 @@
 
 namespace App\Livewire;
 
-use Livewire\Component;
 use App\Models\Expediente;
 use Livewire\Attributes\On;
+use Livewire\Component;
 
 class ExpedienteModal extends Component
 {
     public $open = false; // controlar visibilidad del modal
+
     public $expediente;
 
     // Propiedades para los campos del formulario
-    public $instalacion, $cambio_tanque, $revision, $certificacion, $servicio;
-    public $cliente, $dni;
-    public $telefono_fijo, $placa_actual, $marca, $modelo, $anio;
-    public $telefono_movil, $placa_anterior, $motor, $color, $combustible;
-    public $inyectado, $carburado, $monopunto, $motor_tipo, $cil3, $kilometraje;
+    public $instalacion;
 
+    public $cambio_tanque;
+
+    public $revision;
+
+    public $certificacion;
+
+    public $servicio;
+
+    public $cliente;
+
+    public $dni;
+
+    public $telefono_fijo;
+
+    public $placa_actual;
+
+    public $marca;
+
+    public $modelo;
+
+    public $anio;
+
+    public $telefono_movil;
+
+    public $placa_anterior;
+
+    public $motor;
+
+    public $color;
+
+    public $combustible;
+
+    public $inyectado;
+
+    public $carburado;
+
+    public $monopunto;
+
+    public $motor_tipo;
+
+    public $cil3;
+
+    public $kilometraje;
 
     /**
      * Listener para abrir el modal y recibir el expediente.
      * #[On] le dice a Livewire que este método debe ejecutarse
      * cuando se emite un evento con el nombre 'open-expediente-modal'.
      *
-     * @param Expediente $expediente La instancia del modelo Expediente.
+     * @param  Expediente  $expediente  La instancia del modelo Expediente.
      * @return void
      */
     #[On('open-expediente-modal')]
@@ -36,7 +76,7 @@ class ExpedienteModal extends Component
 
         // Rellenar las propiedades del formulario con los datos del expediente
         if ($this->expediente) {
-            $this->cliente = $this->expediente->cliente->nombre . ' ' . $this->expediente->cliente->apellido;
+            $this->cliente = $this->expediente->cliente->nombre.' '.$this->expediente->cliente->apellido;
             $this->dni = $this->expediente->cliente->dni;
             $this->telefono_fijo = $this->expediente->cliente->telefono_fijo;
             $this->telefono_movil = $this->expediente->cliente->telefono_movil;
@@ -51,7 +91,6 @@ class ExpedienteModal extends Component
             $this->kilometraje = $this->expediente->vehiculo->kilometraje;
         }
     }
-
 
     public function guardar() {}
 

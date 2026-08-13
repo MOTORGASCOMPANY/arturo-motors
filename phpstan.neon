@@ -1,0 +1,38 @@
+parameters:
+    paths:
+        - app
+        - routes
+    level: 5
+    ignoreErrors:
+        - '#Call to an undefined static method#'
+        - '#Call to an undefined method#'
+        - '#Undefined variable: \$this#'
+        - '#Method .* should return .* but returns .*#'
+        - '#Trait .* is used zero times and is not analysed#'
+        - '#Access to an undefined property#'
+    excludePaths:
+        analyseAndScan:
+            - app/Http/Controllers/PdfController.php
+            - app/Livewire/CrearCitas.php
+            - app/Livewire/ListaCitas.php
+            - app/Livewire/ListaExpedientes.php
+            - app/Livewire/ListaClientes.php
+            - app/Livewire/GestorRepuestos.php
+            - app/Livewire/ExpedienteModal.php
+            - app/Livewire/ListaVehiculos.php
+            - app/Livewire/ListaServicios.php
+            - app/Livewire/ListaConversiones.php
+            - app/Livewire/Usuarios.php
+            - app/Livewire/ServiceOrders/CrearSimple.php
+            - app/Livewire/SolicitudRepuestos.php
+            - app/Livewire/AdminPermisos.php
+            - app/Livewire/AdminRoles.php
+            - app/Livewire/Inicio.php
+            - app/Livewire/DashboardCards.php
+            - app/Livewire/DashboardCharts.php
+            - app/Livewire/DashboardTables.php
+            - app/Livewire/Reportes/ReporteCitas.php
+            - app/Livewire/RRHH/*.php
+            - app/Livewire/Profile/UpdateSignatureForm.php
+            - app/Livewire/Cms/*.php
+            - app/Livewire/Components/*.php

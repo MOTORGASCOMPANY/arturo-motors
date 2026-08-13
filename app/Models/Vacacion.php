@@ -16,7 +16,7 @@ class Vacacion extends Model
         'idContrato',
         'dias_ganados',
         'dias_tomados',
-        'dias_restantes'
+        'dias_restantes',
     ];
 
     // Relación inversa: Una vacación pertenece a un contrato

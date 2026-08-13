@@ -2,17 +2,23 @@
 
 namespace App\Livewire\Cms;
 
-use Livewire\Component;
 use App\Models\SocialLink;
+use Livewire\Component;
 
 class GestionarRedes extends Component
 {
     public $links = [];
+
     public $editingId = null;
+
     public $platform = 'facebook';
+
     public $url = '';
+
     public $icon = '';
+
     public $active = true;
+
     public $showForm = false;
 
     public $successMessage = '';
@@ -81,8 +87,8 @@ class GestionarRedes extends Component
             'url.url' => 'La URL debe ser válida (ej: https://ejemplo.com)',
         ]);
 
-        if ($this->url && !preg_match('/^https?:\/\//i', $this->url)) {
-            $this->url = 'https://' . $this->url;
+        if ($this->url && ! preg_match('/^https?:\/\//i', $this->url)) {
+            $this->url = 'https://'.$this->url;
         }
 
         $data = [
@@ -118,7 +124,7 @@ class GestionarRedes extends Component
     public function toggleActive($id)
     {
         $link = SocialLink::findOrFail($id);
-        $link->update(['is_active' => !$link->is_active]);
+        $link->update(['is_active' => ! $link->is_active]);
         $this->loadLinks();
     }
 

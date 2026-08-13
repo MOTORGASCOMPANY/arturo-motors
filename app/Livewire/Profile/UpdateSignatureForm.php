@@ -2,16 +2,17 @@
 
 namespace App\Livewire\Profile;
 
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Auth;
 
 class UpdateSignatureForm extends Component
 {
     use WithFileUploads;
 
     public $firma; // Para el nuevo archivo
+
     public $user;
 
     public function mount()

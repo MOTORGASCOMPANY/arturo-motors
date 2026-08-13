@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Recepcion extends Model
 {
-     use HasFactory;
+    use HasFactory;
 
     protected $table = 'recepciones';
 

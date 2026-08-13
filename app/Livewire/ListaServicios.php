@@ -11,23 +11,35 @@ class ListaServicios extends Component
     use WithPagination;
 
     public $sort = 'id';
+
     public $direction = 'desc';
+
     public $cant = 10;
+
     public $search = '';
 
     // Modal
     public $open = false;
+
     public $editingService = null;
+
     public $nombre = '';
+
     public $tipo = 'simple';
+
     public $precio_base = 0;
+
     public $activo = true;
 
     // Crear
     public $openCreate = false;
+
     public $createNombre = '';
+
     public $createTipo = 'simple';
+
     public $createPrecio_base = 0;
+
     public $createActivo = true;
 
     protected $rules = [
@@ -83,7 +95,7 @@ class ListaServicios extends Component
         ]);
 
         $this->reset(['open', 'editingService', 'nombre', 'tipo', 'precio_base', 'activo']);
-        $this->dispatch('minAlert', titulo: "¡BUEN TRABAJO!", mensaje: "Servicio actualizado correctamente", icono: "success");
+        $this->dispatch('minAlert', titulo: '¡BUEN TRABAJO!', mensaje: 'Servicio actualizado correctamente', icono: 'success');
     }
 
     public function openCreateModal()
@@ -109,7 +121,7 @@ class ListaServicios extends Component
 
         $this->resetCreateForm();
         $this->openCreate = false;
-        $this->dispatch('minAlert', titulo: "¡BUEN TRABAJO!", mensaje: "Servicio creado correctamente", icono: "success");
+        $this->dispatch('minAlert', titulo: '¡BUEN TRABAJO!', mensaje: 'Servicio creado correctamente', icono: 'success');
     }
 
     public function resetCreateForm()
@@ -122,7 +134,7 @@ class ListaServicios extends Component
         $servicios = Service::query()
             ->when($this->search, function ($q) {
                 $q->where('nombre', 'like', "%{$this->search}%")
-                  ->orWhere('tipo', 'like', "%{$this->search}%");
+                    ->orWhere('tipo', 'like', "%{$this->search}%");
             })
             ->orderBy($this->sort, $this->direction)
             ->paginate($this->cant);

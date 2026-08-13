@@ -2,28 +2,36 @@
 
 namespace App\Livewire\Cms;
 
+use App\Models\Media;
+use App\Models\Page;
+use App\Models\PageMedia;
+use App\Models\PageSection;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithFileUploads;
-use Livewire\Attributes\On;
-use App\Models\Page;
-use App\Models\PageSection;
-use App\Models\Media;
-use App\Models\PageMedia;
 
 class GestionarContenido extends Component
 {
     use WithFileUploads;
 
     public $pageTitle = '';
+
     public $sections = [];
+
     public $sectionData = [];
 
     public $uploadSection = null;
+
     public $uploadUsage = 'image';
+
     public $uploadFile;
 
     public $successMessage = '';
+
+    public $errorMessage = '';
+
     public $refreshKey = '';
+
     public $highlightSection = '';
 
     public function mount()
@@ -86,7 +94,9 @@ class GestionarContenido extends Component
     public function saveSection($id)
     {
         $data = $this->sectionData[$id] ?? null;
-        if (!$data) return;
+        if (! $data) {
+            return;
+        }
 
         $this->validate([
             "sectionData.{$id}.title" => 'required|max:255',
@@ -95,19 +105,23 @@ class GestionarContenido extends Component
             "sectionData.{$id}.title.max" => 'El campo Título no debe exceder 255 caracteres',
         ]);
 
-        PageSection::findOrFail($id)->update([
-            'title' => $data['title'],
-            'subtitle' => $data['subtitle'] ?? '',
-            'description' => $data['description'] ?? '',
-            'is_active' => $data['is_active'] ?? true,
-        ]);
+        try {
+            PageSection::findOrFail($id)->update([
+                'title' => $data['title'],
+                'subtitle' => $data['subtitle'] ?? '',
+                'description' => $data['description'] ?? '',
+                'is_active' => $data['is_active'] ?? true,
+            ]);
 
-        $section = PageSection::find($id);
-        $this->highlightSection = $section ? $section->key : '';
-        $this->loadSections();
-        $this->refreshKey = time();
-        $this->successMessage = 'Sección actualizada correctamente';
-        session()->flash('success', 'Sección actualizada');
+            $section = PageSection::find($id);
+            $this->highlightSection = $section ? $section->key : '';
+            $this->loadSections();
+            $this->refreshKey = time();
+            $this->successMessage = 'Sección actualizada correctamente';
+            session()->flash('success', 'Sección actualizada');
+        } catch (\Throwable $e) {
+            $this->errorMessage = 'No se pudo actualizar la sección';
+        }
     }
 
     public function uploadMedia($sectionId)
@@ -122,60 +136,74 @@ class GestionarContenido extends Component
             'uploadFile.max' => 'La imagen no debe exceder 5MB',
         ]);
 
-        $path = $this->uploadFile->store('cms', 'public');
+        try {
+            $path = $this->uploadFile->store('cms', 'public');
 
-        $media = Media::create([
-            'name' => $this->uploadFile->getClientOriginalName(),
-            'file_path' => $path,
-            'file_type' => 'image',
-            'mime_type' => $this->uploadFile->getMimeType(),
-            'file_size' => $this->uploadFile->getSize(),
-        ]);
+            $media = Media::create([
+                'name' => $this->uploadFile->getClientOriginalName(),
+                'file_path' => $path,
+                'file_type' => 'image',
+                'mime_type' => $this->uploadFile->getMimeType(),
+                'file_size' => $this->uploadFile->getSize(),
+            ]);
 
-        $pageMedia = PageMedia::create([
-            'page_section_id' => $sectionId,
-            'media_id' => $media->id,
-            'usage' => $this->uploadUsage,
-            'sort_order' => 0,
-        ]);
+            $pageMedia = PageMedia::create([
+                'page_section_id' => $sectionId,
+                'media_id' => $media->id,
+                'usage' => $this->uploadUsage,
+                'sort_order' => 0,
+            ]);
 
-        // Update local state without full reload
-        foreach ($this->sections as &$section) {
-            if ($section['id'] == $sectionId) {
-                $section['media_items'][] = [
-                    'id' => $pageMedia->id,
-                    'media' => [
-                        'file_path' => $path,
-                    ],
-                ];
-                break;
+            // Update local state without full reload
+            foreach ($this->sections as &$section) {
+                if ($section['id'] == $sectionId) {
+                    $section['media_items'][] = [
+                        'id' => $pageMedia->id,
+                        'media' => [
+                            'file_path' => $path,
+                        ],
+                    ];
+                    break;
+                }
             }
+            unset($section);
+
+            $section = PageSection::find($sectionId);
+            $this->highlightSection = $section ? $section->key : '';
+            $this->reset(['uploadFile', 'uploadUsage']);
+            $this->successMessage = 'Imagen subida correctamente';
+            session()->flash('success', 'Imagen subida');
+
+            $this->dispatch('upload-done');
+        } catch (\Throwable $e) {
+            $this->errorMessage = 'No se pudo subir la imagen';
+            $this->dispatch('upload-done');
         }
-        unset($section);
-
-        $section = PageSection::find($sectionId);
-        $this->highlightSection = $section ? $section->key : '';
-        $this->reset(['uploadFile', 'uploadUsage']);
-        $this->successMessage = 'Imagen subida correctamente';
-        session()->flash('success', 'Imagen subida');
-
-        $this->dispatch('upload-done');
     }
 
     public function removeMedia($pageMediaId)
     {
-        $pm = PageMedia::findOrFail($pageMediaId);
-        $pm->media->delete();
-        $pm->delete();
-        $this->loadSections();
-        $this->refreshKey = time();
-        $this->successMessage = 'Imagen eliminada';
-        session()->flash('success', 'Imagen eliminada');
+        try {
+            $pm = PageMedia::findOrFail($pageMediaId);
+            $pm->media->delete();
+            $pm->delete();
+            $this->loadSections();
+            $this->refreshKey = time();
+            $this->successMessage = 'Imagen eliminada';
+            session()->flash('success', 'Imagen eliminada');
+        } catch (\Throwable $e) {
+            $this->errorMessage = 'No se pudo eliminar la imagen';
+        }
     }
 
     public function clearSuccessMessage()
     {
         $this->successMessage = '';
+    }
+
+    public function clearErrorMessage()
+    {
+        $this->errorMessage = '';
     }
 
     public function render()

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('service_order_id')->constrained('service_orders')->cascadeOnDelete();
             $table->string('estado_anterior')->nullable();
             $table->string('estado_nuevo');
-            //$table->foreignId('usuario_id')->constrained('users');
+            // $table->foreignId('usuario_id')->constrained('users');
             $table->foreignId('usuario_id')->nullable()->constrained('users');
             $table->timestamps();
         });

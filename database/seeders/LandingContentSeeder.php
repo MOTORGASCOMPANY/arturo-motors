@@ -2,12 +2,12 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\SiteService;
-use App\Models\ProcessStep;
-use App\Models\WhyCard;
 use App\Models\ContactInfo;
+use App\Models\ProcessStep;
+use App\Models\SiteService;
 use App\Models\SocialLink;
+use App\Models\WhyCard;
+use Illuminate\Database\Seeder;
 
 class LandingContentSeeder extends Seeder
 {

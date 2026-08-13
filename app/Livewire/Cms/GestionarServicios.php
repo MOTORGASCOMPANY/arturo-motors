@@ -2,20 +2,29 @@
 
 namespace App\Livewire\Cms;
 
-use Livewire\Component;
 use App\Models\SiteService;
+use Livewire\Component;
 
 class GestionarServicios extends Component
 {
     public $services = [];
+
     public $editingId = null;
+
     public $title = '';
+
     public $description = '';
+
     public $icon = '';
+
     public $features = '';
+
     public $ctaText = '';
+
     public $ctaLink = '';
+
     public $active = true;
+
     public $showForm = false;
 
     public $successMessage = '';
@@ -47,7 +56,7 @@ class GestionarServicios extends Component
 
     public function loadServices()
     {
-        $this->services = SiteService::orderBy('sort_order')->get()->toArray();
+         $this->services = SiteService::orderBy('sort_order')->get();
     }
 
     public function create()
@@ -120,7 +129,7 @@ class GestionarServicios extends Component
     public function toggleActive($id)
     {
         $service = SiteService::findOrFail($id);
-        $service->update(['is_active' => !$service->is_active]);
+        $service->update(['is_active' => ! $service->is_active]);
         $this->loadServices();
     }
 
@@ -146,6 +155,7 @@ class GestionarServicios extends Component
         foreach ($this->serviceIcons as $keyword => $icon) {
             if (str_contains($titleLower, $keyword)) {
                 $this->icon = $icon;
+
                 return;
             }
         }

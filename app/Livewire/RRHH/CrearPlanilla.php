@@ -2,16 +2,16 @@
 
 namespace App\Livewire\RRHH;
 
-use Livewire\Component;
-use App\Models\Planilla;
 use App\Models\Contrato;
-use Livewire\Attributes\On;
-use Carbon\Carbon;
+use App\Models\Planilla;
 use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\On;
+use Livewire\Component;
 
 class CrearPlanilla extends Component
 {
     public $abierto = false;
+
     public $periodo; // Inicia nulo
 
     public $lista_planilla = [];
@@ -40,7 +40,9 @@ class CrearPlanilla extends Component
     public function cargarTrabajadores()
     {
         // Solo buscamos en la BD si el periodo existe
-        if (!$this->periodo) return;
+        if (! $this->periodo) {
+            return;
+        }
 
         $contratosActivos = Contrato::with('user')
             ->where('status', 'Activo')
@@ -52,10 +54,12 @@ class CrearPlanilla extends Component
 
             // 1. Verificamos si ya existe planilla para este contrato en este periodo
             $existe = Planilla::where('contrato_id', $contrato->id)
-                             ->whereDate('periodo', $this->periodo)
-                             ->exists();
+                ->whereDate('periodo', $this->periodo)
+                ->exists();
 
-            if ($existe) continue; // Si ya existe, nos saltamos a este trabajador
+            if ($existe) {
+                continue;
+            } // Si ya existe, nos saltamos a este trabajador
 
             // 2. Cálculo dividido (Quincenal)
             $sueldoQuincenal = $contrato->sueldo_neto / 2;
@@ -63,22 +67,21 @@ class CrearPlanilla extends Component
             $tieneAsignacion = ($contrato->user->asignacion_familiar == 1);
             $asignacionQuincenal = $tieneAsignacion ? (self::MONTO_ASIGNACION_MENSUAL / 2) : 0;
 
-
             $this->lista_planilla[] = [
-                'contrato_id'         => $contrato->id,
-                'nombre'              => $contrato->user->name,
-                'sueldo_base'         => number_format($sueldoQuincenal, 2, '.', ''),
+                'contrato_id' => $contrato->id,
+                'nombre' => $contrato->user->name,
+                'sueldo_base' => number_format($sueldoQuincenal, 2, '.', ''),
                 'asignacion_familiar' => number_format($asignacionQuincenal, 2, '.', ''),
-                'horas_extras'        => 0,
-                'movilidad'           => 0,
-                'otros_ingresos'      => 0,
-                'otros_descuentos'    => 0,
-                'planilla'            => $contrato->user->beneficios,
-                'numero_cuenta'       => $contrato->user->numero_cuenta,
-                'observacion'         => '',
-                'total'               => number_format($sueldoQuincenal + $asignacionQuincenal, 2, '.', ''),
-                //'banco'               => number_format($sueldoQuincenal + $asignacionQuincenal, 2, '.', ''),
-                //'efectivo'            => 0
+                'horas_extras' => 0,
+                'movilidad' => 0,
+                'otros_ingresos' => 0,
+                'otros_descuentos' => 0,
+                'planilla' => $contrato->user->beneficios,
+                'numero_cuenta' => $contrato->user->numero_cuenta,
+                'observacion' => '',
+                'total' => number_format($sueldoQuincenal + $asignacionQuincenal, 2, '.', ''),
+                // 'banco'               => number_format($sueldoQuincenal + $asignacionQuincenal, 2, '.', ''),
+                // 'efectivo'            => 0
             ];
         }
 
@@ -92,10 +95,13 @@ class CrearPlanilla extends Component
         $parts = explode('.', $key);
         $index = $parts[0];
 
-        if (!isset($this->lista_planilla[$index])) return;
+        if (! isset($this->lista_planilla[$index])) {
+            return;
+        }
 
         $this->recalcularFila($index);
     }
+
     /*private function recalcularFila($index)
     {
         $fila = &$this->lista_planilla[$index];
@@ -123,14 +129,14 @@ class CrearPlanilla extends Component
         $totalVal = ($s_base + $asign + $h_ext + $movil + $otros) - $dctos;
 
         // BANCO: Todo excepto movilidad, menos descuentos
-        //$bancoVal = ($s_base + $asign + $h_ext + $otros) - $dctos;
+        // $bancoVal = ($s_base + $asign + $h_ext + $otros) - $dctos;
 
         // EFECTIVO: Solo movilidad
-        //$efectivoVal = $movil;
+        // $efectivoVal = $movil;
 
         $fila['total'] = number_format($totalVal, 2, '.', '');
-        //$fila['banco'] = number_format($bancoVal, 2, '.', '');
-        //$fila['efectivo'] = number_format($efectivoVal, 2, '.', '');
+        // $fila['banco'] = number_format($bancoVal, 2, '.', '');
+        // $fila['efectivo'] = number_format($efectivoVal, 2, '.', '');
     }
 
     public function guardarMasivo()
@@ -144,18 +150,18 @@ class CrearPlanilla extends Component
             DB::transaction(function () {
                 foreach ($this->lista_planilla as $item) {
                     Planilla::create([
-                        'contrato_id'         => $item['contrato_id'],
-                        'periodo'             => $this->periodo,
-                        'sueldo_base'         => $item['sueldo_base'],
+                        'contrato_id' => $item['contrato_id'],
+                        'periodo' => $this->periodo,
+                        'sueldo_base' => $item['sueldo_base'],
                         'asignacion_familiar' => $item['asignacion_familiar'],
-                        'horas_extras'        => $item['horas_extras'],
-                        'movilidad'           => $item['movilidad'],
-                        'otros_ingresos'      => $item['otros_ingresos'],
-                        'otros_descuentos'    => $item['otros_descuentos'],
-                        'planilla'            => $item['planilla'],
-                        'numero_cuenta'       => $item['numero_cuenta'],
-                        'observacion'         => $item['observacion'],
-                        'estado_pago'         => 0
+                        'horas_extras' => $item['horas_extras'],
+                        'movilidad' => $item['movilidad'],
+                        'otros_ingresos' => $item['otros_ingresos'],
+                        'otros_descuentos' => $item['otros_descuentos'],
+                        'planilla' => $item['planilla'],
+                        'numero_cuenta' => $item['numero_cuenta'],
+                        'observacion' => $item['observacion'],
+                        'estado_pago' => 0,
                     ]);
                 }
             });
@@ -165,7 +171,7 @@ class CrearPlanilla extends Component
             $this->dispatch('minAlert', titulo: 'ÉXITO', mensaje: 'Planilla generada correctamente', icono: 'success');
 
         } catch (\Exception $e) {
-            $this->dispatch('minAlert', titulo: 'ERROR', mensaje: 'Hubo un problema al guardar: ' . $e->getMessage(), icono: 'error');
+            $this->dispatch('minAlert', titulo: 'ERROR', mensaje: 'Hubo un problema al guardar: '.$e->getMessage(), icono: 'error');
         }
     }
 

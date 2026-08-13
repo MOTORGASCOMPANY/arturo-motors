@@ -2,23 +2,35 @@
 
 namespace App\Livewire;
 
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Spatie\Permission\Models\Permission;
-use Livewire\Attributes\On;
 
 class AdminPermisos extends Component
 {
     use WithPagination;
 
-    public $sort, $direction, $cant, $search;
+    public $sort;
+
+    public $direction;
+
+    public $cant;
+
+    public $search;
+
     public $editando = false;
+
     // Propiedades para edición
-    public $permisoId, $name, $descripcion;
+    public $permisoId;
+
+    public $name;
+
+    public $descripcion;
 
     protected $rules = [
         'name' => 'required|string|min:3',
-        'descripcion' => 'nullable|string'
+        'descripcion' => 'nullable|string',
     ];
 
     public function mount()
@@ -62,16 +74,16 @@ class AdminPermisos extends Component
         ]);
 
         $this->reset(['editando', 'permisoId', 'name', 'descripcion']);
-        $this->dispatch('minAlert', titulo: "¡BUEN TRABAJO!", mensaje: "Se actualizó correctamente el permiso", icono: "success");
+        $this->dispatch('minAlert', titulo: '¡BUEN TRABAJO!', mensaje: 'Se actualizó correctamente el permiso', icono: 'success');
     }
-
 
     #[On('permiso-creado')]
     public function render()
     {
-        $permisos = Permission::where('name', 'like', '%' . $this->search . '%')
+        $permisos = Permission::where('name', 'like', '%'.$this->search.'%')
             ->orderBy($this->sort, $this->direction)
             ->paginate($this->cant);
+
         return view('livewire.admin-permisos', compact('permisos'));
     }
 }
