@@ -4,11 +4,25 @@ use App\Http\Controllers\ComprobanteController;
 use App\Http\Controllers\PdfController;
 use App\Livewire\AdminPermisos;
 use App\Livewire\AdminRoles;
+use App\Livewire\Almacen\Categorias\Crear as CategoriasCrear;
+use App\Livewire\Almacen\Categorias\Listado as CategoriasListado;
+use App\Livewire\Almacen\Productos\Crear as ProductosCrear;
+use App\Livewire\Almacen\Productos\Listado as ProductosListado;
+use App\Livewire\Almacen\Productos\RegistrarEntrada;
 use App\Livewire\Caja\AbrirCaja;
 use App\Livewire\Caja\CerrarCaja;
 use App\Livewire\Caja\DetalleSesion;
 use App\Livewire\Caja\HistorialSesiones;
 use App\Livewire\Caja\RegistrarEgreso;
+use App\Livewire\Conversiones\AlmacenPendientes;
+use App\Livewire\Conversiones\AsignarEquipos;
+use App\Livewire\Conversiones\AsignarTecnico;
+use App\Livewire\Conversiones\Crear;
+use App\Livewire\Conversiones\EntregaPendientes;
+use App\Livewire\Conversiones\EntregarCobrar;
+use App\Livewire\Conversiones\Evaluar;
+use App\Livewire\Conversiones\MisAsignadas;
+use App\Livewire\Conversiones\Realizar;
 use App\Livewire\CrearCitas;
 use App\Livewire\ExpedienteModal;
 use App\Livewire\GestorRepuestos;
@@ -18,13 +32,16 @@ use App\Livewire\ListaClientes;
 use App\Livewire\ListaConversiones;
 use App\Livewire\ListaExpedientes;
 use App\Livewire\ListaVehiculos;
+use App\Livewire\ProcesarCobro;
 use App\Livewire\Reportes\ReporteCitas;
 use App\Livewire\RRHH\Contratos;
 use App\Livewire\RRHH\GestionarVacaciones;
 use App\Livewire\RRHH\GestionDocumentos;
 use App\Livewire\RRHH\ListaPlanilla;
 use App\Livewire\RRHH\MisPlanillas;
+use App\Livewire\SelectorClienteVehiculo;
 use App\Livewire\ServiceOrders\CrearSimple;
+use App\Livewire\ServiceOrders\Listado;
 use App\Livewire\SolicitudRepuestos;
 use App\Livewire\Usuarios;
 use Illuminate\Support\Facades\RateLimiter;
@@ -78,11 +95,11 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',
     //Route::get('/evaluacion', ExpedienteModal::class)->name('evaluacion');
 
     // Conversiones
-    Route::get('/lista-conversiones', ListaConversiones::class)->name('ListaConversiones');
+    //Route::get('/lista-conversiones', ListaConversiones::class)->name('ListaConversiones');
 
     // Almacen
-    Route::get('/gestor-repuestos', GestorRepuestos::class)->name('Repuestos');
-    Route::get('/solicitud-repuestos/{conversionId}', SolicitudRepuestos::class)->name('SolicitudRepuestos');
+    //Route::get('/gestor-repuestos', GestorRepuestos::class)->name('Repuestos');
+    //Route::get('/solicitud-repuestos/{conversionId}', SolicitudRepuestos::class)->name('SolicitudRepuestos');
 
     // Reportes
     Route::get('/rpta-citas', ReporteCitas::class)->name('Rpta.Citas');
@@ -93,16 +110,40 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',
     // Clientes
     Route::get('/lista-clientes', ListaClientes::class)->name('ListaClientes');
 
-    // Rutas de servicios
-    Route::get('/ordenes/simple/crear', CrearSimple::class)->name('ordenes.simple.crear');
-
-    // Rutas modulo de caja
+    // Rutas modulo de caja (MEJORAR BLADE)
     Route::get('/caja/abrir', AbrirCaja::class)->name('caja.abrir');
+    //Route::get('/caja/abrir', AbrirCaja::class)->middleware('can:caja.abrir')->name('caja.abrir');
     Route::get('/caja/egreso', RegistrarEgreso::class)->name('caja.egreso');
     Route::get('/caja/cerrar', CerrarCaja::class)->name('caja.cerrar');
-
     Route::get('/caja/historial', HistorialSesiones::class)->name('caja.historial');
     Route::get('/caja/sesion/{sesionId}', DetalleSesion::class)->name('caja.sesion');
+
+    // Rutas de servicios
+    Route::get('/ordenes', Listado::class)->name('ordenes.listado');
+    Route::get('/ordenes/simple/crear', CrearSimple::class)->name('ordenes.simple.crear');   
+    Route::get('/conversiones/crear', Crear::class)->name('conversiones.crear'); // P1: Crear orden de conversión (Vendedor)
+
+    // Rutas modulo de conversiones
+    Route::get('/conversiones/asignar', AsignarTecnico::class)->name('conversiones.asignar'); // P2: Asignar técnico (Jefe de taller) — ve todas las órdenes creada
+    Route::get('/conversiones/mis-asignadas', MisAsignadas::class)->name('conversiones.mis-asignadas'); // P3: Mis conversiones asignadas (Técnico) — filtra por tecnico_id
+    Route::get('/conversiones/{ordenId}/evaluar', Evaluar::class)->name('conversiones.evaluar'); // P4: Evaluación (Técnico) — checklist + apto/no apto    
+    Route::get('/conversiones/almacen/pendientes', AlmacenPendientes::class)->name('conversiones.almacen-pendientes'); // P5: Asignar equipos (Almacenero) — vincula items_serializados a la orden
+    Route::get('/conversiones/{ordenId}/asignar-equipos', AsignarEquipos::class)->name('conversiones.asignar-equipos'); // P5: Asignar equipos (Almacenero) — vincula items_serializados a la orden  
+    Route::get('/conversiones/{ordenId}/realizar', Realizar::class)->name('conversiones.realizar'); // P6: Realizar conversión (Técnico) — inicia, marca instalado, finaliza
+    Route::get('/conversiones/entregas/pendientes', EntregaPendientes::class)->name('conversiones.entregas-pendientes'); // P7: Entrega y cobro (Cajero) — reutiliza la lógica de cobro que ya armamos en CrearSimple
+    Route::get('/conversiones/{ordenId}/entregar', EntregarCobrar::class)->name('conversiones.entregar'); // P7: Entrega y cobro (Cajero) — reutiliza la lógica de cobro que ya armamos en CrearSimple
+
+    
+    Route::get('/selector', SelectorClienteVehiculo::class)->name('selector'); // component hijo reutilizable "buscar/crear cliente y vehículo" respecto a CrearSimple
+    Route::get('/procesarcobro', ProcesarCobro::class)->name('procesar'); // component hijo reutilizable "entrega y cobro"
+    
+
+    // Rutas modulo de almacen
+    Route::get('/almacen/categorias', CategoriasListado::class)->name('almacen.categorias.listado');
+    //Route::get('/almacen/categorias/crear', CategoriasCrear::class)->name('almacen.categorias.crear'); componenente hijo anidado
+    Route::get('/almacen/productos', ProductosListado::class)->name('almacen.productos.listado');
+    //Route::get('/almacen/productos/crear', ProductosCrear::class)->name('almacen.productos.crear'); componenente hijo anidado
+    //Route::get('/almacen/productos/{productoId}/entrada', RegistrarEntrada::class)->name('almacen.productos.entrada'); // componenente hijo anidado
 
     // Rutas modulo de recursos humanos
     Route::get('/rrhh/contratos', Contratos::class)->middleware('can:rrhh.contratos')->name('rrhh.contratos');

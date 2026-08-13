@@ -34,7 +34,7 @@
                     </div>
 
                     <div class="mb-4">
-                        <button class="bg-orange-500 px-6 py-4 rounded-md text-white font-semibold tracking-wide cursor-pointer hover:bg-orange-600 transition">
+                        <button class="bg-indigo-500 px-6 py-4 rounded-md text-white font-semibold tracking-wide cursor-pointer hover:bg-indigo-600 transition">
                             Nuevo Usuario &nbsp;<i class="fas fa-plus"></i>
                         </button>
                     </div>

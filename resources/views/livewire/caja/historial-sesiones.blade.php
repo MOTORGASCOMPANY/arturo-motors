@@ -59,7 +59,7 @@
                     <!-- Botón -->
                     <div class="w-full sm:w-auto">
                         <a href="{{ route('caja.abrir') }}"
-                            class="block sm:inline-block w-full sm:w-auto text-center bg-indigo-600 hover:bg-indigo-700 px-6 py-3 rounded-md text-white font-semibold tracking-wide">
+                            class="block sm:inline-block w-full sm:w-auto text-center bg-indigo-500 hover:bg-indigo-600 px-6 py-3 rounded-md text-white font-semibold tracking-wide">
                             Ir a caja
                             <i class="fas fa-arrow-right text-xs ml-1"></i>
                         </a>

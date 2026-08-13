@@ -17,18 +17,26 @@ class AbrirCaja extends Component
             return;
         }
 
-        $this->validate(['montoApertura' => 'required|numeric|min:0']);
+        $this->validate(
+            ['montoApertura' => 'required|numeric|min:0'],
+            [
+                'montoApertura.required' => 'El monto inicial es obligatorio.',
+                'montoApertura.numeric' => 'Debe ser un valor numérico.',
+                'montoApertura.min' => 'El monto no puede ser negativo.',
+            ]
+        );
 
         SesionCaja::create([
-            //'abierta_por' => auth()->id(),
             'abierta_por' => Auth::id(),
             'monto_apertura' => $this->montoApertura,
             'abierta_en' => now(),
             'estado' => 'abierta',
         ]);
 
-        session()->flash('mensaje', 'Caja abierta correctamente.');
-        $this->redirect(request()->header('Referer') ?? '/', navigate: true);
+        //$this->dispatch('minToast', titulo: '¡Caja Abierta!', mensaje: 'La sesión de caja se inició correctamente.', icono: 'success');
+
+        //session()->flash('mensaje', 'Caja abierta correctamente.');
+        //$this->redirect(request()->header('Referer') ?? '/', navigate: true);
     }
 
     public function render()
