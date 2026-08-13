@@ -8,24 +8,25 @@ use App\Models\Service;
 use App\Models\ServiceOrder;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
+use Livewire\Attributes\On;
 
 class Crear extends Component
 {
-    public string $buscarCliente = '';
+    //public string $buscarCliente = '';
     public ?int $clienteId = null;
-    public array $clientesEncontrados = [];
+    //public array $clientesEncontrados = [];
     public ?int $vehiculoId = null;
 
-    public bool $creandoVehiculoNuevo = false;
-    public string $nuevaPlaca = '';
-    public string $nuevaMarca = '';
-    public string $nuevoModelo = '';
+    //public bool $creandoVehiculoNuevo = false;
+    //public string $nuevaPlaca = '';
+    //public string $nuevaMarca = '';
+    //public string $nuevoModelo = '';
 
-    public bool $creandoClienteNuevo = false;
-    public string $nuevoNombre = '';
-    public string $nuevoApellido = '';
-    public string $nuevoDocumento = '';
-    public string $nuevoTelefono = '';
+    //public bool $creandoClienteNuevo = false;
+    //public string $nuevoNombre = '';
+    //public string $nuevoApellido = '';
+    //public string $nuevoDocumento = '';
+    //public string $nuevoTelefono = '';
 
     public ?int $serviceId = null;
     public $precioLista = 0;
@@ -34,14 +35,40 @@ class Crear extends Component
 
     public ?int $ordenCreadaId = null;
 
-    public function updatedBuscarCliente()
+    #[On('clienteSeleccionado')]
+    public function actualizarCliente(?int $clienteId)
     {
-        $termino = trim($this->buscarCliente);
-        $this->clientesEncontrados = strlen($termino) < 3
-            ? []
-            : Cliente::buscar($termino)->limit(8)->get()->toArray();
+        $this->clienteId = $clienteId;
+
+        if (!$clienteId) {
+            $this->reset(['vehiculoId', 'serviceId', 'precioLista', 'precioFinal', 'descuentoMotivo']);
+        }
     }
 
+    #[On('vehiculoSeleccionado')]
+    public function actualizarVehiculo(?int $vehiculoId)
+    {
+        $this->vehiculoId = $vehiculoId;
+
+        if (!$vehiculoId) {
+            $this->reset(['serviceId', 'precioLista', 'precioFinal', 'descuentoMotivo']);
+        }
+    }
+
+    /*public function updatedBuscarCliente()
+    {
+        $termino = trim($this->buscarCliente);
+
+        if (strlen($termino) < 3) {
+            $this->clientesEncontrados = [];
+            return;
+        }
+
+        $this->clientesEncontrados = Cliente::buscar($termino)
+            ->limit(8)
+            ->get()
+            ->toArray();
+    }
     public function seleccionarCliente(int $clienteId)
     {
         $cliente = Cliente::find($clienteId);
@@ -52,7 +79,12 @@ class Crear extends Component
             $this->vehiculoId = null;
         }
     }
-
+    public function abrirModalNuevoCliente()
+    {
+        $this->reset(['nuevoNombre', 'nuevoApellido', 'nuevoDocumento', 'nuevoTelefono']);
+        $this->resetValidation();
+        $this->creandoClienteNuevo = true;
+    }
     public function guardarClienteNuevo()
     {
         $this->validate([
@@ -72,13 +104,21 @@ class Crear extends Component
         $this->clienteId = $cliente->id;
         $this->buscarCliente = trim($cliente->nombre . ' ' . $cliente->apellido);
         $this->creandoClienteNuevo = false;
-    }
+        $this->clientesEncontrados = [];
 
-    public function getVehiculosProperty()
+        $this->dispatch('minToast', titulo: '¡Éxito!', mensaje: 'Cliente registrado correctamente.', icono: 'success');
+    }*/
+
+    /*public function getVehiculosProperty()
     {
         return $this->clienteId ? Vehiculo::where('cliente_id', $this->clienteId)->get() : collect();
     }
-
+    public function abrirModalNuevoVehiculo()
+    {
+        $this->reset(['nuevaPlaca', 'nuevaMarca', 'nuevoModelo']);
+        $this->resetValidation();
+        $this->creandoVehiculoNuevo = true;
+    }
     public function guardarVehiculoNuevo()
     {
         $this->validate([
@@ -89,14 +129,16 @@ class Crear extends Component
 
         $vehiculo = Vehiculo::create([
             'cliente_id' => $this->clienteId,
-            'placa' => $this->nuevaPlaca,
+            'placa' => strtoupper($this->nuevaPlaca),   
             'marca' => $this->nuevaMarca,
             'modelo' => $this->nuevoModelo,
         ]);
 
         $this->vehiculoId = $vehiculo->id;
         $this->creandoVehiculoNuevo = false;
-    }
+
+        $this->dispatch('minToast', titulo: '¡Éxito!', mensaje: 'Vehículo registrado correctamente.', icono: 'success');
+    }*/
 
     public function seleccionarServicio(int $serviceId)
     {
@@ -104,6 +146,7 @@ class Crear extends Component
         $this->serviceId = $servicio->id;
         $this->precioLista = $servicio->precio_base;
         $this->precioFinal = $servicio->precio_base;
+        $this->descuentoMotivo = '';
     }
 
     public function crearOrden()
@@ -113,9 +156,13 @@ class Crear extends Component
             'vehiculoId' => 'required|exists:vehiculos,id',
             'serviceId' => 'required|exists:services,id',
             'precioFinal' => 'required|numeric|min:0',
+        ], [
+            'clienteId.required' => 'Debes seleccionar un cliente.',
+            'vehiculoId.required' => 'Debes seleccionar un vehículo.',
+            'serviceId.required' => 'Debes seleccionar un tipo de conversión.',
         ]);
 
-        if (bccomp($this->precioFinal, $this->precioLista, 2) !== 0 && empty($this->descuentoMotivo)) {
+        if (bccomp((string)$this->precioFinal, (string)$this->precioLista, 2) !== 0 && empty($this->descuentoMotivo)) {
             $this->addError('descuentoMotivo', 'Indica el motivo del ajuste de precio.');
             return;
         }
@@ -128,15 +175,19 @@ class Crear extends Component
                 'estado' => 'creada',
                 'precio_lista' => $this->precioLista,
                 'precio_final' => $this->precioFinal,
-                'descuento_motivo' => bccomp($this->precioFinal, $this->precioLista, 2) !== 0
-                    ? $this->descuentoMotivo : null,
+                'descuento_motivo' => bccomp((string)$this->precioFinal, (string)$this->precioLista, 2) !== 0 ? $this->descuentoMotivo : null,
+                //'descuento_motivo' => bccomp($this->precioFinal, $this->precioLista, 2) !== 0 ? $this->descuentoMotivo : null,
                 'creado_por' => Auth::id(),
             ]);
 
             $this->ordenCreadaId = $orden->id;
+
+            $this->dispatch('minAlert', titulo: '¡Orden Creada!', mensaje: "La orden de conversión #{$orden->id} fue registrada con éxito.", icono: 'success');
+
         } catch (\Throwable $e) {
             report($e);
             $this->addError('general', 'Ocurrió un error al crear la orden. Intenta de nuevo.');
+            $this->dispatch('minToast', titulo: 'Error', mensaje: 'No se pudo guardar la orden.', icono: 'error');
         }
     }
 

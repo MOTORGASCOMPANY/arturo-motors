@@ -26,7 +26,8 @@ class Evaluar extends Component
             'tapa_combustible' => 'Tapa de combustible',
             'tapa_aceite' => 'Tapa de aceite',
             'tapa_radiador' => 'Tapa de radiador',
-            'barita_capot' => 'Barita de capot',
+            //'barita_capot' => 'Barita de capot',
+            'varilla_capot' => 'Varilla de capot',
             'espejo_anterior' => 'Espejo interior',
         ],
         'Interior' => [
@@ -72,6 +73,20 @@ class Evaluar extends Component
         }
     }
 
+    public function marcarTodo()
+    {
+        foreach ($this->checklist as $clave => $val) {
+            $this->checklist[$clave] = true;
+        }
+    }
+
+    public function desmarcarTodo()
+    {
+        foreach ($this->checklist as $clave => $val) {
+            $this->checklist[$clave] = false;
+        }
+    }
+
     public function guardarEvaluacion(bool $aprobado)
     {
         if (!$aprobado) {
@@ -79,6 +94,7 @@ class Evaluar extends Component
                 'observaciones' => 'required|string|min:5',
             ], [
                 'observaciones.required' => 'Indica el motivo del rechazo.',
+                'observaciones.min' => 'El motivo debe tener al menos 5 caracteres.',
             ]);
         }
 
@@ -97,11 +113,15 @@ class Evaluar extends Component
             return;
         }
 
-        session()->flash('mensaje', $aprobado
-            ? 'Vehículo aprobado para conversión.'
-            : 'Evaluación registrada como no apto.');
+        // Usamos session()->flash para que el mensaje sobreviva a la redirección estándar HTTP
+        session()->flash('swal', [
+            'icono' => $aprobado ? 'success' : 'warning',
+            'titulo' => $aprobado ? '¡APROBADO!' : 'EVALUACIÓN RECHAZADA',
+            'mensaje' => $aprobado ? 'Vehículo aprobado para conversión.' : 'Evaluación registrada como no apto.',
+        ]);
 
-        $this->redirect(route('conversiones.mis-asignadas'), navigate: true);
+        //$this->redirect(route('conversiones.mis-asignadas'), navigate: true);
+        $this->redirect(route('conversiones.mis-asignadas'));
     }
 
     public function render()

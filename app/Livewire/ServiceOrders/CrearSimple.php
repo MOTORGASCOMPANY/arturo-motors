@@ -12,27 +12,29 @@ use App\Models\Comprobante;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
+use Livewire\Attributes\On;
 
 class CrearSimple extends Component
 {
     public int $paso = 1;
 
     // Paso 1: cliente y vehículo
-    public string $buscarCliente = '';
+    //public string $buscarCliente = '';
     public ?int $clienteId = null;
-    public array $clientesEncontrados = [];
+    //public array $clientesEncontrados = [];
     public ?int $vehiculoId = null;
-    public bool $creandoVehiculoNuevo = false;
-    public string $nuevaPlaca = '';
-    public string $nuevaMarca = '';
-    public string $nuevoModelo = '';
+
+    //public bool $creandoVehiculoNuevo = false;
+    //public string $nuevaPlaca = '';
+    //public string $nuevaMarca = '';
+    //public string $nuevoModelo = '';
 
     // Paso 1: cliente nuevo
-    public bool $creandoClienteNuevo = false;
-    public string $nuevoNombre = '';
-    public string $nuevoApellido = '';
-    public string $nuevoDocumento = '';
-    public string $nuevoTelefono = '';
+    //public bool $creandoClienteNuevo = false;
+    //public string $nuevoNombre = '';
+    //public string $nuevoApellido = '';
+    //public string $nuevoDocumento = '';
+    //public string $nuevoTelefono = '';
 
     // Paso 2: servicio y precio
     public ?int $serviceId = null;
@@ -47,13 +49,27 @@ class CrearSimple extends Component
     public ?int $ordenCreadaId = null;
     public ?string $folioGenerado = null;
 
-    // En lugar de public function buscar(), usa este hook:
-    public function updatedBuscarCliente()
+    #[On('clienteSeleccionado')]
+    public function actualizarCliente(?int $clienteId)
     {
-        /*$this->clientesEncontrados = strlen($this->buscarCliente) < 3
-            ? []
-            : Cliente::buscar($this->buscarCliente)->limit(8)->get()->toArray();*/
+        $this->clienteId = $clienteId;
+        if (!$clienteId) {
+            $this->reset(['vehiculoId', 'serviceId', 'precioLista', 'precioFinal', 'descuentoMotivo']);
+        }
+    }
 
+    #[On('vehiculoSeleccionado')]
+    public function actualizarVehiculo(?int $vehiculoId)
+    {
+        $this->vehiculoId = $vehiculoId;
+        if (!$vehiculoId) {
+            $this->reset(['serviceId', 'precioLista', 'precioFinal', 'descuentoMotivo']);
+        }
+    }
+
+    // En lugar de public function buscar(), usa este hook:
+    /*public function updatedBuscarCliente()
+    {
         $termino = trim($this->buscarCliente);
 
         if (strlen($termino) < 3) {
@@ -66,14 +82,8 @@ class CrearSimple extends Component
             ->get()
             ->toArray();
     }
-
     public function seleccionarCliente(int $clienteId)
     {
-        //$this->clienteId = $clienteId;
-        //$this->clientesEncontrados = [];
-        //$this->buscarCliente = Cliente::find($clienteId)->nombre;
-        //$this->vehiculoId = null;
-
         $cliente = Cliente::find($clienteId);
 
         if ($cliente) {
@@ -84,7 +94,12 @@ class CrearSimple extends Component
             $this->vehiculoId = null;
         }
     }
-
+    public function abrirModalNuevoCliente()
+    {
+        $this->reset(['nuevoNombre', 'nuevoApellido', 'nuevoDocumento', 'nuevoTelefono']);
+        $this->resetValidation();
+        $this->creandoClienteNuevo = true;
+    }
     public function guardarClienteNuevo()
     {
         $this->validate([
@@ -105,15 +120,22 @@ class CrearSimple extends Component
         $this->buscarCliente = trim($cliente->nombre . ' ' . $cliente->apellido);
         $this->creandoClienteNuevo = false;
         $this->clientesEncontrados = [];
-    }
 
-    public function getVehiculosProperty()
+        $this->dispatch('minToast', titulo: '¡Éxito!', mensaje: 'Cliente registrado correctamente.', icono: 'success');
+    }*/
+
+    /*public function getVehiculosProperty()
     {
         return $this->clienteId
             ? Vehiculo::where('cliente_id', $this->clienteId)->get()
             : collect();
     }
-
+    public function abrirModalNuevoVehiculo()
+    {
+        $this->reset(['nuevaPlaca', 'nuevaMarca', 'nuevoModelo']);
+        $this->resetValidation();
+        $this->creandoVehiculoNuevo = true;
+    }
     public function guardarVehiculoNuevo()
     {
         $this->validate([
@@ -124,20 +146,25 @@ class CrearSimple extends Component
 
         $vehiculo = Vehiculo::create([
             'cliente_id' => $this->clienteId,
-            'placa' => $this->nuevaPlaca,
+            'placa' => strtoupper($this->nuevaPlaca),
             'marca' => $this->nuevaMarca,
             'modelo' => $this->nuevoModelo,
         ]);
 
         $this->vehiculoId = $vehiculo->id;
         $this->creandoVehiculoNuevo = false;
-    }
+
+        $this->dispatch('minToast', titulo: '¡Éxito!', mensaje: 'Vehículo registrado correctamente.', icono: 'success');
+    }*/
 
     public function irAPaso2()
     {
         $this->validate([
             'clienteId' => 'required|exists:clientes,id',
             'vehiculoId' => 'required|exists:vehiculos,id',
+        ], [
+            'clienteId.required' => 'Debes seleccionar un cliente.',
+            'vehiculoId.required' => 'Debes seleccionar un vehículo.',
         ]);
 
         $this->paso = 2;
@@ -149,6 +176,7 @@ class CrearSimple extends Component
         $this->serviceId = $servicio->id;
         $this->precioLista = $servicio->precio_base;
         $this->precioFinal = $servicio->precio_base;
+        $this->descuentoMotivo = '';
     }
 
     public function irAPaso3()
@@ -156,6 +184,8 @@ class CrearSimple extends Component
         $this->validate([
             'serviceId' => 'required|exists:services,id',
             'precioFinal' => 'required|numeric|min:0',
+        ], [
+            'serviceId.required' => 'Debes seleccionar un servicio.',
         ]);
 
         if (bccomp($this->precioFinal, $this->precioLista, 2) !== 0 && empty($this->descuentoMotivo)) {
@@ -172,14 +202,12 @@ class CrearSimple extends Component
 
         if (!$sesion) {
             $this->addError('caja', 'No hay una caja abierta. Pide al cajero que abra caja antes de cobrar.');
+            $this->dispatch('minToast', titulo: 'Error', mensaje: 'No hay una caja abierta actualmente.', icono: 'error');
             return;
         }
 
-        $this->validate(['metodoPago' => 'required|in:efectivo,tarjeta,transferencia,otro']);
-
-        // Defensa extra: revalida todo el estado antes de tocar la BD,
-        // por si el navegador quedó con datos viejos entre pasos
         $this->validate([
+            'metodoPago' => 'required|in:efectivo,tarjeta,transferencia,otro',
             'clienteId' => 'required|exists:clientes,id',
             'vehiculoId' => 'required|exists:vehiculos,id',
             'serviceId' => 'required|exists:services,id',
@@ -195,9 +223,7 @@ class CrearSimple extends Component
                     'estado' => 'entregada',
                     'precio_lista' => $this->precioLista,
                     'precio_final' => $this->precioFinal,
-                    'descuento_motivo' => bccomp($this->precioFinal, $this->precioLista, 2) !== 0
-                        ? $this->descuentoMotivo : null,
-                    //'creado_por' => auth()->id(), Auth::id(),
+                    'descuento_motivo' => bccomp((string)$this->precioFinal, (string)$this->precioLista, 2) !== 0 ? $this->descuentoMotivo : null,
                     'creado_por' => Auth::id(),
                 ]);
 
@@ -207,7 +233,6 @@ class CrearSimple extends Component
                     'monto' => $this->precioFinal,
                     'concepto' => 'Cobro orden #' . $orden->id . ' - ' . $orden->service->nombre,
                     'service_order_id' => $orden->id,
-                    //'usuario_id' => auth()->id(),
                     'usuario_id' => Auth::id(),
                 ]);
 
@@ -216,7 +241,6 @@ class CrearSimple extends Component
                     'folio' => Comprobante::generarFolio(),
                     'monto' => $this->precioFinal,
                     'metodo_pago' => $this->metodoPago,
-                    //'emitido_por' => auth()->id(),
                     'emitido_por' => Auth::id(),
                 ]);
 
@@ -224,12 +248,15 @@ class CrearSimple extends Component
                 $this->folioGenerado = $comprobante->folio;
             });
         } catch (\Throwable $e) {
-            report($e); // queda en tu log de Laravel para que lo revises
-            $this->addError('caja', 'Ocurrió un error al procesar el cobro. Intenta de nuevo, si persiste avisa al administrador.');
+            report($e); // queda en tu log de Laravel
+            $this->addError('caja', 'Ocurrió un error al procesar el cobro. Intenta de nuevo.');
+            $this->dispatch('minToast', titulo: 'Error', mensaje: 'Error al procesar el cobro.', icono: 'error');
             return;
         }
 
         $this->paso = 4;
+
+        $this->dispatch('minToast', titulo: '¡Orden Creada!', mensaje: "La orden #{$this->ordenCreadaId} ha sido procesada con éxito.", icono: 'success');
     }
 
     public function render()

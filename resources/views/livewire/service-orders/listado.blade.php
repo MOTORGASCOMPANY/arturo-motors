@@ -54,88 +54,89 @@
             </div>
 
             <!-- Tabla -->
-            <div class="overflow-x-auto">
-                <table class="min-w-full leading-normal rounded-md overflow-hidden">
-                    <thead>
-                        <tr>
-                            <th
-                                class="px-4 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase">
-                                Fecha</th>
-                            <th
-                                class="px-4 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase">
-                                Folio</th>
-                            <th
-                                class="px-4 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase">
-                                Cliente</th>
-                            <th
-                                class="px-4 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase">
-                                Vehículo</th>
-                            <th
-                                class="px-4 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase">
-                                Servicio</th>
-                            <th
-                                class="px-4 py-3 border-b-2 border-gray-200 bg-gray-100 text-right text-xs font-semibold text-gray-600 uppercase">
-                                Monto</th>
-                            <th
-                                class="px-4 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase">
-                                Estado</th>
-                            <th class="px-4 py-3 border-b-2 border-gray-200 bg-gray-100"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($ordenes as $orden)
+            @if ($ordenes->count())
+                <div class="overflow-x-auto">
+                    <table class="min-w-full leading-normal rounded-md overflow-hidden">
+                        <thead>
                             <tr>
-                                <td class="px-4 py-3 border-b border-gray-200 bg-white text-sm">
-                                    {{ $orden->created_at->format('d/m/Y H:i') }}</td>
-                                <td class="px-4 py-3 font-medium border-b border-gray-200 bg-white text-sm">
-                                    {{ $orden->comprobante->folio ?? '—' }}</td>
-                                <td class="px-4 py-3 border-b border-gray-200 bg-white text-sm">
-                                    {{ $orden->cliente->nombre }} {{ $orden->cliente->apellido }}</td>
-                                <td class="px-4 py-3 border-b border-gray-200 bg-white text-sm">
-                                    {{ $orden->vehiculo->placa }}</td>
-                                <td class="px-4 py-3 border-b border-gray-200 bg-white text-sm">
-                                    {{ $orden->service->nombre }}
-                                    @if ($orden->service->tipo === 'conversion')
+                                <th class="px-4 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase">
+                                    Fecha
+                                </th>
+                                <th class="px-4 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase">
+                                    Folio
+                                </th>
+                                <th class="px-4 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase">
+                                    Cliente
+                                </th>
+                                <th class="px-4 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase">
+                                    Vehículo
+                                </th>
+                                <th class="px-4 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase">
+                                    Servicio
+                                </th>
+                                <th class="px-4 py-3 border-b-2 border-gray-200 bg-gray-100 text-right text-xs font-semibold text-gray-600 uppercase">
+                                    Monto
+                                </th>
+                                <th class="px-4 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase">
+                                    Estado
+                                </th>
+                                <th class="px-4 py-3 border-b-2 border-gray-200 bg-gray-100"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($ordenes as $orden)
+                                <tr>
+                                    <td class="px-4 py-3 border-b border-gray-200 bg-white text-sm">
+                                        {{ $orden->created_at->format('d/m/Y H:i') }}</td>
+                                    <td class="px-4 py-3 font-medium border-b border-gray-200 bg-white text-sm">
+                                        {{ $orden->comprobante->folio ?? '—' }}</td>
+                                    <td class="px-4 py-3 border-b border-gray-200 bg-white text-sm">
+                                        {{ $orden->cliente->nombre }} {{ $orden->cliente->apellido }}</td>
+                                    <td class="px-4 py-3 border-b border-gray-200 bg-white text-sm">
+                                        {{ $orden->vehiculo->placa }}</td>
+                                    <td class="px-4 py-3 border-b border-gray-200 bg-white text-sm">
+                                        {{ $orden->service->nombre }}
+                                        @if ($orden->service->tipo === 'conversion')
+                                            <span
+                                                class="ml-1 text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">Conversión</span>
+                                        @endif
+                                    </td>
+                                    <td
+                                        class="px-4 py-3 text-right font-semibold border-b border-gray-200 bg-white text-sm">
+                                        S/
+                                        {{ number_format($orden->precio_final, 2) }}
+                                    </td>
+                                    <td class="px-4 py-3 text-center border-b border-gray-200 bg-white text-sm">
                                         <span
-                                            class="ml-1 text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">Conversión</span>
-                                    @endif
-                                </td>
-                                <td
-                                    class="px-4 py-3 text-right font-semibold border-b border-gray-200 bg-white text-sm">
-                                    S/
-                                    {{ number_format($orden->precio_final, 2) }}
-                                </td>
-                                <td class="px-4 py-3 text-center border-b border-gray-200 bg-white text-sm">
-                                    <span
-                                        class="px-2 py-1 rounded-full text-xs font-semibold
-                                            {{ match (true) {
-                                                str_contains($orden->estado, 'cancel') || str_contains($orden->estado, 'rechaz') => 'bg-red-100 text-red-700',
-                                                in_array($orden->estado, ['entregada', 'entregado']) => 'bg-emerald-100 text-emerald-700',
-                                                default => 'bg-amber-100 text-amber-700',
-                                            } }}">
-                                        {{ ucfirst(str_replace('_', ' ', $orden->estado)) }}
-                                    </span>
-                                </td>
-                                <td class="px-4 py-3 text-right border-b border-gray-200 bg-white text-sm">
-                                    @if ($orden->comprobante)
-                                        <a href="{{ route('comprobantes.pdf', $orden->id) }}" target="_blank"
-                                            class="text-blue-600 text-xs font-semibold">Ver PDF →</a>
-                                    @endif
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="8" class="px-4 py-8 text-center text-gray-400">No hay órdenes
-                                    registradas.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+                                            class="px-2 py-1 rounded-full text-xs font-semibold
+                                                {{ match (true) {
+                                                    str_contains($orden->estado, 'cancel') || str_contains($orden->estado, 'rechaz') => 'bg-red-100 text-red-700',
+                                                    in_array($orden->estado, ['entregada', 'entregado']) => 'bg-emerald-100 text-emerald-700',
+                                                    default => 'bg-amber-100 text-amber-700',
+                                                } }}">
+                                            {{ ucfirst(str_replace('_', ' ', $orden->estado)) }}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-3 text-right border-b border-gray-200 bg-white text-sm">
+                                        @if ($orden->comprobante)
+                                            <a href="{{ route('comprobantes.pdf', $orden->id) }}" target="_blank"
+                                                class="text-blue-600 text-xs font-semibold">Ver PDF →</a>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
 
-            <div class="p-4 border-t border-gray-200/60">
-                {{ $ordenes->links() }}
-            </div>
+                <div class="p-4 border-t border-gray-200/60">
+                    {{ $ordenes->links() }}
+                </div>
+            @else
+                <div class="px-6 py-4 text-center font-bold bg-indigo-200 rounded-md">
+                    No hay órdenes registradas.
+                </div>
+            @endif
         </div>
     </div>
 </div>
