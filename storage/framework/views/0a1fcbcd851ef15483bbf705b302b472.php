@@ -1,0 +1,1 @@
+components.cms.layout<?php /**PATH C:\xampp\htdocs\arturo-motors\storage\framework\views/c9851d2099537f345ed34436e4e281b8.blade.php ENDPATH**/ ?>
