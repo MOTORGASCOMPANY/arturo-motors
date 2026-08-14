@@ -59,7 +59,7 @@
             <div class="swiper-wrapper">
                 <?php if(isset($sections['hero']) && count($sections['hero']->mediaItems) > 0): ?>
                     <?php $__currentLoopData = $sections['hero']->mediaItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $pm): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                        <div class="swiper-slide" style="background-image: url('<?php echo e(asset('storage/' . $pm->media->file_path)); ?>'); background-size: cover; background-position: center;"></div>
+                        <div class="swiper-slide" style="background-image: url('<?php echo e($pm->media->bestUrl()); ?>'); background-size: cover; background-position: center;"></div>
                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 <?php else: ?>
                     <div class="swiper-slide slide-1"></div>
@@ -137,14 +137,14 @@
                     <div class="about-image-wrapper">
                         <div class="main-img-box">
                             <?php if(isset($sections['about']) && count($sections['about']->mediaItems) > 0): ?>
-                                <img src="<?php echo e(asset('storage/' . $sections['about']->mediaItems->first()->media->file_path)); ?>" alt="Taller Mecánico Arturo Motors" class="img-fluid rounded-4 shadow-lg">
+                                <img src="<?php echo e($sections['about']->mediaItems->first()->media->bestUrl()); ?>" alt="Taller Mecánico Arturo Motors" class="img-fluid rounded-4 shadow-lg">
                             <?php else: ?>
                                 <img src="https://images.unsplash.com/photo-1530046339160-ce3e530c7d2f?q=80&w=800" alt="Taller Mecánico Arturo Motors" class="img-fluid rounded-4 shadow-lg">
                             <?php endif; ?>
                         </div>
                         <div class="secondary-img-box d-none d-sm-block">
                             <?php if(isset($sections['about']) && count($sections['about']->mediaItems) > 1): ?>
-                                <img src="<?php echo e(asset('storage/' . $sections['about']->mediaItems->skip(1)->first()->media->file_path)); ?>" alt="Diagnóstico Computarizado" class="img-fluid rounded-4 shadow-2xl">
+                                <img src="<?php echo e($sections['about']->mediaItems->skip(1)->first()->media->bestUrl()); ?>" alt="Diagnóstico Computarizado" class="img-fluid rounded-4 shadow-2xl">
                             <?php else: ?>
                                 <img src="https://images.unsplash.com/photo-1625047509168-a7026f36de04?q=80&w=500" alt="Diagnóstico Computarizado" class="img-fluid rounded-4 shadow-2xl">
                             <?php endif; ?>

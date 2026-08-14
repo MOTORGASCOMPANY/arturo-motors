@@ -27,6 +27,25 @@ class Media extends Model
         return asset('storage/'.$this->file_path);
     }
 
+    public function webpUrl()
+    {
+        $webpPath = $this->meta['webp_path'] ?? null;
+        if ($webpPath && \File::exists(public_path('storage/'.$webpPath))) {
+            return asset('storage/'.$webpPath);
+        }
+        return null;
+    }
+
+    public function bestUrl()
+    {
+        return $this->webpUrl() ?? $this->url();
+    }
+
+    public function fileExists(): bool
+    {
+        return \File::exists(public_path('storage/'.$this->file_path));
+    }
+
     public function scopeByType($query, $type)
     {
         return $query->where('file_type', $type);

@@ -63,6 +63,20 @@ class Contratos extends Component
     {
         $contrato = Contrato::find($id);
         if ($contrato) {
+            // Delete associated file from storage
+            if ($contrato->contrato_path) {
+                \Storage::disk('public')->delete($contrato->contrato_path);
+            }
+
+            // Delete associated planilla files
+            foreach ($contrato->planillas as $planilla) {
+                foreach ($planilla->archivos as $archivo) {
+                    if ($archivo->ruta) {
+                        \Storage::disk('public')->delete($archivo->ruta);
+                    }
+                }
+            }
+
             $contrato->delete();
             $this->dispatch('minAlert', titulo: 'ELIMINADO', mensaje: 'Contrato borrado correctamente.', icono: 'warning');
         }

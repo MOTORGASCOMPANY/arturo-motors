@@ -150,12 +150,26 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
 
             $path = $request->file->store('cms', 'public');
 
+            // Auto-optimize: convert to WebP + generate responsive sizes
+            $meta = [];
+            try {
+                $optimizationService = app(\App\Services\ImageOptimizationService::class);
+                $optimized = $optimizationService->optimizeAndConvert($path);
+                $meta = [
+                    'webp_path' => $optimized['webp'],
+                    'responsive_paths' => $optimized['responsive'],
+                ];
+            } catch (\Throwable $e) {
+                // Upload succeeds even if optimization fails
+            }
+
             $media = Media::create([
                 'name' => $request->file->getClientOriginalName(),
                 'file_path' => $path,
                 'file_type' => 'image',
                 'mime_type' => $request->file->getMimeType(),
                 'file_size' => $request->file->getSize(),
+                'meta' => $meta,
             ]);
 
             PageMedia::create([

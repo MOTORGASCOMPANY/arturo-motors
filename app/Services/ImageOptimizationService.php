@@ -4,7 +4,9 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\Encoders\WebpEncoder;
 use Intervention\Image\ImageManager;
+use Intervention\Image\Modifiers\ScaleDownModifier;
 
 class ImageOptimizationService
 {
@@ -27,7 +29,7 @@ class ImageOptimizationService
             throw new \InvalidArgumentException("Image not found: {$path}");
         }
 
-        $image = $this->manager->read($diskInstance->path($path));
+        $image = $this->manager->decodePath($diskInstance->path($path));
 
         // Generate WebP version
         $webpPath = $this->generateWebP($image, $path, $diskInstance);
@@ -50,8 +52,9 @@ class ImageOptimizationService
         $pathInfo = pathinfo($originalPath);
         $webpPath = $pathInfo['dirname'].'/'.$pathInfo['filename'].'.webp';
 
-        // Convert to WebP with 85% quality
-        $image->toWebP(85)->save($disk->path($webpPath));
+        // Convert to WebP with 85% quality (Intervention v4 API)
+        $encoded = $image->encode(new WebpEncoder(quality: 85));
+        $encoded->save($disk->path($webpPath));
 
         return $webpPath;
     }
@@ -76,9 +79,13 @@ class ImageOptimizationService
         $responsive = [];
 
         foreach ($sizes as $suffix => $width) {
-            $resizedImage = $image->scaleDown(width: $width);
+            // Scale down using Intervention v4 modifier API
+            $resizedImage = clone $image;
+            $resizedImage->modify(new ScaleDownModifier(width: $width));
+
             $responsivePath = "{$dirname}/{$baseName}-{$suffix}.webp";
-            $resizedImage->toWebP(80)->save($disk->path($responsivePath));
+            $encoded = $resizedImage->encode(new WebpEncoder(quality: 80));
+            $encoded->save($disk->path($responsivePath));
             $responsive[$suffix] = $responsivePath;
         }
 

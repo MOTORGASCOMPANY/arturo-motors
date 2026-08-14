@@ -1,1 +1,0 @@
-components.cms.layout

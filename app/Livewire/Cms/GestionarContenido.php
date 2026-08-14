@@ -185,13 +185,35 @@ class GestionarContenido extends Component
     {
         try {
             $pm = PageMedia::findOrFail($pageMediaId);
-            $pm->media->delete();
+            $media = $pm->media;
+
+            // DEBUG: log what we're trying to delete
+            \Log::info('removeMedia DEBUG', [
+                'pageMediaId' => $pageMediaId,
+                'media_id' => $media?->id,
+                'file_path' => $media?->file_path,
+                'full_path' => $media ? \Storage::disk('public')->path($media->file_path) : null,
+                'file_exists' => $media ? \Storage::disk('public')->exists($media->file_path) : false,
+            ]);
+
+            // Delete physical file and optimized versions from storage
+            if ($media && $media->file_path) {
+                $deleted = \Storage::disk('public')->delete($media->file_path);
+                \Log::info('Storage delete result', ['path' => $media->file_path, 'deleted' => $deleted]);
+
+                // Delete optimized versions (webp, responsive sizes)
+                $optimizationService = app(\App\Services\ImageOptimizationService::class);
+                $optimizationService->deleteOptimizedVersions($media->file_path);
+            }
+
+            $media->delete();
             $pm->delete();
             $this->loadSections();
             $this->refreshKey = time();
             $this->successMessage = 'Imagen eliminada';
             session()->flash('success', 'Imagen eliminada');
         } catch (\Throwable $e) {
+            \Log::error('removeMedia ERROR', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             $this->errorMessage = 'No se pudo eliminar la imagen';
         }
     }
