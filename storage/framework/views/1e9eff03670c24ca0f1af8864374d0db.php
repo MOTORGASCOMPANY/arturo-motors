@@ -67,26 +67,26 @@
          class="fixed top-4 right-4 sm:top-6 sm:right-6 z-[99999] flex flex-col gap-3 w-72 sm:w-80 pointer-events-none">
     </div>
 
-    @if($successMessage)
+    <?php if($successMessage): ?>
         <div x-data
-             x-init="showToast('success', @js($successMessage)); $wire.clearSuccessMessage()"
+             x-init="showToast('success', <?php echo \Illuminate\Support\Js::from($successMessage)->toHtml() ?>); $wire.clearSuccessMessage()"
              style="display:none">
         </div>
-    @endif
+    <?php endif; ?>
 
-    @if($errorMessage)
+    <?php if($errorMessage): ?>
         <div x-data
-             x-init="showToast('error', @js($errorMessage)); $wire.clearErrorMessage()"
+             x-init="showToast('error', <?php echo \Illuminate\Support\Js::from($errorMessage)->toHtml() ?>); $wire.clearErrorMessage()"
              style="display:none">
         </div>
-    @endif
+    <?php endif; ?>
 
-    @if (session()->has('success') && !$successMessage)
+    <?php if(session()->has('success') && !$successMessage): ?>
         <div x-data
-             x-init="showToast('success', @js(session('success')))"
+             x-init="showToast('success', <?php echo \Illuminate\Support\Js::from(session('success'))->toHtml() ?>)"
              style="display:none">
         </div>
-    @endif
+    <?php endif; ?>
 
 
     <div x-data="{ show: false, startTime: 0 }"
@@ -167,43 +167,45 @@
 
         <span class="self-start sm:self-auto bg-blue-50 text-blue-700 text-xs font-semibold px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full border border-blue-200">
 
-            {{ $pageTitle }}
+            <?php echo e($pageTitle); ?>
+
 
         </span>
 
     </div>
 
 
-    <div x-data="{ activeTab: '{{ $sections[0]['id'] ?? '' }}' }"
+    <div x-data="{ activeTab: '<?php echo e($sections[0]['id'] ?? ''); ?>' }"
          class="mx-3 sm:mx-4">
 
         <div class="flex overflow-x-auto gap-2.5 sm:gap-3 pb-4 mb-4 hide-scrollbar">
 
-            @foreach($sections as $section)
+            <?php $__currentLoopData = $sections; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $section): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
 
                 <button
-                    @click="activeTab = '{{ $section['id'] }}'"
-                    :class="activeTab === '{{ $section['id'] }}' ? 'bg-blue-600 text-white shadow-md shadow-blue-200 border-blue-600' : 'bg-white text-slate-600 border-blue-100 hover:bg-blue-50 hover:text-blue-700'"
+                    @click="activeTab = '<?php echo e($section['id']); ?>'"
+                    :class="activeTab === '<?php echo e($section['id']); ?>' ? 'bg-blue-600 text-white shadow-md shadow-blue-200 border-blue-600' : 'bg-white text-slate-600 border-blue-100 hover:bg-blue-50 hover:text-blue-700'"
                     class="px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl font-semibold text-xs sm:text-sm whitespace-nowrap border transition-all duration-300 flex items-center gap-2 shrink-0">
 
                     <i class="fa-solid fa-layer-group text-xs"
-                       :class="activeTab === '{{ $section['id'] }}' ? 'text-white' : 'text-blue-400'">
+                       :class="activeTab === '<?php echo e($section['id']); ?>' ? 'text-white' : 'text-blue-400'">
                     </i>
 
-                    {{ $section['title'] }}
+                    <?php echo e($section['title']); ?>
+
 
                 </button>
 
-            @endforeach
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 
         </div>
 
 
         <div class="relative">
 
-            @foreach ($sections as $section)
+            <?php $__currentLoopData = $sections; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $section): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
 
-                @php
+                <?php
 
                     $imageLimits = [
                         'hero' => 5,
@@ -218,11 +220,11 @@
 
                     $hasImages = $maxImages > 0;
 
-                @endphp
+                ?>
 
 
                 <div
-                    x-show="activeTab === '{{ $section['id'] }}'"
+                    x-show="activeTab === '<?php echo e($section['id']); ?>'"
                     x-transition:enter="transition ease-out duration-300"
                     x-transition:enter-start="opacity-0 transform translate-y-4"
                     x-transition:enter-end="opacity-100 transform translate-y-0"
@@ -247,11 +249,26 @@
 
                             <div class="flex-1 flex flex-col justify-center">
 
-                                <x-section-preview
-                                    :section="$section"
-                                    :refreshKey="$refreshKey"
-                                    :highlight="$highlightSection === $section['key']"
-                                />
+                                <?php if (isset($component)) { $__componentOriginalc3edb14a55a464decbec9b7f341403d3 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginalc3edb14a55a464decbec9b7f341403d3 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.section-preview','data' => ['section' => $section,'refreshKey' => $refreshKey,'highlight' => $highlightSection === $section['key']]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('section-preview'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['section' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute($section),'refreshKey' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute($refreshKey),'highlight' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute($highlightSection === $section['key'])]); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginalc3edb14a55a464decbec9b7f341403d3)): ?>
+<?php $attributes = $__attributesOriginalc3edb14a55a464decbec9b7f341403d3; ?>
+<?php unset($__attributesOriginalc3edb14a55a464decbec9b7f341403d3); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginalc3edb14a55a464decbec9b7f341403d3)): ?>
+<?php $component = $__componentOriginalc3edb14a55a464decbec9b7f341403d3; ?>
+<?php unset($__componentOriginalc3edb14a55a464decbec9b7f341403d3); ?>
+<?php endif; ?>
 
                             </div>
 
@@ -273,7 +290,8 @@
                                     <div class="min-w-0">
 
                                         <h6 class="font-bold text-blue-950 text-base sm:text-lg truncate">
-                                            {{ $section['title'] }}
+                                            <?php echo e($section['title']); ?>
+
                                         </h6>
 
                                         <p class="text-slate-500 text-xs truncate">
@@ -281,7 +299,8 @@
                                             Clave interna:
 
                                             <code class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded font-mono">
-                                                {{ $section['key'] }}
+                                                <?php echo e($section['key']); ?>
+
                                             </code>
 
                                         </p>
@@ -291,7 +310,7 @@
                                 </div>
 
 
-                                @if($hasImages && $currentCount > 0)
+                                <?php if($hasImages && $currentCount > 0): ?>
 
                                     <div class="mb-4 sm:mb-5">
 
@@ -303,7 +322,7 @@
 
                                             <span class="bg-blue-100 text-blue-700 px-2.5 py-0.5 rounded-full self-start sm:self-auto">
 
-                                                {{ $currentCount }}/{{ $maxImages }} permitidas
+                                                <?php echo e($currentCount); ?>/<?php echo e($maxImages); ?> permitidas
 
                                             </span>
 
@@ -312,18 +331,18 @@
 
                                         <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3">
 
-                                            @foreach($section['media_items'] as $pm)
+                                            <?php $__currentLoopData = $section['media_items']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $pm): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
 
                                                 <div class="relative group rounded-xl overflow-hidden border border-blue-100 bg-white shadow-sm">
 
                                                     <img
-                                                        src="{{ asset('storage/' . $pm['media']['file_path']) }}"
+                                                        src="<?php echo e(asset('storage/' . $pm['media']['file_path'])); ?>"
                                                         class="w-full h-20 sm:h-24 object-cover">
 
                                                     <div class="absolute inset-0 bg-blue-950/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-1.5 sm:gap-2 backdrop-blur-[2px] p-2">
 
                                                         <a
-                                                            href="{{ asset('storage/' . $pm['media']['file_path']) }}"
+                                                            href="<?php echo e(asset('storage/' . $pm['media']['file_path'])); ?>"
                                                             target="_blank"
                                                             class="bg-white text-blue-900 text-[11px] sm:text-xs font-semibold px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg hover:bg-blue-50 flex items-center gap-1 transition-all w-full justify-center">
 
@@ -335,7 +354,7 @@
 
                                                         <button
                                                             type="button"
-                                                            onclick="confirmDeleteImage({{ $pm['id'] }})"
+                                                            onclick="confirmDeleteImage(<?php echo e($pm['id']); ?>)"
                                                             class="bg-red-500 text-white text-[11px] sm:text-xs font-semibold px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg hover:bg-red-600 flex items-center gap-1 transition-all w-full justify-center">
 
                                                             <i class="fa-solid fa-trash"></i>
@@ -348,26 +367,26 @@
 
                                                 </div>
 
-                                            @endforeach
+                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 
                                         </div>
 
                                     </div>
 
-                                @endif
+                                <?php endif; ?>
 
 
-                                @if($hasImages)
+                                <?php if($hasImages): ?>
 
                                     <div class="mb-4 sm:mb-5">
 
-                                        @if($canUpload)
+                                        <?php if($canUpload): ?>
 
                                             <div class="bg-white rounded-xl p-3 sm:p-3.5 border border-blue-100 shadow-sm">
 
                                                 <input
                                                     type="file"
-                                                    id="file-{{ $section['id'] }}"
+                                                    id="file-<?php echo e($section['id']); ?>"
                                                     accept="image/*"
                                                     class="hidden">
 
@@ -375,13 +394,13 @@
 
                                                     <button
                                                         type="button"
-                                                        onclick="document.getElementById('file-{{ $section['id'] }}').click()"
+                                                        onclick="document.getElementById('file-<?php echo e($section['id']); ?>').click()"
                                                         class="w-full sm:flex-1 text-xs sm:text-sm border-2 border-dashed border-blue-200 rounded-xl px-3 py-2 sm:px-4 sm:py-2.5 bg-blue-50/50 text-left text-blue-800 hover:bg-blue-50 hover:border-blue-400 transition-all cursor-pointer flex items-center truncate">
 
                                                         <i class="fa-solid fa-image text-blue-500 mr-2 text-base shrink-0"></i>
 
                                                         <span
-                                                            id="file-label-{{ $section['id'] }}"
+                                                            id="file-label-<?php echo e($section['id']); ?>"
                                                             class="truncate">
 
                                                             Selecciona una imagen...
@@ -392,7 +411,7 @@
 
                                                     <button
                                                         type="button"
-                                                        onclick="jsUpload({{ $section['id'] }}, this)"
+                                                        onclick="jsUpload(<?php echo e($section['id']); ?>, this)"
                                                         class="w-full sm:w-auto bg-blue-600 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl hover:bg-blue-700 hover:shadow-md hover:shadow-blue-200 font-semibold transition-all flex justify-center items-center gap-2 text-sm shrink-0">
 
                                                         <i class="fa-solid fa-upload"></i>
@@ -405,13 +424,13 @@
 
 
                                                 <div
-                                                    id="upload-progress-{{ $section['id'] }}"
+                                                    id="upload-progress-<?php echo e($section['id']); ?>"
                                                     class="hidden mt-2">
 
                                                     <div class="h-1.5 bg-blue-100 rounded-full overflow-hidden">
 
                                                         <div
-                                                            id="upload-bar-{{ $section['id'] }}"
+                                                            id="upload-bar-<?php echo e($section['id']); ?>"
                                                             class="h-full bg-emerald-500 rounded-full transition-all duration-300"
                                                             style="width: 0%">
                                                         </div>
@@ -431,7 +450,7 @@
 
                                             </div>
 
-                                        @else
+                                        <?php else: ?>
 
                                             <div class="bg-emerald-50 rounded-xl p-3 border border-emerald-200 text-center flex items-center justify-center gap-2">
 
@@ -439,17 +458,17 @@
 
                                                 <p class="text-emerald-700 text-xs font-semibold">
 
-                                                    Límite de imágenes alcanzado ({{ $maxImages }})
+                                                    Límite de imágenes alcanzado (<?php echo e($maxImages); ?>)
 
                                                 </p>
 
                                             </div>
 
-                                        @endif
+                                        <?php endif; ?>
 
                                     </div>
 
-                                @endif
+                                <?php endif; ?>
 
                             </div>
 
@@ -460,25 +479,26 @@
                                     Contenido de Texto
                                 </h6>
 
-                                @if ($errors->any())
+                                <?php if($errors->any()): ?>
 
                                     <div class="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-xl text-xs shadow-sm">
 
-                                        @foreach ($errors->all() as $error)
+                                        <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
 
                                             <p class="flex items-start gap-1.5">
 
                                                 <i class="fa-solid fa-circle-exclamation mt-0.5"></i>
 
-                                                {{ $error }}
+                                                <?php echo e($error); ?>
+
 
                                             </p>
 
-                                        @endforeach
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 
                                     </div>
 
-                                @endif
+                                <?php endif; ?>
 
 
                                 <div class="space-y-3">
@@ -494,8 +514,8 @@
                                         <input
                                             type="text"
                                             class="w-full border border-blue-200 rounded-xl px-3.5 py-2 text-xs sm:text-sm focus:ring-2 focus:ring-blue-600 focus:border-blue-600 bg-white text-blue-950 transition-all"
-                                            wire:model="sectionData.{{ $section['id'] }}.title"
-                                            wire:focus="editSection({{ $section['id'] }})">
+                                            wire:model="sectionData.<?php echo e($section['id']); ?>.title"
+                                            wire:focus="editSection(<?php echo e($section['id']); ?>)">
 
                                     </div>
 
@@ -511,8 +531,8 @@
                                         <input
                                             type="text"
                                             class="w-full border border-blue-200 rounded-xl px-3.5 py-2 text-xs sm:text-sm focus:ring-2 focus:ring-blue-600 focus:border-blue-600 bg-white text-blue-950 transition-all"
-                                            wire:model="sectionData.{{ $section['id'] }}.subtitle"
-                                            wire:focus="editSection({{ $section['id'] }})">
+                                            wire:model="sectionData.<?php echo e($section['id']); ?>.subtitle"
+                                            wire:focus="editSection(<?php echo e($section['id']); ?>)">
 
                                     </div>
 
@@ -528,8 +548,8 @@
                                         <textarea
                                             class="w-full border border-blue-200 rounded-xl px-3.5 py-2 text-xs sm:text-sm focus:ring-2 focus:ring-blue-600 focus:border-blue-600 bg-white text-blue-950 transition-all"
                                             rows="3"
-                                            wire:model="sectionData.{{ $section['id'] }}.description"
-                                            wire:focus="editSection({{ $section['id'] }})"></textarea>
+                                            wire:model="sectionData.<?php echo e($section['id']); ?>.description"
+                                            wire:focus="editSection(<?php echo e($section['id']); ?>)"></textarea>
 
                                     </div>
 
@@ -539,7 +559,7 @@
                                         <button
                                             type="button"
                                             class="w-full sm:w-auto px-5 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md hover:shadow-blue-200 text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2"
-                                            onclick="confirmSaveSection({{ $section['id'] }})">
+                                            onclick="confirmSaveSection(<?php echo e($section['id']); ?>)">
 
                                             <i class="fa-solid fa-check"></i>
 
@@ -559,7 +579,7 @@
 
                 </div>
 
-            @endforeach
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 
         </div>
 
@@ -789,7 +809,7 @@
 
                 if (result.isConfirmed) {
 
-                    @this.call(
+                    window.Livewire.find('<?php echo e($_instance->getId()); ?>').call(
                         'saveSection',
                         sectionId
                     );
@@ -848,7 +868,7 @@
                         })
                     );
 
-                    @this.call(
+                    window.Livewire.find('<?php echo e($_instance->getId()); ?>').call(
                         'removeMedia',
                         mediaId
                     ).then(() => {
@@ -931,7 +951,7 @@
                 '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Subiendo...';
 
 
-            fetch('{{ route("cms.upload-media") }}', {
+            fetch('<?php echo e(route("cms.upload-media")); ?>', {
 
                 method: 'POST',
 
@@ -1111,4 +1131,4 @@
 
     </script>
 
-</div>
+</div><?php /**PATH C:\xampp\htdocs\arturo-motors\resources\views\livewire\cms\gestionar-contenido.blade.php ENDPATH**/ ?>
