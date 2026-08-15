@@ -153,8 +153,7 @@
         </div>
 
     </div>
-
-
+     
     <div class="m-8 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6 pb-4 border-b border-blue-100 mx-3 sm:mx-4">
 
         <h4 class="text-xl sm:text-2xl font-bold text-blue-950 flex items-center gap-2.5 sm:gap-3">
@@ -754,7 +753,7 @@
 
         }, true);
 
-
+        // se confirma la acción de guardar cambios en una sección
         function confirmSaveSection(sectionId) {
 
             Swal.fire({
