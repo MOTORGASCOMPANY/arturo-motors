@@ -106,587 +106,498 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
     </nav>
     <!-- Navbar end -->
 
-    <!-- Sidebar start-->
-    <div id="containerSidebar" class="z-40">
-        <div class="navbar-menu relative z-40">
-            <nav id="sidebar" class="fixed left-0 bottom-0 flex w-3/4 -translate-x-full flex-col bg-gradient-to-br from-slate-600 via-blue-700 to-slate-600 pt-2 sm:max-w-xs lg:w-80">
-                <!-- one category / navigation group -->
-                <div class="px-4 overflow-y-auto">
-                    <h3 class="mb-2 text-xs font-medium uppercase text-gray-300">
-                        Menu principal
-                    </h3>
-                    <ul class="text-sm font-medium">
-                        <li>
-                            <a class="flex items-center rounded py-3 pl-3 pr-4  space-x-6 text-gray-50 hover:bg-gray-600"
-                                href="{{ route('inicio') }}">
-                                <i class="fas fa-home -mt-1"></i>
-                                <span class="select-none">Inicio</span>
-                            </a>
-                        </li>
-
-                        {{--             OPCIONES PARA CITAS                    --}}
-                        {{-- 
-                        @can('opciones.citas')
-                            <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
-                                x-data="{ Open: false }" wire:ignore>
-                                <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
-                                    x-on:click="Open = !Open">
-                                    <span class="inline-flex items-center space-x-6  text-sm text-white ">
-                                        <i class="fa-solid fa-calendar-days"></i>
-                                        <span class="select-none">Citas</span>
-                                    </span>
-                                    <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
-                                    <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
-                                </div>
-                                <div x-show="Open" x-cloak x-transition:enter="transition-all ease-in-out duration-300"
-                                    x-transition:enter-start="opacity-0 max-h-0"
-                                    x-transition:enter-end="opacity-100 max-h-xl"
-                                    x-transition:leave="transition-all ease-in-out duration-300"
-                                    x-transition:leave-start="opacity-100 max-h-xl"
-                                    x-transition:leave-end="opacity-0 max-h-0">
-                                    <ul class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
-                                        aria-label="submenu">
-
-                                        <li class="transition-colors duration-150">
-                                            <x-responsive-nav-link class="text-sm" href="{{ route('ListaCitas') }}"
-                                                :active="request()->routeIs('ListaCitas')">
-                                                Lista citas
-                                            </x-responsive-nav-link>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </li>
-                        @endcan
-                        --}}
-
-                        {{--             OPCIONES PARA CAJA              --}}
-                        @can('opciones.caja')
-                            <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
-                                x-data="{ Open: false }" wire:ignore>
-                                <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
-                                    x-on:click="Open = !Open">
-                                    <span class="inline-flex items-center space-x-6  text-sm text-white ">
-                                        <i class="fa-solid fa-cash-register text-lg"></i>
-                                        <span class="select-none">Caja</span>
-                                    </span>
-                                    <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
-                                    <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
-                                </div>
-                                <div x-show="Open" x-cloak x-transition:enter="transition-all ease-in-out duration-300"
-                                    x-transition:enter-start="opacity-0 max-h-0"
-                                    x-transition:enter-end="opacity-100 max-h-xl"
-                                    x-transition:leave="transition-all ease-in-out duration-300"
-                                    x-transition:leave-start="opacity-100 max-h-xl"
-                                    x-transition:leave-end="opacity-0 max-h-0">
-                                    <ul class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
-                                        aria-label="submenu">
-
-                                        <li class="transition-colors duration-150">
-                                            <x-responsive-nav-link class="text-sm" href="{{ route('caja.abrir') }}"
-                                                :active="request()->routeIs('caja.abrir')">
-                                                Abrir caja
-                                            </x-responsive-nav-link>
-                                        </li>
-                                        <li class="transition-colors duration-150">
-                                            <x-responsive-nav-link class="text-sm" href="{{ route('caja.cerrar') }}"
-                                                :active="request()->routeIs('caja.cerrar')">
-                                                Cerrar caja
-                                            </x-responsive-nav-link>
-                                        </li>
-                                        <li class="transition-colors duration-150">
-                                            <x-responsive-nav-link class="text-sm" href="{{ route('caja.egreso') }}"
-                                                :active="request()->routeIs('caja.egreso')">
-                                                Egreso de caja
-                                            </x-responsive-nav-link>
-                                        </li>
-                                        <li class="transition-colors duration-150">
-                                            <x-responsive-nav-link class="text-sm" href="{{ route('caja.historial') }}"
-                                                :active="request()->routeIs('caja.historial')">
-                                                Historial de caja
-                                            </x-responsive-nav-link>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </li>
-                        @endcan
-
-                        {{--             OPCIONES PARA SERVICIOS                    --}}
-                        @can('opciones.servicios')
-                            <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
-                                x-data="{ Open: false }" wire:ignore>
-                                <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
-                                    x-on:click="Open = !Open">
-                                    <span class="inline-flex items-center space-x-6  text-sm text-white ">
-                                        <i class="fa-solid fa-screwdriver-wrench"></i>
-                                        <span class="select-none">Servicios</span>
-                                    </span>
-                                    <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
-                                    <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
-                                </div>
-                                <div x-show="Open" x-cloak x-transition:enter="transition-all ease-in-out duration-300"
-                                    x-transition:enter-start="opacity-0 max-h-0"
-                                    x-transition:enter-end="opacity-100 max-h-xl"
-                                    x-transition:leave="transition-all ease-in-out duration-300"
-                                    x-transition:leave-start="opacity-100 max-h-xl"
-                                    x-transition:leave-end="opacity-0 max-h-0">
-                                    <ul class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
-                                        aria-label="submenu">
-
-                                        {{-- TODO: reactivar cuando exista App\Livewire\ServiceOrders\Listado y la ruta 'ordenes.listado'
-                                        <li class="transition-colors duration-150">
-                                            <x-responsive-nav-link class="text-sm" href="{{ route('ordenes.listado') }}"
-                                                :active="request()->routeIs('ordenes.listado')">
-                                                Listado de ordenes                                                
-                                            </x-responsive-nav-link>
-                                        </li>
-                                        --}}
-                                        <li class="transition-colors duration-150">
-                                            <x-responsive-nav-link class="text-sm" href="{{ route('ordenes.simple.crear') }}"
-                                                :active="request()->routeIs('ordenes.simple.crear')">
-                                                Crear orden de servicio
-                                            </x-responsive-nav-link>
-                                        </li>
-                                        <li class="transition-colors duration-150">
-                                            <x-responsive-nav-link class="text-sm" href="{{ route('conversiones.crear') }}"
-                                                :active="request()->routeIs('conversiones.crear')">
-                                                Crear orden de conversión
-                                            </x-responsive-nav-link>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </li>
-                        @endcan
-
-                        {{--             OPCIONES PARA CONVERSIONES                    --}}
-                        @can('opciones.conversiones')
-                            <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
-                                x-data="{ Open: false }" wire:ignore>
-                                <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
-                                    x-on:click="Open = !Open">
-                                    <span class="inline-flex items-center space-x-6  text-sm text-white ">
-                                        <i class="fa-solid fa-car"></i>
-                                        <span class="select-none">Conversiones</span>
-                                    </span>
-                                    <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
-                                    <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
-                                </div>
-                                <div x-show="Open" x-cloak x-transition:enter="transition-all ease-in-out duration-300"
-                                    x-transition:enter-start="opacity-0 max-h-0"
-                                    x-transition:enter-end="opacity-100 max-h-xl"
-                                    x-transition:leave="transition-all ease-in-out duration-300"
-                                    x-transition:leave-start="opacity-100 max-h-xl"
-                                    x-transition:leave-end="opacity-0 max-h-0">
-                                    <ul class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
-                                        aria-label="submenu">
-
-                                        @can('conversiones.asignar')
-                                            <li class="transition-colors duration-150">
-                                                <x-responsive-nav-link class="text-sm" href="{{ route('conversiones.asignar') }}"
-                                                    :active="request()->routeIs('conversiones.asignar')">
-                                                    Asignar técnicos
-                                                </x-responsive-nav-link>
-                                            </li>
-                                        @endcan
-                                        @can('conversiones.mis-asignadas')
-                                            <li class="transition-colors duration-150">
-                                                <x-responsive-nav-link class="text-sm" href="{{ route('conversiones.mis-asignadas') }}"
-                                                    :active="request()->routeIs('conversiones.mis-asignadas')">
-                                                    Mis conversiones asignadas
-                                                </x-responsive-nav-link>
-                                            </li>
-                                        @endcan                                        
-                                        @can('conversiones.entregas-pendientes')
-                                            <li class="transition-colors duration-150">
-                                                <x-responsive-nav-link class="text-sm" href="{{ route('conversiones.entregas-pendientes') }}"
-                                                    :active="request()->routeIs('conversiones.entregas-pendientes')">
-                                                    Entregas pendientes
-                                                </x-responsive-nav-link>
-                                            </li>
-                                        @endcan
-                                    </ul>
-                                </div>
-                            </li>
-                        @endcan   
-                        
-                        {{--             OPCIONES PARA EXPEDIENTES                    --}}
-                        @can('opciones.expedientes')
-                            <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
-                                x-data="{ Open: false }" wire:ignore>
-                                <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
-                                    x-on:click="Open = !Open">
-                                    <span class="inline-flex items-center space-x-6  text-sm text-white ">
-                                        <i class="fa-solid fa-folder-open"></i>
-                                        <span class="select-none">Expedientes</span>
-                                    </span>
-                                    <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
-                                    <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
-                                </div>
-                                <div x-show="Open" x-cloak x-transition:enter="transition-all ease-in-out duration-300"
-                                    x-transition:enter-start="opacity-0 max-h-0"
-                                    x-transition:enter-end="opacity-100 max-h-xl"
-                                    x-transition:leave="transition-all ease-in-out duration-300"
-                                    x-transition:leave-start="opacity-100 max-h-xl"
-                                    x-transition:leave-end="opacity-0 max-h-0">
-                                    <ul class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
-                                        aria-label="submenu">
-
-                                        <li class="transition-colors duration-150">
-                                            <x-responsive-nav-link class="text-sm" href="{{ route('ListaExpedientes') }}"
-                                                :active="request()->routeIs('ListaExpedientes')">
-                                                Expedientes
-                                            </x-responsive-nav-link>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </li>
-                        @endcan
-
-                        {{--             OPCIONES PARA EGRESOS --}}
-                        @can('opciones.egresos')
-                            <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
-                                x-data="{ Open: false }" wire:ignore>
-                                <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
-                                    x-on:click="Open = !Open">
-                                    <span class="inline-flex items-center space-x-6  text-sm text-white ">
-                                        <i class="fa-solid fa-cash-register"></i>
-                                        <span class="select-none">Egresos</span>
-                                    </span>
-                                    <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
-                                    <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
-                                </div>
-                                <div x-show="Open" x-cloak x-transition:enter="transition-all ease-in-out duration-300"
-                                    x-transition:enter-start="opacity-0 max-h-0"
-                                    x-transition:enter-end="opacity-100 max-h-xl"
-                                    x-transition:leave="transition-all ease-in-out duration-300"
-                                    x-transition:leave-start="opacity-100 max-h-xl"
-                                    x-transition:leave-end="opacity-0 max-h-0">
-                                    <ul class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
-                                        aria-label="submenu">
-
-                                        <x-responsive-nav-link class="text-sm">
-                                            {{ __('Egresos') }}
-                                        </x-responsive-nav-link>
-
-                                    </ul>
-
-                                </div>
-                            </li>
-                        @endcan
-
-                        {{--             OPCIONES PARA ALMACEN                    --}}
-                        @can('opciones.almacen')
-                            <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
-                                x-data="{ Open: false }" wire:ignore>
-                                <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
-                                    x-on:click="Open = !Open">
-                                    <span class="inline-flex items-center space-x-6  text-sm text-white ">
-                                        <i class="fa-solid fa-store"></i>
-                                        <span class="select-none">Almacen</span>
-                                    </span>
-                                    <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
-                                    <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
-                                </div>
-                                <div x-show="Open" x-cloak x-transition:enter="transition-all ease-in-out duration-300"
-                                    x-transition:enter-start="opacity-0 max-h-0"
-                                    x-transition:enter-end="opacity-100 max-h-xl"
-                                    x-transition:leave="transition-all ease-in-out duration-300"
-                                    x-transition:leave-start="opacity-100 max-h-xl"
-                                    x-transition:leave-end="opacity-0 max-h-0">
-                                    <ul class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
-                                        aria-label="submenu">
-
-                                        <li class="transition-colors duration-150">
-                                            <x-responsive-nav-link class="text-sm" href="{{ route('almacen.categorias.listado') }}"
-                                                :active="request()->routeIs('almacen.categorias.listado')">
-                                                Categorías
-                                            </x-responsive-nav-link>
-                                        </li>
-                                        <li class="transition-colors duration-150">
-                                            <x-responsive-nav-link class="text-sm" href="{{ route('almacen.productos.listado') }}"
-                                                :active="request()->routeIs('almacen.productos.listado')">
-                                                Productos
-                                            </x-responsive-nav-link>
-                                        </li>
-                                        <li class="transition-colors duration-150">
-                                            <x-responsive-nav-link class="text-sm" href="{{ route('conversiones.almacen-pendientes') }}"
-                                                :active="request()->routeIs('conversiones.almacen-pendientes')">
-                                                Almacen pendientes
-                                            </x-responsive-nav-link>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </li>
-                        @endcan
-                        
-                        {{--             OPCIONES PARA RR.HH --}}
-                        @can('opciones.rrhh')
-                            <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
-                                x-data="{ Open: false }" wire:ignore>
-                                <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
-                                    x-on:click="Open = !Open">
-                                    <span class="inline-flex items-center space-x-6  text-sm text-white ">
-                                        <i class="fa-solid fa-flag -mt-1"></i>
-                                        <span class="select-none">RRHH</span>
-                                    </span>
-                                    <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
-                                    <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
-                                </div>
-                                <div x-show="Open" x-cloak x-transition:enter="transition-all ease-in-out duration-300"
-                                    x-transition:enter-start="opacity-0 max-h-0"
-                                    x-transition:enter-end="opacity-100 max-h-xl"
-                                    x-transition:leave="transition-all ease-in-out duration-300"
-                                    x-transition:leave-start="opacity-100 max-h-xl"
-                                    x-transition:leave-end="opacity-0 max-h-0">
-                                    <ul class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
-                                        aria-label="submenu">
-                                        
-                                        @can('rrhh.contratos')
-                                            <x-responsive-nav-link class="text-sm" href="{{ route('rrhh.contratos') }}"
-                                                :active="request()->routeIs('rrhh.contratos')">
-                                                {{ __('Empleados') }}
-                                            </x-responsive-nav-link>
-                                        @endcan
-                                        @can('rrhh.planillas')
-                                            <x-responsive-nav-link class="text-sm" href="{{ route('rrhh.planillas') }}"
-                                                :active="request()->routeIs('rrhh.planillas')">
-                                                {{ __('Planillas') }}
-                                            </x-responsive-nav-link>
-                                        @endcan
-                                        <x-responsive-nav-link class="text-sm" href="{{ route('rrhh.mis-planillas') }}"
-                                            :active="request()->routeIs('rrhh.mis-planillas')">
-                                            {{ __('Boletas') }}
-                                        </x-responsive-nav-link>
-
-                                    </ul>
-
-                                </div>
-                            </li>
-                        @endcan
-
-                        {{--             OPCIONES PARA REPORTES                    --}}
-                        @can('opciones.reportes')
-                            <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
-                                x-data="{ Open: false }" wire:ignore>
-                                <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
-                                    x-on:click="Open = !Open">
-                                    <span class="inline-flex items-center space-x-6  text-sm text-white ">
-                                        <i class="fa-solid fa-chart-column"></i>
-                                        <span class="select-none">Reportes</span>
-                                    </span>
-                                    <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
-                                    <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
-                                </div>
-                                <div x-show="Open" x-cloak x-transition:enter="transition-all ease-in-out duration-300"
-                                    x-transition:enter-start="opacity-0 max-h-0"
-                                    x-transition:enter-end="opacity-100 max-h-xl"
-                                    x-transition:leave="transition-all ease-in-out duration-300"
-                                    x-transition:leave-start="opacity-100 max-h-xl"
-                                    x-transition:leave-end="opacity-0 max-h-0">
-                                    <ul class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
-                                        aria-label="submenu">
-
-                                        <li class="transition-colors duration-150">
-                                            <x-responsive-nav-link class="text-sm" href="{{ route('Rpta.Citas') }}"
-                                                :active="request()->routeIs('Rpta.Citas')">
-                                                Reporte de Citas
-                                            </x-responsive-nav-link>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </li>
-                        @endcan
-
-                        {{--             OPCIONES PARA MANTENIMIENTO TABLAS                    --}}
-                        {{-- Nota: se combinaron ambos permisos (opciones.mantenimientotables y opciones.vehiculos)
-                             hasta confirmar cuál quedará como definitivo en la base de datos. --}}
-                        @canany(['opciones.mantenimientotables', 'opciones.vehiculos'])
-                            <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
-                                x-data="{ Open: false }" wire:ignore>
-                                <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
-                                    x-on:click="Open = !Open">
-                                    <span class="inline-flex items-center space-x-6  text-sm text-white ">
-                                        <i class="fa-solid fa-database"></i>
-                                        <span class="select-none">Mantenimiento Tablas</span>
-                                    </span>
-                                    <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
-                                    <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
-                                </div>
-                                <div x-show="Open" x-cloak x-transition:enter="transition-all ease-in-out duration-300"
-                                    x-transition:enter-start="opacity-0 max-h-0"
-                                    x-transition:enter-end="opacity-100 max-h-xl"
-                                    x-transition:leave="transition-all ease-in-out duration-300"
-                                    x-transition:leave-start="opacity-100 max-h-xl"
-                                    x-transition:leave-end="opacity-0 max-h-0">
-                                    <ul class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
-                                        aria-label="submenu">
-
-                                        <li class="transition-colors duration-150">
-                                            <x-responsive-nav-link class="text-sm" href="{{ route('ListaVehiculos') }}"
-                                                :active="request()->routeIs('ListaVehiculos')">
-                                                Lista Vehiculos
-                                            </x-responsive-nav-link>
-                                        </li>
-                                        <li class="transition-colors duration-150">
-                                            <x-responsive-nav-link class="text-sm" href="{{ route('ListaClientes') }}"
-                                                :active="request()->routeIs('ListaClientes')">
-                                                Lista Clientes
-                                            </x-responsive-nav-link>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </li>
-                        @endcanany
-
-                        {{--            OPCIONES PARA CMS LANDING PAGE                  --}}
-                        @can('opciones.cms')
-                            <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
-                                x-data="{ Open: false }" wire:ignore>
-                                <div class="inline-flex items-center justify-between w-full transition-colors duration-150 text-gray-500 cursor-pointer"
-                                    x-on:click="Open = !Open">
-                                    <span class="inline-flex items-center space-x-6 text-sm text-white">
-                                        <i class="fa-solid fa-globe"></i>
-                                        <span class="select-none">CMS Landing</span>
-                                    </span>
-                                    <i class="fa-solid fa-caret-down ml-1 text-white w-4 h-4" x-show="!Open"></i>
-                                    <i class="fa-solid fa-caret-up ml-1 text-white w-4 h-4" x-show="Open"></i>
-                                </div>
-                                <div x-show="Open" x-cloak x-transition:enter="transition-all ease-in-out duration-300"
-                                    x-transition:enter-start="opacity-0 max-h-0"
-                                    x-transition:enter-end="opacity-100 max-h-xl"
-                                    x-transition:leave="transition-all ease-in-out duration-300"
-                                    x-transition:leave-start="opacity-100 max-h-xl"
-                                    x-transition:leave-end="opacity-0 max-h-0">
-                                    <ul class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
-                                        aria-label="submenu">
-
-                                        <li class="transition-colors duration-150">
-                                            <x-responsive-nav-link class="text-sm" href="{{ route('cms.contenido') }}"
-                                                :active="request()->routeIs('cms.contenido')">
-                                                Contenido
-                                            </x-responsive-nav-link>
-                                        </li>
-                                        <li class="transition-colors duration-150">
-                                            <x-responsive-nav-link class="text-sm" href="{{ route('cms.servicios') }}"
-                                                :active="request()->routeIs('cms.servicios')">
-                                                Servicios
-                                            </x-responsive-nav-link>
-                                        </li>
-                                        <li class="transition-colors duration-150">
-                                            <x-responsive-nav-link class="text-sm" href="{{ route('cms.pasos') }}"
-                                                :active="request()->routeIs('cms.pasos')">
-                                                Pasos
-                                            </x-responsive-nav-link>
-                                        </li>
-                                        <li class="transition-colors duration-150">
-                                            <x-responsive-nav-link class="text-sm" href="{{ route('cms.porque') }}"
-                                                :active="request()->routeIs('cms.porque')">
-                                                Por Qué Elegirnos
-                                            </x-responsive-nav-link>
-                                        </li>
-                                        <li class="transition-colors duration-150">
-                                            <x-responsive-nav-link class="text-sm" href="{{ route('cms.contacto') }}"
-                                                :active="request()->routeIs('cms.contacto')">
-                                                Contacto
-                                            </x-responsive-nav-link>
-                                        </li>
-                                        <li class="transition-colors duration-150">
-                                            <x-responsive-nav-link class="text-sm" href="{{ route('cms.redes') }}"
-                                                :active="request()->routeIs('cms.redes')">
-                                                Redes Sociales
-                                            </x-responsive-nav-link>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </li>
-                        @endcan
-
-                        {{--            OPCIONES PARA USUARIOS Y ROLES                  --}}
-                        @can('opciones.usuarios')
-                            <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
-                                x-data="{ Open: false }" wire:ignore>
-                                <div class="inline-flex  items-center justify-between w-full  transition-colors duration-150 text-gray-500  cursor-pointer"
-                                    x-on:click="Open = !Open">
-                                    <span class="inline-flex items-center space-x-6  text-sm  text-white ">
-                                        <i class="fa-solid fa-user-shield"></i>
-                                        <span class="select-none">Usuarios y roles</span>
-                                    </span>
-                                    <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
-                                    <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
-                                </div>
-                                <div x-show="Open" x-cloak x-transition:enter="transition-all ease-in-out duration-300"
-                                    x-transition:enter-start="opacity-0 max-h-0"
-                                    x-transition:enter-end="opacity-100 max-h-xl"
-                                    x-transition:leave="transition-all ease-in-out duration-300"
-                                    x-transition:leave-start="opacity-100 max-h-xl"
-                                    x-transition:leave-end="opacity-0 max-h-0">
-                                    <ul class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
-                                        aria-label="submenu">
-
-                                        @can('usuarios')
-                                        <li class="transition-colors duration-150">
-                                            <x-responsive-nav-link class="text-sm" href="{{ route('usuarios') }}"
-                                                :active="request()->routeIs('usuarios')">
-                                                Usuarios
-                                            </x-responsive-nav-link>
-                                        </li>
-                                        @endcan
-                                        @can('usuarios.roles')
-                                        <li class="transition-colors duration-150">
-                                            <x-responsive-nav-link class="text-sm" href="{{ route('usuarios.roles') }}"
-                                                :active="request()->routeIs('usuarios.roles')">
-                                                Roles
-                                            </x-responsive-nav-link>
-                                        </li>
-                                        @endcan
-                                        @can('usuarios.permisos')
-                                        <li class="transition-colors duration-150">
-                                            <x-responsive-nav-link class="text-sm"
-                                                href="{{ route('usuarios.permisos') }}" :active="request()->routeIs('usuarios.permisos')">
-                                                Permisos
-                                            </x-responsive-nav-link>
-                                        </li>
-                                        @endcan
-                                    </ul>
-
-                                </div>
-                            </li>
-                        @endcan
-
-                    </ul>
-                </div>
-
-                <!-- navigation group end-->
-                <!-- opciones de cuenta de usuario -->
-                <div class="md:hidden block bg-gradient-to-br from-gray-400 to-blue-600 bottom-0 left-0 px-4 w-full z-10 mt-2">
-                    <h3 class="my-2 text-xs font-medium uppercase text-gray-500">
-                        Opciones de la cuenta
-                    </h3>
-                    <ul class="mb-2 text-sm font-medium ">
-                        <li>
-                            <a class="flex items-center rounded py-3 pl-3 pr-4  space-x-6 text-gray-50 hover:bg-gray-600 "
-                                href="{{ route('profile.show') }}">
-                                <i class="fa-solid fa-user-gear -mt-1"></i>
-                                <span class="select-none">Configurar Perfil</span>
-                            </a>
-                        </li>
-                        <li>
-                            <form method="POST" action="{{ route('logout') }}" x-data>
-                                @csrf
-                                <a class="flex items-center rounded py-3 pl-3 pr-4  space-x-6 text-gray-50 hover:bg-gray-600 "
-                                    href="{{ route('logout') }}" @click.prevent="$root.submit();">
-                                    <i class="fa-solid fa-arrow-right-from-bracket -mt-1"></i>
-                                    <span class="select-none">Salir</span>
+        <!-- Sidebar start-->
+        <div id="containerSidebar" class="z-40">
+            <div class="navbar-menu relative z-40">
+                <nav id="sidebar" class="fixed left-0 bottom-0 flex w-3/4 -translate-x-full flex-col bg-gradient-to-br from-slate-600 via-blue-700 to-slate-600 pt-2 sm:max-w-xs lg:w-80">
+                    <!-- one category / navigation group -->
+                    <div class="px-4 overflow-y-auto">
+                        <h3 class="mb-2 text-xs font-medium uppercase text-gray-300">
+                            Menu principal
+                        </h3>
+                        <ul class="text-sm font-medium">
+                            <li>
+                                <a class="flex items-center rounded py-3 pl-3 pr-4  space-x-6 text-gray-50 hover:bg-gray-600"
+                                    href="{{ route('inicio') }}">
+                                    <i class="fas fa-home -mt-1"></i>
+                                    <span class="select-none">Inicio</span>
                                 </a>
-                            </form>
-                        </li>
-                    </ul>
-                </div>
-                <!-- fin -->
-            </nav>
-        </div>
+                            </li>
 
-    </div>
-    <!-- Sidebar end -->
+                            {{--             OPCIONES PARA CITAS                    --}}
+                            {{-- 
+                            @can('opciones.citas')
+                                <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
+                                    x-data="{ Open: false }">
+                                    <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
+                                        x-on:click="Open = !Open">
+                                        <span class="inline-flex items-center space-x-6  text-sm text-white ">
+                                            <i class="fa-solid fa-calendar-days"></i>
+                                            <span class="select-none">Citas</span>
+                                        </span>
+                                        <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
+                                        <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
+                                    </div>
+                                    <div x-show.transition="Open" style="display:none;">
+                                        <ul x-transition:enter="transition-all ease-in-out duration-300"
+                                            x-transition:enter-start="opacity-25 max-h-0"
+                                            x-transition:enter-end="opacity-100 max-h-xl"
+                                            x-transition:leave="transition-all ease-in-out duration-300"
+                                            x-transition:leave-start="opacity-100 max-h-xl"
+                                            x-transition:leave-end="opacity-0 max-h-0"
+                                            class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
+                                            aria-label="submenu">
+
+                                            <li class="transition-colors duration-150">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('ListaCitas') }}"
+                                                    :active="request()->routeIs('ListaCitas')">
+                                                    Lista citas
+                                                </x-responsive-nav-link>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </li>
+                            @endcan
+                            --}}
+
+                            {{--             OPCIONES PARA CAJA              --}}
+                            @can('opciones.caja')
+                                <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
+                                    x-data="{ Open: false }">
+                                    <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
+                                        x-on:click="Open = !Open">
+                                        <span class="inline-flex items-center space-x-6  text-sm text-white ">
+                                            <i class="fa-solid fa-cash-register text-lg"></i>
+                                            <span class="select-none">Caja</span>
+                                        </span>
+                                        <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
+                                        <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
+                                    </div>
+                                    <div x-show.transition="Open" style="display:none;">
+                                        <ul x-transition:enter="transition-all ease-in-out duration-300"
+                                            x-transition:enter-start="opacity-25 max-h-0"
+                                            x-transition:enter-end="opacity-100 max-h-xl"
+                                            x-transition:leave="transition-all ease-in-out duration-300"
+                                            x-transition:leave-start="opacity-100 max-h-xl"
+                                            x-transition:leave-end="opacity-0 max-h-0"
+                                            class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
+                                            aria-label="submenu">
+
+                                            <li class="transition-colors duration-150">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('caja.abrir') }}"
+                                                    :active="request()->routeIs('caja.abrir')">
+                                                    Abrir caja
+                                                </x-responsive-nav-link>
+                                            </li>
+                                            <li class="transition-colors duration-150">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('caja.cerrar') }}"
+                                                    :active="request()->routeIs('caja.cerrar')">
+                                                    Cerrar caja
+                                                </x-responsive-nav-link>
+                                            </li>
+                                            <li class="transition-colors duration-150">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('caja.egreso') }}"
+                                                    :active="request()->routeIs('caja.egreso')">
+                                                    Egreso de caja
+                                                </x-responsive-nav-link>
+                                            </li>
+                                            <li class="transition-colors duration-150">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('caja.historial') }}"
+                                                    :active="request()->routeIs('caja.historial')">
+                                                    Historial de caja
+                                                </x-responsive-nav-link>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </li>
+                            @endcan
+
+                            {{--             OPCIONES PARA SERVICIOS                    --}}
+                            @can('opciones.servicios')
+                                <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
+                                    x-data="{ Open: false }">
+                                    <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
+                                        x-on:click="Open = !Open">
+                                        <span class="inline-flex items-center space-x-6  text-sm text-white ">
+                                            <i class="fa-solid fa-screwdriver-wrench"></i>
+                                            <span class="select-none">Servicios</span>
+                                        </span>
+                                        <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
+                                        <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
+                                    </div>
+                                    <div x-show.transition="Open" style="display:none;">
+                                        <ul x-transition:enter="transition-all ease-in-out duration-300"
+                                            x-transition:enter-start="opacity-25 max-h-0"
+                                            x-transition:enter-end="opacity-100 max-h-xl"
+                                            x-transition:leave="transition-all ease-in-out duration-300"
+                                            x-transition:leave-start="opacity-100 max-h-xl"
+                                            x-transition:leave-end="opacity-0 max-h-0"
+                                            class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
+                                            aria-label="submenu">
+
+                                            <li class="transition-colors duration-150">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('ordenes.listado') }}"
+                                                    :active="request()->routeIs('ordenes.listado')">
+                                                    Listado de ordenes                                                
+                                                </x-responsive-nav-link>
+                                            </li>
+                                            <li class="transition-colors duration-150">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('ordenes.simple.crear') }}"
+                                                    :active="request()->routeIs('ordenes.simple.crear')">
+                                                    Crear orden de servicio
+                                                </x-responsive-nav-link>
+                                            </li>
+                                            <li class="transition-colors duration-150">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('conversiones.crear') }}"
+                                                    :active="request()->routeIs('conversiones.crear')">
+                                                    Crear orden de conversión
+                                                </x-responsive-nav-link>
+                                            </li>
+                                            {{-- 
+                                                <li class="transition-colors duration-150">
+                                                    <x-responsive-nav-link class="text-sm" href="{{ route('ListaCitas') }}"
+                                                        :active="request()->routeIs('ListaCitas')">
+                                                        Lista citas
+                                                    </x-responsive-nav-link>
+                                                </li>
+                                            --}}
+                                        </ul>
+                                    </div>
+                                </li>
+                            @endcan
+
+                            {{--             OPCIONES PARA CONVERSIONES                    --}}
+                            @can('opciones.conversiones')
+                                <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
+                                    x-data="{ Open: false }">
+                                    <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
+                                        x-on:click="Open = !Open">
+                                        <span class="inline-flex items-center space-x-6  text-sm text-white ">
+                                            <i class="fa-solid fa-car"></i>
+                                            <span class="select-none">Conversiones</span>
+                                        </span>
+                                        <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
+                                        <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
+                                    </div>
+                                    <div x-show.transition="Open" style="display:none;">
+                                        <ul x-transition:enter="transition-all ease-in-out duration-300"
+                                            x-transition:enter-start="opacity-25 max-h-0"
+                                            x-transition:enter-end="opacity-100 max-h-xl"
+                                            x-transition:leave="transition-all ease-in-out duration-300"
+                                            x-transition:leave-start="opacity-100 max-h-xl"
+                                            x-transition:leave-end="opacity-0 max-h-0"
+                                            class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
+                                            aria-label="submenu">
+
+                                            <!-- Asignar técnicos (Administrador del sistema, Jefe de Taller) -->
+                                            {{-- 
+                                            @hasanyrole('Administrador del sistema|Jefe de Taller')
+                                            @endhasanyrole
+                                            --}}
+                                            @can('conversiones.asignar')
+                                                <li class="transition-colors duration-150">
+                                                    <x-responsive-nav-link class="text-sm" href="{{ route('conversiones.asignar') }}"
+                                                        :active="request()->routeIs('conversiones.asignar')">
+                                                        Asignar técnicos
+                                                    </x-responsive-nav-link>
+                                                </li>
+                                            @endcan
+                                            <!-- Mis conversiones asignadas (Técnico) -->
+                                            @can('conversiones.mis-asignadas')
+                                                <li class="transition-colors duration-150">
+                                                    <x-responsive-nav-link class="text-sm" href="{{ route('conversiones.mis-asignadas') }}"
+                                                        :active="request()->routeIs('conversiones.mis-asignadas')">
+                                                        Mis conversiones asignadas
+                                                    </x-responsive-nav-link>
+                                                </li>
+                                            @endcan                                        
+                                            <!-- Entregas pendientes (Administrador del sistema, Jefe de Taller) -->
+                                            @can('conversiones.entregas-pendientes')
+                                                <li class="transition-colors duration-150">
+                                                    <x-responsive-nav-link class="text-sm" href="{{ route('conversiones.entregas-pendientes') }}"
+                                                        :active="request()->routeIs('conversiones.entregas-pendientes')">
+                                                        Entregas pendientes
+                                                    </x-responsive-nav-link>
+                                                </li>
+                                            @endcan
+
+                                            {{-- 
+                                                <li class="transition-colors duration-150">
+                                                    <x-responsive-nav-link class="text-sm" href="{{ route('ListaConversiones') }}"
+                                                        :active="request()->routeIs('ListaConversiones')">
+                                                        Conversiones
+                                                    </x-responsive-nav-link>
+                                                </li>
+                                            --}}
+                                        </ul>
+                                    </div>
+                                </li>
+                            @endcan                            
+
+                            {{--             OPCIONES PARA ALMACEN                    --}}
+                            @can('opciones.almacen')
+                                <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
+                                    x-data="{ Open: false }">
+                                    <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
+                                        x-on:click="Open = !Open">
+                                        <span class="inline-flex items-center space-x-6  text-sm text-white ">
+                                            <i class="fa-solid fa-store"></i>
+                                            <span class="select-none">Almacen</span>
+                                        </span>
+                                        <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
+                                        <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
+                                    </div>
+                                    <div x-show.transition="Open" style="display:none;">
+                                        <ul x-transition:enter="transition-all ease-in-out duration-300"
+                                            x-transition:enter-start="opacity-25 max-h-0"
+                                            x-transition:enter-end="opacity-100 max-h-xl"
+                                            x-transition:leave="transition-all ease-in-out duration-300"
+                                            x-transition:leave-start="opacity-100 max-h-xl"
+                                            x-transition:leave-end="opacity-0 max-h-0"
+                                            class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
+                                            aria-label="submenu">
+
+                                            <li class="transition-colors duration-150">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('almacen.categorias.listado') }}"
+                                                    :active="request()->routeIs('almacen.categorias.listado')">
+                                                    Categorías
+                                                </x-responsive-nav-link>
+                                            </li>
+                                            <li class="transition-colors duration-150">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('almacen.productos.listado') }}"
+                                                    :active="request()->routeIs('almacen.productos.listado')">
+                                                    Productos
+                                                </x-responsive-nav-link>
+                                            </li>
+                                            <li class="transition-colors duration-150">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('conversiones.almacen-pendientes') }}"
+                                                    :active="request()->routeIs('conversiones.almacen-pendientes')">
+                                                    Almacen pendientes
+                                                </x-responsive-nav-link>
+                                            </li>
+                                            {{-- 
+                                            <li class="transition-colors duration-150">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('Repuestos') }}"
+                                                    :active="request()->routeIs('Repuestos')">
+                                                    Almacen
+                                                </x-responsive-nav-link>
+                                            </li>
+                                            --}}
+                                        </ul>
+                                    </div>
+                                </li>
+                            @endcan
+                            
+                            {{--             OPCIONES PARA RR.HH --}}
+                            @can('opciones.rrhh')
+                                <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
+                                    x-data="{ Open: false }">
+                                    <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
+                                        x-on:click="Open = !Open">
+                                        <span class="inline-flex items-center space-x-6  text-sm text-white ">
+                                            <i class="fa-solid fa-flag -mt-1"></i>
+                                            <span class="select-none">RRHH</span>
+                                        </span>
+                                        <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
+                                        <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
+                                    </div>
+                                    <div x-show.transition="Open" style="display:none;">
+                                        <ul x-transition:enter="transition-all ease-in-out duration-300"
+                                            x-transition:enter-start="opacity-25 max-h-0"
+                                            x-transition:enter-end="opacity-100 max-h-xl"
+                                            x-transition:leave="transition-all ease-in-out duration-300"
+                                            x-transition:leave-start="opacity-100 max-h-xl"
+                                            x-transition:leave-end="opacity-0 max-h-0"
+                                            class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
+                                            aria-label="submenu">
+                                            
+                                            @can('rrhh.contratos')
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('rrhh.contratos') }}"
+                                                    :active="request()->routeIs('rrhh.contratos')">
+                                                    {{ __('Empleados') }}
+                                                </x-responsive-nav-link>
+                                            @endcan
+                                            @can('rrhh.planillas')
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('rrhh.planillas') }}"
+                                                    :active="request()->routeIs('rrhh.planillas')">
+                                                    {{ __('Planillas') }}
+                                                </x-responsive-nav-link>
+                                            @endcan
+                                            <x-responsive-nav-link class="text-sm" href="{{ route('rrhh.mis-planillas') }}"
+                                                :active="request()->routeIs('rrhh.mis-planillas')">
+                                                {{ __('Boletas') }}
+                                            </x-responsive-nav-link>
+
+                                        </ul>
+
+                                    </div>
+                                </li>
+                            @endcan
+
+                            {{--             OPCIONES PARA REPORTES                    --}}
+                            @can('opciones.reportes')
+                                <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
+                                    x-data="{ Open: false }">
+                                    <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
+                                        x-on:click="Open = !Open">
+                                        <span class="inline-flex items-center space-x-6  text-sm text-white ">
+                                            <i class="fa-solid fa-chart-column"></i>
+                                            <span class="select-none">Reportes</span>
+                                        </span>
+                                        <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
+                                        <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
+                                    </div>
+                                    <div x-show.transition="Open" style="display:none;">
+                                        <ul x-transition:enter="transition-all ease-in-out duration-300"
+                                            x-transition:enter-start="opacity-25 max-h-0"
+                                            x-transition:enter-end="opacity-100 max-h-xl"
+                                            x-transition:leave="transition-all ease-in-out duration-300"
+                                            x-transition:leave-start="opacity-100 max-h-xl"
+                                            x-transition:leave-end="opacity-0 max-h-0"
+                                            class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
+                                            aria-label="submenu">
+
+                                            <li class="transition-colors duration-150">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('Rpta.Citas') }}"
+                                                    :active="request()->routeIs('Rpta.Citas')">
+                                                    Reporte de Citas
+                                                </x-responsive-nav-link>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </li>
+                            @endcan
+
+                            {{--             OPCIONES PARA MANTENIMIENTO TABLAS                    --}}
+                            @can('opciones.mantenimientotables')
+                                <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
+                                    x-data="{ Open: false }">
+                                    <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
+                                        x-on:click="Open = !Open">
+                                        <span class="inline-flex items-center space-x-6  text-sm text-white ">
+                                            <i class="fa-solid fa-database"></i>
+                                            <span class="select-none">Mantenimiento Tablas</span>
+                                        </span>
+                                        <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
+                                        <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
+                                    </div>
+                                    <div x-show.transition="Open" style="display:none;">
+                                        <ul x-transition:enter="transition-all ease-in-out duration-300"
+                                            x-transition:enter-start="opacity-25 max-h-0"
+                                            x-transition:enter-end="opacity-100 max-h-xl"
+                                            x-transition:leave="transition-all ease-in-out duration-300"
+                                            x-transition:leave-start="opacity-100 max-h-xl"
+                                            x-transition:leave-end="opacity-0 max-h-0"
+                                            class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
+                                            aria-label="submenu">
+
+                                            <li class="transition-colors duration-150">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('ListaVehiculos') }}"
+                                                    :active="request()->routeIs('ListaVehiculos')">
+                                                    Lista Vehiculos
+                                                </x-responsive-nav-link>
+                                            </li>
+                                            <li class="transition-colors duration-150">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('ListaClientes') }}"
+                                                    :active="request()->routeIs('ListaClientes')">
+                                                    Lista Clientes
+                                                </x-responsive-nav-link>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </li>
+                            @endcan
+
+                            {{--            OPCIONES PARA USUARIOS Y ROLES                  --}}
+                            @can('opciones.usuarios')
+                                <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
+                                    x-data="{ Open: false }">
+                                    <div class="inline-flex  items-center justify-between w-full  transition-colors duration-150 text-gray-500  cursor-pointer"
+                                        x-on:click="Open = !Open">
+                                        <span class="inline-flex items-center space-x-6  text-sm  text-white ">
+                                            <i class="fa-solid fa-user-shield"></i>
+                                            <span class="select-none">Usuarios y roles</span>
+                                        </span>
+                                        <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
+                                        <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
+                                    </div>
+                                    <div x-show.transition="Open" style="display:none;">
+                                        <ul x-transition:enter="transition-all ease-in-out duration-300"
+                                            x-transition:enter-start="opacity-25 max-h-0"
+                                            x-transition:enter-end="opacity-100 max-h-xl"
+                                            x-transition:leave="transition-all ease-in-out duration-300"
+                                            x-transition:leave-start="opacity-100 max-h-xl"
+                                            x-transition:leave-end="opacity-0 max-h-0"
+                                            class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
+                                            aria-label="submenu">
+
+                                            @can('usuarios')
+                                            <li class="transition-colors duration-150">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('usuarios') }}"
+                                                    :active="request()->routeIs('usuarios')">
+                                                    Usuarios
+                                                </x-responsive-nav-link>
+                                            </li>
+                                            @endcan
+                                            @can('usuarios.roles')
+                                            <li class="transition-colors duration-150">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('usuarios.roles') }}"
+                                                    :active="request()->routeIs('usuarios.roles')">
+                                                    Roles
+                                                </x-responsive-nav-link>
+                                            </li>
+                                            @endcan
+                                            @can('usuarios.permisos')
+                                            <li class="transition-colors duration-150">
+                                                <x-responsive-nav-link class="text-sm"
+                                                    href="{{ route('usuarios.permisos') }}" :active="request()->routeIs('usuarios.permisos')">
+                                                    Permisos
+                                                </x-responsive-nav-link>
+                                            </li>
+                                            @endcan
+                                        </ul>
+
+                                    </div>
+                                </li>
+                            @endcan
+
+                        </ul>
+                    </div>
+
+
+
+                    <!-- navigation group end-->
+                    <!-- opciones de cuenta de usuario -->
+                    <div class="md:hidden block bg-gradient-to-br from-gray-400 to-blue-600 bottom-0 left-0 px-4 w-full z-10 mt-2">
+                        <h3 class="my-2 text-xs font-medium uppercase text-gray-500">
+                            Opciones de la cuenta
+                        </h3>
+                        <ul class="mb-2 text-sm font-medium ">
+                            <li>
+                                <a class="flex items-center rounded py-3 pl-3 pr-4  space-x-6 text-gray-50 hover:bg-gray-600 "
+                                    href="{{ route('profile.show') }}">
+                                    <i class="fa-solid fa-user-gear -mt-1"></i>
+                                    <span class="select-none">Configurar Perfil</span>
+                                </a>
+                            </li>
+                            <li>
+                                <form method="POST" action="{{ route('logout') }}" x-data>
+                                    @csrf
+                                    <a class="flex items-center rounded py-3 pl-3 pr-4  space-x-6 text-gray-50 hover:bg-gray-600 "
+                                        href="{{ route('logout') }}" @click.prevent="$root.submit();">
+                                        <i class="fa-solid fa-arrow-right-from-bracket -mt-1"></i>
+                                        <span class="select-none">Salir</span>
+                                    </a>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- fin -->
+                </nav>
+            </div>
+
+        </div>
+        <!-- Sidebar end -->
 
     <main>
         <!-- your content goes here -->

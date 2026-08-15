@@ -10,21 +10,20 @@ class HistorialSesiones extends Component
 {
     use WithPagination;
 
-    public int $cant = 10;
     public string $desde = '';
     public string $hasta = '';
     public string $estado = 'todos';
 
     public function updating($property)
     {
-        if (in_array($property, ['cant', 'desde', 'hasta', 'estado'])) {
+        if (in_array($property, ['desde', 'hasta', 'estado'])) {
             $this->resetPage();
         }
     }
 
     public function limpiarFiltros()
     {
-        $this->reset(['cant', 'desde', 'hasta', 'estado']);
+        $this->reset(['desde', 'hasta', 'estado']);
         $this->resetPage();
     }
 
@@ -35,7 +34,7 @@ class HistorialSesiones extends Component
             ->when($this->hasta, fn ($q) => $q->whereDate('abierta_en', '<=', $this->hasta))
             ->when($this->estado !== 'todos', fn ($q) => $q->where('estado', $this->estado))
             ->orderByDesc('abierta_en')
-            ->paginate($this->cant);
+            ->paginate(15);
 
         return view('livewire.caja.historial-sesiones', compact('sesiones'));
     }

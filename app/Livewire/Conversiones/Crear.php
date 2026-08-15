@@ -1,25 +1,17 @@
 <?php
 
-namespace App\Livewire\ServiceOrders;
+namespace App\Livewire\Conversiones;
 
 use App\Models\Cliente;
-use App\Models\Comprobante;
-use App\Models\MovimientoCaja;
+use App\Models\Vehiculo;
 use App\Models\Service;
 use App\Models\ServiceOrder;
-use App\Models\SesionCaja;
-use App\Models\MovimientoCaja;
-use App\Models\Comprobante;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\Attributes\On;
 
-class CrearSimple extends Component
+class Crear extends Component
 {
-    public int $paso = 1;
-
-    // Paso 1: cliente y vehículo
     //public string $buscarCliente = '';
     public ?int $clienteId = null;
     //public array $clientesEncontrados = [];
@@ -30,34 +22,24 @@ class CrearSimple extends Component
     //public string $nuevaMarca = '';
     //public string $nuevoModelo = '';
 
-    // Paso 1: cliente nuevo
     //public bool $creandoClienteNuevo = false;
     //public string $nuevoNombre = '';
     //public string $nuevoApellido = '';
     //public string $nuevoDocumento = '';
     //public string $nuevoTelefono = '';
 
-    // Paso 2: servicio y precio
     public ?int $serviceId = null;
-
     public $precioLista = 0;
-
     public $precioFinal = 0;
-
     public string $descuentoMotivo = '';
 
-    // Paso 3: cobro
-    public string $metodoPago = 'efectivo';
-
-    // Resultado
     public ?int $ordenCreadaId = null;
-
-    public ?string $folioGenerado = null;
 
     #[On('clienteSeleccionado')]
     public function actualizarCliente(?int $clienteId)
     {
         $this->clienteId = $clienteId;
+
         if (!$clienteId) {
             $this->reset(['vehiculoId', 'serviceId', 'precioLista', 'precioFinal', 'descuentoMotivo']);
         }
@@ -67,19 +49,18 @@ class CrearSimple extends Component
     public function actualizarVehiculo(?int $vehiculoId)
     {
         $this->vehiculoId = $vehiculoId;
+
         if (!$vehiculoId) {
             $this->reset(['serviceId', 'precioLista', 'precioFinal', 'descuentoMotivo']);
         }
     }
 
-    // En lugar de public function buscar(), usa este hook:
     /*public function updatedBuscarCliente()
     {
         $termino = trim($this->buscarCliente);
 
         if (strlen($termino) < 3) {
             $this->clientesEncontrados = [];
-
             return;
         }
 
@@ -91,10 +72,9 @@ class CrearSimple extends Component
     public function seleccionarCliente(int $clienteId)
     {
         $cliente = Cliente::find($clienteId);
-
         if ($cliente) {
             $this->clienteId = $cliente->id;
-            $this->buscarCliente = trim($cliente->nombre.' '.$cliente->apellido);
+            $this->buscarCliente = trim($cliente->nombre . ' ' . $cliente->apellido);
             $this->clientesEncontrados = [];
             $this->vehiculoId = null;
         }
@@ -131,9 +111,7 @@ class CrearSimple extends Component
 
     /*public function getVehiculosProperty()
     {
-        return $this->clienteId
-            ? Vehiculo::where('cliente_id', $this->clienteId)->get()
-            : collect();
+        return $this->clienteId ? Vehiculo::where('cliente_id', $this->clienteId)->get() : collect();
     }
     public function abrirModalNuevoVehiculo()
     {
@@ -151,7 +129,7 @@ class CrearSimple extends Component
 
         $vehiculo = Vehiculo::create([
             'cliente_id' => $this->clienteId,
-            'placa' => strtoupper($this->nuevaPlaca),
+            'placa' => strtoupper($this->nuevaPlaca),   
             'marca' => $this->nuevaMarca,
             'modelo' => $this->nuevoModelo,
         ]);
@@ -162,19 +140,6 @@ class CrearSimple extends Component
         $this->dispatch('minToast', titulo: '¡Éxito!', mensaje: 'Vehículo registrado correctamente.', icono: 'success');
     }*/
 
-    public function irAPaso2()
-    {
-        $this->validate([
-            'clienteId' => 'required|exists:clientes,id',
-            'vehiculoId' => 'required|exists:vehiculos,id',
-        ], [
-            'clienteId.required' => 'Debes seleccionar un cliente.',
-            'vehiculoId.required' => 'Debes seleccionar un vehículo.',
-        ]);
-
-        $this->paso = 2;
-    }
-
     public function seleccionarServicio(int $serviceId)
     {
         $servicio = Service::findOrFail($serviceId);
@@ -184,91 +149,52 @@ class CrearSimple extends Component
         $this->descuentoMotivo = '';
     }
 
-    public function irAPaso3()
+    public function crearOrden()
     {
         $this->validate([
-            'serviceId' => 'required|exists:services,id',
-            'precioFinal' => 'required|numeric|min:0',
-        ], [
-            'serviceId.required' => 'Debes seleccionar un servicio.',
-        ]);
-
-        if (bccomp($this->precioFinal, $this->precioLista, 2) !== 0 && empty($this->descuentoMotivo)) {
-            $this->addError('descuentoMotivo', 'Indica el motivo del ajuste de precio.');
-
-            return;
-        }
-
-        $this->paso = 3;
-    }
-
-    public function procesarCobro()
-    {
-        $sesion = SesionCaja::abierta()->orderByDesc('abierta_en')->first();
-
-        if (! $sesion) {
-            $this->addError('caja', 'No hay una caja abierta. Pide al cajero que abra caja antes de cobrar.');
-            $this->dispatch('minToast', titulo: 'Error', mensaje: 'No hay una caja abierta actualmente.', icono: 'error');
-            return;
-        }
-
-        $this->validate([
-            'metodoPago' => 'required|in:efectivo,tarjeta,transferencia,otro',
             'clienteId' => 'required|exists:clientes,id',
             'vehiculoId' => 'required|exists:vehiculos,id',
             'serviceId' => 'required|exists:services,id',
             'precioFinal' => 'required|numeric|min:0',
+        ], [
+            'clienteId.required' => 'Debes seleccionar un cliente.',
+            'vehiculoId.required' => 'Debes seleccionar un vehículo.',
+            'serviceId.required' => 'Debes seleccionar un tipo de conversión.',
         ]);
 
-        try {
-            DB::transaction(function () use ($sesion) {
-                $orden = ServiceOrder::create([
-                    'cliente_id' => $this->clienteId,
-                    'vehiculo_id' => $this->vehiculoId,
-                    'service_id' => $this->serviceId,
-                    'estado' => 'entregada',
-                    'precio_lista' => $this->precioLista,
-                    'precio_final' => $this->precioFinal,
-                    'descuento_motivo' => bccomp((string)$this->precioFinal, (string)$this->precioLista, 2) !== 0 ? $this->descuentoMotivo : null,
-                    'creado_por' => Auth::id(),
-                ]);
-
-                MovimientoCaja::create([
-                    'sesion_caja_id' => $sesion->id,
-                    'tipo' => 'ingreso',
-                    'monto' => $this->precioFinal,
-                    'concepto' => 'Cobro orden #' . $orden->id . ' - ' . $orden->service->nombre,
-                    'service_order_id' => $orden->id,
-                    'usuario_id' => Auth::id(),
-                ]);
-
-                $comprobante = Comprobante::create([
-                    'service_order_id' => $orden->id,
-                    'folio' => Comprobante::generarFolio(),
-                    'monto' => $this->precioFinal,
-                    'metodo_pago' => $this->metodoPago,
-                    'emitido_por' => Auth::id(),
-                ]);
-
-                $this->ordenCreadaId = $orden->id;
-                $this->folioGenerado = $comprobante->folio;
-            });
-        } catch (\Throwable $e) {
-            report($e); // queda en tu log de Laravel
-            $this->addError('caja', 'Ocurrió un error al procesar el cobro. Intenta de nuevo.');
-            $this->dispatch('minToast', titulo: 'Error', mensaje: 'Error al procesar el cobro.', icono: 'error');
+        if (bccomp((string)$this->precioFinal, (string)$this->precioLista, 2) !== 0 && empty($this->descuentoMotivo)) {
+            $this->addError('descuentoMotivo', 'Indica el motivo del ajuste de precio.');
             return;
         }
 
-        $this->paso = 4;
+        try {
+            $orden = ServiceOrder::create([
+                'cliente_id' => $this->clienteId,
+                'vehiculo_id' => $this->vehiculoId,
+                'service_id' => $this->serviceId,
+                'estado' => 'creada',
+                'precio_lista' => $this->precioLista,
+                'precio_final' => $this->precioFinal,
+                'descuento_motivo' => bccomp((string)$this->precioFinal, (string)$this->precioLista, 2) !== 0 ? $this->descuentoMotivo : null,
+                //'descuento_motivo' => bccomp($this->precioFinal, $this->precioLista, 2) !== 0 ? $this->descuentoMotivo : null,
+                'creado_por' => Auth::id(),
+            ]);
 
-        $this->dispatch('minToast', titulo: '¡Orden Creada!', mensaje: "La orden #{$this->ordenCreadaId} ha sido procesada con éxito.", icono: 'success');
+            $this->ordenCreadaId = $orden->id;
+
+            $this->dispatch('minAlert', titulo: '¡Orden Creada!', mensaje: "La orden de conversión #{$orden->id} fue registrada con éxito.", icono: 'success');
+
+        } catch (\Throwable $e) {
+            report($e);
+            $this->addError('general', 'Ocurrió un error al crear la orden. Intenta de nuevo.');
+            $this->dispatch('minToast', titulo: 'Error', mensaje: 'No se pudo guardar la orden.', icono: 'error');
+        }
     }
 
     public function render()
     {
-        return view('livewire.service-orders.crear-simple', [
-            'servicios' => Service::activos()->where('tipo', 'simple')->get(),
+        return view('livewire.conversiones.crear', [
+            'servicios' => Service::activos()->where('tipo', 'conversion')->get(),
         ]);
     }
 }

@@ -13,6 +13,11 @@ class CerrarCaja extends Component
 
     public function mount()
     {
+        $this->cargarSesion();
+    }
+
+    public function cargarSesion()
+    {
         $this->sesion = SesionCaja::abierta()->orderByDesc('abierta_en')->first();
     }
 
@@ -39,12 +44,24 @@ class CerrarCaja extends Component
             return;
         }
 
-        $this->validate(['montoCierre' => 'required|numeric|min:0']);
+        //$this->validate(['montoCierre' => 'required|numeric|min:0']);
+        $this->validate(
+            ['montoCierre' => 'required|numeric|min:0'],
+            [
+                'montoCierre.required' => 'El monto real en caja es obligatorio.',
+                'montoCierre.numeric' => 'Debe ingresar un valor numérico válido.',
+                'montoCierre.min' => 'El monto no puede ser un valor negativo.',
+            ]
+        );
 
         $this->sesion->cerrar((float) $this->montoCierre, Auth::id());
 
-        session()->flash('mensaje', 'Caja cerrada correctamente.');
-        $this->redirect(request()->header('Referer') ?? '/', navigate: true);
+        //session()->flash('mensaje', 'Caja cerrada correctamente.');
+        //$this->redirect(request()->header('Referer') ?? '/', navigate: true);
+
+        // Limpiamos la propiedad para que la vista pase automáticamente al estado sin caja
+        $this->sesion = null;
+        $this->montoCierre = 0;
     }
 
     public function render()
