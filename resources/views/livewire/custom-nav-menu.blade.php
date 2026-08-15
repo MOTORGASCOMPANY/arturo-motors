@@ -158,6 +158,57 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                         @endcan
                         --}}
 
+                        {{--             OPCIONES PARA CAJA              --}}
+                        @can('opciones.caja')
+                            <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
+                                x-data="{ Open: false }" wire:ignore>
+                                <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
+                                    x-on:click="Open = !Open">
+                                    <span class="inline-flex items-center space-x-6  text-sm text-white ">
+                                        <i class="fa-solid fa-cash-register text-lg"></i>
+                                        <span class="select-none">Caja</span>
+                                    </span>
+                                    <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
+                                    <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
+                                </div>
+                                <div x-show="Open" x-cloak x-transition:enter="transition-all ease-in-out duration-300"
+                                    x-transition:enter-start="opacity-0 max-h-0"
+                                    x-transition:enter-end="opacity-100 max-h-xl"
+                                    x-transition:leave="transition-all ease-in-out duration-300"
+                                    x-transition:leave-start="opacity-100 max-h-xl"
+                                    x-transition:leave-end="opacity-0 max-h-0">
+                                    <ul class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
+                                        aria-label="submenu">
+
+                                        <li class="transition-colors duration-150">
+                                            <x-responsive-nav-link class="text-sm" href="{{ route('caja.abrir') }}"
+                                                :active="request()->routeIs('caja.abrir')">
+                                                Abrir caja
+                                            </x-responsive-nav-link>
+                                        </li>
+                                        <li class="transition-colors duration-150">
+                                            <x-responsive-nav-link class="text-sm" href="{{ route('caja.cerrar') }}"
+                                                :active="request()->routeIs('caja.cerrar')">
+                                                Cerrar caja
+                                            </x-responsive-nav-link>
+                                        </li>
+                                        <li class="transition-colors duration-150">
+                                            <x-responsive-nav-link class="text-sm" href="{{ route('caja.egreso') }}"
+                                                :active="request()->routeIs('caja.egreso')">
+                                                Egreso de caja
+                                            </x-responsive-nav-link>
+                                        </li>
+                                        <li class="transition-colors duration-150">
+                                            <x-responsive-nav-link class="text-sm" href="{{ route('caja.historial') }}"
+                                                :active="request()->routeIs('caja.historial')">
+                                                Historial de caja
+                                            </x-responsive-nav-link>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                        @endcan
+
                         {{--             OPCIONES PARA SERVICIOS                    --}}
                         @can('opciones.servicios')
                             <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
@@ -181,9 +232,21 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                                         aria-label="submenu">
 
                                         <li class="transition-colors duration-150">
-                                            <x-responsive-nav-link class="text-sm" href="{{ route('ListaCitas') }}"
-                                                :active="request()->routeIs('ListaCitas')">
-                                                Lista citas
+                                            <x-responsive-nav-link class="text-sm" href="{{ route('ordenes.listado') }}"
+                                                :active="request()->routeIs('ordenes.listado')">
+                                                Listado de ordenes                                                
+                                            </x-responsive-nav-link>
+                                        </li>
+                                        <li class="transition-colors duration-150">
+                                            <x-responsive-nav-link class="text-sm" href="{{ route('ordenes.simple.crear') }}"
+                                                :active="request()->routeIs('ordenes.simple.crear')">
+                                                Crear orden de servicio
+                                            </x-responsive-nav-link>
+                                        </li>
+                                        <li class="transition-colors duration-150">
+                                            <x-responsive-nav-link class="text-sm" href="{{ route('conversiones.crear') }}"
+                                                :active="request()->routeIs('conversiones.crear')">
+                                                Crear orden de conversión
                                             </x-responsive-nav-link>
                                         </li>
                                     </ul>
@@ -213,12 +276,30 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                                     <ul class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
                                         aria-label="submenu">
 
-                                        <li class="transition-colors duration-150">
-                                            <x-responsive-nav-link class="text-sm" href="{{ route('ListaConversiones') }}"
-                                                :active="request()->routeIs('ListaConversiones')">
-                                                Conversiones
-                                            </x-responsive-nav-link>
-                                        </li>
+                                        @can('conversiones.asignar')
+                                            <li class="transition-colors duration-150">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('conversiones.asignar') }}"
+                                                    :active="request()->routeIs('conversiones.asignar')">
+                                                    Asignar técnicos
+                                                </x-responsive-nav-link>
+                                            </li>
+                                        @endcan
+                                        @can('conversiones.mis-asignadas')
+                                            <li class="transition-colors duration-150">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('conversiones.mis-asignadas') }}"
+                                                    :active="request()->routeIs('conversiones.mis-asignadas')">
+                                                    Mis conversiones asignadas
+                                                </x-responsive-nav-link>
+                                            </li>
+                                        @endcan                                        
+                                        @can('conversiones.entregas-pendientes')
+                                            <li class="transition-colors duration-150">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('conversiones.entregas-pendientes') }}"
+                                                    :active="request()->routeIs('conversiones.entregas-pendientes')">
+                                                    Entregas pendientes
+                                                </x-responsive-nav-link>
+                                            </li>
+                                        @endcan
                                     </ul>
                                 </div>
                             </li>
@@ -343,9 +424,21 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                                         aria-label="submenu">
 
                                         <li class="transition-colors duration-150">
-                                            <x-responsive-nav-link class="text-sm" href="{{ route('Repuestos') }}"
-                                                :active="request()->routeIs('Repuestos')">
-                                                Almacen
+                                            <x-responsive-nav-link class="text-sm" href="{{ route('almacen.categorias.listado') }}"
+                                                :active="request()->routeIs('almacen.categorias.listado')">
+                                                Categorías
+                                            </x-responsive-nav-link>
+                                        </li>
+                                        <li class="transition-colors duration-150">
+                                            <x-responsive-nav-link class="text-sm" href="{{ route('almacen.productos.listado') }}"
+                                                :active="request()->routeIs('almacen.productos.listado')">
+                                                Productos
+                                            </x-responsive-nav-link>
+                                        </li>
+                                        <li class="transition-colors duration-150">
+                                            <x-responsive-nav-link class="text-sm" href="{{ route('conversiones.almacen-pendientes') }}"
+                                                :active="request()->routeIs('conversiones.almacen-pendientes')">
+                                                Almacen pendientes
                                             </x-responsive-nav-link>
                                         </li>
                                     </ul>

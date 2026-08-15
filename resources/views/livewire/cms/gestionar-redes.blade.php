@@ -48,8 +48,8 @@
                 <div class="border-t border-blue-50 bg-blue-50/30 px-6 py-3.5 flex items-center justify-between">
                     <div class="flex gap-1">
                         <x-cms.action-button icon="fa-solid fa-pen" variant="warning" wireClick="edit({{ $link['id'] }})" title="Editar" />
-                        <x-cms.action-button icon="fa-solid fa-{{ $link['is_active'] ? 'eye-slash' : 'eye' }}" variant="{{ $link['is_active'] ? 'ghost' : 'success' }}" wireClick="toggleActive({{ $link['id'] }})" title="{{ $link['is_active'] ? 'Desactivar' : 'Activar' }}" />
-                        <x-cms.action-button icon="fa-solid fa-trash" variant="danger" wireClick="delete({{ $link['id'] }})" title="Eliminar" />
+                        <x-cms.action-button icon="fa-solid fa-{{ $link['is_active'] ? 'eye-slash' : 'eye' }}" variant="{{ $link['is_active'] ? 'ghost' : 'success' }}" onclick="confirmToggleLink({{ $link['id'] }})" title="{{ $link['is_active'] ? 'Desactivar' : 'Activar' }}" />
+                        <x-cms.action-button icon="fa-solid fa-trash" variant="danger" onclick="confirmDeleteLink({{ $link['id'] }})" title="Eliminar" />
                     </div>
                     <a href="{{ $link['url'] }}" target="_blank"
                        class="w-9 h-9 flex items-center justify-center rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-800 transition-all"
@@ -196,7 +196,7 @@
                     </button>
                     <button type="button"
                             class="px-5 py-2.5 rounded-xl bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md hover:shadow-blue-200 font-semibold transition-all"
-                            wire:click="save"
+                            onclick="confirmSaveLink()"
                             wire:loading.attr="disabled">
                         <span wire:loading.remove><i class="fa-solid fa-check mr-1"></i>Guardar</span>
                         <span wire:loading class="flex items-center gap-2">
@@ -218,4 +218,53 @@
         .animate-slide-down { animation: slideDown 0.3s ease-out; }
         [x-cloak] { display: none !important; }
     </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function confirmDeleteLink(id) {
+            Swal.fire({
+                title: '¿Eliminar red social?',
+                text: 'Esta acción eliminará la red social permanentemente.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar',
+                customClass: { popup: 'rounded-2xl shadow-xl', confirmButton: 'rounded-xl px-5 py-2.5 font-semibold text-sm', cancelButton: 'rounded-xl px-5 py-2.5 font-semibold text-sm' }
+            }).then((result) => {
+                if (result.isConfirmed) { @this.call('delete', id); }
+            });
+        }
+        function confirmToggleLink(id) {
+            Swal.fire({
+                title: '¿Cambiar estado?',
+                text: 'Se cambiará el estado activo/inactivo de esta red social.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#2563eb',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, cambiar',
+                cancelButtonText: 'Cancelar',
+                customClass: { popup: 'rounded-2xl shadow-xl', confirmButton: 'rounded-xl px-5 py-2.5 font-semibold text-sm', cancelButton: 'rounded-xl px-5 py-2.5 font-semibold text-sm' }
+            }).then((result) => {
+                if (result.isConfirmed) { @this.call('toggleActive', id); }
+            });
+        }
+        function confirmSaveLink() {
+            Swal.fire({
+                title: '¿Guardar red social?',
+                text: 'Se guardarán los cambios de la red social.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#2563eb',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, guardar',
+                cancelButtonText: 'Cancelar',
+                customClass: { popup: 'rounded-2xl shadow-xl', confirmButton: 'rounded-xl px-5 py-2.5 font-semibold text-sm', cancelButton: 'rounded-xl px-5 py-2.5 font-semibold text-sm' }
+            }).then((result) => {
+                if (result.isConfirmed) { @this.call('save'); }
+            });
+        }
+    </script>
 </x-cms.layout>

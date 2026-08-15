@@ -5,6 +5,13 @@ use App\Http\Controllers\LandingController;
 use App\Http\Controllers\PdfController;
 use App\Livewire\AdminPermisos;
 use App\Livewire\AdminRoles;
+use App\Livewire\Almacen\Categorias\Listado as CategoriasListado;
+use App\Livewire\Almacen\Productos\Listado as ProductosListado;
+use App\Livewire\Caja\AbrirCaja;
+use App\Livewire\Caja\CerrarCaja;
+use App\Livewire\Caja\DetalleSesion;
+use App\Livewire\Caja\HistorialSesiones;
+use App\Livewire\Caja\RegistrarEgreso;
 use App\Livewire\Cms\GestionarApariencia;
 use App\Livewire\Cms\GestionarContacto;
 use App\Livewire\Cms\GestionarContenido;
@@ -14,6 +21,15 @@ use App\Livewire\Cms\GestionarPorQue;
 use App\Livewire\Cms\GestionarRedes;
 use App\Livewire\Cms\GestionarServicios;
 use App\Livewire\CrearCitas;
+use App\Livewire\Conversiones\AlmacenPendientes;
+use App\Livewire\Conversiones\AsignarEquipos;
+use App\Livewire\Conversiones\AsignarTecnico;
+use App\Livewire\Conversiones\Crear;
+use App\Livewire\Conversiones\EntregaPendientes;
+use App\Livewire\Conversiones\EntregarCobrar;
+use App\Livewire\Conversiones\Evaluar;
+use App\Livewire\Conversiones\MisAsignadas;
+use App\Livewire\Conversiones\Realizar;
 use App\Livewire\ExpedienteModal;
 use App\Livewire\GestorRepuestos;
 use App\Livewire\Inicio;
@@ -30,6 +46,9 @@ use App\Livewire\RRHH\GestionDocumentos;
 use App\Livewire\RRHH\ListaPlanilla;
 use App\Livewire\RRHH\MisPlanillas;
 use App\Livewire\ServiceOrders\CrearSimple;
+use App\Livewire\ServiceOrders\Listado;
+use App\Livewire\SelectorClienteVehiculo;
+use App\Livewire\ProcesarCobro;
 use App\Livewire\SolicitudRepuestos;
 use App\Livewire\Usuarios;
 use App\Models\Media;
@@ -85,13 +104,6 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         Route::get('/lista-expedientes', ListaExpedientes::class)->name('ListaExpedientes');
         // Route::get('/evaluacion', ExpedienteModal::class)->name('evaluacion');
 
-        // Conversiones
-        Route::get('/lista-conversiones', ListaConversiones::class)->name('ListaConversiones');
-
-        // Almacen
-        Route::get('/gestor-repuestos', GestorRepuestos::class)->name('Repuestos');
-        Route::get('/solicitud-repuestos/{conversionId}', SolicitudRepuestos::class)->name('SolicitudRepuestos');
-
         // Reportes
         Route::get('/rpta-citas', ReporteCitas::class)->name('Rpta.Citas');
 
@@ -104,8 +116,34 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         // Servicios
         Route::get('/lista-servicios', ListaServicios::class)->name('ListaServicios');
 
+        // Rutas modulo de caja
+        Route::get('/caja/abrir', AbrirCaja::class)->name('caja.abrir');
+        Route::get('/caja/egreso', RegistrarEgreso::class)->name('caja.egreso');
+        Route::get('/caja/cerrar', CerrarCaja::class)->name('caja.cerrar');
+        Route::get('/caja/historial', HistorialSesiones::class)->name('caja.historial');
+        Route::get('/caja/sesion/{sesionId}', DetalleSesion::class)->name('caja.sesion');
+
         // Rutas de servicios
+        Route::get('/ordenes', Listado::class)->name('ordenes.listado');
         Route::get('/ordenes/simple/crear', CrearSimple::class)->name('ordenes.simple.crear');
+        Route::get('/conversiones/crear', Crear::class)->name('conversiones.crear');
+
+        // Rutas modulo de conversiones
+        Route::get('/conversiones/asignar', AsignarTecnico::class)->name('conversiones.asignar');
+        Route::get('/conversiones/mis-asignadas', MisAsignadas::class)->name('conversiones.mis-asignadas');
+        Route::get('/conversiones/{ordenId}/evaluar', Evaluar::class)->name('conversiones.evaluar');
+        Route::get('/conversiones/almacen/pendientes', AlmacenPendientes::class)->name('conversiones.almacen-pendientes');
+        Route::get('/conversiones/{ordenId}/asignar-equipos', AsignarEquipos::class)->name('conversiones.asignar-equipos');
+        Route::get('/conversiones/{ordenId}/realizar', Realizar::class)->name('conversiones.realizar');
+        Route::get('/conversiones/entregas/pendientes', EntregaPendientes::class)->name('conversiones.entregas-pendientes');
+        Route::get('/conversiones/{ordenId}/entregar', EntregarCobrar::class)->name('conversiones.entregar');
+
+        Route::get('/selector', SelectorClienteVehiculo::class)->name('selector');
+        Route::get('/procesarcobro', ProcesarCobro::class)->name('procesar');
+
+        // Rutas modulo de almacen
+        Route::get('/almacen/categorias', CategoriasListado::class)->name('almacen.categorias.listado');
+        Route::get('/almacen/productos', ProductosListado::class)->name('almacen.productos.listado');
 
         // Rutas modulo de recursos humanos
         Route::get('/rrhh/contratos', Contratos::class)->middleware('can:rrhh.contratos')->name('rrhh.contratos');

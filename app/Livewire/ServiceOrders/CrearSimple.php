@@ -9,8 +9,10 @@ use App\Models\Service;
 use App\Models\ServiceOrder;
 use App\Models\SesionCaja;
 use App\Models\Vehiculo;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
+use Livewire\Attributes\On;
 
 class CrearSimple extends Component
 {
@@ -50,13 +52,26 @@ class CrearSimple extends Component
 
     public ?string $folioGenerado = null;
 
-    // En lugar de public function buscar(), usa este hook:
+    #[On('clienteSeleccionado')]
+    public function actualizarCliente(?int $clienteId)
+    {
+        $this->clienteId = $clienteId;
+        if (!$clienteId) {
+            $this->reset(['vehiculoId', 'serviceId', 'precioLista', 'precioFinal', 'descuentoMotivo']);
+        }
+    }
+
+    #[On('vehiculoSeleccionado')]
+    public function actualizarVehiculo(?int $vehiculoId)
+    {
+        $this->vehiculoId = $vehiculoId;
+        if (!$vehiculoId) {
+            $this->reset(['serviceId', 'precioLista', 'precioFinal', 'descuentoMotivo']);
+        }
+    }
+
     public function updatedBuscarCliente()
     {
-        /*$this->clientesEncontrados = strlen($this->buscarCliente) < 3
-            ? []
-            : Cliente::buscar($this->buscarCliente)->limit(8)->get()->toArray();*/
-
         $termino = trim($this->buscarCliente);
 
         if (strlen($termino) < 3) {
@@ -73,18 +88,12 @@ class CrearSimple extends Component
 
     public function seleccionarCliente(int $clienteId)
     {
-        // $this->clienteId = $clienteId;
-        // $this->clientesEncontrados = [];
-        // $this->buscarCliente = Cliente::find($clienteId)->nombre;
-        // $this->vehiculoId = null;
-
         $cliente = Cliente::find($clienteId);
 
         if ($cliente) {
             $this->clienteId = $cliente->id;
-            // Mostramos el nombre completo en el input
             $this->buscarCliente = trim($cliente->nombre.' '.$cliente->apellido);
-            $this->clientesEncontrados = []; // Oculta la lista desplegable
+            $this->clientesEncontrados = [];
             $this->vehiculoId = null;
         }
     }
@@ -106,13 +115,15 @@ class CrearSimple extends Component
 
         $vehiculo = Vehiculo::create([
             'cliente_id' => $this->clienteId,
-            'placa' => $this->nuevaPlaca,
+            'placa' => strtoupper($this->nuevaPlaca),
             'marca' => $this->nuevaMarca,
             'modelo' => $this->nuevoModelo,
         ]);
 
         $this->vehiculoId = $vehiculo->id;
         $this->creandoVehiculoNuevo = false;
+
+        $this->dispatch('minToast', titulo: '¡Éxito!', mensaje: 'Vehículo registrado correctamente.', icono: 'success');
     }
 
     public function irAPaso2()
@@ -120,6 +131,9 @@ class CrearSimple extends Component
         $this->validate([
             'clienteId' => 'required|exists:clientes,id',
             'vehiculoId' => 'required|exists:vehiculos,id',
+        ], [
+            'clienteId.required' => 'Debes seleccionar un cliente.',
+            'vehiculoId.required' => 'Debes seleccionar un vehículo.',
         ]);
 
         $this->paso = 2;
@@ -131,6 +145,7 @@ class CrearSimple extends Component
         $this->serviceId = $servicio->id;
         $this->precioLista = $servicio->precio_base;
         $this->precioFinal = $servicio->precio_base;
+        $this->descuentoMotivo = '';
     }
 
     public function irAPaso3()
@@ -138,6 +153,8 @@ class CrearSimple extends Component
         $this->validate([
             'serviceId' => 'required|exists:services,id',
             'precioFinal' => 'required|numeric|min:0',
+        ], [
+            'serviceId.required' => 'Debes seleccionar un servicio.',
         ]);
 
         if (bccomp($this->precioFinal, $this->precioLista, 2) !== 0 && empty($this->descuentoMotivo)) {
@@ -151,51 +168,68 @@ class CrearSimple extends Component
 
     public function procesarCobro()
     {
-        $sesion = SesionCaja::abierta()->first();
+        $sesion = SesionCaja::abierta()->orderByDesc('abierta_en')->first();
 
         if (! $sesion) {
             $this->addError('caja', 'No hay una caja abierta. Pide al cajero que abra caja antes de cobrar.');
+            $this->dispatch('minToast', titulo: 'Error', mensaje: 'No hay una caja abierta actualmente.', icono: 'error');
 
             return;
         }
 
-        $this->validate(['metodoPago' => 'required|in:efectivo,tarjeta,transferencia,otro']);
+        $this->validate([
+            'metodoPago' => 'required|in:efectivo,tarjeta,transferencia,otro',
+            'clienteId' => 'required|exists:clientes,id',
+            'vehiculoId' => 'required|exists:vehiculos,id',
+            'serviceId' => 'required|exists:services,id',
+            'precioFinal' => 'required|numeric|min:0',
+        ]);
 
-        DB::transaction(function () use ($sesion) {
-            $orden = ServiceOrder::create([
-                'cliente_id' => $this->clienteId,
-                'vehiculo_id' => $this->vehiculoId,
-                'service_id' => $this->serviceId,
-                'estado' => 'entregada', // servicio simple: se cobra y entrega en un solo paso
-                'precio_lista' => $this->precioLista,
-                'precio_final' => $this->precioFinal,
-                'descuento_motivo' => bccomp($this->precioFinal, $this->precioLista, 2) !== 0
-                    ? $this->descuentoMotivo : null,
-                'creado_por' => auth()->id(),
-            ]);
+        try {
+            DB::transaction(function () use ($sesion) {
+                $orden = ServiceOrder::create([
+                    'cliente_id' => $this->clienteId,
+                    'vehiculo_id' => $this->vehiculoId,
+                    'service_id' => $this->serviceId,
+                    'estado' => 'entregada', // servicio simple: se cobra y entrega en un solo paso
+                    'precio_lista' => $this->precioLista,
+                    'precio_final' => $this->precioFinal,
+                    'descuento_motivo' => bccomp((string) $this->precioFinal, (string) $this->precioLista, 2) !== 0
+                        ? $this->descuentoMotivo : null,
+                    'creado_por' => Auth::id(),
+                ]);
 
-            MovimientoCaja::create([
-                'sesion_caja_id' => $sesion->id,
-                'tipo' => 'ingreso',
-                'monto' => $this->precioFinal,
-                'concepto' => 'Cobro orden #'.$orden->id.' - '.$orden->service->nombre,
-                'service_order_id' => $orden->id,
-                'usuario_id' => auth()->id(),
-            ]);
+                MovimientoCaja::create([
+                    'sesion_caja_id' => $sesion->id,
+                    'tipo' => 'ingreso',
+                    'monto' => $this->precioFinal,
+                    'concepto' => 'Cobro orden #'.$orden->id.' - '.$orden->service->nombre,
+                    'service_order_id' => $orden->id,
+                    'usuario_id' => Auth::id(),
+                ]);
 
-            $comprobante = Comprobante::create([
-                'service_order_id' => $orden->id,
-                'folio' => Comprobante::generarFolio(),
-                'monto' => $this->precioFinal,
-                'metodo_pago' => $this->metodoPago,
-                'emitido_por' => auth()->id(),
-            ]);
+                $comprobante = Comprobante::create([
+                    'service_order_id' => $orden->id,
+                    'folio' => Comprobante::generarFolio(),
+                    'monto' => $this->precioFinal,
+                    'metodo_pago' => $this->metodoPago,
+                    'emitido_por' => Auth::id(),
+                ]);
 
-            $this->ordenCreadaId = $orden->id;
-            $this->folioGenerado = $comprobante->folio;
-        });
+                $this->ordenCreadaId = $orden->id;
+                $this->folioGenerado = $comprobante->folio;
+            });
+        } catch (\Throwable $e) {
+            report($e);
+            $this->addError('caja', 'Ocurrió un error al procesar el cobro. Intenta de nuevo.');
+            $this->dispatch('minToast', titulo: 'Error', mensaje: 'Error al procesar el cobro.', icono: 'error');
+
+            return;
+        }
 
         $this->paso = 4;
+
+        $this->dispatch('minToast', titulo: '¡Orden Creada!', mensaje: "La orden #{$this->ordenCreadaId} ha sido procesada con éxito.", icono: 'success');
     }
 
     public function render()
