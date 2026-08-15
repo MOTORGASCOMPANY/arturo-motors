@@ -2,18 +2,19 @@
 
 namespace App\Livewire\RRHH;
 
-use Livewire\Component;
 use App\Models\Contrato;
 use App\Models\VacacionAsignada;
-use Livewire\WithPagination;
-use Livewire\Attributes\On;
 use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\On;
+use Livewire\Component;
+use Livewire\WithPagination;
 
 class GestionarVacaciones extends Component
 {
     use WithPagination;
 
     public $idContrato;
+
     public $contrato;
 
     public function mount($idContrato)
@@ -37,7 +38,7 @@ class GestionarVacaciones extends Component
         try {
             DB::transaction(function () use ($asignacion) {
                 // Solo revertimos saldo si NO es una asignación especial
-                if (!$asignacion->especial) {
+                if (! $asignacion->especial) {
                     $vacacionMaestra = $this->contrato->vacaciones;
                     $vacacionMaestra->increment('dias_restantes', $asignacion->d_tomados);
                     $vacacionMaestra->decrement('dias_tomados', $asignacion->d_tomados);
@@ -46,11 +47,11 @@ class GestionarVacaciones extends Component
                 $asignacion->delete();
             });
 
-            $this->dispatch('minAlert', titulo: "ELIMINADO", mensaje: "Registro eliminado y saldo revertido.", icono: "success");
+            $this->dispatch('minAlert', titulo: 'ELIMINADO', mensaje: 'Registro eliminado y saldo revertido.', icono: 'success');
             $this->refresh();
 
         } catch (\Exception $e) {
-            $this->dispatch('minAlert', titulo: "Error", mensaje: "No se pudo eliminar el registro.", icono: "error");
+            $this->dispatch('minAlert', titulo: 'Error', mensaje: 'No se pudo eliminar el registro.', icono: 'error');
         }
     }
 
@@ -67,7 +68,7 @@ class GestionarVacaciones extends Component
             : collect();
 
         return view('livewire.r-r-h-h.gestionar-vacaciones', [
-            'asignaciones' => $asignaciones
+            'asignaciones' => $asignaciones,
         ]);
     }
 }

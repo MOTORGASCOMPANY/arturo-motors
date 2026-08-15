@@ -10,8 +10,11 @@ use Livewire\Component;
 class DashboardCards extends Component
 {
     public $conversionesActivas;
+
     public $conversionesMes;
+
     public $citasHoy;
+
     public $fisePendientes;
 
     public function mount()
@@ -31,7 +34,7 @@ class DashboardCards extends Component
         // Solicitudes FISE pendientes
         $this->fisePendientes = FiseSolicitud::where('estado', 'pendiente')->count();
     }
-    
+
     public function render()
     {
         return view('livewire.dashboard-cards');

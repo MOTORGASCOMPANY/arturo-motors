@@ -4,11 +4,10 @@ namespace App\Livewire;
 
 use App\Models\Roles;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
-use Spatie\Permission\Models\Role;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
+use Spatie\Permission\Models\Role;
 
 class Usuarios extends Component
 {
@@ -17,27 +16,48 @@ class Usuarios extends Component
 
     // Listado
     public $sort = 'id';
-    public $direction = 'desc';
-    public $cant = 10;
-    public $search = '';
 
+    public $direction = 'desc';
+
+    public $cant = 10;
+
+    public $search = '';
 
     // Propiedades para edición
     public $user_edit;
-    public $name, $email, $dni, $celular, $direccion, $fecha_nacimiento;
-    public $numero_cuenta, $sistema_pensionario, $asignacion_familiar, $beneficios;
+
+    public $name;
+
+    public $email;
+
+    public $dni;
+
+    public $celular;
+
+    public $direccion;
+
+    public $fecha_nacimiento;
+
+    public $numero_cuenta;
+
+    public $sistema_pensionario;
+
+    public $asignacion_familiar;
+
+    public $beneficios;
 
     // Propiedad únicamente para los roles seleccionados (array de nombres)
     public $selectedRoles = [];
 
-    //public $roles;
+    // public $roles;
 
     public $editando = false;
 
-    protected function rules() {
+    protected function rules()
+    {
         return [
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . ($this->user_edit->id ?? 0),
+            'email' => 'required|email|unique:users,email,'.($this->user_edit->id ?? 0),
             'dni' => 'nullable|string|max:8|min:8',
             'celular' => 'nullable|string|max:9|min:9',
             'direccion' => 'nullable|string|max:255',
@@ -69,8 +89,8 @@ class Usuarios extends Component
     {
         $usuarios = User::with('roles')
             ->where(function ($query) {
-                $query->where('name', 'like', '%' . $this->search . '%')
-                    ->orWhere('email', 'like', '%' . $this->search . '%');
+                $query->where('name', 'like', '%'.$this->search.'%')
+                    ->orWhere('email', 'like', '%'.$this->search.'%');
             })
             ->orderBy('id', 'desc')
             ->paginate($this->cant);
@@ -91,7 +111,7 @@ class Usuarios extends Component
         $this->fecha_nacimiento = optional($user->fecha_nacimiento)->format('Y-m-d');
         $this->numero_cuenta = $user->numero_cuenta;
         $this->sistema_pensionario = $user->sistema_pensionario;
-        $this->asignacion_familiar = (bool)$user->asignacion_familiar;
+        $this->asignacion_familiar = (bool) $user->asignacion_familiar;
         $this->beneficios = $user->beneficios;
 
         // Asignamos solo los nombres de los roles que el usuario tiene actualmente
@@ -121,6 +141,6 @@ class Usuarios extends Component
         $this->user_edit->syncRoles($this->selectedRoles);
 
         $this->reset(['editando', 'selectedRoles']);
-        $this->dispatch('minAlert', titulo: "¡BUEN TRABAJO!", mensaje: "Usuario actualizado correctamente.", icono: "success");
+        $this->dispatch('minAlert', titulo: '¡BUEN TRABAJO!', mensaje: 'Usuario actualizado correctamente.', icono: 'success');
     }
 }

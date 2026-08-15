@@ -45,6 +45,6 @@ class DetalleEvaluacion extends Model
         'extintor',
         'linterna',
         'herramientas',
-        'botiquin',        
+        'botiquin',
     ];
 }

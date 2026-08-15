@@ -31,11 +31,11 @@ class Cliente extends Model
         /*if ($search) {
             $query->where('nombre', 'like', "%{$search}%");
         }*/
-        if (!empty($search)) {
+        if (! empty($search)) {
             $query->where(function ($q) use ($search) {
                 $q->where('nombre', 'like', "%{$search}%")
-                ->orWhere('apellido', 'like', "%{$search}%")
-                ->orWhere('documento', 'like', "%{$search}%");
+                    ->orWhere('apellido', 'like', "%{$search}%")
+                    ->orWhere('documento', 'like', "%{$search}%");
             });
         }
     }

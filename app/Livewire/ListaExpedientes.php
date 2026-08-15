@@ -9,42 +9,83 @@ use App\Models\Expediente;
 use App\Models\TiposDocumento;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-use Livewire\Component;
-use Livewire\WithPagination;
-use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Livewire\Attributes\On;
+use Livewire\Component;
+use Livewire\WithFileUploads;
+use Livewire\WithPagination;
 
 class ListaExpedientes extends Component
 {
-    use WithPagination, WithFileUploads;
-    public $sort, $order, $cant, $search, $direction, $es;
+    use WithFileUploads, WithPagination;
+
+    public $sort;
+
+    public $order;
+
+    public $cant;
+
+    public $search;
+
+    public $direction;
+
+    public $es;
+
     // Para el modal
-    public $open = false, $expedienteSeleccionado;
+    public $open = false;
+
+    public $expedienteSeleccionado;
+
     // Documentos existentes del expediente
     public $files = [];
+
     // Carga nueva (múltiples archivos)
     public $documentoNuevo = [];
+
     // Técnico asignado
     public $tecnico_id = '';
+
     // Carga el usuario autenticado
     public $user;
 
     // Catálogo de tipos
-    public $tiposDocumentos, $tecnicos;
+    public $tiposDocumentos;
+
+    public $tecnicos;
 
     // Variables para modal evaluacion
     public $openevaluar = false;
 
-    public $instalacion, $cambio_tanque, $revision, $certificacion, $servicio;
-    public $inyectado, $carburado, $monopunto, $motor_tipo, $cil3, $kilometraje;
+    public $instalacion;
+
+    public $cambio_tanque;
+
+    public $revision;
+
+    public $certificacion;
+
+    public $servicio;
+
+    public $inyectado;
+
+    public $carburado;
+
+    public $monopunto;
+
+    public $motor_tipo;
+
+    public $cil3;
+
+    public $kilometraje;
 
     // Variables para detalles evaluacion
     // Declaramos una propiedad para todos los detalles
     public $detalles = [];
+
     // Nuevas propiedades para crear resultado de la evaluación
-    public $resultado, $observaciones;
+    public $resultado;
+
+    public $observaciones;
 
     protected $rules = [
         'tecnico_id' => 'nullable|exists:users,id',
@@ -62,8 +103,9 @@ class ListaExpedientes extends Component
         $this->tiposDocumentos = TiposDocumento::all();
         $this->tecnicos = User::role(['Tecnico'])->orderBy('name')->get();
         $this->user = Auth::user();
-        //dd($this->user);
+        // dd($this->user);
     }
+
     public function order($sort)
     {
         if ($this->sort === $sort) {
@@ -79,7 +121,7 @@ class ListaExpedientes extends Component
     {
         $this->resetErrorBag();
         $this->resetValidation();
-        //$this->reset(['documentoNuevo', 'tipo_documento_id']);
+        // $this->reset(['documentoNuevo', 'tipo_documento_id']);
         $this->reset(['documentoNuevo']);
 
         $this->expedienteSeleccionado = Expediente::with(['cliente', 'vehiculo', 'cita.asesor', 'documentos.tipoDocumento'])
@@ -89,10 +131,11 @@ class ListaExpedientes extends Component
         $this->tecnico_id = $this->expedienteSeleccionado->tecnico_id;
         $this->open = true;
     }
+
     // Asignar tecnico y subir documentos
     public function subirDocumento()
     {
-        if (!$this->expedienteSeleccionado) {
+        if (! $this->expedienteSeleccionado) {
             return;
         }
 
@@ -102,17 +145,17 @@ class ListaExpedientes extends Component
         ]);
 
         // 2. Subir documentos solo si hay nuevos archivos
-        if (!empty($this->documentoNuevo)) {
+        if (! empty($this->documentoNuevo)) {
             $this->validate();
 
             // Creamos la nueva ruta de la carpeta con el ID y la placa
-            $folderName = $this->expedienteSeleccionado->id . '-' . $this->expedienteSeleccionado->vehiculo->placa;
-            $basePath = 'expedientes/' . $folderName;
+            $folderName = $this->expedienteSeleccionado->id.'-'.$this->expedienteSeleccionado->vehiculo->placa;
+            $basePath = 'expedientes/'.$folderName;
 
             foreach ($this->documentoNuevo as $tipoDocumentoId => $archivos) {
                 // Iterar sobre cada archivo del tipo de documento actual
                 foreach ($archivos as $archivo) {
-                    //$path = $archivo->store('expedientes/' . $this->expedienteSeleccionado->id, 'public');
+                    // $path = $archivo->store('expedientes/' . $this->expedienteSeleccionado->id, 'public');
                     // Usamos la nueva ruta de la carpeta para guardar el archivo
                     $path = $archivo->store($basePath, 'public');
 
@@ -120,7 +163,7 @@ class ListaExpedientes extends Component
                         'expediente_id' => $this->expedienteSeleccionado->id,
                         'tipo_documento_id' => $tipoDocumentoId, // Usamos la clave del array
                         'nombre' => $archivo->getClientOriginalName(),
-                        'ruta' => '/storage/' . $path,
+                        'ruta' => '/storage/'.$path,
                         'extension' => $archivo->getClientOriginalExtension(),
                     ]);
                 }
@@ -135,8 +178,9 @@ class ListaExpedientes extends Component
         $this->resetValidation();
         $this->open = false;
 
-        $this->dispatch('minAlert', titulo: "¡BUEN TRABAJO!", mensaje: "Se guardaron los cambios correctamente", icono: "success");
+        $this->dispatch('minAlert', titulo: '¡BUEN TRABAJO!', mensaje: 'Se guardaron los cambios correctamente', icono: 'success');
     }
+
     // Eliminar archivo
     public function deleteFileUpload($tipo_id, $key)
     {
@@ -148,7 +192,6 @@ class ListaExpedientes extends Component
             }
         }
     }
-
 
     public function verEvaluacion($id)
     {
@@ -190,6 +233,7 @@ class ListaExpedientes extends Component
 
         $this->openevaluar = true;
     }
+
     public function guardarEvaluacion()
     {
         $this->validate([
@@ -257,8 +301,8 @@ class ListaExpedientes extends Component
         $this->openevaluar = false;
 
         // Se cierra el modal y se muestra una notificación de éxito
-        $this->dispatch('minAlert', titulo: "¡BUEN TRABAJO!", mensaje: "Evaluación guardada correctamente", icono: "success");
-    }    
+        $this->dispatch('minAlert', titulo: '¡BUEN TRABAJO!', mensaje: 'Evaluación guardada correctamente', icono: 'success');
+    }
 
     // Muestra los expedientes con filtros y orden
     public function render()
@@ -275,7 +319,6 @@ class ListaExpedientes extends Component
         return view('livewire.lista-expedientes', compact('expedientes'));
     }
 }
-
 
 /*public function subirDocumento()
     {

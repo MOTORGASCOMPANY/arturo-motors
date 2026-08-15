@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -17,12 +18,13 @@ class User extends Authenticatable
 {
     use HasApiTokens;
 
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<UserFactory> */
     use HasFactory;
+
     use HasProfilePhoto;
+    use HasRoles;
     use Notifiable;
     use TwoFactorAuthenticatable;
-    use HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -33,7 +35,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        /*NUEVOS CAMPOS*/
+        /* NUEVOS CAMPOS */
         'dni',
         'celular',
         'direccion',
@@ -90,8 +92,7 @@ class User extends Authenticatable
         return $this->hasOne(Contrato::class, 'user_id');
     }
 
-
-    //Relación con los documentos del legajo digital.
+    // Relación con los documentos del legajo digital.
     public function documentos()
     {
         return $this->hasMany(DocumentoUsuario::class, 'user_id');

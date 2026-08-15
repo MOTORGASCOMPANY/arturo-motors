@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use \Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Expediente extends Model
@@ -15,7 +15,7 @@ class Expediente extends Model
         'cita_id',
         'cliente_id',
         'vehiculo_id',
-        'jefe_taller_id', // solo hay un jefe evaluar campo 
+        'jefe_taller_id', // solo hay un jefe evaluar campo
         'tecnico_id',
         'estado', // en_evaluacion', 'evaluacion_rechazada', 'aprobado_conversion', 'en_conversion', 'conversion_completada', 'en_control_calidad', 'listo_para_entrega', 'entregado', 'cancelado'
     ];
@@ -26,7 +26,7 @@ class Expediente extends Model
     {
         return $this->belongsTo(Cita::class, 'cita_id');
     }
-    
+
     public function cliente()
     {
         return $this->belongsTo(Cliente::class, 'cliente_id');
@@ -46,12 +46,11 @@ class Expediente extends Model
     {
         return $this->belongsTo(User::class, 'tecnico_id');
     }
-    
+
     /**
      *  hasMany asume que un expediente puede tener múltiples registros a lo largo del tiempo.
      *  hasOne asume que es un evento único y final que se aplica a un expediente.
      */
-
     public function evaluaciones()
     {
         return $this->hasMany(Evaluacion::class, 'expediente_id');
@@ -78,9 +77,9 @@ class Expediente extends Model
         if ($search) {
             $query->whereHas('cliente', function ($q) use ($search) {
                 $q->where('nombre', 'like', "%{$search}%")
-                  ->orWhere('documento', 'like', "%{$search}%");
+                    ->orWhere('documento', 'like', "%{$search}%");
             });
-            }
+        }
     }
 
     public function scopeOrdenar($query, $sort, $direction)
@@ -93,6 +92,7 @@ class Expediente extends Model
         if ($estado) {
             return $query->where('estado', $estado);
         }
+
         return $query;
     }
 }

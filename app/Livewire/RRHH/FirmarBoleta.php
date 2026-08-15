@@ -2,18 +2,21 @@
 
 namespace App\Livewire\RRHH;
 
-use Livewire\Component;
 use App\Models\PlanillaArchivo;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\On;
+use Livewire\Component;
 use setasign\Fpdi\Fpdi;
 
 class FirmarBoleta extends Component
 {
     public $abierto = false;
+
     public $archivoId;
+
     public $confirmacion = false;
+
     public $archivo;
 
     #[On('abrir-modal-firma')]
@@ -30,8 +33,9 @@ class FirmarBoleta extends Component
         $this->validate(['confirmacion' => 'accepted']);
 
         $user = Auth::user();
-        if (!$user->ruta_firma || !Storage::disk('public')->exists($user->ruta_firma)) {
+        if (! $user->ruta_firma || ! Storage::disk('public')->exists($user->ruta_firma)) {
             $this->dispatch('minAlert', titulo: 'ERROR', mensaje: 'No tienes una firma registrada o el archivo no existe.', icono: 'error');
+
             return;
         }
 
@@ -43,11 +47,11 @@ class FirmarBoleta extends Component
 
             // Construir nombre similar al original pero con sufijo "firmado"
             $nombreFirmado = "P{$this->archivo->planilla_id}_{$timestamp}_firmado.{$extension}";
-            $rutaDestinoRelativa = 'planillas/' . $nombreFirmado;
+            $rutaDestinoRelativa = 'planillas/'.$nombreFirmado;
             $rutaDestinoAbsoluta = Storage::disk('public')->path($rutaDestinoRelativa);
 
             // 2. Iniciar Proceso de Estampado con FPDI
-            $pdf = new Fpdi();
+            $pdf = new Fpdi;
             $pageCount = $pdf->setSourceFile($rutaOriginal);
 
             for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
@@ -76,7 +80,7 @@ class FirmarBoleta extends Component
                     // Y = posición de la firma + su altura + 2mm de margen
                     $pdf->SetXY($posX, $posY + $altoFirma + 2);
 
-                    $pdf->Cell($anchoFirma, 0, 'Firmado digitalmente el: ' . now()->format('d/m/Y H:i'), 0, 0, 'C');
+                    $pdf->Cell($anchoFirma, 0, 'Firmado digitalmente el: '.now()->format('d/m/Y H:i'), 0, 0, 'C');
                 }
             }
 
@@ -86,10 +90,10 @@ class FirmarBoleta extends Component
             // 4. Crear nuevo registro en PlanillaArchivo (similar a tu función save)
             PlanillaArchivo::create([
                 'planilla_id' => $this->archivo->planilla_id,
-                'tipo'        => 'boleta_firmada', // Tipo distinto para diferenciar
-                'nombre'      => $this->archivo->nombre . ' (Firmado)',
-                'ruta'        => $rutaDestinoRelativa,
-                'extension'   => $extension,
+                'tipo' => 'boleta_firmada', // Tipo distinto para diferenciar
+                'nombre' => $this->archivo->nombre.' (Firmado)',
+                'ruta' => $rutaDestinoRelativa,
+                'extension' => $extension,
             ]);
 
             $this->abierto = false;
@@ -97,7 +101,7 @@ class FirmarBoleta extends Component
             $this->dispatch('minAlert', titulo: 'ÉXITO', mensaje: 'Boleta firmada y guardada correctamente.', icono: 'success');
 
         } catch (\Exception $e) {
-            $this->dispatch('minAlert', titulo: 'ERROR', mensaje: 'Error al procesar PDF: ' . $e->getMessage(), icono: 'error');
+            $this->dispatch('minAlert', titulo: 'ERROR', mensaje: 'Error al procesar PDF: '.$e->getMessage(), icono: 'error');
         }
     }
 

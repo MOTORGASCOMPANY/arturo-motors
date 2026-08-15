@@ -15,17 +15,17 @@ return new class extends Migration
         Schema::create('contratos', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-            
+
             $table->date('fecha_ingreso');
             $table->date('fecha_inicio_contrato');
             $table->date('fecha_vencimiento')->nullable();
-            
+
             $table->string('cargo', 150);
             $table->string('tipo_contrato', 100)->default('Plazo Fijo');
-            
+
             $table->decimal('sueldo_bruto', 10, 2)->default(0.00);
             $table->decimal('sueldo_neto', 10, 2)->default(0.00);
-            
+
             $table->enum('status', ['Activo', 'Vencido', 'Finalizado'])->default('Activo');
             $table->string('contrato_path', 255)->nullable();
             $table->timestamps();

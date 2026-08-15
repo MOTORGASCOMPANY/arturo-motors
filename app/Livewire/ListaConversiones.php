@@ -5,26 +5,42 @@ namespace App\Livewire;
 use App\Models\Conversion;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Livewire\Attributes\On;
 
 class ListaConversiones extends Component
 {
     use WithPagination;
-    public $sort, $order, $cant, $search, $direction, $es;
+
+    public $sort;
+
+    public $order;
+
+    public $cant;
+
+    public $search;
+
+    public $direction;
+
+    public $es;
+
     // Propiedades para el modal de edición
     public $open = false;
+
     public $conversionAEditar;
+
     // Propiedades para los campos del formulario del modal
     public $tecnico_id;
+
     public $fecha_inicio;
+
     public $fecha_fin;
+
     public $estado;
 
     // Carga el usuario autenticado
     public $user;
-
 
     // Método para escuchar el evento 'refreshList' de otros componentes
     #[On('refreshList')]
@@ -94,7 +110,7 @@ class ListaConversiones extends Component
         $this->dispatch('minAlert', titulo: '¡ACTUALIZADO!', mensaje: 'La conversión se actualizó correctamente', icono: 'success');
     }
 
-    //Redirecciona a la página de SolicitudRepuestos con el ID de la conversión.
+    // Redirecciona a la página de SolicitudRepuestos con el ID de la conversión.
     public function redirectToSolicitudRepuestos($conversionId)
     {
         return redirect()->route('SolicitudRepuestos', ['conversionId' => $conversionId]);
@@ -110,7 +126,7 @@ class ListaConversiones extends Component
             })
             ->ordenar($this->sort, $this->direction)
             ->paginate($this->cant);
-        
+
         // Obtener la lista de usuarios con el rol de 'tecnico' para el select del modal
         $tecnicos = User::whereHas('roles', function ($query) {
             $query->where('name', 'Tecnico');

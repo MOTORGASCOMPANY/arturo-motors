@@ -8,7 +8,6 @@ use App\Models\Expediente;
 use App\Models\Vehiculo;
 use Barryvdh\DomPDF\Facade\Pdf;
 use DateTime;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 
 class PdfController extends Controller
@@ -18,18 +17,19 @@ class PdfController extends Controller
     {
         $vehiculo = Vehiculo::findOrFail($id);
 
-        $meses = array("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre");
+        $meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
         $fechaCert = is_string($vehiculo->created_at) ? new DateTime($vehiculo->created_at) : $vehiculo->created_at;
-        $fechaForma = $fechaCert->format('d') . ' de ' . $meses[$fechaCert->format('m') - 1] . ' del ' . $fechaCert->format('Y');
+        $fechaForma = $fechaCert->format('d').' de '.$meses[$fechaCert->format('m') - 1].' del '.$fechaCert->format('Y');
 
         $data = [
-            "vehiculo" => $vehiculo,
+            'vehiculo' => $vehiculo,
             'fecha' => $fechaForma,
         ];
         $pdf = App::make('dompdf.wrapper');
         $pdf->loadView('pdfs.vehiculo', $data);
+
         // Mostrar el PDF en el navegador
-        return $pdf->stream('vehiculo' . $id . '.pdf');
+        return $pdf->stream('vehiculo'.$id.'.pdf');
     }
 
     // Genera manual y mantenimiento de un vehículo específico
@@ -37,18 +37,19 @@ class PdfController extends Controller
     {
         $vehiculo = Vehiculo::findOrFail($id);
 
-        $meses = array("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre");
+        $meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
         $fechaCert = is_string($vehiculo->created_at) ? new DateTime($vehiculo->created_at) : $vehiculo->created_at;
-        $fechaForma = $fechaCert->format('d') . ' de ' . $meses[$fechaCert->format('m') - 1] . ' del ' . $fechaCert->format('Y');
+        $fechaForma = $fechaCert->format('d').' de '.$meses[$fechaCert->format('m') - 1].' del '.$fechaCert->format('Y');
 
         $data = [
-            "vehiculo" => $vehiculo,
+            'vehiculo' => $vehiculo,
             'fecha' => $fechaForma,
         ];
         $pdf = App::make('dompdf.wrapper');
         $pdf->loadView('pdfs.manual', $data);
+
         // Mostrar el PDF en el navegador
-        return $pdf->stream('manual' . $id . '.pdf');
+        return $pdf->stream('manual'.$id.'.pdf');
     }
 
     // Genera una orden de trabajo con el detalle de repuestos y accesorios de una conversión
@@ -58,7 +59,7 @@ class PdfController extends Controller
         $conversion = Conversion::with(['expediente.vehiculo', 'expediente.cliente', 'conversionDetalles.repuesto'])->find($id);
 
         // Si no se encuentra la conversión, podemos redirigir o mostrar un error
-        if (!$conversion) {
+        if (! $conversion) {
             abort(404, 'Conversión no encontrada.');
         }
 
@@ -70,7 +71,7 @@ class PdfController extends Controller
 
         // 3. Devolver el PDF para descarga o visualización en el navegador
         // Usar 'stream' para abrirlo en el navegador
-        return $pdf->stream('orden_repuestos_' . $conversion->expediente->id . '.pdf');
+        return $pdf->stream('orden_repuestos_'.$conversion->expediente->id.'.pdf');
     }
 
     // Genera y descarga el PDF de la ficha de evaluación de un expediente.
@@ -80,7 +81,7 @@ class PdfController extends Controller
         $expediente = Expediente::with(['cliente', 'vehiculo', 'cita.asesor', 'evaluaciones.detalles'])->find($id);
 
         // Verificamos si el expediente y la evaluación existen
-        if (!$expediente) {
+        if (! $expediente) {
             return redirect()->back()->with('error', 'No se encontró el expediente.');
         }
 
@@ -88,7 +89,7 @@ class PdfController extends Controller
         $evaluacion = $expediente->evaluaciones->first();
 
         // Verificamos si se encontró la evaluación y sus detalles
-        if (!$evaluacion || !$evaluacion->detalles) {
+        if (! $evaluacion || ! $evaluacion->detalles) {
             return redirect()->back()->with('error', 'No se encontró la evaluación o sus detalles para este expediente.');
         }
 
@@ -100,7 +101,7 @@ class PdfController extends Controller
             'expediente_id' => $expediente->id,
             'fechaIngreso' => $evaluacion->fecha_evaluacion->format('d/m/Y'),
             'fechaSalida' => $expediente->cita->fecha_salida ?? 'Pendiente',
-            'nombreCliente' => $expediente->cliente->nombre . ' ' . $expediente->cliente->apellido,
+            'nombreCliente' => $expediente->cliente->nombre.' '.$expediente->cliente->apellido,
             'dniCliente' => $expediente->cliente->documento,
             'telefonoCliente' => $expediente->cliente->telefono,
             'placaVehiculo' => $expediente->vehiculo->placa,
@@ -150,10 +151,11 @@ class PdfController extends Controller
         ];
 
         // Cargamos la vista y le pasamos los datos
-        //$pdf = PDF::loadView('pdfs.ficha-evaluacion', compact('expediente'));
-        $pdf = PDF::loadView('pdfs.ficha-evaluacion', $data);
+        // $pdf = PDF::loadView('pdfs.ficha-evaluacion', compact('expediente'));
+        $pdf = Pdf::loadView('pdfs.ficha-evaluacion', $data);
+
         // Devolvemos el PDF para visualizar en el navegado
-        return $pdf->stream('evaluacion-expediente-' . $expediente->id . '.pdf');
+        return $pdf->stream('evaluacion-expediente-'.$expediente->id.'.pdf');
     }
 
     // Genera y descarga el PDF del contrato laboral de un empelado.
@@ -173,8 +175,9 @@ class PdfController extends Controller
         $pdf->loadView('pdfs.contrato_laboral', $data);
 
         // Retornamos el PDF para previsualizar en el navegador
-        return $pdf->stream('Contrato_' . $contrato->user->name . '.pdf');
+        return $pdf->stream('Contrato_'.$contrato->user->name.'.pdf');
     }
+
     private function convertirSueldoALetras($numero)
     {
         $enteros = floor($numero);
@@ -182,40 +185,50 @@ class PdfController extends Controller
 
         $letras = $this->numerosALetrasLogica($enteros);
 
-        return ucfirst($letras) . " con " . str_pad($decimales, 2, '0', STR_PAD_LEFT) . "/100 soles";
+        return ucfirst($letras).' con '.str_pad($decimales, 2, '0', STR_PAD_LEFT).'/100 soles';
     }
+
     private function numerosALetrasLogica($num)
     {
         $unidades = ['', 'un', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve'];
         $decenas = ['', 'diez', 'veinte', 'treinta', 'cuarenta', 'cincuenta', 'sesenta', 'setenta', 'ochenta', 'noventa'];
         $especiales = [11 => 'once', 12 => 'doce', 13 => 'trece', 14 => 'catorce', 15 => 'quince', 16 => 'dieciséis', 17 => 'diecisiete', 18 => 'dieciocho', 19 => 'diecinueve', 21 => 'veintiuno', 22 => 'veintidós', 23 => 'veintitrés', 24 => 'veinticuatro', 25 => 'veinticinco'];
 
-        if ($num == 0) return 'cero';
-        if ($num == 100) return 'cien';
-        if ($num < 10) return $unidades[$num];
+        if ($num == 0) {
+            return 'cero';
+        }
+        if ($num == 100) {
+            return 'cien';
+        }
+        if ($num < 10) {
+            return $unidades[$num];
+        }
 
         if ($num < 30) {
-            return $especiales[$num] ?? ($num == 20 ? 'veinte' : 'veinti' . $unidades[$num % 10]);
+            return $especiales[$num] ?? ($num == 20 ? 'veinte' : 'veinti'.$unidades[$num % 10]);
         }
 
         if ($num < 100) {
             $u = $num % 10;
-            return $decenas[floor($num / 10)] . ($u > 0 ? ' y ' . $unidades[$u] : '');
+
+            return $decenas[floor($num / 10)].($u > 0 ? ' y '.$unidades[$u] : '');
         }
 
         if ($num < 1000) {
             $centenas = ['', 'ciento', 'doscientos', 'trescientos', 'cuatrocientos', 'quinientos', 'seiscientos', 'setecientos', 'ochocientos', 'novecientos'];
             $resto = $num % 100;
-            return ($num == 100 ? 'cien' : $centenas[floor($num / 100)]) . ($resto > 0 ? ' ' . $this->numerosALetrasLogica($resto) : '');
+
+            return ($num == 100 ? 'cien' : $centenas[floor($num / 100)]).($resto > 0 ? ' '.$this->numerosALetrasLogica($resto) : '');
         }
 
         if ($num < 1000000) {
             $miles = floor($num / 1000);
             $resto = $num % 1000;
-            $t_miles = ($miles == 1) ? 'mil' : $this->numerosALetrasLogica($miles) . ' mil';
-            return $t_miles . ($resto > 0 ? ' ' . $this->numerosALetrasLogica($resto) : '');
+            $t_miles = ($miles == 1) ? 'mil' : $this->numerosALetrasLogica($miles).' mil';
+
+            return $t_miles.($resto > 0 ? ' '.$this->numerosALetrasLogica($resto) : '');
         }
 
-        return (string)$num; // Para montos mayores a un millón, se necesitaría ampliar la lógica
+        return (string) $num; // Para montos mayores a un millón, se necesitaría ampliar la lógica
     }
 }

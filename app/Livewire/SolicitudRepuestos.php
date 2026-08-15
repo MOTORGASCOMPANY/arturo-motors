@@ -7,7 +7,6 @@ use App\Models\ConversionDetalle;
 use App\Models\Repuesto;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
-use Livewire\Attributes\On;
 
 class SolicitudRepuestos extends Component
 {
@@ -16,8 +15,11 @@ class SolicitudRepuestos extends Component
 
     // Propiedades del formulario
     public $repuestos = [];
+
     public $repuesto_id = '';
+
     public $cantidad = 1;
+
     public $conversion;
 
     // Nueva propiedad para controlar la visibilidad de los botones
@@ -28,7 +30,7 @@ class SolicitudRepuestos extends Component
     {
         $this->conversionId = $conversionId;
         // Carga la conversión y sus detalles existentes si los hay
-        //$this->conversion = Conversion::with('conversionDetalles.repuesto')->find($conversionId);
+        // $this->conversion = Conversion::with('conversionDetalles.repuesto')->find($conversionId);
         $this->conversion = Conversion::with('conversionDetalles.repuesto', 'expediente')->find($conversionId);
 
         // Si ya hay repuestos en la conversión, los cargamos en el formulario
@@ -43,7 +45,7 @@ class SolicitudRepuestos extends Component
         }
     }
 
-    //Agrega un nuevo repuesto a la lista de la solicitud.
+    // Agrega un nuevo repuesto a la lista de la solicitud.
     public function addRepuesto()
     {
         // Validación básica
@@ -60,10 +62,11 @@ class SolicitudRepuestos extends Component
 
         if ($existingRepuesto) {
             // Si el repuesto existe, actualiza su cantidad
-            $this->repuestos = collect($this->repuestos)->map(function ($item) use ($repuesto) {
+            $this->repuestos = collect($this->repuestos)->map(function ($item) {
                 if ($item['repuesto_id'] === $this->repuesto_id) {
                     $item['cantidad'] += $this->cantidad;
                 }
+
                 return $item;
             })->toArray();
         } else {
@@ -78,14 +81,15 @@ class SolicitudRepuestos extends Component
         // Resetea los campos del formulario para el siguiente repuesto
         $this->reset(['repuesto_id', 'cantidad']);
     }
-    //Elimina un repuesto de la lista.
+
+    // Elimina un repuesto de la lista.
     public function removeRepuesto($index)
     {
         unset($this->repuestos[$index]);
         $this->repuestos = array_values($this->repuestos);
     }
 
-    //Guarda la solicitud de repuestos en la base de datos y actualiza estado de Expediente y.
+    // Guarda la solicitud de repuestos en la base de datos y actualiza estado de Expediente y.
     public function saveSolicitud()
     {
         DB::transaction(function () {
@@ -149,7 +153,7 @@ class SolicitudRepuestos extends Component
             if ($this->conversion && $this->conversion->expediente) {
                 // 2. Actualizar el estado del expediente a 'en_conversion'
                 $this->conversion->expediente->update([
-                    'estado' => 'en_conversion'
+                    'estado' => 'en_conversion',
                 ]);
             }
         });
@@ -157,13 +161,14 @@ class SolicitudRepuestos extends Component
         // Habilitar la visibilidad de los botones después de guardar
         $this->showButtons = true;
         // Emitir el evento de alerta después de guardar.
-        $this->dispatch('minAlert', titulo: "¡BUEN TRABAJO!", mensaje: "Repuestos agregados correctamente", icono: "success");
+        $this->dispatch('minAlert', titulo: '¡BUEN TRABAJO!', mensaje: 'Repuestos agregados correctamente', icono: 'success');
     }
 
     public function redirectToRegresar()
     {
         return redirect()->route('ListaConversiones');
     }
+
     // Nuevo método para abrir el PDF en una nueva pestaña
     public function openPdf()
     {
@@ -178,6 +183,7 @@ class SolicitudRepuestos extends Component
     public function render()
     {
         $repuestosDisponibles = Repuesto::all();
+
         return view('livewire.solicitud-repuestos', compact('repuestosDisponibles'));
     }
 }

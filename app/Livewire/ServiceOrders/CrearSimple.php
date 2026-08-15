@@ -3,7 +3,8 @@
 namespace App\Livewire\ServiceOrders;
 
 use App\Models\Cliente;
-use App\Models\Vehiculo;
+use App\Models\Comprobante;
+use App\Models\MovimientoCaja;
 use App\Models\Service;
 use App\Models\ServiceOrder;
 use App\Models\SesionCaja;
@@ -38,8 +39,11 @@ class CrearSimple extends Component
 
     // Paso 2: servicio y precio
     public ?int $serviceId = null;
+
     public $precioLista = 0;
+
     public $precioFinal = 0;
+
     public string $descuentoMotivo = '';
 
     // Paso 3: cobro
@@ -47,6 +51,7 @@ class CrearSimple extends Component
 
     // Resultado
     public ?int $ordenCreadaId = null;
+
     public ?string $folioGenerado = null;
 
     #[On('clienteSeleccionado')]
@@ -74,6 +79,7 @@ class CrearSimple extends Component
 
         if (strlen($termino) < 3) {
             $this->clientesEncontrados = [];
+
             return;
         }
 
@@ -88,9 +94,8 @@ class CrearSimple extends Component
 
         if ($cliente) {
             $this->clienteId = $cliente->id;
-            // Mostramos el nombre completo en el input
-            $this->buscarCliente = trim($cliente->nombre . ' ' . $cliente->apellido);
-            $this->clientesEncontrados = []; // Oculta la lista desplegable
+            $this->buscarCliente = trim($cliente->nombre.' '.$cliente->apellido);
+            $this->clientesEncontrados = [];
             $this->vehiculoId = null;
         }
     }
@@ -190,6 +195,7 @@ class CrearSimple extends Component
 
         if (bccomp($this->precioFinal, $this->precioLista, 2) !== 0 && empty($this->descuentoMotivo)) {
             $this->addError('descuentoMotivo', 'Indica el motivo del ajuste de precio.');
+
             return;
         }
 
@@ -200,7 +206,7 @@ class CrearSimple extends Component
     {
         $sesion = SesionCaja::abierta()->orderByDesc('abierta_en')->first();
 
-        if (!$sesion) {
+        if (! $sesion) {
             $this->addError('caja', 'No hay una caja abierta. Pide al cajero que abra caja antes de cobrar.');
             $this->dispatch('minToast', titulo: 'Error', mensaje: 'No hay una caja abierta actualmente.', icono: 'error');
             return;

@@ -16,7 +16,7 @@ class Vehiculo extends Model
         'placa',
         'marca',
         'modelo',
-        'anio',        
+        'anio',
         'combustible',
         'serie',
         'color',
@@ -31,7 +31,7 @@ class Vehiculo extends Model
     /**
      *  hasMany asume que un vehiculo puede tener múltiples registros a lo largo del tiempo.
      *  hasOne asume que es un evento único y final que se aplica a un vehiculo.
-    */
+     */
 
     // Si realmente solo hay un expediente por vehículo (relación 1 a 1), cambia la relación en el modelo:
     /*public function expediente()
@@ -60,7 +60,7 @@ class Vehiculo extends Model
             $query->where('placa', 'like', "%{$search}%")
                 ->orWhereHas('cliente', function ($q) use ($search) {
                     $q->where('nombre', 'like', "%{$search}%")
-                      ->orWhere('documento', 'like', "%{$search}%");
+                        ->orWhere('documento', 'like', "%{$search}%");
                 });
         }
     }
@@ -69,7 +69,6 @@ class Vehiculo extends Model
     {
         return $query->orderBy($sort, $direction);
     }
-
 
     /*public function getRutaVistaCertificadoAttribute()
     {
