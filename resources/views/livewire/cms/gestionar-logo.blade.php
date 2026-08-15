@@ -44,7 +44,7 @@
                                     <img src="{{ asset('storage/' . $currentLogo->file_path) }}" alt="Logo actual" class="max-w-full max-h-[180px] object-contain">
                                 </picture>
                                 <div class="absolute top-2 right-2">
-                                    <button type="button" wire:click="removeLogo" class="w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center shadow-lg hover:bg-red-600 transition-all" aria-label="Eliminar logo" wire:loading.attr="disabled">
+                                    <button type="button" onclick="confirmRemoveLogo()" class="w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center shadow-lg hover:bg-red-600 transition-all" aria-label="Eliminar logo" wire:loading.attr="disabled">
                                         <i class="fa-solid fa-trash text-sm"></i>
                                     </button>
                                 </div>
@@ -91,7 +91,7 @@
                     </button>
 
                     @if($currentLogo)
-                        <button type="button" class="w-full px-5 py-2.5 rounded-xl bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 font-semibold transition-all flex items-center justify-center gap-2" wire:click="removeLogo" wire:loading.attr="disabled">
+                        <button type="button" class="w-full px-5 py-2.5 rounded-xl bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 font-semibold transition-all flex items-center justify-center gap-2" onclick="confirmRemoveLogo()" wire:loading.attr="disabled">
                             <i class="fa-solid fa-trash mr-1"></i>Eliminar Logo
                         </button>
                     @endif
@@ -119,7 +119,7 @@
                             <div class="relative mb-4">
                                 <img src="{{ $faviconPreview }}" alt="Favicon actual" class="w-32 h-32 rounded-lg border border-gray-200 dark:border-gray-700 object-contain bg-white dark:bg-gray-700">
                                 <div class="absolute top-2 right-2">
-                                    <button type="button" wire:click="removeFavicon" class="w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center shadow-lg hover:bg-red-600 transition-all" aria-label="Eliminar favicon" wire:loading.attr="disabled">
+                                    <button type="button" onclick="confirmRemoveFavicon()" class="w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center shadow-lg hover:bg-red-600 transition-all" aria-label="Eliminar favicon" wire:loading.attr="disabled">
                                         <i class="fa-solid fa-trash text-sm"></i>
                                     </button>
                                 </div>
@@ -164,7 +164,7 @@
                     </button>
 
                     @if($currentFavicon)
-                        <button type="button" class="w-full px-5 py-2.5 rounded-xl bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 font-semibold transition-all flex items-center justify-center gap-2" wire:click="removeFavicon" wire:loading.attr="disabled">
+                        <button type="button" class="w-full px-5 py-2.5 rounded-xl bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 font-semibold transition-all flex items-center justify-center gap-2" onclick="confirmRemoveFavicon()" wire:loading.attr="disabled">
                             <i class="fa-solid fa-trash mr-1"></i>Eliminar Favicon
                         </button>
                     @endif
@@ -202,4 +202,38 @@
         .animate-slide-down { animation: slideDown 0.3s ease-out; }
         @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function confirmRemoveLogo() {
+            Swal.fire({
+                title: '¿Eliminar logo?',
+                text: 'Esta acción no se puede deshacer.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar',
+                customClass: { popup: 'rounded-2xl shadow-xl', confirmButton: 'rounded-xl px-5 py-2.5 font-semibold text-sm', cancelButton: 'rounded-xl px-5 py-2.5 font-semibold text-sm' }
+            }).then((result) => {
+                if (result.isConfirmed) { @this.call('removeLogo') }
+            });
+        }
+        function confirmRemoveFavicon() {
+            Swal.fire({
+                title: '¿Eliminar favicon?',
+                text: 'Esta acción no se puede deshacer.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar',
+                customClass: { popup: 'rounded-2xl shadow-xl', confirmButton: 'rounded-xl px-5 py-2.5 font-semibold text-sm', cancelButton: 'rounded-xl px-5 py-2.5 font-semibold text-sm' }
+            }).then((result) => {
+                if (result.isConfirmed) { @this.call('removeFavicon') }
+            });
+        }
+    </script>
 </x-cms.layout>

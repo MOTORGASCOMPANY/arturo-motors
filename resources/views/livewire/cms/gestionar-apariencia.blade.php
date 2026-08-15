@@ -211,11 +211,11 @@
 
     {{-- Actions --}}
     <div class="mt-8 flex flex-col sm:flex-row gap-4">
-        <button type="button" class="px-6 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-700 font-semibold transition-all shadow-sm flex items-center justify-center gap-2" wire:click="saveColors" wire:loading.attr="disabled">
+        <button type="button" class="px-6 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-700 font-semibold transition-all shadow-sm flex items-center justify-center gap-2" onclick="confirmSaveColors()" wire:loading.attr="disabled">
             <span wire:loading.remove><i class="fa-solid fa-check mr-1"></i>Guardar Colores</span>
             <span wire:loading class="flex items-center gap-2"><svg class="animate-spin h-5 w-5" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>Guardando...</span>
         </button>
-        <button type="button" class="px-6 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 font-semibold transition-all flex items-center justify-center gap-2" wire:click="resetColors" wire:loading.attr="disabled">
+        <button type="button" class="px-6 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 font-semibold transition-all flex items-center justify-center gap-2" onclick="confirmResetColors()" wire:loading.attr="disabled">
             <i class="fa-solid fa-rotate-left mr-1"></i>Restablecer Valores por Defecto
         </button>
     </div>
@@ -268,4 +268,38 @@
         input[type="color"]::-webkit-color-swatch { border: none; border-radius: 8px; }
         input[type="color"]::-moz-color-swatch { border: none; border-radius: 8px; }
     </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function confirmSaveColors() {
+            Swal.fire({
+                title: '¿Guardar colores?',
+                text: 'Se actualizará la paleta de colores del sitio.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#2563eb',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, guardar',
+                cancelButtonText: 'Cancelar',
+                customClass: { popup: 'rounded-2xl shadow-xl', confirmButton: 'rounded-xl px-5 py-2.5 font-semibold text-sm', cancelButton: 'rounded-xl px-5 py-2.5 font-semibold text-sm' }
+            }).then((result) => {
+                if (result.isConfirmed) { @this.call('saveColors') }
+            });
+        }
+        function confirmResetColors() {
+            Swal.fire({
+                title: '¿Restablecer colores?',
+                text: 'Se perderán todos los cambios personalizados.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, restablecer',
+                cancelButtonText: 'Cancelar',
+                customClass: { popup: 'rounded-2xl shadow-xl', confirmButton: 'rounded-xl px-5 py-2.5 font-semibold text-sm', cancelButton: 'rounded-xl px-5 py-2.5 font-semibold text-sm' }
+            }).then((result) => {
+                if (result.isConfirmed) { @this.call('resetColors') }
+            });
+        }
+    </script>
 </x-cms.layout>
