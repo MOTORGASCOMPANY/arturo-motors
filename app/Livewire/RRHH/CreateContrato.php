@@ -2,28 +2,43 @@
 
 namespace App\Livewire\RRHH;
 
-use Livewire\Component;
 use App\Models\Contrato;
 use App\Models\User;
 use App\Models\Vacacion;
-use Livewire\Attributes\On;
-use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\On;
+use Livewire\Component;
 
 class CreateContrato extends Component
 {
     public $abierto = false;
+
     public $contratoId; // Para saber si estamos editando
 
     // Campos del formulario (Nombres en español)
-    public $user_id, $fecha_ingreso, $fecha_inicio_contrato, $fecha_vencimiento;
-    public $cargo, $tipo_contrato = 'Plazo Fijo', $sueldo_bruto, $sueldo_neto;
+    public $user_id;
+
+    public $fecha_ingreso;
+
+    public $fecha_inicio_contrato;
+
+    public $fecha_vencimiento;
+
+    public $cargo;
+
+    public $tipo_contrato = 'Plazo Fijo';
+
+    public $sueldo_bruto;
+
+    public $sueldo_neto;
+
     public $status = 'Activo';
 
     protected function rules()
     {
         return [
-            //'user_id' => 'required|exists:users,id',
+            // 'user_id' => 'required|exists:users,id',
             'user_id' => $this->contratoId
                 ? 'required|exists:users,id'
                 : 'required|exists:users,id|unique:contratos,user_id',
@@ -83,14 +98,16 @@ class CreateContrato extends Component
     // Calcula los días de vacaciones según el periodo (ingreso a vencimiento).
     private function calcularDiasPorPeriodo($fechaIngreso, $fechaVencimiento)
     {
-        if (!$fechaVencimiento) {
+        if (! $fechaVencimiento) {
             return 0;
         }
 
         $inicio = Carbon::parse($fechaIngreso);
         $fin = Carbon::parse($fechaVencimiento);
 
-        if ($fin->lt($inicio)) return 0;
+        if ($fin->lt($inicio)) {
+            return 0;
+        }
 
         // Calculamos la diferencia total en días del contrato
         $diasPeriodo = $inicio->diffInDays($fin);
@@ -172,8 +189,8 @@ class CreateContrato extends Component
             'status' => $this->status,
         ];
 
-        $mensajeExito = "";
-        $tipoIcono = "success";
+        $mensajeExito = '';
+        $tipoIcono = 'success';
 
         try {
             DB::transaction(function () use ($datos, &$mensajeExito, &$tipoIcono) {
@@ -194,38 +211,40 @@ class CreateContrato extends Component
                     if ($contrato->vacaciones) {
                         $contrato->vacaciones->update([
                             'dias_ganados' => $nuevosGanados,
-                            'dias_restantes' => $nuevosGanados - $contrato->vacaciones->dias_tomados
+                            'dias_restantes' => $nuevosGanados - $contrato->vacaciones->dias_tomados,
                         ]);
                     }
-                    $mensajeExito = "Contrato actualizado y vacaciones recalculadas.";
+                    $mensajeExito = 'Contrato actualizado y vacaciones recalculadas.';
                 } else {
                     $nuevoContrato = Contrato::create($datos);
 
                     Vacacion::create([
-                        'idContrato'     => $nuevoContrato->id,
-                        'dias_ganados'   => $nuevosGanados,
-                        'dias_tomados'   => 0,
+                        'idContrato' => $nuevoContrato->id,
+                        'dias_ganados' => $nuevosGanados,
+                        'dias_tomados' => 0,
                         'dias_restantes' => $nuevosGanados,
                     ]);
-                    $mensajeExito = "Contrato y registro de vacaciones creados correctamente.";
+                    $mensajeExito = 'Contrato y registro de vacaciones creados correctamente.';
                 }
             });
         } catch (\Exception $e) {
             $mensajeExito = $e->getMessage();
-            $tipoIcono = "error";
-            $this->dispatch('minAlert', titulo: "¡Atención!", mensaje: $mensajeExito, icono: $tipoIcono);
+            $tipoIcono = 'error';
+            $this->dispatch('minAlert', titulo: '¡Atención!', mensaje: $mensajeExito, icono: $tipoIcono);
+
             return; // Detenemos la ejecución
         }
 
         $this->abierto = false;
         $this->dispatch('refresh-tabla-contratos');
-        $this->dispatch('minAlert', titulo: "¡HECHO!", mensaje: $mensajeExito, icono: $tipoIcono);
+        $this->dispatch('minAlert', titulo: '¡HECHO!', mensaje: $mensajeExito, icono: $tipoIcono);
     }
 
     public function render()
     {
         // Solo cargamos usuarios que no tengan contrato activo o todos para renovar
         $usuarios = User::orderBy('name', 'asc')->get();
+
         return view('livewire.r-r-h-h.create-contrato', compact('usuarios'));
     }
 }

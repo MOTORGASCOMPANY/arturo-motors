@@ -2,11 +2,11 @@
 
 namespace App\Livewire\RRHH;
 
-use Livewire\Component;
 use App\Models\Planilla;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\On;
+use Livewire\Component;
 
 class MisPlanillas extends Component
 {

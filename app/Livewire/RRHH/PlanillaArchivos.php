@@ -2,23 +2,25 @@
 
 namespace App\Livewire\RRHH;
 
-use Livewire\Component;
-use Livewire\WithFileUploads;
 use App\Models\Planilla;
 use App\Models\PlanillaArchivo;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\On;
+use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class PlanillaArchivos extends Component
 {
     use WithFileUploads;
 
     public $open = false;
-    public $planilla;
-    public $archivo;
-    //public $tipo = 'boleta';
-    public $tipo = 'comprobante';
 
+    public $planilla;
+
+    public $archivo;
+
+    // public $tipo = 'boleta';
+    public $tipo = 'comprobante';
 
     #[On('abrir-modal-archivos')]
     public function loadPlanilla($id)
@@ -31,8 +33,9 @@ class PlanillaArchivos extends Component
 
     public function save()
     {
-        if (!$this->archivo) {
+        if (! $this->archivo) {
             $this->addError('archivo', 'Debes seleccionar o arrastrar un archivo.');
+
             return;
         }
 
@@ -63,7 +66,7 @@ class PlanillaArchivos extends Component
             'extension' => $extension,
         ]);
 
-        $this->reset(['open','tipo','archivo']);
+        $this->reset(['open', 'tipo', 'archivo']);
         $this->planilla->load('archivos');
         $this->dispatch('minAlert', titulo: 'Éxito', mensaje: 'Archivo guardado correctamente', icono: 'success');
     }
@@ -79,6 +82,7 @@ class PlanillaArchivos extends Component
     public function descargarArchivo($id)
     {
         $file = PlanillaArchivo::findOrFail($id);
+
         return Storage::disk('public')->download($file->ruta, $file->nombre);
     }
 

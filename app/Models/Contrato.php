@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -20,7 +21,7 @@ class Contrato extends Model
         'sueldo_bruto',
         'sueldo_neto',
         'status', // enum('Activo', 'Vencido', 'Finalizado')
-        'contrato_path'
+        'contrato_path',
     ];
 
     protected $casts = [
@@ -34,7 +35,8 @@ class Contrato extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function vacaciones() {
+    public function vacaciones()
+    {
         return $this->hasOne(Vacacion::class, 'idContrato');
     }
 

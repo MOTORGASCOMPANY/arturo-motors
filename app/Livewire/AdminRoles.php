@@ -13,20 +13,34 @@ class AdminRoles extends Component
 
     // Listado
     public $sort = 'id';
+
     public $direction = 'desc';
+
     public $cant = 10;
+
     public $search = '';
 
     // Edición
     public $editando = false;
+
     public $rol = null;                // rol actual en edición
+
     public $name = '';                 // nombre editable del rol
+
     public $selectedPermisos = [];     // permisos seleccionados por nombre
+
     public $permisos = [];             // colección de permisos para el modal
 
-    protected $rules=[
-        "name"=>"required",
-        "selectedPermisos"=>"array|min:1",
+    // Modal ver todos los permisos
+    public $openPermisos = false;
+
+    public $rolPermisos = [];
+
+    public $rolNombre = '';
+
+    protected $rules = [
+        'name' => 'required',
+        'selectedPermisos' => 'array|min:1',
 
     ];
 
@@ -68,6 +82,14 @@ class AdminRoles extends Component
         $this->editando = true;
     }
 
+    public function verPermisos($id)
+    {
+        $rol = Role::findOrFail($id);
+        $this->rolNombre = $rol->name;
+        $this->rolPermisos = $rol->permissions->pluck('name')->toArray();
+        $this->openPermisos = true;
+    }
+
     public function actualizar()
     {
         $this->validate();
@@ -82,7 +104,7 @@ class AdminRoles extends Component
         $nombre = $rol->name;
 
         $this->reset(['editando', 'rol', 'name', 'selectedPermisos', 'permisos']);
-        $this->dispatch('minAlert', titulo: "¡BUEN TRABAJO!", mensaje: "Se actualizó correctamente el Rol de {$nombre}", icono: "success");
+        $this->dispatch('minAlert', titulo: '¡BUEN TRABAJO!', mensaje: "Se actualizó correctamente el Rol de {$nombre}", icono: 'success');
     }
 
     public function render()
@@ -96,5 +118,4 @@ class AdminRoles extends Component
 
         return view('livewire.admin-roles', compact('roles'));
     }
-
 }

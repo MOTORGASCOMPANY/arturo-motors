@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use \Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class FiseSolicitud extends Model
@@ -14,9 +14,9 @@ class FiseSolicitud extends Model
     protected $fillable = [
         'cliente_id',
         'vehiculo_id',
-        'fecha_solicitud', //evaluar si es necesario
-        'fecha_respuesta',  //evaluar si es necesario
-        'estado', //enum('pendiente', 'aprobado', 'rechazado')
+        'fecha_solicitud', // evaluar si es necesario
+        'fecha_respuesta',  // evaluar si es necesario
+        'estado', // enum('pendiente', 'aprobado', 'rechazado')
         'observaciones',
         // deberia haber un campo para relacion con cita ?
     ];

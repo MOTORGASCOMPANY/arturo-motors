@@ -7,24 +7,28 @@ use Spatie\Permission\Models\Role;
 
 class CreateRol extends Component
 {
-    public $nombre,$descripcion;
-    public $open=false;
+    public $nombre;
 
-    protected $rules=[
-        "nombre"=>"required|min:3",        
-    ];   
+    public $descripcion;
 
-    
-    public function updated($propertyName){
+    public $open = false;
+
+    protected $rules = [
+        'nombre' => 'required|min:3',
+    ];
+
+    public function updated($propertyName)
+    {
         $this->validateOnly($propertyName);
     }
 
-    public function crearRol(){
+    public function crearRol()
+    {
         $this->validate();
-        $Rol=Role::create(["name"=>$this->nombre,"guard_name"=>"web"]);
-        $this->emitTo("admin-roles","render");
-        $this->reset(["nombre","open"]);
-        $this->emit("minAlert", ["titulo" => "¡BUEN TRABAJO!", "mensaje" => "Rol creado Correctamente", "icono" => "success"]); 
+        $Rol = Role::create(['name' => $this->nombre, 'guard_name' => 'web']);
+        $this->emitTo('admin-roles', 'render');
+        $this->reset(['nombre', 'open']);
+        $this->emit('minAlert', ['titulo' => '¡BUEN TRABAJO!', 'mensaje' => 'Rol creado Correctamente', 'icono' => 'success']);
     }
 
     public function render()

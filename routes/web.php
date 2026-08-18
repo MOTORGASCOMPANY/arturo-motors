@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ComprobanteController;
 use App\Http\Controllers\DocumentosConversionController;
+use App\Http\Controllers\LandingController;
 use App\Http\Controllers\PdfController;
 use App\Livewire\AdminPermisos;
 use App\Livewire\AdminRoles;
@@ -17,6 +18,7 @@ use App\Livewire\Caja\HistorialSesiones;
 use App\Livewire\Caja\RegistrarEgreso;
 use App\Livewire\Caja\Reporte as ReporteCaja;
 use App\Livewire\Servicios\Reporte as ReporteServicios;
+use App\Livewire\CrearCitas;
 use App\Livewire\Conversiones\AlmacenPendientes;
 use App\Livewire\Conversiones\AsignarEquipos;
 use App\Livewire\Conversiones\AsignarTecnico;
@@ -26,7 +28,6 @@ use App\Livewire\Conversiones\EntregarCobrar;
 use App\Livewire\Conversiones\Evaluar;
 use App\Livewire\Conversiones\MisAsignadas;
 use App\Livewire\Conversiones\Realizar;
-use App\Livewire\CrearCitas;
 use App\Livewire\ExpedienteModal;
 use App\Livewire\GestorRepuestos;
 use App\Livewire\Inicio;
@@ -34,6 +35,7 @@ use App\Livewire\ListaCitas;
 use App\Livewire\ListaClientes;
 use App\Livewire\ListaConversiones;
 use App\Livewire\ListaExpedientes;
+use App\Livewire\ListaServicios;
 use App\Livewire\ListaVehiculos;
 use App\Livewire\ProcesarCobro;
 use App\Livewire\Reportes\ReporteCitas;
@@ -48,9 +50,12 @@ use App\Livewire\ServiceOrders\Detalle;
 use App\Livewire\ServiceOrders\Listado;
 use App\Livewire\SolicitudRepuestos;
 use App\Livewire\Usuarios;
-use Illuminate\Support\Facades\RateLimiter;
+use App\Models\Media;
+use App\Models\PageMedia;
+use App\Models\PageSection;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 
 /*Route::get('/', function () {
@@ -61,13 +66,13 @@ use Illuminate\Support\Facades\Route;
     return redirect()->to('/login');
 });*/
 
-Route::get('/', function () {
-    return view('index');
+Route::get('/', [LandingController::class, 'index'])->name('landing');
+
+Route::get('/home', function () {
+    return redirect()->route('landing');
 });
 
-Route::get('index', function () {
-    return view('index');
-});
+Route::get('index', [LandingController::class, 'index'])->name('landing.index');
 
 Route::get('phpmyinfo', function () {
     phpinfo();
@@ -81,7 +86,7 @@ RateLimiter::for('livewire', function (Request $request) {
     Route::post('/livewire/message/{component}', '\Livewire\Controllers\HttpConnectionHandler');
 });*/
 
-Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',])
+Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])
     ->group(function () {
 
     Route::get('/dashboard', function () {

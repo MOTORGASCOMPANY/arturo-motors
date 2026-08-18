@@ -8,62 +8,102 @@ use App\Models\Cliente;
 use App\Models\Expediente;
 use App\Models\FiseSolicitud;
 use App\Models\Vehiculo;
-use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Livewire\Attributes\On;
 
 class ListaCitas extends Component
 {
     use WithPagination;
-    public $sort,$order,$cant,$search,$direction;
+
+    public $sort;
+
+    public $order;
+
+    public $cant;
+
+    public $search;
+
+    public $direction;
 
     // Datos para dialog modal , crear cita, cliente y vehicul0
     public $open = false;
+
     // Datos del cliente
-    public $nombre, $apellido, $documento, $telefono, $email, $direccion;
+    public $nombre;
+
+    public $apellido;
+
+    public $documento;
+
+    public $telefono;
+
+    public $email;
+
+    public $direccion;
+
     // Datos del vehículo
-    public $marca, $modelo, $anio, $placa, $combustible, $serie, $color;
+    public $marca;
+
+    public $modelo;
+
+    public $anio;
+
+    public $placa;
+
+    public $combustible;
+
+    public $serie;
+
+    public $color;
+
     // Datos de la cita
-    public $fecha_cita, $motivo;
+    public $fecha_cita;
+
+    public $motivo;
+
     // Control asesor interno/externo
     public $is_externo = false;           // checkbox: false = asesor interno (por defecto)
+
     public $asesor_externo_id = null;     // id seleccionado si is_externo = true
+
     public $asesores; // todos los asesores
 
     protected $rules = [
         // Cliente
-        'nombre'    => 'required|string|max:100',
-        'apellido'  => 'required|string|max:100',
+        'nombre' => 'required|string|max:100',
+        'apellido' => 'required|string|max:100',
         'documento' => 'required|digits:8',
-        'telefono'  => 'nullable|digits:9',
-        'email'     => 'nullable|email|max:150',
+        'telefono' => 'nullable|digits:9',
+        'email' => 'nullable|email|max:150',
         'direccion' => 'nullable|string|max:255',
 
         // Vehículo
-        'marca'  => 'required|string|max:50',
+        'marca' => 'required|string|max:50',
         'modelo' => 'required|string|max:50',
-        'anio'   => 'required|integer|min:1900|max:2100',
-        'placa'  => 'required|string|size:6',
-        'combustible'  => 'required|string|max:20',
-        'serie'  => 'nullable|string|max:50',
-        'color'  => 'nullable|string|max:50',
+        'anio' => 'required|integer|min:1900|max:2100',
+        'placa' => 'required|string|size:6',
+        'combustible' => 'required|string|max:20',
+        'serie' => 'nullable|string|max:50',
+        'color' => 'nullable|string|max:50',
 
         // Cita
-        //'fecha_cita' => 'required|date|after_or_equal:today',
+        // 'fecha_cita' => 'required|date|after_or_equal:today',
         'fecha_cita' => 'required|date_format:Y-m-d\TH:i|after_or_equal:now',
-        'motivo'     => 'nullable|string|max:255',
+        'motivo' => 'nullable|string|max:255',
 
         // Asesor externo: obligatorio solo si is_externo = 1 (checkbox true)
         'asesor_externo_id' => 'required_if:is_externo,1|nullable|exists:asesores_externos,id',
     ];
 
-    public function mount(){
-      $this->direction='desc';
-      $this->sort='id';       
-      $this->cant=10;
-      $this->asesores = AsesorExterno::orderBy('nombre')->get();
+    public function mount()
+    {
+        $this->direction = 'desc';
+        $this->sort = 'id';
+        $this->cant = 10;
+        $this->asesores = AsesorExterno::orderBy('nombre')->get();
     }
 
     public function order($sort)
@@ -73,7 +113,7 @@ class ListaCitas extends Component
         } else {
             $this->sort = $sort;
             $this->direction = 'asc';
-        }      
+        }
     }
 
     public function updatingSearch()
@@ -96,6 +136,7 @@ class ListaCitas extends Component
         }
         $this->dispatch('citaRechazada');
     }
+
     // Marca estado de cita como aceptada y crea Expediente
     #[On('marcarCitaComoAceptada')]
     public function marcarCitaComoAceptada($id)
@@ -109,12 +150,12 @@ class ListaCitas extends Component
 
             // Crear expediente solo si no existe
             $expedienteExiste = Expediente::where('cita_id', $cita->id)->exists();
-            if (!$expedienteExiste) {
+            if (! $expedienteExiste) {
                 Expediente::create([
-                    'cliente_id'  => $cita->cliente_id,
+                    'cliente_id' => $cita->cliente_id,
                     'vehiculo_id' => $cita->vehiculo_id,
-                    'cita_id'     => $cita->id,
-                    'estado'      => 1,
+                    'cita_id' => $cita->id,
+                    'estado' => 1,
                 ]);
             }
 
@@ -123,20 +164,19 @@ class ListaCitas extends Component
                 ->where('vehiculo_id', $cita->vehiculo_id)
                 ->exists();
 
-            if (!$fiseExiste) {
+            if (! $fiseExiste) {
                 FiseSolicitud::create([
-                    'cliente_id'     => $cita->cliente_id,
-                    'vehiculo_id'    => $cita->vehiculo_id,
-                    'fecha_solicitud'=> now(),
-                    'estado'         => 'pendiente',
-                    'observaciones'  => null,
+                    'cliente_id' => $cita->cliente_id,
+                    'vehiculo_id' => $cita->vehiculo_id,
+                    'fecha_solicitud' => now(),
+                    'estado' => 'pendiente',
+                    'observaciones' => null,
                 ]);
             }
         }
 
         $this->dispatch('citaAceptada');
     }
-
 
     public function crearCita()
     {
@@ -148,10 +188,10 @@ class ListaCitas extends Component
             ['documento' => $this->documento],
             // Crea si no existe
             [
-                'nombre'    => $this->nombre,
-                'apellido'  => $this->apellido,
-                'telefono'  => $this->telefono,
-                'email'     => $this->email,
+                'nombre' => $this->nombre,
+                'apellido' => $this->apellido,
+                'telefono' => $this->telefono,
+                'email' => $this->email,
                 'direccion' => $this->direccion,
             ]
         );
@@ -163,20 +203,21 @@ class ListaCitas extends Component
             $vehiculo = $vehiculoExistente;
             // Opcional: Validar que pertenezca al mismo cliente
             if ($vehiculo->cliente_id != $cliente->id) {
-                $this->dispatch('minAlert', titulo: "¡ERROR!", mensaje: "El vehiculo ingresado pertenece a otro cliente.", icono: "error");
+                $this->dispatch('minAlert', titulo: '¡ERROR!', mensaje: 'El vehiculo ingresado pertenece a otro cliente.', icono: 'error');
+
                 return;
             }
         } else {
             // Crear vehículo si no existe
             $vehiculo = Vehiculo::create([
                 'cliente_id' => $cliente->id,
-                'marca'      => $this->marca,
-                'modelo'     => $this->modelo,
-                'anio'       => $this->anio,
-                'placa'      => $this->placa,
+                'marca' => $this->marca,
+                'modelo' => $this->modelo,
+                'anio' => $this->anio,
+                'placa' => $this->placa,
                 'combustible' => $this->combustible,
-                'serie'      => $this->serie,
-                'color'      => $this->color,
+                'serie' => $this->serie,
+                'color' => $this->color,
             ]);
         }
 
@@ -186,18 +227,18 @@ class ListaCitas extends Component
 
         // 4 Crear cita
         $cita = Cita::create([
-            'cliente_id'  => $cliente->id,
+            'cliente_id' => $cliente->id,
             'vehiculo_id' => $vehiculo->id,
-            'asesor_id'           => $asesor_id,
-            'asesor_externo_id'   => $asesor_externo_id,
-            'fecha_cita'        => Carbon::parse($this->fecha_cita),
-            'motivo'      => $this->motivo,
-            'estado'      => 'pendiente',
+            'asesor_id' => $asesor_id,
+            'asesor_externo_id' => $asesor_externo_id,
+            'fecha_cita' => Carbon::parse($this->fecha_cita),
+            'motivo' => $this->motivo,
+            'estado' => 'pendiente',
         ]);
 
         $this->open = false;
         $fechaFormateada = Carbon::parse($cita->fecha_cita)->translatedFormat('l, d F Y');
-        $this->dispatch('minAlert', titulo: "¡BUEN TRABAJO!", mensaje: "Se ha programado una cita para el " . $fechaFormateada, icono: "success");
+        $this->dispatch('minAlert', titulo: '¡BUEN TRABAJO!', mensaje: 'Se ha programado una cita para el '.$fechaFormateada, icono: 'success');
         // línea para refrescar la paginación
         $this->resetPage();
         $this->reset(['nombre', 'apellido', 'documento', 'telefono', 'email', 'direccion', 'marca', 'modelo', 'anio', 'placa', 'combustible', 'serie', 'color', 'fecha_cita', 'motivo', 'is_externo', 'asesor_externo_id']);

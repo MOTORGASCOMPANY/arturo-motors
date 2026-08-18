@@ -39,7 +39,6 @@ class Conversion extends Model
         return $this->hasMany(ConversionDetalle::class, 'conversion_id');
     }
 
-
     /*public function controlCalidad()
     {
         return $this->hasMany(ControlCalidad::class, 'conversion_id');
@@ -71,6 +70,7 @@ class Conversion extends Model
         if ($estado) {
             return $query->where('estado', $estado);
         }
+
         return $query;
     }
 }

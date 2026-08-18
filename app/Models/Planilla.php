@@ -25,9 +25,9 @@ class Planilla extends Model
         /* 'total_pagado', ELIMINADO del fillable porque es
         VIRTUAL GENERATED ALWAYS AS ( sueldo_base + asignacion_familiar + horas_extras + movilidad + otros_ingresos - otros_descuentos ) VIRTUAL, */
 
-        /*pago_banco, `sueldo_base` + `asignacion_familiar` + `horas_extras` + `otros_ingresos` - `otros_descuentos` */
-        /*pago_efectivo, movilidad */
-        
+        /* pago_banco, `sueldo_base` + `asignacion_familiar` + `horas_extras` + `otros_ingresos` - `otros_descuentos` */
+        /* pago_efectivo, movilidad */
+
         'planilla',
         'estado_pago',
         'fecha_pago',

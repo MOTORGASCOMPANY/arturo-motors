@@ -4,6 +4,7 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 -->
 <div>
     <style>
+        [x-cloak] { display: none !important; }
         ul.breadcrumb li+li::before {
             content: "";
             padding-left: 8px;

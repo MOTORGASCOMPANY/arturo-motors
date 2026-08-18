@@ -3,19 +3,20 @@
 namespace App\Livewire\RRHH;
 
 use App\Models\DocumentoUsuario;
-use Livewire\Component;
-use App\Models\User;
 use App\Models\TipoDocumento;
-use Livewire\WithFileUploads;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\On;
+use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class GestionDocumentos extends Component
 {
     use WithFileUploads;
 
     public $usuarioId; // ID del usuario a consultar
+
     public $documentosRequeridos;
 
     public function mount($id = null)
@@ -34,13 +35,13 @@ class GestionDocumentos extends Component
     public function cambiarEstado($documentoId, $nuevoEstado)
     {
         // Usamos el ID directamente desde la Fachada para evitar el error en id()
-        $userId = \Illuminate\Support\Facades\Auth::id();
+        $userId = Auth::id();
 
         // Obtenemos el usuario buscando por el modelo, así Intelephense sabe que es un User
-        $usuarioAutenticado = \App\Models\User::find($userId);
+        $usuarioAutenticado = User::find($userId);
 
         // Verificamos que exista y que tenga el rol
-        if (!$usuarioAutenticado || !$usuarioAutenticado->hasAnyRole(['Administrador del sistema', 'administrador'])) {
+        if (! $usuarioAutenticado || ! $usuarioAutenticado->hasAnyRole(['Administrador del sistema', 'administrador'])) {
             return;
         }
 
@@ -49,9 +50,9 @@ class GestionDocumentos extends Component
             $doc->update(['estado' => $nuevoEstado]);
 
             $color = $nuevoEstado == 'Aprobado' ? 'success' : 'error';
-            $mensaje = "Documento marcado como " . $nuevoEstado;
+            $mensaje = 'Documento marcado como '.$nuevoEstado;
 
-            $this->dispatch('minAlert', titulo: "ACTUALIZADO", mensaje: $mensaje, icono: $color);
+            $this->dispatch('minAlert', titulo: 'ACTUALIZADO', mensaje: $mensaje, icono: $color);
         }
     }
 
@@ -60,7 +61,7 @@ class GestionDocumentos extends Component
         $usuario = User::with(['documentos.tipo'])->findOrFail($this->usuarioId);
 
         return view('livewire.r-r-h-h.gestion-documentos', [
-            'usuario' => $usuario
+            'usuario' => $usuario,
         ]);
     }
 
@@ -77,7 +78,7 @@ class GestionDocumentos extends Component
             // 2. Eliminar registro en BD
             $doc->delete();
 
-            $this->dispatch('minAlert', titulo: "ELIMINADO", mensaje: "Documento borrado correctamente.", icono: "warning");
+            $this->dispatch('minAlert', titulo: 'ELIMINADO', mensaje: 'Documento borrado correctamente.', icono: 'warning');
         }
     }
 }

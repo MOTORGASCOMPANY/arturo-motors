@@ -15,7 +15,7 @@ class Vehiculo extends Model
         'placa',
         'marca',
         'modelo',
-        'anio',        
+        'anio',
         'combustible',
         'serie',
         'color',

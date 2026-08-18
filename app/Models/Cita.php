@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use \Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Cita extends Model
@@ -18,7 +18,7 @@ class Cita extends Model
         'asesor_externo_id', // agregado
         'fecha_cita',
         'motivo',
-        'estado', //enum('pendiente', 'aceptada', 'rechazada', 'cancelada')
+        'estado', // enum('pendiente', 'aceptada', 'rechazada', 'cancelada')
     ];
 
     protected $casts = [
@@ -47,10 +47,10 @@ class Cita extends Model
     }
 
     /**
-     * Se eliminara la tabla expediente, ya no existe logica expediente. 
+     * Se eliminara la tabla expediente, ya no existe logica expediente.
      * Expediente lo fusionamos en ServiceOrder (o como hayas nombrado tu modelo — revisa si ya corriste
      * make:model ServiceOrder como vimos antes). Corrígelo así:
-    */
+     */
 
     /*public function expediente()
     {
@@ -61,8 +61,6 @@ class Cita extends Model
         return $this->hasOne(ServiceOrder::class, 'cita_id');
     }
 
-
-
     public function getNombreAsesorAttribute()
     {
         if ($this->asesor_externo_id) {
@@ -71,8 +69,6 @@ class Cita extends Model
 
         return $this->asesor?->name; // Asumiendo que en User el campo es "name"
     }
-
-
 
     // Accesores
 
@@ -83,7 +79,7 @@ class Cita extends Model
             $query->where('motivo', 'like', "%{$search}%")
                 ->orWhereHas('cliente', function ($q) use ($search) {
                     $q->where('nombre', 'like', "%{$search}%")
-                      ->orWhere('documento', 'like', "%{$search}%");
+                        ->orWhere('documento', 'like', "%{$search}%");
                 });
         }
     }
