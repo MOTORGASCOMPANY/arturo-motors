@@ -8,8 +8,6 @@ use App\Models\MovimientoCaja;
 use App\Models\Service;
 use App\Models\ServiceOrder;
 use App\Models\SesionCaja;
-use App\Models\MovimientoCaja;
-use App\Models\Comprobante;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
