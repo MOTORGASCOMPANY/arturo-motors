@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ComprobanteController;
+use App\Http\Controllers\DocumentosConversionController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\PdfController;
 use App\Livewire\AdminPermisos;
@@ -15,15 +16,8 @@ use App\Livewire\Caja\CerrarCaja;
 use App\Livewire\Caja\DetalleSesion;
 use App\Livewire\Caja\HistorialSesiones;
 use App\Livewire\Caja\RegistrarEgreso;
-use App\Livewire\Conversiones\AlmacenPendientes;
-use App\Livewire\Conversiones\AsignarEquipos;
-use App\Livewire\Conversiones\AsignarTecnico;
-use App\Livewire\Conversiones\Crear;
-use App\Livewire\Conversiones\EntregaPendientes;
-use App\Livewire\Conversiones\EntregarCobrar;
-use App\Livewire\Conversiones\Evaluar;
-use App\Livewire\Conversiones\MisAsignadas;
-use App\Livewire\Conversiones\Realizar;
+use App\Livewire\Caja\Reporte as ReporteCaja;
+use App\Livewire\Servicios\Reporte as ReporteServicios;
 use App\Livewire\CrearCitas;
 use App\Livewire\Conversiones\AlmacenPendientes;
 use App\Livewire\Conversiones\AsignarEquipos;
@@ -52,6 +46,7 @@ use App\Livewire\RRHH\ListaPlanilla;
 use App\Livewire\RRHH\MisPlanillas;
 use App\Livewire\SelectorClienteVehiculo;
 use App\Livewire\ServiceOrders\CrearSimple;
+use App\Livewire\ServiceOrders\Detalle;
 use App\Livewire\ServiceOrders\Listado;
 use App\Livewire\SolicitudRepuestos;
 use App\Livewire\Usuarios;
@@ -132,10 +127,16 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::get('/caja/historial', HistorialSesiones::class)->name('caja.historial');
     Route::get('/caja/sesion/{sesionId}', DetalleSesion::class)->name('caja.sesion');
 
+    Route::get('/caja/reporte', ReporteCaja::class)->name('caja.reporte');
+
     // Rutas de servicios
     Route::get('/ordenes', Listado::class)->name('ordenes.listado');
     Route::get('/ordenes/simple/crear', CrearSimple::class)->name('ordenes.simple.crear');   
     Route::get('/conversiones/crear', Crear::class)->name('conversiones.crear'); // P1: Crear orden de conversión (Vendedor)
+
+    Route::get('/ordenes/{ordenId}', Detalle::class)->name('ordenes.detalle');
+
+    Route::get('/servicios/reporte', ReporteServicios::class)->name('servicios.reporte');
 
     // Rutas modulo de conversiones
     Route::get('/conversiones/asignar', AsignarTecnico::class)->name('conversiones.asignar'); // P2: Asignar técnico (Jefe de taller) — ve todas las órdenes creada
@@ -183,6 +184,11 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     //Route::get('/rrhh/contrato/{id}/pdf', 'generarContrato')->name('rrhh.contrato.pdf');
 
     Route::get('/comprobantes/{ordenId}/pdf', [ComprobanteController::class, 'pdf'])->name('comprobantes.pdf');
+
+    
+    Route::get('/ordenes/{ordenId}/pdf/evaluacion', [DocumentosConversionController::class, 'evaluacion'])->name('conversiones.pdf.evaluacion');
+    Route::get('/ordenes/{ordenId}/pdf/ficha-tecnica', [DocumentosConversionController::class, 'fichaTecnica'])->name('conversiones.pdf.ficha-tecnica');
+    Route::get('/ordenes/{ordenId}/pdf/garantia', [DocumentosConversionController::class, 'garantia'])->name('conversiones.pdf.garantia');
 
 
 });

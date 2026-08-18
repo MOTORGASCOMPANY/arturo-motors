@@ -3,6 +3,7 @@
 namespace App\Livewire\Conversiones;
 
 use App\Models\ServiceOrder;
+use App\Support\ChecklistEvaluacion;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -12,8 +13,14 @@ class Evaluar extends Component
     public array $checklist = [];
     public string $observaciones = '';
 
+    /**
+     * cambia la propiedad $gruposChecklist para que se llene con ChecklistEvaluacion::grupos() en el mount(), en vez de tener el array repetido ahí 
+     **/
+    // Catálogo de ítems a revisar, se poblará dinámicamente
+    public array $gruposChecklist = [];
+
     // Catálogo de ítems a revisar, agrupados para la vista
-    public array $gruposChecklist = [
+    /*public array $gruposChecklist = [
         'Documentos' => [
             'tarjeta_propiedad' => 'Tarjeta de propiedad',
             'soat' => 'SOAT',
@@ -54,7 +61,7 @@ class Evaluar extends Component
             'linterna' => 'Linterna',
             'herramientas' => 'Kit de herramientas',
         ],
-    ];
+    ];*/    
 
     public function mount(int $ordenId)
     {
@@ -63,6 +70,9 @@ class Evaluar extends Component
         // Seguridad: solo el técnico asignado puede evaluar, y solo en el estado correcto
         abort_unless($this->orden->tecnico_id === Auth::id(), 403, 'Esta orden no está asignada a ti.');
         abort_unless($this->orden->estado === 'en_evaluacion', 403, 'Esta orden no está en etapa de evaluación.');
+
+        // Se obtiene la lista de grupos desde la clase Helper/Support
+        $this->gruposChecklist = ChecklistEvaluacion::grupos();
 
         // Inicializa el checklist (si ya había datos guardados de un intento previo, los recupera)
         $guardado = $this->orden->checklist_evaluacion ?? [];

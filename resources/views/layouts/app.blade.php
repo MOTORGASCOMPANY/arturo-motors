@@ -33,8 +33,11 @@
         @livewireScripts
         @include('components.confirm-modal')
 
-        <footer class="border-t border-gray-200 mt-8">
-            <div class="px-8 py-4 text-xs text-slate-400 text-right max-w-[1400px] mx-auto">
+        <!-- Chart.js -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+        <footer>
+            <div class="text-xs text-slate-700  float-right">
                 Powered by GHFDEV ®
             </div>
         </footer>
