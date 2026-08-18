@@ -36,6 +36,9 @@
 
         @livewireScripts
 
+        <!-- Chart.js -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
         <footer>
         <div class="text-xs text-slate-700  float-right">
             Powered by GHFDEV ®

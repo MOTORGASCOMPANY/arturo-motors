@@ -16,7 +16,7 @@
             </div>
         </div>
         --}}
-        <div class="bg-gradient-to-r from-blue-500 to-green-500 text-white p-4 rounded-t-3xl shadow-lg">
+        <div class="bg-gradient-to-r from-slate-900 via-indigo-900 to-blue-900 text-white p-4 rounded-t-3xl shadow-lg">
             <div class="flex flex-col md:flex-row justify-between items-center">
                 <h2 class="text-2xl font-extrabold tracking-tight">
                     Reporte de Citas

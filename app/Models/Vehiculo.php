@@ -12,7 +12,6 @@ class Vehiculo extends Model
     protected $table = 'vehiculos';
 
     protected $fillable = [
-        'cliente_id',
         'placa',
         'marca',
         'modelo',
@@ -22,32 +21,30 @@ class Vehiculo extends Model
         'color',
     ];
 
-    // Relaciones
-    public function cliente()
+    // Todos los propietarios/asociados
+    public function clientes()
     {
-        return $this->belongsTo(Cliente::class, 'cliente_id');
+        return $this->belongsToMany(Cliente::class, 'cliente_vehiculo')
+                    ->using(ClienteVehiculo::class)
+                    ->withPivot('es_principal', 'relacion')
+                    ->withTimestamps();
     }
 
-    /**
-     *  hasMany asume que un vehiculo puede tener múltiples registros a lo largo del tiempo.
-     *  hasOne asume que es un evento único y final que se aplica a un vehiculo.
-    */
-
-    // Si realmente solo hay un expediente por vehículo (relación 1 a 1), cambia la relación en el modelo:
-    /*public function expediente()
+    // Obtener el propietario principal
+    public function clientePrincipal()
     {
-        return $this->hasOne(Expediente::class, 'vehiculo_id');
-    }*/
+        return $this->belongsToMany(Cliente::class, 'cliente_vehiculo')
+                    ->using(ClienteVehiculo::class)
+                    ->wherePivot('es_principal', true)
+                    ->withPivot('relacion')
+                    ->limit(1);
+    }
+
     public function serviceOrders()
     {
         return $this->hasMany(ServiceOrder::class, 'vehiculo_id');
     }
-
-    /*public function fise()
-    {
-        return $this->hasMany(FiseSolicitud::class, 'vehiculo_id');
-    }*/
-
+    
     public function cita()
     {
         return $this->hasMany(Cita::class, 'vehiculo_id');
@@ -56,10 +53,12 @@ class Vehiculo extends Model
     // Scope para filtros y orden
     public function scopeBuscar($query, $search)
     {
-        if ($search) {
+        if (!empty($search)) {
             $query->where('placa', 'like', "%{$search}%")
-                ->orWhereHas('cliente', function ($q) use ($search) {
+                ->orWhereHas('clientes', function ($q) use ($search) {
                     $q->where('nombre', 'like', "%{$search}%")
+                      ->orWhere('apellido', 'like', "%{$search}%")
+                      ->orWhere('razon_social', 'like', "%{$search}%")
                       ->orWhere('documento', 'like', "%{$search}%");
                 });
         }
@@ -70,20 +69,4 @@ class Vehiculo extends Model
         return $query->orderBy($sort, $direction);
     }
 
-
-    /*public function getRutaVistaCertificadoAttribute()
-    {
-        $ruta = null;
-        switch ($this->Servicio->tipoServicio->id) {
-            case 1: //tipo servicio = inicial gnv
-                $ruta = route('certificadoInicialGnv', ['id' => $this->attributes['id']]);
-                break;
-
-            default:
-                $ruta = null;
-                break;
-        }
-
-        return $ruta;
-    }*/
 }

@@ -44,15 +44,12 @@
         @stack('modals')
 
         @livewireScripts
-        
-        {{-- Agregue esto para date-picker y comente xq da error
-        <!-- Alpine.js (si aún no está cargado) -->
-        <script src="https://unpkg.com/alpinejs" defer></script> --}}
 
-        {{-- Agregue esto para date-picker --}}
         <!-- Flatpickr JS -->
         <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
+        <!-- Chart.js -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
         <!-- SweetAlert2 -->
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

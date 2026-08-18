@@ -131,11 +131,63 @@
                                             {{ ucfirst($s->estado) }}
                                         </span>
                                     </td>
+                                    {{-- 
                                     <td class="px-4 py-4 border-b border-gray-200 bg-white text-sm text-right">
                                         <a href="{{ route('caja.sesion', $s->id) }}" 
                                            class="py-2 px-3 rounded-md bg-lime-500 font-bold text-white hover:bg-lime-600 transition inline-block">
                                             <i class="fa-solid fa-eye"></i>
                                         </a>
+                                    </td>
+                                    --}}
+                                    <td class="px-4 py-4 border-b border-gray-200 bg-white text-sm text-right whitespace-nowrap">
+                                        <div class="inline-flex items-center justify-end gap-1.5">
+                                            <!-- Botón 1: Ver detalles -->
+                                            <div class="relative inline-block group">
+                                                <a href="{{ route('caja.sesion', $s->id) }}" 
+                                                class="inline-flex items-center justify-center w-8 h-8 text-indigo-700 bg-indigo-50 hover:bg-indigo-100 hover:text-indigo-900 rounded-lg transition-colors duration-150">
+                                                    <i class="fa-solid fa-eye text-xs"></i>
+                                                </a>                                                
+                                                <!-- Tooltip 1 -->
+                                                <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover:flex flex-col items-center pointer-events-none z-10">
+                                                    <span class="relative z-10 p-1.5 text-[10px] font-semibold leading-none text-white whitespace-nowrap bg-gray-800 rounded shadow-md">
+                                                        Ver detalles
+                                                    </span>
+                                                    <div class="w-2 h-2 -mt-1 rotate-45 bg-gray-800"></div>
+                                                </div>
+                                            </div>
+                                            {{-- 
+                                            <!-- Botón 2: Imprimir / Exportar (Ejemplo) -->
+                                            <div class="relative inline-block group">
+                                                <button type="button" 
+                                                        wire:click="imprimirReporte({{ $s->id }})"
+                                                        class="inline-flex items-center justify-center w-8 h-8 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 hover:text-emerald-900 rounded-lg transition-colors duration-150">
+                                                    <i class="fa-solid fa-print text-xs"></i>
+                                                </button>                                                
+                                                <!-- Tooltip 2 -->
+                                                <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover:flex flex-col items-center pointer-events-none z-10">
+                                                    <span class="relative z-10 p-1.5 text-[10px] font-semibold leading-none text-white whitespace-nowrap bg-gray-800 rounded shadow-md">
+                                                        Imprimir reporte
+                                                    </span>
+                                                    <div class="w-2 h-2 -mt-1 rotate-45 bg-gray-800"></div>
+                                                </div>
+                                            </div>
+                                            <!-- Botón 3: Editar / Cierre (Ejemplo) -->
+                                            <div class="relative inline-block group">
+                                                <button type="button" 
+                                                        wire:click="editarSesion({{ $s->id }})"
+                                                        class="inline-flex items-center justify-center w-8 h-8 text-amber-700 bg-amber-50 hover:bg-amber-100 hover:text-amber-900 rounded-lg transition-colors duration-150">
+                                                    <i class="fa-solid fa-pen-to-square text-xs"></i>
+                                                </button>                                                
+                                                <!-- Tooltip 3 -->
+                                                <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover:flex flex-col items-center pointer-events-none z-10">
+                                                    <span class="relative z-10 p-1.5 text-[10px] font-semibold leading-none text-white whitespace-nowrap bg-gray-800 rounded shadow-md">
+                                                        Editar sesión
+                                                    </span>
+                                                    <div class="w-2 h-2 -mt-1 rotate-45 bg-gray-800"></div>
+                                                </div>
+                                            </div>
+                                            --}}
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
