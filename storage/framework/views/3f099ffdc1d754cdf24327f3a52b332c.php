@@ -9,8 +9,6 @@
         <title>ARTURO MOTORS</title>
         <!-- Este es el app.blade.php de components/layouts -->
 
-        
-
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
@@ -19,6 +17,7 @@
         
         <!-- Flatpickr CSS -->
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+        
         <!-- Scripts -->
         
 
@@ -82,13 +81,12 @@ if (isset($__slots)) unset($__slots);
 
         <?php echo \Livewire\Mechanisms\FrontendAssets\FrontendAssets::scripts(); ?>
 
-        
-        
 
-        
         <!-- Flatpickr JS -->
         <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
+        <!-- Chart.js -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
         <!-- SweetAlert2 -->
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -96,11 +94,48 @@ if (isset($__slots)) unset($__slots);
         <!-- Script para SweetAlert2 con Livewire -->
         <script>
             document.addEventListener("DOMContentLoaded", function() {
+
+                // 1. Notificaciones enviadas por redirección con session()->flash('swal', [...])
+                <?php if(session()->has('swal')): ?>
+                    (function() {
+                        const swalData = <?php echo json_encode(session('swal'), 15, 512) ?>;
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: swalData.icono || swalData.icon || 'success',
+                            title: swalData.titulo || swalData.title || '',
+                            text: swalData.mensaje || swalData.text || '',
+                            showConfirmButton: false,
+                            timer: 3000,
+                            timerProgressBar: true,
+                            didOpen: (toast) => {
+                                toast.addEventListener('mouseenter', Swal.stopTimer);
+                                toast.addEventListener('mouseleave', Swal.resumeTimer);
+                            }
+                        });
+                    })();
+                <?php endif; ?>
+
+                // 2. Alerta Modal Centrada vía Livewire dispatch (sin redirección)
                 Livewire.on('minAlert', function(params) {
                     Swal.fire({
-                        title: params['titulo'],
-                        text: params["mensaje"],
-                        icon: params["icono"]
+                        title: params.titulo || params['titulo'],
+                        text: params.mensaje || params['mensaje'],
+                        icon: params.icono || params['icono']
+                    });
+                });
+
+                // 3. Toast en tiempo real vía Livewire dispatch (sin redirección)
+                Livewire.on('minToast', function(params) {
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: params.icono || params['icono'],
+                        title: params.titulo || params['titulo'],
+                        text: params.mensaje || params['mensaje'],
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true
                     });
                 });
             });

@@ -3,7 +3,7 @@
     @documento-eliminado.window="Swal.fire({icon:'success', title:'Eliminado', text: $event.detail.mensaje || 'Documento eliminado.', timer:2200, showConfirmButton:false})"
     @documento-error.window="Swal.fire({icon:'error', title:'Ups', text: $event.detail.mensaje || 'Ocurrió un error.'})">
 
-    @once
+    <?php if (! $__env->hasRenderedOnce('1f5f9af0-ecc6-4197-bf63-7e797da024ba')): $__env->markAsRenderedOnce('1f5f9af0-ecc6-4197-bf63-7e797da024ba'); ?>
         <script>
             if (typeof Swal === 'undefined') {
                 const s = document.createElement('script');
@@ -41,173 +41,175 @@
                 }));
             });
         </script>
-    @endonce
+    <?php endif; ?>
 
     <div class="max-w-5xl mx-auto px-4 py-8 space-y-6">
-        {{-- Volver --}}
-        <a href="{{ route('ordenes.listado') }}" class="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-all shadow-sm">
+        
+        <a href="<?php echo e(route('ordenes.listado')); ?>" class="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-all shadow-sm">
             <i class="fas fa-arrow-left text-gray-500"></i> Volver a las órdenes de servicios
         </a>
 
-        {{-- Header --}}
+        
         <div class="bg-gray-200 p-8 rounded-xl w-full border border-gray-300/80 shadow-sm">
             <div class="flex items-start justify-between flex-wrap gap-4">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-sm font-bold text-lg"><i class="fas fa-file-alt"></i></div>
                     <div>
                         <h2 class="text-xl font-bold text-gray-900 leading-tight">
-                            Orden #{{ $orden->id }}
-                            @if ($orden->service->tipo === 'conversion')
+                            Orden #<?php echo e($orden->id); ?>
+
+                            <!--[if BLOCK]><![endif]--><?php if($orden->service->tipo === 'conversion'): ?>
                                 <span class="text-xs bg-purple-200 text-purple-800 px-2 py-0.5 rounded-full font-semibold align-middle ml-1">Conversión</span>
-                            @endif
+                            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
                         </h2>
                         <p class="text-xs text-gray-700 flex items-center gap-1 mt-0.5">
                             <i class="far font-normal fa-calendar-alt text-gray-600"></i>
-                            Creada el {{ $orden->created_at->format('d/m/Y H:i') }} por <span class="font-medium text-gray-800">{{ $orden->creadoPor->name }}</span>
+                            Creada el <?php echo e($orden->created_at->format('d/m/Y H:i')); ?> por <span class="font-medium text-gray-800"><?php echo e($orden->creadoPor->name); ?></span>
                         </p>
                     </div>
                 </div>
                 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-sm animate-pulse">
-                    <span class="w-2 h-2 rounded-full {{ match (true) {
+                    <span class="w-2 h-2 rounded-full <?php echo e(match (true) {
                         str_contains(strtolower($orden->estado), 'cancel') || str_contains(strtolower($orden->estado), 'rechaz') => 'bg-red-500',
                         in_array(strtolower($orden->estado), ['entregada', 'entregado']) => 'bg-emerald-500',
                         default => 'bg-amber-500',
-                    } }}"></span> {{ ucfirst(str_replace('_', ' ', $orden->estado)) }}
+                    }); ?>"></span> <?php echo e(ucfirst(str_replace('_', ' ', $orden->estado))); ?>
+
                 </span>
             </div>
         </div>
 
-        {{-- Cliente y vehículo --}}
+        
         <div class="bg-gray-200 rounded-xl shadow-sm border border-gray-300/80 p-6">
             <h3 class="text-sm font-bold text-gray-800 uppercase mb-3"><i class="fas fa-user mr-1 text-gray-600"></i> Cliente y vehículo</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                 <div>
                     <p class="text-gray-600 text-xs font-medium">Cliente</p>
-                    <p class="font-bold text-gray-900">{{ $orden->cliente->nombre }} {{ $orden->cliente->apellido }}</p>
-                    <p class="text-gray-700 text-xs">{{ $orden->cliente->documento }} — {{ $orden->cliente->telefono ?? 'sin teléfono' }}</p>
+                    <p class="font-bold text-gray-900"><?php echo e($orden->cliente->nombre); ?> <?php echo e($orden->cliente->apellido); ?></p>
+                    <p class="text-gray-700 text-xs"><?php echo e($orden->cliente->documento); ?> — <?php echo e($orden->cliente->telefono ?? 'sin teléfono'); ?></p>
                 </div>
                 <div>
                     <p class="text-gray-600 text-xs font-medium">Vehículo</p>
-                    <p class="font-bold text-gray-900">{{ $orden->vehiculo->placa }} — {{ $orden->vehiculo->marca }} {{ $orden->vehiculo->modelo }}</p>
-                    <p class="text-gray-700 text-xs">Año: {{ $orden->vehiculo->anio ?? '—' }}</p>
+                    <p class="font-bold text-gray-900"><?php echo e($orden->vehiculo->placa); ?> — <?php echo e($orden->vehiculo->marca); ?> <?php echo e($orden->vehiculo->modelo); ?></p>
+                    <p class="text-gray-700 text-xs">Año: <?php echo e($orden->vehiculo->anio ?? '—'); ?></p>
                 </div>
             </div>
         </div>
 
-        {{-- Servicio y precio --}}
+        
         <div class="bg-gray-200 rounded-xl shadow-sm border border-gray-300/80 p-6">
             <h3 class="text-sm font-bold text-gray-800 uppercase mb-3"><i class="fas fa-tag mr-1 text-gray-600"></i> Servicio y precio</h3>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-                <div><p class="text-gray-600 text-xs font-medium">Servicio</p><p class="font-bold text-gray-900">{{ $orden->service->nombre }}</p></div>
-                <div><p class="text-gray-600 text-xs font-medium">Precio de lista</p><p class="font-bold text-gray-800">S/ {{ number_format($orden->precio_lista, 2) }}</p></div>
-                <div><p class="text-gray-600 text-xs font-medium">Precio final</p><p class="font-bold {{ $orden->precio_final != $orden->precio_lista ? 'text-amber-700' : 'text-gray-900' }}">S/ {{ number_format($orden->precio_final, 2) }}</p></div>
+                <div><p class="text-gray-600 text-xs font-medium">Servicio</p><p class="font-bold text-gray-900"><?php echo e($orden->service->nombre); ?></p></div>
+                <div><p class="text-gray-600 text-xs font-medium">Precio de lista</p><p class="font-bold text-gray-800">S/ <?php echo e(number_format($orden->precio_lista, 2)); ?></p></div>
+                <div><p class="text-gray-600 text-xs font-medium">Precio final</p><p class="font-bold <?php echo e($orden->precio_final != $orden->precio_lista ? 'text-amber-700' : 'text-gray-900'); ?>">S/ <?php echo e(number_format($orden->precio_final, 2)); ?></p></div>
             </div>
-            @if ($orden->descuento_motivo)
-                <p class="text-xs text-gray-700 mt-3 font-medium"><i class="fas fa-comment-dots mr-1 text-gray-500"></i> Motivo del ajuste: {{ $orden->descuento_motivo }}</p>
-            @endif
+            <!--[if BLOCK]><![endif]--><?php if($orden->descuento_motivo): ?>
+                <p class="text-xs text-gray-700 mt-3 font-medium"><i class="fas fa-comment-dots mr-1 text-gray-500"></i> Motivo del ajuste: <?php echo e($orden->descuento_motivo); ?></p>
+            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
         </div>
 
-        {{-- Evaluación técnica --}}
-        @if ($orden->service->tipo === 'conversion' && $orden->checklist_evaluacion)
+        
+        <!--[if BLOCK]><![endif]--><?php if($orden->service->tipo === 'conversion' && $orden->checklist_evaluacion): ?>
             <div class="bg-gray-200 rounded-xl shadow-sm border border-gray-300/80 p-6">
                 <h3 class="text-sm font-bold text-gray-800 uppercase mb-3"><i class="fas fa-clipboard-check mr-1 text-gray-600"></i> Evaluación técnica</h3>
                 <div class="flex items-center gap-3 mb-4 text-sm">
-                    <span class="px-2.5 py-1 rounded-full text-xs font-bold {{ $orden->evaluacion_aprobada ? 'bg-emerald-200 text-emerald-900' : 'bg-red-200 text-red-900' }}">{{ $orden->evaluacion_aprobada ? 'Apto' : 'No apto' }}</span>
-                    <span class="text-gray-700 font-medium">Por {{ $orden->evaluadoPor?->name }} — {{ $orden->evaluado_en?->format('d/m/Y H:i') }}</span>
+                    <span class="px-2.5 py-1 rounded-full text-xs font-bold <?php echo e($orden->evaluacion_aprobada ? 'bg-emerald-200 text-emerald-900' : 'bg-red-200 text-red-900'); ?>"><?php echo e($orden->evaluacion_aprobada ? 'Apto' : 'No apto'); ?></span>
+                    <span class="text-gray-700 font-medium">Por <?php echo e($orden->evaluadoPor?->name); ?> — <?php echo e($orden->evaluado_en?->format('d/m/Y H:i')); ?></span>
                 </div>
-                @if ($orden->evaluacion_observaciones)
-                    <p class="text-sm bg-white/80 border border-gray-300 rounded-lg p-3 mb-4 text-gray-800 font-medium">{{ $orden->evaluacion_observaciones }}</p>
-                @endif
+                <!--[if BLOCK]><![endif]--><?php if($orden->evaluacion_observaciones): ?>
+                    <p class="text-sm bg-white/80 border border-gray-300 rounded-lg p-3 mb-4 text-gray-800 font-medium"><?php echo e($orden->evaluacion_observaciones); ?></p>
+                <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-xs">
-                    @foreach ($checklistGrupos as $items)
-                        @foreach ($items as $clave => $label)
+                    <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $checklistGrupos; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $items): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $items; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $clave => $label): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                             <div class="flex items-center gap-1.5 py-1">
-                                <i class="fas {{ ($orden->checklist_evaluacion[$clave] ?? false) ? 'fa-check-circle text-emerald-600' : 'fa-times-circle text-gray-400' }}"></i>
-                                <span class="{{ ($orden->checklist_evaluacion[$clave] ?? false) ? 'text-gray-900 font-semibold' : 'text-gray-600' }}">{{ $label }}</span>
+                                <i class="fas <?php echo e(($orden->checklist_evaluacion[$clave] ?? false) ? 'fa-check-circle text-emerald-600' : 'fa-times-circle text-gray-400'); ?>"></i>
+                                <span class="<?php echo e(($orden->checklist_evaluacion[$clave] ?? false) ? 'text-gray-900 font-semibold' : 'text-gray-600'); ?>"><?php echo e($label); ?></span>
                             </div>
-                        @endforeach
-                    @endforeach
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
                 </div>
             </div>
-        @endif
+        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
 
-        {{-- Conversión --}}
-        @if ($orden->service->tipo === 'conversion' && $orden->tecnico)
+        
+        <!--[if BLOCK]><![endif]--><?php if($orden->service->tipo === 'conversion' && $orden->tecnico): ?>
             <div class="bg-gray-200 rounded-xl shadow-sm border border-gray-300/80 p-6">
                 <h3 class="text-sm font-bold text-gray-800 uppercase mb-3"><i class="fas fa-wrench mr-1 text-gray-600"></i> Conversión</h3>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm mb-4">
-                    <div><p class="text-gray-600 text-xs font-medium">Técnico</p><p class="font-bold text-gray-900">{{ $orden->tecnico->name }}</p></div>
-                    <div><p class="text-gray-600 text-xs font-medium">Inicio</p><p class="font-bold text-gray-900">{{ $orden->fecha_inicio_conversion?->format('d/m/Y H:i') ?? '—' }}</p></div>
-                    <div><p class="text-gray-600 text-xs font-medium">Fin</p><p class="font-bold text-gray-900">{{ $orden->fecha_fin_conversion?->format('d/m/Y H:i') ?? '—' }}</p></div>
+                    <div><p class="text-gray-600 text-xs font-medium">Técnico</p><p class="font-bold text-gray-900"><?php echo e($orden->tecnico->name); ?></p></div>
+                    <div><p class="text-gray-600 text-xs font-medium">Inicio</p><p class="font-bold text-gray-900"><?php echo e($orden->fecha_inicio_conversion?->format('d/m/Y H:i') ?? '—'); ?></p></div>
+                    <div><p class="text-gray-600 text-xs font-medium">Fin</p><p class="font-bold text-gray-900"><?php echo e($orden->fecha_fin_conversion?->format('d/m/Y H:i') ?? '—'); ?></p></div>
                 </div>
-                @if ($orden->items->count())
+                <!--[if BLOCK]><![endif]--><?php if($orden->items->count()): ?>
                     <p class="text-xs font-bold text-gray-700 uppercase mb-2">Equipos instalados</p>
                     <div class="space-y-1.5 mb-4">
-                        @foreach ($orden->items as $item)
+                        <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $orden->items; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                             <div class="flex justify-between text-sm bg-white/80 border border-gray-300 rounded-lg px-3 py-2">
-                                <span class="font-medium text-gray-800">{{ $item->producto->categoria->nombre }} — {{ $item->producto->nombre }} ({{ $item->producto->marca }})</span>
-                                <span class="font-mono text-xs text-gray-700 font-semibold">Serie: {{ $item->serie }}</span>
+                                <span class="font-medium text-gray-800"><?php echo e($item->producto->categoria->nombre); ?> — <?php echo e($item->producto->nombre); ?> (<?php echo e($item->producto->marca); ?>)</span>
+                                <span class="font-mono text-xs text-gray-700 font-semibold">Serie: <?php echo e($item->serie); ?></span>
                             </div>
-                        @endforeach
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
                     </div>
-                @endif
-                @if ($orden->movimientosStock->count())
+                <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                <!--[if BLOCK]><![endif]--><?php if($orden->movimientosStock->count()): ?>
                     <p class="text-xs font-bold text-gray-700 uppercase mb-2">Repuestos utilizados</p>
                     <div class="space-y-1.5">
-                        @foreach ($orden->movimientosStock as $mov)
+                        <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $orden->movimientosStock; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $mov): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                             <div class="flex justify-between text-sm bg-white/80 border border-gray-300 rounded-lg px-3 py-2">
-                                <span class="font-medium text-gray-800">{{ $mov->producto->nombre }}</span>
-                                <span class="text-gray-700 font-semibold">× {{ $mov->cantidad }}</span>
+                                <span class="font-medium text-gray-800"><?php echo e($mov->producto->nombre); ?></span>
+                                <span class="text-gray-700 font-semibold">× <?php echo e($mov->cantidad); ?></span>
                             </div>
-                        @endforeach
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
                     </div>
-                @endif
+                <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
             </div>
-        @endif
+        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
 
-        {{-- Comprobante --}}
+        
         <div class="bg-gray-200 rounded-xl shadow-sm border border-gray-300/80 p-6">
             <h3 class="text-sm font-bold text-gray-800 uppercase mb-3"><i class="fas fa-receipt mr-1 text-gray-600"></i> Comprobante</h3>
-            @if ($orden->comprobante)
+            <!--[if BLOCK]><![endif]--><?php if($orden->comprobante): ?>
                 <div class="flex items-center justify-between text-sm">
                     <div>
-                        <p class="font-bold text-gray-900">Folio: {{ $orden->comprobante->folio }}</p>
-                        <p class="text-gray-700 text-xs font-medium">{{ ucfirst($orden->comprobante->metodo_pago) }} — {{ $orden->comprobante->created_at->format('d/m/Y H:i') }}</p>
+                        <p class="font-bold text-gray-900">Folio: <?php echo e($orden->comprobante->folio); ?></p>
+                        <p class="text-gray-700 text-xs font-medium"><?php echo e(ucfirst($orden->comprobante->metodo_pago)); ?> — <?php echo e($orden->comprobante->created_at->format('d/m/Y H:i')); ?></p>
                     </div>
-                    <a href="{{ route('comprobantes.pdf', $orden->id) }}" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors shadow-sm">Ver PDF →</a>
+                    <a href="<?php echo e(route('comprobantes.pdf', $orden->id)); ?>" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors shadow-sm">Ver PDF →</a>
                 </div>
-            @else
+            <?php else: ?>
                 <p class="text-sm text-gray-600 font-medium">Aún no se ha generado comprobante (pendiente de cobro).</p>
-            @endif
+            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
         </div>
 
-        {{-- ═══════════ DOCUMENTOS (INLINE) ═══════════ --}}
+        
         <div class="bg-gray-200 rounded-xl shadow-sm border border-gray-300/80 p-6" x-data="visorArchivos">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-sm font-bold text-gray-800 uppercase"><i class="fas fa-file-pdf mr-1 text-gray-600"></i> Documentos</h3>
-                <button type="button" wire:click="abrirModalSubida({{ $orden->id }})"
+                <button type="button" wire:click="abrirModalSubida(<?php echo e($orden->id); ?>)"
                     class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-sm transition active:scale-95">
                     <i class="fa-solid fa-plus text-[10px]"></i> Subir
                 </button>
             </div>
 
-            {{-- Links de conversión --}}
-            @if ($orden->service->tipo === 'conversion')
+            
+            <!--[if BLOCK]><![endif]--><?php if($orden->service->tipo === 'conversion'): ?>
                 <div class="flex flex-wrap gap-2 mb-4">
-                    @if ($orden->checklist_evaluacion)
-                        <a href="{{ route('conversiones.pdf.evaluacion', $orden->id) }}" target="_blank" class="bg-white hover:bg-gray-50 text-gray-700 text-xs font-semibold px-3 py-2 rounded-lg border border-gray-200 transition"><i class="fas fa-clipboard-check mr-1"></i> Evaluación</a>
-                    @endif
-                    @if ($orden->items->count())
-                        <a href="{{ route('conversiones.pdf.ficha-tecnica', $orden->id) }}" target="_blank" class="bg-white hover:bg-gray-50 text-gray-700 text-xs font-semibold px-3 py-2 rounded-lg border border-gray-200 transition"><i class="fas fa-wrench mr-1"></i> Ficha técnica</a>
-                    @endif
-                    @if (in_array(strtolower($orden->estado), ['entregado', 'entregada']))
-                        <a href="{{ route('conversiones.pdf.garantia', $orden->id) }}" target="_blank" class="bg-white hover:bg-gray-50 text-gray-700 text-xs font-semibold px-3 py-2 rounded-lg border border-gray-200 transition"><i class="fas fa-shield-alt mr-1"></i> Garantía</a>
-                    @endif
+                    <!--[if BLOCK]><![endif]--><?php if($orden->checklist_evaluacion): ?>
+                        <a href="<?php echo e(route('conversiones.pdf.evaluacion', $orden->id)); ?>" target="_blank" class="bg-white hover:bg-gray-50 text-gray-700 text-xs font-semibold px-3 py-2 rounded-lg border border-gray-200 transition"><i class="fas fa-clipboard-check mr-1"></i> Evaluación</a>
+                    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                    <!--[if BLOCK]><![endif]--><?php if($orden->items->count()): ?>
+                        <a href="<?php echo e(route('conversiones.pdf.ficha-tecnica', $orden->id)); ?>" target="_blank" class="bg-white hover:bg-gray-50 text-gray-700 text-xs font-semibold px-3 py-2 rounded-lg border border-gray-200 transition"><i class="fas fa-wrench mr-1"></i> Ficha técnica</a>
+                    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                    <!--[if BLOCK]><![endif]--><?php if(in_array(strtolower($orden->estado), ['entregado', 'entregada'])): ?>
+                        <a href="<?php echo e(route('conversiones.pdf.garantia', $orden->id)); ?>" target="_blank" class="bg-white hover:bg-gray-50 text-gray-700 text-xs font-semibold px-3 py-2 rounded-lg border border-gray-200 transition"><i class="fas fa-shield-alt mr-1"></i> Garantía</a>
+                    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
                 </div>
-            @endif
+            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
 
-            {{-- Documentos del sistema + subidos — grid compacto --}}
-            @php
+            
+            <?php
                 $sistemaDocs = collect([
                     $orden->comprobante ? ['label' => 'Comprobante', 'icon' => 'fa-receipt', 'url' => route('comprobantes.pdf', $orden->id), 'color' => 'blue'] : null,
                     $orden->vehiculo ? ['label' => 'Carta garantía', 'icon' => 'fa-shield-halved', 'url' => route('vehiculo.pdf', $orden->vehiculo_id), 'color' => 'emerald'] : null,
@@ -216,52 +218,52 @@
                 $todosDocs = $sistemaDocs->concat(
                     $orden->documentos->map(fn($d) => ['label' => str_replace('_', ' ', $d->tipo), 'icon' => 'fa-file-lines', 'url' => $d->url, 'color' => 'slate', 'id' => $d->id])
                 );
-            @endphp
+            ?>
 
-            @if ($todosDocs->count())
+            <!--[if BLOCK]><![endif]--><?php if($todosDocs->count()): ?>
                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
-                    @foreach ($sistemaDocs as $doc)
-                        <button type="button" @click="abrir('{{ $doc['url'] }}', '{{ $doc['label'] }}')"
-                            class="flex items-center gap-2.5 p-3 bg-white border border-{{ $doc['color'] }}-200 rounded-xl hover:shadow-md hover:border-{{ $doc['color'] }}-400 transition-all text-left group">
-                            <div class="w-9 h-9 rounded-lg bg-{{ $doc['color'] }}-500 text-white flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                                <i class="fa-solid {{ $doc['icon'] }} text-xs"></i>
+                    <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $sistemaDocs; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $doc): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <button type="button" @click="abrir('<?php echo e($doc['url']); ?>', '<?php echo e($doc['label']); ?>')"
+                            class="flex items-center gap-2.5 p-3 bg-white border border-<?php echo e($doc['color']); ?>-200 rounded-xl hover:shadow-md hover:border-<?php echo e($doc['color']); ?>-400 transition-all text-left group">
+                            <div class="w-9 h-9 rounded-lg bg-<?php echo e($doc['color']); ?>-500 text-white flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                                <i class="fa-solid <?php echo e($doc['icon']); ?> text-xs"></i>
                             </div>
                             <div class="min-w-0">
-                                <p class="text-xs font-bold text-gray-800 truncate">{{ $doc['label'] }}</p>
+                                <p class="text-xs font-bold text-gray-800 truncate"><?php echo e($doc['label']); ?></p>
                                 <p class="text-[10px] text-gray-400">Sistema</p>
                             </div>
                         </button>
-                    @endforeach
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
 
-                    @foreach ($orden->documentos as $d)
+                    <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $orden->documentos; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $d): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                         <div class="flex items-center gap-2.5 p-3 bg-white border border-gray-200 rounded-xl hover:shadow-md hover:border-indigo-300 transition-all group">
-                            <button type="button" @click="abrir('{{ $d->url }}', '{{ str_replace('_', ' ', $d->tipo) }}')"
+                            <button type="button" @click="abrir('<?php echo e($d->url); ?>', '<?php echo e(str_replace('_', ' ', $d->tipo)); ?>')"
                                 class="flex items-center gap-2.5 flex-1 min-w-0 text-left">
                                 <div class="w-9 h-9 rounded-lg bg-gray-100 text-gray-500 group-hover:bg-indigo-500 group-hover:text-white flex items-center justify-center shrink-0 transition-all">
                                     <i class="fa-solid fa-file-lines text-xs"></i>
                                 </div>
                                 <div class="min-w-0">
-                                    <p class="text-xs font-bold text-gray-800 capitalize truncate">{{ str_replace('_', ' ', $d->tipo) }}</p>
+                                    <p class="text-xs font-bold text-gray-800 capitalize truncate"><?php echo e(str_replace('_', ' ', $d->tipo)); ?></p>
                                     <p class="text-[10px] text-gray-400">Subido</p>
                                 </div>
                             </button>
                             <button type="button" @click="
                                 Swal.fire({ icon:'warning', title:'¿Eliminar?', text:'Acción irreversible.', showCancelButton:true, confirmButtonText:'Sí', cancelButtonText:'Cancelar', confirmButtonColor:'#dc2626' })
-                                .then(r => { if(r.isConfirmed) $wire.eliminarDocumento({{ $d->id }}) })
+                                .then(r => { if(r.isConfirmed) $wire.eliminarDocumento(<?php echo e($d->id); ?>) })
                             " class="shrink-0 w-7 h-7 flex items-center justify-center rounded-md text-gray-300 hover:text-red-500 hover:bg-red-50 transition">
                                 <i class="fa-solid fa-trash text-[10px]"></i>
                             </button>
                         </div>
-                    @endforeach
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
                 </div>
-            @else
+            <?php else: ?>
                 <div class="flex flex-col items-center py-6 bg-white border-2 border-dashed border-gray-200 rounded-xl text-center">
                     <div class="w-10 h-10 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center mb-2"><i class="fa-solid fa-inbox text-sm"></i></div>
                     <p class="text-xs font-semibold text-gray-500">Sin documentos</p>
                 </div>
-            @endif
+            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
 
-            {{-- ═══════════ OVERLAY VISOR PDF/IMAGEN (único) ═══════════ --}}
+            
             <template x-teleport="body">
                 <div x-show="show" x-cloak @keydown.escape.window="cerrar()" class="fixed inset-0 z-[90]" style="display:none;">
                     <div class="absolute inset-0 bg-black/60" @click="cerrar()"></div>
@@ -316,28 +318,28 @@
             </template>
         </div>
 
-        {{-- Histórial --}}
+        
         <div class="bg-gray-200 rounded-xl shadow-sm border border-gray-300/80 p-6">
             <h3 class="text-sm font-bold text-gray-800 uppercase mb-3"><i class="fas fa-history mr-1 text-gray-600"></i> Historial</h3>
             <div class="space-y-3">
-                @foreach ($orden->historialEstados as $h)
+                <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $orden->historialEstados; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $h): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                     <div class="flex items-start gap-3 text-sm">
                         <div class="w-2.5 h-2.5 rounded-full bg-blue-600 mt-1 flex-shrink-0"></div>
                         <div>
                             <p class="text-gray-900">
-                                @if ($h->estado_anterior)<span class="text-gray-600">{{ ucfirst(str_replace('_', ' ', $h->estado_anterior)) }}</span> → @endif
-                                <span class="font-bold">{{ ucfirst(str_replace('_', ' ', $h->estado_nuevo)) }}</span>
+                                <!--[if BLOCK]><![endif]--><?php if($h->estado_anterior): ?><span class="text-gray-600"><?php echo e(ucfirst(str_replace('_', ' ', $h->estado_anterior))); ?></span> → <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                                <span class="font-bold"><?php echo e(ucfirst(str_replace('_', ' ', $h->estado_nuevo))); ?></span>
                             </p>
-                            <p class="text-xs text-gray-700 font-medium">{{ $h->created_at->format('d/m/Y H:i') }} — {{ $h->usuario->name ?? 'Sistema' }}</p>
+                            <p class="text-xs text-gray-700 font-medium"><?php echo e($h->created_at->format('d/m/Y H:i')); ?> — <?php echo e($h->usuario->name ?? 'Sistema'); ?></p>
                         </div>
                     </div>
-                @endforeach
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
             </div>
         </div>
     </div>
 
-    {{-- ═══════════ MODAL SUBIR DOCUMENTO (único, inline) ═══════════ --}}
-    @if ($showUploadModal)
+    
+    <!--[if BLOCK]><![endif]--><?php if($showUploadModal): ?>
         <div id="modal-subida-container" class="fixed inset-0 z-[80] flex items-center justify-center p-3 sm:p-6" wire:key="modal-subida">
             <div class="fixed inset-0 bg-black/40" wire:click="cerrarModalSubida"></div>
             <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden" x-data="{ dragging: false }"
@@ -354,23 +356,30 @@
                 </div>
 
                 <div class="p-5 space-y-4">
-                    @if ($ordenSeleccionada)
+                    <!--[if BLOCK]><![endif]--><?php if($ordenSeleccionada): ?>
                         <div class="flex items-center gap-2.5 p-2.5 bg-indigo-50 border border-indigo-100 rounded-lg text-xs">
                             <i class="fa-solid fa-car text-indigo-500"></i>
-                            <span class="font-bold text-indigo-700">Orden #{{ $ordenSeleccionada->id }}</span>
+                            <span class="font-bold text-indigo-700">Orden #<?php echo e($ordenSeleccionada->id); ?></span>
                             <span class="text-gray-500">•</span>
-                            <span class="font-bold text-gray-800">{{ $ordenSeleccionada->vehiculo->placa ?? '—' }}</span>
+                            <span class="font-bold text-gray-800"><?php echo e($ordenSeleccionada->vehiculo->placa ?? '—'); ?></span>
                         </div>
-                    @endif
+                    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
 
                     <div>
                         <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">Tipo</label>
                         <input type="text" wire:model="tipoDocumento" list="tiposDoc" placeholder="Ej: SOAT, Revisión..."
                             class="w-full bg-white border border-gray-200 rounded-lg text-sm px-3 py-2.5 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition">
                         <datalist id="tiposDoc">
-                            @foreach ($tiposDocumento as $t) <option value="{{ $t }}"></option> @endforeach
+                            <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $tiposDocumento; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $t): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?> <option value="<?php echo e($t); ?>"></option> <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
                         </datalist>
-                        @error('tipoDocumento') <span class="text-[11px] font-bold text-red-500">{{ $message }}</span> @enderror
+                        <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['tipoDocumento'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <span class="text-[11px] font-bold text-red-500"><?php echo e($message); ?></span> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                     </div>
 
                     <div @dragover.prevent="dragging=true" @dragenter.prevent="dragging=true" @dragleave.self="dragging=false"
@@ -383,17 +392,24 @@
                         <div wire:loading wire:target="archivo" class="flex items-center gap-2 mt-2 text-xs font-bold text-indigo-600">
                             <div class="w-3.5 h-3.5 rounded-full border-2 border-indigo-200 border-t-indigo-600 animate-spin"></div> Procesando...
                         </div>
-                        @error('archivo') <span class="text-[11px] font-bold text-red-500">{{ $message }}</span> @enderror
+                        <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['archivo'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <span class="text-[11px] font-bold text-red-500"><?php echo e($message); ?></span> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                         <div wire:loading.remove wire:target="archivo">
-                            @if ($archivo)
+                            <!--[if BLOCK]><![endif]--><?php if($archivo): ?>
                                 <div class="mt-2 rounded-lg border border-gray-200 overflow-hidden bg-white inline-block">
-                                    @if (str_starts_with($archivo->getMimeType(), 'image'))
-                                        <img src="{{ $archivo->temporaryUrl() }}" class="h-20 w-auto object-contain p-1">
-                                    @else
-                                        <div class="flex items-center gap-2 px-3 py-2"><i class="fa-solid fa-file-pdf text-red-500 text-xs"></i><span class="text-xs font-bold text-gray-700 truncate max-w-[200px]">{{ $archivo->getClientOriginalName() }}</span></div>
-                                    @endif
+                                    <!--[if BLOCK]><![endif]--><?php if(str_starts_with($archivo->getMimeType(), 'image')): ?>
+                                        <img src="<?php echo e($archivo->temporaryUrl()); ?>" class="h-20 w-auto object-contain p-1">
+                                    <?php else: ?>
+                                        <div class="flex items-center gap-2 px-3 py-2"><i class="fa-solid fa-file-pdf text-red-500 text-xs"></i><span class="text-xs font-bold text-gray-700 truncate max-w-[200px]"><?php echo e($archivo->getClientOriginalName()); ?></span></div>
+                                    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
                                 </div>
-                            @endif
+                            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
                         </div>
                     </div>
                 </div>
@@ -408,5 +424,6 @@
                 </div>
             </div>
         </div>
-    @endif
+    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
 </div>
+<?php /**PATH C:\xampp\htdocs\arturo-motors\resources\views/livewire/service-orders/detalle.blade.php ENDPATH**/ ?>

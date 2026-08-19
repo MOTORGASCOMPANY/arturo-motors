@@ -70,8 +70,11 @@ if (isset($__slots)) unset($__slots);
 
         <?php echo $__env->make('components.confirm-modal', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
-        <footer class="border-t border-gray-200 mt-8">
-            <div class="px-8 py-4 text-xs text-slate-400 text-right max-w-[1400px] mx-auto">
+        <!-- Chart.js -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+        <footer>
+            <div class="text-xs text-slate-700  float-right">
                 Powered by GHFDEV ®
             </div>
         </footer>
