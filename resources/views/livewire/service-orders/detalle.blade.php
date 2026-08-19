@@ -17,6 +17,7 @@
                 document.addEventListener('alpine:init', () => {
                     Alpine.data('visorArchivos', () => ({
                         show: false,
+                        everOpened: false,
                         url: '',
                         title: '',
                         status: 'loading',
@@ -31,12 +32,14 @@
                         cache: {},
 
                         async abrir(url, title) {
+                            this.everOpened = true;
                             this.url = url;
                             this.title = title;
                             this.status = 'loading';
                             this.isImage = false;
                             this.zoom = 1;
                             this.show = true;
+
                             if (this.cache[url]) {
                                 this.status = 'ok';
                                 this.isImage = this.cache[url] === 'image';
@@ -139,19 +142,18 @@
         @endonce
 
         <div class="max-w-5xl mx-auto px-4 py-8 space-y-6">
-            {{-- Volver --}}
             <a href="{{ route('ordenes.listado') }}"
                 class="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-all shadow-sm">
                 <i class="fas fa-arrow-left text-gray-500"></i> Volver a las órdenes de servicios
             </a>
 
-            {{-- Header --}}
             <div class="bg-gray-200 p-8 rounded-xl w-full border border-gray-300/80 shadow-sm">
                 <div class="flex items-start justify-between flex-wrap gap-4">
                     <div class="flex items-center gap-3">
                         <div
                             class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-sm font-bold text-lg">
-                            <i class="fas fa-file-alt"></i></div>
+                            <i class="fas fa-file-alt"></i>
+                        </div>
                         <div>
                             <h2 class="text-xl font-bold text-gray-900 leading-tight">
                                 Orden #{{ $orden->id }}
@@ -181,7 +183,6 @@
                 </div>
             </div>
 
-            {{-- Cliente y vehículo --}}
             <div class="bg-gray-200 rounded-xl shadow-sm border border-gray-300/80 p-6">
                 <h3 class="text-sm font-bold text-gray-800 uppercase mb-3"><i
                         class="fas fa-user mr-1 text-gray-600"></i> Cliente y vehículo</h3>
@@ -202,7 +203,6 @@
                 </div>
             </div>
 
-            {{-- Servicio y precio --}}
             <div class="bg-gray-200 rounded-xl shadow-sm border border-gray-300/80 p-6">
                 <h3 class="text-sm font-bold text-gray-800 uppercase mb-3"><i class="fas fa-tag mr-1 text-gray-600"></i>
                     Servicio y precio</h3>
@@ -229,7 +229,6 @@
                 @endif
             </div>
 
-            {{-- Evaluación técnica --}}
             @if ($orden->service->tipo === 'conversion' && $orden->checklist_evaluacion)
                 <div class="bg-gray-200 rounded-xl shadow-sm border border-gray-300/80 p-6">
                     <h3 class="text-sm font-bold text-gray-800 uppercase mb-3"><i
@@ -246,9 +245,10 @@
                             {{ $orden->evaluacion_observaciones }}</p>
                     @endif
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-xs">
-                        @foreach ($checklistGrupos as $items)
+                        @foreach ($checklistGrupos as $grupoKey => $items)
                             @foreach ($items as $clave => $label)
-                                <div class="flex items-center gap-1.5 py-1">
+                                <div class="flex items-center gap-1.5 py-1"
+                                    wire:key="chk-{{ $grupoKey }}-{{ $clave }}">
                                     <i
                                         class="fas {{ $orden->checklist_evaluacion[$clave] ?? false ? 'fa-check-circle text-emerald-600' : 'fa-times-circle text-gray-400' }}"></i>
                                     <span
@@ -260,7 +260,6 @@
                 </div>
             @endif
 
-            {{-- Conversión --}}
             @if ($orden->service->tipo === 'conversion' && $orden->tecnico)
                 <div class="bg-gray-200 rounded-xl shadow-sm border border-gray-300/80 p-6">
                     <h3 class="text-sm font-bold text-gray-800 uppercase mb-3"><i
@@ -285,7 +284,7 @@
                         <p class="text-xs font-bold text-gray-700 uppercase mb-2">Equipos instalados</p>
                         <div class="space-y-1.5 mb-4">
                             @foreach ($orden->items as $item)
-                                <div
+                                <div wire:key="item-{{ $item->id }}"
                                     class="flex justify-between text-sm bg-white/80 border border-gray-300 rounded-lg px-3 py-2">
                                     <span class="font-medium text-gray-800">{{ $item->producto->categoria->nombre }} —
                                         {{ $item->producto->nombre }} ({{ $item->producto->marca }})</span>
@@ -299,7 +298,7 @@
                         <p class="text-xs font-bold text-gray-700 uppercase mb-2">Repuestos utilizados</p>
                         <div class="space-y-1.5">
                             @foreach ($orden->movimientosStock as $mov)
-                                <div
+                                <div wire:key="mov-{{ $mov->id }}"
                                     class="flex justify-between text-sm bg-white/80 border border-gray-300 rounded-lg px-3 py-2">
                                     <span class="font-medium text-gray-800">{{ $mov->producto->nombre }}</span>
                                     <span class="text-gray-700 font-semibold">× {{ $mov->cantidad }}</span>
@@ -310,7 +309,6 @@
                 </div>
             @endif
 
-            {{-- Comprobante --}}
             <div class="bg-gray-200 rounded-xl shadow-sm border border-gray-300/80 p-6">
                 <h3 class="text-sm font-bold text-gray-800 uppercase mb-3"><i
                         class="fas fa-receipt mr-1 text-gray-600"></i> Comprobante</h3>
@@ -332,73 +330,66 @@
                 @endif
             </div>
 
-            {{-- ═══════════ DOCUMENTOS (INLINE) ═══════════ --}}
-            <div class="bg-gray-200 rounded-xl shadow-sm border border-gray-300/80 p-6" x-data="visorArchivos">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-sm font-bold text-gray-800 uppercase"><i
-                            class="fas fa-file-pdf mr-1 text-gray-600"></i> Documentos</h3>
-                    <button type="button" wire:click="abrirModalSubida({{ $orden->id }})"
-                        class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-sm transition active:scale-95">
-                        <i class="fa-solid fa-plus text-[10px]"></i> Subir
-                    </button>
-                </div>
-
-                @if ($orden->service->tipo === 'conversion')
-                    <div class="flex flex-wrap gap-2 mb-4">
-                        @if ($orden->checklist_evaluacion)
-                            <a href="{{ route('conversiones.pdf.evaluacion', $orden->id) }}" target="_blank"
-                                class="bg-white hover:bg-gray-50 text-gray-700 text-xs font-semibold px-3 py-2 rounded-lg border border-gray-200 transition"><i
-                                    class="fas fa-clipboard-check mr-1"></i> Evaluación</a>
-                        @endif
-                        @if ($orden->items->count())
-                            <a href="{{ route('conversiones.pdf.ficha-tecnica', $orden->id) }}" target="_blank"
-                                class="bg-white hover:bg-gray-50 text-gray-700 text-xs font-semibold px-3 py-2 rounded-lg border border-gray-200 transition"><i
-                                    class="fas fa-wrench mr-1"></i> Ficha técnica</a>
-                        @endif
-                        @if (in_array(strtolower($orden->estado), ['entregado', 'entregada']))
-                            <a href="{{ route('conversiones.pdf.garantia', $orden->id) }}" target="_blank"
-                                class="bg-white hover:bg-gray-50 text-gray-700 text-xs font-semibold px-3 py-2 rounded-lg border border-gray-200 transition"><i
-                                    class="fas fa-shield-alt mr-1"></i> Garantía</a>
-                        @endif
-                    </div>
-                @endif
+            <div x-data="visorArchivos">
 
                 @php
-                    $obtenerEstiloDoc = function ($nombre, $origen = 'Subido') {
+                    $estilosSistema = [
+                        'Comprobante' => [
+                            'icon' => 'fa-file-invoice-dollar',
+                            'bgClass' => 'bg-blue-600',
+                            'borderClass' => 'border-blue-200 hover:border-blue-400',
+                        ],
+                        'Carta garantía' => [
+                            'icon' => 'fa-stamp',
+                            'bgClass' => 'bg-emerald-600',
+                            'borderClass' => 'border-emerald-200 hover:border-emerald-400',
+                        ],
+                        'Manual' => [
+                            'icon' => 'fa-book-open',
+                            'bgClass' => 'bg-amber-600',
+                            'borderClass' => 'border-amber-200 hover:border-amber-400',
+                        ],
+                    ];
+
+                    $sistemaDocs = collect([
+                        $orden->comprobante
+                            ? array_merge(
+                                [
+                                    'label' => 'Comprobante',
+                                    'badge' => 'Sistema',
+                                    'url' => route('comprobantes.pdf', $orden->id),
+                                ],
+                                $estilosSistema['Comprobante'],
+                            )
+                            : null,
+                        $orden->vehiculo
+                            ? array_merge(
+                                [
+                                    'label' => 'Carta garantía',
+                                    'badge' => 'Sistema',
+                                    'url' => route('vehiculo.pdf', $orden->vehiculo_id),
+                                ],
+                                $estilosSistema['Carta garantía'],
+                            )
+                            : null,
+                        $orden->vehiculo
+                            ? array_merge(
+                                [
+                                    'label' => 'Manual',
+                                    'badge' => 'Sistema',
+                                    'url' => route('manual.pdf', $orden->vehiculo_id),
+                                ],
+                                $estilosSistema['Manual'],
+                            )
+                            : null,
+                    ])->filter();
+
+                    $obtenerEstiloExpediente = function ($nombre) {
                         $n = strtolower($nombre);
 
-                        if (
-                            str_contains($n, 'comprobante') ||
-                            str_contains($n, 'factura') ||
-                            str_contains($n, 'boleta')
-                        ) {
-                            return [
-                                'icon' => 'fa-receipt',
-                                'badge' => $origen,
-                                'bgClass' => 'bg-blue-500',
-                                'borderClass' => 'border-blue-200 hover:border-blue-400',
-                            ];
-                        }
-                        if (str_contains($n, 'carta') || str_contains($n, 'garantia')) {
-                            return [
-                                'icon' => 'fa-shield-halved',
-                                'badge' => $origen,
-                                'bgClass' => 'bg-emerald-500',
-                                'borderClass' => 'border-emerald-200 hover:border-emerald-400',
-                            ];
-                        }
-                        if (str_contains($n, 'manual') || str_contains($n, 'guia')) {
-                            return [
-                                'icon' => 'fa-book',
-                                'badge' => $origen,
-                                'bgClass' => 'bg-amber-500',
-                                'borderClass' => 'border-amber-200 hover:border-amber-400',
-                            ];
-                        }
                         if (str_contains($n, 'soat') || str_contains($n, 'seguro') || str_contains($n, 'poliza')) {
                             return [
                                 'icon' => 'fa-file-shield',
-                                'badge' => $origen,
                                 'bgClass' => 'bg-rose-500',
                                 'borderClass' => 'border-rose-200 hover:border-rose-400',
                             ];
@@ -406,7 +397,6 @@
                         if (str_contains($n, 'revision') || str_contains($n, 'tecnica')) {
                             return [
                                 'icon' => 'fa-screwdriver-wrench',
-                                'badge' => $origen,
                                 'bgClass' => 'bg-purple-500',
                                 'borderClass' => 'border-purple-200 hover:border-purple-400',
                             ];
@@ -419,7 +409,6 @@
                         ) {
                             return [
                                 'icon' => 'fa-id-card',
-                                'badge' => $origen,
                                 'bgClass' => 'bg-cyan-500',
                                 'borderClass' => 'border-cyan-200 hover:border-cyan-400',
                             ];
@@ -427,70 +416,122 @@
                         if (str_contains($n, 'tarjeta') || str_contains($n, 'propiedad')) {
                             return [
                                 'icon' => 'fa-address-card',
-                                'badge' => $origen,
                                 'bgClass' => 'bg-indigo-500',
                                 'borderClass' => 'border-indigo-200 hover:border-indigo-400',
                             ];
                         }
+                        if (str_contains($n, 'factura') || str_contains($n, 'boleta')) {
+                            return [
+                                'icon' => 'fa-receipt',
+                                'bgClass' => 'bg-teal-500',
+                                'borderClass' => 'border-teal-200 hover:border-teal-400',
+                            ];
+                        }
 
                         return [
-                            'icon' => 'fa-file-lines',
-                            'badge' => $origen,
+                            'icon' => 'fa-folder-open',
                             'bgClass' => 'bg-slate-500',
                             'borderClass' => 'border-slate-200 hover:border-slate-400',
                         ];
                     };
 
-                    $sistemaDocs = collect([
-                        $orden->comprobante
-                            ? array_merge(
-                                ['label' => 'Comprobante', 'url' => route('comprobantes.pdf', $orden->id)],
-                                $obtenerEstiloDoc('Comprobante', 'Sistema'),
-                            )
-                            : null,
-                        $orden->vehiculo
-                            ? array_merge(
-                                ['label' => 'Carta garantía', 'url' => route('vehiculo.pdf', $orden->vehiculo_id)],
-                                $obtenerEstiloDoc('Carta garantía', 'Sistema'),
-                            )
-                            : null,
-                        $orden->vehiculo
-                            ? array_merge(
-                                ['label' => 'Manual', 'url' => route('manual.pdf', $orden->vehiculo_id)],
-                                $obtenerEstiloDoc('Manual', 'Sistema'),
-                            )
-                            : null,
-                    ])->filter();
-
-                    $docsSubidos = $orden->documentos->map(function ($d) use ($obtenerEstiloDoc) {
+                    $docsSubidos = $orden->documentos->map(function ($d) use ($obtenerEstiloExpediente) {
                         $nombreLimpio = ucfirst(str_replace('_', ' ', $d->tipo));
                         return array_merge(
-                            ['id' => $d->id, 'label' => $nombreLimpio, 'url' => $d->url],
-                            $obtenerEstiloDoc($nombreLimpio, 'Subido'),
+                            ['id' => $d->id, 'label' => $nombreLimpio, 'badge' => 'Subido', 'url' => $d->url],
+                            $obtenerEstiloExpediente($nombreLimpio),
                         );
                     });
-
-                    $todosDocs = $sistemaDocs->concat($docsSubidos);
                 @endphp
 
-                @if ($todosDocs->count())
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-                        @foreach ($todosDocs as $doc)
-                            <div
-                                class="flex items-center justify-between p-3 bg-white border {{ $doc['borderClass'] }} rounded-xl shadow-sm hover:shadow-md transition-all group">
-                                <button type="button" @click="abrir('{{ $doc['url'] }}', '{{ $doc['label'] }}')"
-                                    class="flex items-center gap-3 flex-1 min-w-0 text-left">
-                                    <div
-                                        class="w-10 h-10 rounded-lg {{ $doc['bgClass'] }} text-white flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-sm">
-                                        <i class="fa-solid {{ $doc['icon'] }} text-sm"></i>
-                                    </div>
-                                    <div class="min-w-0">
-                                        <p class="text-xs font-bold text-gray-800 truncate">{{ $doc['label'] }}</p>
-                                        <p class="text-[10px] text-gray-400 font-medium">{{ $doc['badge'] }}</p>
-                                    </div>
-                                </button>
+                <div class="bg-gray-200 rounded-xl shadow-sm border border-gray-300/80 p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-sm font-bold text-gray-800 uppercase"><i
+                                class="fas fa-file-pdf mr-1 text-gray-600"></i> Documentos</h3>
+                    </div>
 
-                                @if (isset($doc['id']))
+                    @if ($orden->service->tipo === 'conversion')
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            @if ($orden->checklist_evaluacion)
+                                <a href="{{ route('conversiones.pdf.evaluacion', $orden->id) }}" target="_blank"
+                                    class="bg-white hover:bg-gray-50 text-gray-700 text-xs font-semibold px-3 py-2 rounded-lg border border-gray-200 transition"><i
+                                        class="fas fa-clipboard-check mr-1"></i> Evaluación</a>
+                            @endif
+                            @if ($orden->items->count())
+                                <a href="{{ route('conversiones.pdf.ficha-tecnica', $orden->id) }}" target="_blank"
+                                    class="bg-white hover:bg-gray-50 text-gray-700 text-xs font-semibold px-3 py-2 rounded-lg border border-gray-200 transition"><i
+                                        class="fas fa-wrench mr-1"></i> Ficha técnica</a>
+                            @endif
+                            @if (in_array(strtolower($orden->estado), ['entregado', 'entregada']))
+                                <a href="{{ route('conversiones.pdf.garantia', $orden->id) }}" target="_blank"
+                                    class="bg-white hover:bg-gray-50 text-gray-700 text-xs font-semibold px-3 py-2 rounded-lg border border-gray-200 transition"><i
+                                        class="fas fa-shield-alt mr-1"></i> Garantía</a>
+                            @endif
+                        </div>
+                    @endif
+
+                    @if ($sistemaDocs->count())
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                            @foreach ($sistemaDocs as $doc)
+                                <div wire:key="sysdoc-{{ Str::slug($doc['label']) }}"
+                                    class="flex items-center justify-between p-3 bg-white border {{ $doc['borderClass'] }} rounded-xl shadow-sm hover:shadow-md transition-all group">
+                                    <button type="button"
+                                        @click="abrir('{{ $doc['url'] }}', '{{ $doc['label'] }}')"
+                                        class="flex items-center gap-3 flex-1 min-w-0 text-left">
+                                        <div
+                                            class="w-10 h-10 rounded-lg {{ $doc['bgClass'] }} text-white flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-sm">
+                                            <i class="fa-solid {{ $doc['icon'] }} text-sm"></i>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <p class="text-xs font-bold text-gray-800 truncate">{{ $doc['label'] }}
+                                            </p>
+                                            <p class="text-[10px] text-gray-400 font-medium">{{ $doc['badge'] }}</p>
+                                        </div>
+                                    </button>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div
+                            class="flex flex-col items-center py-6 bg-white border-2 border-dashed border-gray-200 rounded-xl text-center">
+                            <div
+                                class="w-10 h-10 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center mb-2">
+                                <i class="fa-solid fa-inbox text-sm"></i>
+                            </div>
+                            <p class="text-xs font-semibold text-gray-500">Sin documentos</p>
+                        </div>
+                    @endif
+                </div>
+
+                <div class="bg-gray-200 rounded-xl shadow-sm border border-gray-300/80 p-6 mt-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-sm font-bold text-gray-800 uppercase"><i
+                                class="fas fa-folder-open mr-1 text-gray-600"></i> Expedientes</h3>
+                        <button type="button" wire:click="abrirModalSubida({{ $orden->id }})"
+                            class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-sm transition active:scale-95">
+                            <i class="fa-solid fa-plus text-[10px]"></i> Subir
+                        </button>
+                    </div>
+
+                    @if ($docsSubidos->count())
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                            @foreach ($docsSubidos as $doc)
+                                <div wire:key="expdoc-{{ $doc['id'] }}"
+                                    class="flex items-center justify-between p-3 bg-white border {{ $doc['borderClass'] }} rounded-xl shadow-sm hover:shadow-md transition-all group">
+                                    <button type="button"
+                                        @click="abrir('{{ $doc['url'] }}', '{{ $doc['label'] }}')"
+                                        class="flex items-center gap-3 flex-1 min-w-0 text-left">
+                                        <div
+                                            class="w-10 h-10 rounded-lg {{ $doc['bgClass'] }} text-white flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-sm">
+                                            <i class="fa-solid {{ $doc['icon'] }} text-sm"></i>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <p class="text-xs font-bold text-gray-800 truncate">{{ $doc['label'] }}
+                                            </p>
+                                            <p class="text-[10px] text-gray-400 font-medium">{{ $doc['badge'] }}</p>
+                                        </div>
+                                    </button>
+
                                     <button type="button"
                                         @click="
                                         Swal.fire({ icon:'warning', title:'¿Eliminar?', text:'Acción irreversible.', showCancelButton:true, confirmButtonText:'Sí', cancelButtonText:'Cancelar', confirmButtonColor:'#dc2626' })
@@ -499,135 +540,139 @@
                                         class="shrink-0 w-8 h-8 flex items-center justify-center rounded-md text-gray-300 hover:text-red-500 hover:bg-red-50 transition ml-2">
                                         <i class="fa-solid fa-trash text-xs"></i>
                                     </button>
-                                @endif
-                            </div>
-                        @endforeach
-                    </div>
-                @else
-                    <div
-                        class="flex flex-col items-center py-6 bg-white border-2 border-dashed border-gray-200 rounded-xl text-center">
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
                         <div
-                            class="w-10 h-10 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center mb-2">
-                            <i class="fa-solid fa-inbox text-sm"></i></div>
-                        <p class="text-xs font-semibold text-gray-500">Sin documentos</p>
-                    </div>
-                @endif
-
-                {{-- ═══════════ OVERLAY VISOR PDF/IMAGEN ═══════════ --}}
-                <template x-teleport="body">
-                    <div x-show="show" x-cloak @keydown.escape.window="cerrar()" class="fixed inset-0 z-[90]"
-                        style="display:none;">
-                        <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" @click="cerrar()"></div>
-                        <div class="absolute inset-4 sm:inset-8 md:inset-12 bg-white rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-white/20"
-                            x-show="show" x-transition:enter="transition ease-out duration-200"
-                            x-transition:enter-start="opacity-0 scale-95"
-                            x-transition:enter-end="opacity-100 scale-100"
-                            x-transition:leave="transition ease-in duration-150"
-                            x-transition:leave-start="opacity-100 scale-100"
-                            x-transition:leave-end="opacity-0 scale-95">
-
+                            class="flex flex-col items-center py-6 bg-white border-2 border-dashed border-gray-200 rounded-xl text-center">
                             <div
-                                class="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white shrink-0">
-                                <div class="flex items-center gap-3 min-w-0">
-                                    <div
-                                        class="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
-                                        <i class="fa-solid"
-                                            :class="isImage ? 'fa-image text-emerald-500 text-lg' :
-                                                'fa-file-pdf text-red-500 text-lg'"></i>
+                                class="w-10 h-10 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center mb-2">
+                                <i class="fa-solid fa-folder text-sm"></i>
+                            </div>
+                            <p class="text-xs font-semibold text-gray-500">Sin expedientes subidos</p>
+                        </div>
+                    @endif
+                </div>
+
+                <template x-if="everOpened">
+                    <template x-teleport="body">
+                        <div x-show="show" x-cloak @keydown.escape.window="cerrar()" class="fixed inset-0 z-[90]"
+                            style="display:none;">
+                            <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" @click="cerrar()"></div>
+                            <div class="absolute inset-4 sm:inset-8 md:inset-12 bg-white rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-white/20"
+                                x-show="show" x-transition:enter="transition ease-out duration-200"
+                                x-transition:enter-start="opacity-0 scale-95"
+                                x-transition:enter-end="opacity-100 scale-100"
+                                x-transition:leave="transition ease-in duration-150"
+                                x-transition:leave-start="opacity-100 scale-100"
+                                x-transition:leave-end="opacity-0 scale-95">
+
+                                <div
+                                    class="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white shrink-0">
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <div
+                                            class="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
+                                            <i class="fa-solid"
+                                                :class="isImage ? 'fa-image text-emerald-500 text-lg' :
+                                                    'fa-file-pdf text-red-500 text-lg'"></i>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <span class="text-base font-extrabold text-gray-800 truncate block"
+                                                x-text="title"></span>
+                                            <span class="text-[11px] text-gray-400 font-medium">Previsualización de
+                                                contenido en pantalla completa</span>
+                                        </div>
                                     </div>
-                                    <div class="min-w-0">
-                                        <span class="text-base font-extrabold text-gray-800 truncate block"
-                                            x-text="title"></span>
-                                        <span class="text-[11px] text-gray-400 font-medium">Previsualización de
-                                            contenido en pantalla completa</span>
+                                    <div class="flex items-center gap-2 shrink-0">
+                                        <template x-if="isImage && status === 'ok'">
+                                            <div
+                                                class="flex items-center gap-1 bg-gray-100 rounded-xl p-1 mr-2 border border-gray-200 shadow-inner">
+                                                <button @click="zoomOut()"
+                                                    class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-600 hover:bg-white shadow-sm transition"><i
+                                                        class="fa-solid fa-minus text-xs"></i></button>
+                                                <span
+                                                    class="text-xs font-bold text-gray-700 w-10 text-center select-none"
+                                                    x-text="Math.round(zoom*100)+'%'"></span>
+                                                <button @click="zoomIn()"
+                                                    class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-600 hover:bg-white shadow-sm transition"><i
+                                                        class="fa-solid fa-plus text-xs"></i></button>
+                                                <div class="w-px h-4 bg-gray-300 mx-0.5"></div>
+                                                <button @click="zoomReset()"
+                                                    class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-600 hover:bg-white shadow-sm transition"
+                                                    title="Restablecer zoom"><i
+                                                        class="fa-solid fa-expand text-xs"></i></button>
+                                            </div>
+                                        </template>
+                                        <button @click="window.open(url, '_blank')" x-show="status==='ok'"
+                                            class="px-3 py-2 text-xs font-bold text-indigo-600 bg-indigo-50 rounded-xl hover:bg-indigo-100 transition hidden sm:inline-flex items-center gap-1.5 shadow-sm">
+                                            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i> Abrir en
+                                            pestaña
+                                        </button>
+                                        <button @click="cerrar()"
+                                            class="w-9 h-9 flex items-center justify-center rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 transition">
+                                            <i class="fa-solid fa-xmark text-lg"></i>
+                                        </button>
                                     </div>
                                 </div>
-                                <div class="flex items-center gap-2 shrink-0">
-                                    <template x-if="isImage && status === 'ok'">
+
+                                <div
+                                    class="flex-1 bg-slate-900 relative overflow-hidden flex items-center justify-center">
+                                    <div x-show="status==='loading'"
+                                        class="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-white z-10">
                                         <div
-                                            class="flex items-center gap-1 bg-gray-100 rounded-xl p-1 mr-2 border border-gray-200 shadow-inner">
-                                            <button @click="zoomOut()"
-                                                class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-600 hover:bg-white shadow-sm transition"><i
-                                                    class="fa-solid fa-minus text-xs"></i></button>
-                                            <span class="text-xs font-bold text-gray-700 w-10 text-center select-none"
-                                                x-text="Math.round(zoom*100)+'%'"></span>
-                                            <button @click="zoomIn()"
-                                                class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-600 hover:bg-white shadow-sm transition"><i
-                                                    class="fa-solid fa-plus text-xs"></i></button>
-                                            <div class="w-px h-4 bg-gray-300 mx-0.5"></div>
-                                            <button @click="zoomReset()"
-                                                class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-600 hover:bg-white shadow-sm transition"
-                                                title="Restablecer zoom"><i
-                                                    class="fa-solid fa-expand text-xs"></i></button>
+                                            class="w-10 h-10 rounded-full border-4 border-indigo-100 border-t-indigo-600 animate-spin">
+                                        </div>
+                                        <span class="text-xs font-bold text-gray-600">Cargando contenido del
+                                            documento...</span>
+                                    </div>
+                                    <div x-show="status==='error'"
+                                        class="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-white z-10">
+                                        <div
+                                            class="w-16 h-16 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center text-2xl shadow-inner">
+                                            <i class="fa-solid fa-triangle-exclamation"></i>
+                                        </div>
+                                        <p class="text-sm font-bold text-gray-700">No se pudo cargar el contenido</p>
+                                        <button @click="cerrar()"
+                                            class="text-xs font-bold text-gray-600 bg-gray-100 px-4 py-2 rounded-xl hover:bg-gray-200 transition">Cerrar
+                                            visor</button>
+                                    </div>
+                                    <template x-if="status==='ok' && !isImage">
+                                        <div
+                                            class="w-full h-full p-2 sm:p-4 flex items-center justify-center bg-slate-950">
+                                            <iframe :src="url + '#toolbar=1&view=FitH'"
+                                                class="w-full h-full rounded-2xl border-0 shadow-2xl bg-white"
+                                                title="Previsualizador de contenido PDF" loading="lazy"></iframe>
                                         </div>
                                     </template>
-                                    <button @click="window.open(url, '_blank')" x-show="status==='ok'"
-                                        class="px-3 py-2 text-xs font-bold text-indigo-600 bg-indigo-50 rounded-xl hover:bg-indigo-100 transition hidden sm:inline-flex items-center gap-1.5 shadow-sm">
-                                        <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i> Abrir en
-                                        pestaña
-                                    </button>
-                                    <button @click="cerrar()"
-                                        class="w-9 h-9 flex items-center justify-center rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 transition">
-                                        <i class="fa-solid fa-xmark text-lg"></i>
-                                    </button>
+                                    <template x-if="status==='ok' && isImage">
+                                        <div class="w-full h-full overflow-auto p-6 select-none flex items-center justify-center"
+                                            :class="zoom <= 1 ? 'flex items-center justify-center' : ''" x-ref="vp"
+                                            @mousedown="startPan($event)"
+                                            @mousemove.window.throttle.16ms="movePan($event)"
+                                            @mouseup.window="stopPan()" @mouseleave="stopPan()">
+                                            <img :src="url" :style="zoom > 1 ? `width:${zoom*100}%` : ''"
+                                                @click="if(moved){moved=false}else{zoom=zoom===1?1.5:1}"
+                                                @dragstart.prevent
+                                                :class="zoom <= 1 ? 'max-w-full max-h-full object-contain cursor-zoom-in' :
+                                                    'block mx-auto max-w-none cursor-grab'"
+                                                class="rounded-2xl shadow-2xl transition-[width] duration-150 bg-white"
+                                                draggable="false" loading="lazy" alt="Previsualización de imagen">
+                                        </div>
+                                    </template>
                                 </div>
-                            </div>
-
-                            <div class="flex-1 bg-slate-900 relative overflow-hidden flex items-center justify-center">
-                                <div x-show="status==='loading'"
-                                    class="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-white z-10">
-                                    <div
-                                        class="w-10 h-10 rounded-full border-4 border-indigo-100 border-t-indigo-600 animate-spin">
-                                    </div>
-                                    <span class="text-xs font-bold text-gray-600">Cargando contenido del
-                                        documento...</span>
-                                </div>
-                                <div x-show="status==='error'"
-                                    class="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-white z-10">
-                                    <div
-                                        class="w-16 h-16 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center text-2xl shadow-inner">
-                                        <i class="fa-solid fa-triangle-exclamation"></i>
-                                    </div>
-                                    <p class="text-sm font-bold text-gray-700">No se pudo cargar el contenido</p>
-                                    <button @click="cerrar()"
-                                        class="text-xs font-bold text-gray-600 bg-gray-100 px-4 py-2 rounded-xl hover:bg-gray-200 transition">Cerrar
-                                        visor</button>
-                                </div>
-                                <template x-if="status==='ok' && !isImage">
-                                    <div
-                                        class="w-full h-full p-2 sm:p-4 flex items-center justify-center bg-slate-950">
-                                        <iframe :src="url + '#toolbar=1&view=FitH'"
-                                            class="w-full h-full rounded-2xl border-0 shadow-2xl bg-white"
-                                            title="Previsualizador de contenido PDF"></iframe>
-                                    </div>
-                                </template>
-                                <template x-if="status==='ok' && isImage">
-                                    <div class="w-full h-full overflow-auto p-6 select-none flex items-center justify-center"
-                                        :class="zoom <= 1 ? 'flex items-center justify-center' : ''" x-ref="vp"
-                                        @mousedown="startPan($event)"
-                                        @mousemove.window.throttle.16ms="movePan($event)" @mouseup.window="stopPan()"
-                                        @mouseleave="stopPan()">
-                                        <img :src="url" :style="zoom > 1 ? `width:${zoom*100}%` : ''"
-                                            @click="if(moved){moved=false}else{zoom=zoom===1?1.5:1}" @dragstart.prevent
-                                            :class="zoom <= 1 ? 'max-w-full max-h-full object-contain cursor-zoom-in' :
-                                                'block mx-auto max-w-none cursor-grab'"
-                                            class="rounded-2xl shadow-2xl transition-[width] duration-150 bg-white"
-                                            draggable="false" loading="lazy" alt="Previsualización de imagen">
-                                    </div>
-                                </template>
                             </div>
                         </div>
-                    </div>
+                    </template>
                 </template>
             </div>
 
-            {{-- Historial --}}
             <div class="bg-gray-200 rounded-xl shadow-sm border border-gray-300/80 p-6">
                 <h3 class="text-sm font-bold text-gray-800 uppercase mb-3"><i
                         class="fas fa-history mr-1 text-gray-600"></i> Historial</h3>
                 <div class="space-y-3">
                     @foreach ($orden->historialEstados as $h)
-                        <div class="flex items-start gap-3 text-sm">
+                        <div wire:key="hist-{{ $h->id }}" class="flex items-start gap-3 text-sm">
                             <div class="w-2.5 h-2.5 rounded-full bg-blue-600 mt-1 flex-shrink-0"></div>
                             <div>
                                 <p class="text-gray-900">
@@ -648,7 +693,6 @@
             </div>
         </div>
 
-        {{-- ═══════════ MODAL SUBIR DOCUMENTO ═══════════ --}}
         @if ($showUploadModal)
             <div id="modal-subida-container" class="fixed inset-0 z-[80] flex items-center justify-center p-3 sm:p-6"
                 wire:key="modal-subida">
@@ -659,7 +703,6 @@
                     x-data="modalSubidaPrevisualizador" x-transition:enter="transition ease-out duration-200"
                     x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100">
 
-                    {{-- Pantalla de carga --}}
                     <div wire:loading wire:target="guardarDocumento"
                         class="absolute inset-0 bg-slate-900/90 backdrop-blur-md z-50 flex flex-col items-center justify-center p-6 text-center text-white h-full w-full">
                         <div class="relative mb-6">
@@ -727,7 +770,7 @@
                                         placeholder="Ej: SOAT, Revisión técnica, DNI..."
                                         class="w-full bg-white border border-slate-200 rounded-2xl text-sm px-4 py-3.5 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition shadow-sm">
                                     <datalist id="tiposDoc">
-                                        @foreach ($tiposDocumento as $t)
+                                        @foreach (collect($tiposDocumento)->reject(fn($t) => in_array(strtolower($t), ['comprobante', 'carta garantía', 'carta garantia', 'manual'])) as $t)
                                             <option value="{{ $t }}"></option>
                                         @endforeach
                                     </datalist>
