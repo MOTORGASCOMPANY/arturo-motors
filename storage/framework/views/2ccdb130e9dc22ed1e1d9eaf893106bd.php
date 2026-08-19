@@ -182,51 +182,52 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
     </nav>
     <!-- Navbar end -->
 
-    <!-- Sidebar start-->
-    <div id="containerSidebar" class="z-40">
-        <div class="navbar-menu relative z-40">
-            <nav id="sidebar" class="fixed left-0 bottom-0 flex w-3/4 -translate-x-full flex-col bg-gradient-to-br from-slate-600 via-blue-700 to-slate-600 pt-2 sm:max-w-xs lg:w-80">
-                <!-- one category / navigation group -->
-                <div class="px-4 overflow-y-auto">
-                    <h3 class="mb-2 text-xs font-medium uppercase text-gray-300">
-                        Menu principal
-                    </h3>
-                    <ul class="text-sm font-medium">
-                        <li>
-                            <a class="flex items-center rounded py-3 pl-3 pr-4  space-x-6 text-gray-50 hover:bg-gray-600"
-                                href="<?php echo e(route('inicio')); ?>">
-                                <i class="fas fa-home -mt-1"></i>
-                                <span class="select-none">Inicio</span>
-                            </a>
-                        </li>
+        <!-- Sidebar start-->
+        <div id="containerSidebar" class="z-40">
+            <div class="navbar-menu relative z-40">
+                <nav id="sidebar" class="fixed left-0 bottom-0 flex w-3/4 -translate-x-full flex-col bg-gradient-to-br from-slate-600 via-blue-700 to-slate-600 pt-2 sm:max-w-xs lg:w-80">
+                    <!-- one category / navigation group -->
+                    <div class="px-4 overflow-y-auto">
+                        <h3 class="mb-2 text-xs font-medium uppercase text-gray-300">
+                            Menu principal
+                        </h3>
+                        <ul class="text-sm font-medium">
+                            <li>
+                                <a class="flex items-center rounded py-3 pl-3 pr-4  space-x-6 text-gray-50 hover:bg-gray-600"
+                                    href="<?php echo e(route('inicio')); ?>">
+                                    <i class="fas fa-home -mt-1"></i>
+                                    <span class="select-none">Inicio</span>
+                                </a>
+                            </li>
 
-                        
-                        
+                            
+                            
 
-                        
-                        <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('opciones.caja')): ?>
-                            <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
-                                x-data="{ Open: false }" wire:ignore>
-                                <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
-                                    x-on:click="Open = !Open">
-                                    <span class="inline-flex items-center space-x-6  text-sm text-white ">
-                                        <i class="fa-solid fa-cash-register text-lg"></i>
-                                        <span class="select-none">Caja</span>
-                                    </span>
-                                    <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
-                                    <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
-                                </div>
-                                <div x-show="Open" x-cloak x-transition:enter="transition-all ease-in-out duration-300"
-                                    x-transition:enter-start="opacity-0 max-h-0"
-                                    x-transition:enter-end="opacity-100 max-h-xl"
-                                    x-transition:leave="transition-all ease-in-out duration-300"
-                                    x-transition:leave-start="opacity-100 max-h-xl"
-                                    x-transition:leave-end="opacity-0 max-h-0">
-                                    <ul class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
-                                        aria-label="submenu">
+                            
+                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('opciones.caja')): ?>
+                                <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
+                                    x-data="{ Open: false }">
+                                    <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
+                                        x-on:click="Open = !Open">
+                                        <span class="inline-flex items-center space-x-6  text-sm text-white ">
+                                            <i class="fa-solid fa-cash-register text-lg"></i>
+                                            <span class="select-none">Caja</span>
+                                        </span>
+                                        <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
+                                        <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
+                                    </div>
+                                    <div x-show.transition="Open" style="display:none;">
+                                        <ul x-transition:enter="transition-all ease-in-out duration-300"
+                                            x-transition:enter-start="opacity-25 max-h-0"
+                                            x-transition:enter-end="opacity-100 max-h-xl"
+                                            x-transition:leave="transition-all ease-in-out duration-300"
+                                            x-transition:leave-start="opacity-100 max-h-xl"
+                                            x-transition:leave-end="opacity-0 max-h-0"
+                                            class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
+                                            aria-label="submenu">
 
-                                        <li class="transition-colors duration-150">
-                                            <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
+                                            <li class="transition-colors duration-150">
+                                                <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18 = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.responsive-nav-link','data' => ['class' => 'text-sm','href' => ''.e(route('caja.abrir')).'','active' => request()->routeIs('caja.abrir')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('responsive-nav-link'); ?>
@@ -236,8 +237,8 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes(['class' => 'text-sm','href' => ''.e(route('caja.abrir')).'','active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('caja.abrir'))]); ?>
-                                                Abrir caja
-                                             <?php echo $__env->renderComponent(); ?>
+                                                    Abrir caja
+                                                 <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginald69b52d99510f1e7cd3d80070b28ca18)): ?>
 <?php $attributes = $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
@@ -247,9 +248,9 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $component = $__componentOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
 <?php unset($__componentOriginald69b52d99510f1e7cd3d80070b28ca18); ?>
 <?php endif; ?>
-                                        </li>
-                                        <li class="transition-colors duration-150">
-                                            <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
+                                            </li>
+                                            <li class="transition-colors duration-150">
+                                                <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18 = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.responsive-nav-link','data' => ['class' => 'text-sm','href' => ''.e(route('caja.cerrar')).'','active' => request()->routeIs('caja.cerrar')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('responsive-nav-link'); ?>
@@ -259,8 +260,8 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes(['class' => 'text-sm','href' => ''.e(route('caja.cerrar')).'','active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('caja.cerrar'))]); ?>
-                                                Cerrar caja
-                                             <?php echo $__env->renderComponent(); ?>
+                                                    Cerrar caja
+                                                 <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginald69b52d99510f1e7cd3d80070b28ca18)): ?>
 <?php $attributes = $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
@@ -270,9 +271,9 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $component = $__componentOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
 <?php unset($__componentOriginald69b52d99510f1e7cd3d80070b28ca18); ?>
 <?php endif; ?>
-                                        </li>
-                                        <li class="transition-colors duration-150">
-                                            <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
+                                            </li>
+                                            <li class="transition-colors duration-150">
+                                                <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18 = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.responsive-nav-link','data' => ['class' => 'text-sm','href' => ''.e(route('caja.egreso')).'','active' => request()->routeIs('caja.egreso')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('responsive-nav-link'); ?>
@@ -282,8 +283,8 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes(['class' => 'text-sm','href' => ''.e(route('caja.egreso')).'','active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('caja.egreso'))]); ?>
-                                                Egreso de caja
-                                             <?php echo $__env->renderComponent(); ?>
+                                                    Egreso de caja
+                                                 <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginald69b52d99510f1e7cd3d80070b28ca18)): ?>
 <?php $attributes = $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
@@ -293,9 +294,9 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $component = $__componentOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
 <?php unset($__componentOriginald69b52d99510f1e7cd3d80070b28ca18); ?>
 <?php endif; ?>
-                                        </li>
-                                        <li class="transition-colors duration-150">
-                                            <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
+                                            </li>
+                                            <li class="transition-colors duration-150">
+                                                <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18 = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.responsive-nav-link','data' => ['class' => 'text-sm','href' => ''.e(route('caja.historial')).'','active' => request()->routeIs('caja.historial')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('responsive-nav-link'); ?>
@@ -305,8 +306,8 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes(['class' => 'text-sm','href' => ''.e(route('caja.historial')).'','active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('caja.historial'))]); ?>
-                                                Historial de caja
-                                             <?php echo $__env->renderComponent(); ?>
+                                                    Historial de caja
+                                                 <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginald69b52d99510f1e7cd3d80070b28ca18)): ?>
 <?php $attributes = $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
@@ -316,36 +317,37 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $component = $__componentOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
 <?php unset($__componentOriginald69b52d99510f1e7cd3d80070b28ca18); ?>
 <?php endif; ?>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </li>
-                        <?php endif; ?>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </li>
+                            <?php endif; ?>
 
-                        
-                        <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('opciones.servicios')): ?>
-                            <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
-                                x-data="{ Open: false }" wire:ignore>
-                                <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
-                                    x-on:click="Open = !Open">
-                                    <span class="inline-flex items-center space-x-6  text-sm text-white ">
-                                        <i class="fa-solid fa-screwdriver-wrench"></i>
-                                        <span class="select-none">Servicios</span>
-                                    </span>
-                                    <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
-                                    <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
-                                </div>
-                                <div x-show="Open" x-cloak x-transition:enter="transition-all ease-in-out duration-300"
-                                    x-transition:enter-start="opacity-0 max-h-0"
-                                    x-transition:enter-end="opacity-100 max-h-xl"
-                                    x-transition:leave="transition-all ease-in-out duration-300"
-                                    x-transition:leave-start="opacity-100 max-h-xl"
-                                    x-transition:leave-end="opacity-0 max-h-0">
-                                    <ul class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
-                                        aria-label="submenu">
+                            
+                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('opciones.servicios')): ?>
+                                <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
+                                    x-data="{ Open: false }">
+                                    <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
+                                        x-on:click="Open = !Open">
+                                        <span class="inline-flex items-center space-x-6  text-sm text-white ">
+                                            <i class="fa-solid fa-screwdriver-wrench"></i>
+                                            <span class="select-none">Servicios</span>
+                                        </span>
+                                        <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
+                                        <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
+                                    </div>
+                                    <div x-show.transition="Open" style="display:none;">
+                                        <ul x-transition:enter="transition-all ease-in-out duration-300"
+                                            x-transition:enter-start="opacity-25 max-h-0"
+                                            x-transition:enter-end="opacity-100 max-h-xl"
+                                            x-transition:leave="transition-all ease-in-out duration-300"
+                                            x-transition:leave-start="opacity-100 max-h-xl"
+                                            x-transition:leave-end="opacity-0 max-h-0"
+                                            class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
+                                            aria-label="submenu">
 
-                                        <li class="transition-colors duration-150">
-                                            <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
+                                            <li class="transition-colors duration-150">
+                                                <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18 = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.responsive-nav-link','data' => ['class' => 'text-sm','href' => ''.e(route('ordenes.listado')).'','active' => request()->routeIs('ordenes.listado')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('responsive-nav-link'); ?>
@@ -355,8 +357,8 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes(['class' => 'text-sm','href' => ''.e(route('ordenes.listado')).'','active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('ordenes.listado'))]); ?>
-                                                Listado de ordenes                                                
-                                             <?php echo $__env->renderComponent(); ?>
+                                                    Listado de ordenes                                                
+                                                 <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginald69b52d99510f1e7cd3d80070b28ca18)): ?>
 <?php $attributes = $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
@@ -366,9 +368,9 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $component = $__componentOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
 <?php unset($__componentOriginald69b52d99510f1e7cd3d80070b28ca18); ?>
 <?php endif; ?>
-                                        </li>
-                                        <li class="transition-colors duration-150">
-                                            <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
+                                            </li>
+                                            <li class="transition-colors duration-150">
+                                                <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18 = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.responsive-nav-link','data' => ['class' => 'text-sm','href' => ''.e(route('ordenes.simple.crear')).'','active' => request()->routeIs('ordenes.simple.crear')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('responsive-nav-link'); ?>
@@ -378,8 +380,8 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes(['class' => 'text-sm','href' => ''.e(route('ordenes.simple.crear')).'','active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('ordenes.simple.crear'))]); ?>
-                                                Crear orden de servicio
-                                             <?php echo $__env->renderComponent(); ?>
+                                                    Crear orden de servicio
+                                                 <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginald69b52d99510f1e7cd3d80070b28ca18)): ?>
 <?php $attributes = $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
@@ -389,9 +391,9 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $component = $__componentOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
 <?php unset($__componentOriginald69b52d99510f1e7cd3d80070b28ca18); ?>
 <?php endif; ?>
-                                        </li>
-                                        <li class="transition-colors duration-150">
-                                            <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
+                                            </li>
+                                            <li class="transition-colors duration-150">
+                                                <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18 = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.responsive-nav-link','data' => ['class' => 'text-sm','href' => ''.e(route('conversiones.crear')).'','active' => request()->routeIs('conversiones.crear')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('responsive-nav-link'); ?>
@@ -401,8 +403,8 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes(['class' => 'text-sm','href' => ''.e(route('conversiones.crear')).'','active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('conversiones.crear'))]); ?>
-                                                Crear orden de conversión
-                                             <?php echo $__env->renderComponent(); ?>
+                                                    Crear orden de conversión
+                                                 <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginald69b52d99510f1e7cd3d80070b28ca18)): ?>
 <?php $attributes = $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
@@ -412,37 +414,41 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $component = $__componentOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
 <?php unset($__componentOriginald69b52d99510f1e7cd3d80070b28ca18); ?>
 <?php endif; ?>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </li>
-                        <?php endif; ?>
+                                            </li>
+                                            
+                                        </ul>
+                                    </div>
+                                </li>
+                            <?php endif; ?>
 
-                        
-                        <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('opciones.conversiones')): ?>
-                            <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
-                                x-data="{ Open: false }" wire:ignore>
-                                <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
-                                    x-on:click="Open = !Open">
-                                    <span class="inline-flex items-center space-x-6  text-sm text-white ">
-                                        <i class="fa-solid fa-car"></i>
-                                        <span class="select-none">Conversiones</span>
-                                    </span>
-                                    <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
-                                    <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
-                                </div>
-                                <div x-show="Open" x-cloak x-transition:enter="transition-all ease-in-out duration-300"
-                                    x-transition:enter-start="opacity-0 max-h-0"
-                                    x-transition:enter-end="opacity-100 max-h-xl"
-                                    x-transition:leave="transition-all ease-in-out duration-300"
-                                    x-transition:leave-start="opacity-100 max-h-xl"
-                                    x-transition:leave-end="opacity-0 max-h-0">
-                                    <ul class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
-                                        aria-label="submenu">
+                            
+                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('opciones.conversiones')): ?>
+                                <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
+                                    x-data="{ Open: false }">
+                                    <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
+                                        x-on:click="Open = !Open">
+                                        <span class="inline-flex items-center space-x-6  text-sm text-white ">
+                                            <i class="fa-solid fa-car"></i>
+                                            <span class="select-none">Conversiones</span>
+                                        </span>
+                                        <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
+                                        <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
+                                    </div>
+                                    <div x-show.transition="Open" style="display:none;">
+                                        <ul x-transition:enter="transition-all ease-in-out duration-300"
+                                            x-transition:enter-start="opacity-25 max-h-0"
+                                            x-transition:enter-end="opacity-100 max-h-xl"
+                                            x-transition:leave="transition-all ease-in-out duration-300"
+                                            x-transition:leave-start="opacity-100 max-h-xl"
+                                            x-transition:leave-end="opacity-0 max-h-0"
+                                            class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
+                                            aria-label="submenu">
 
-                                        <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('conversiones.asignar')): ?>
-                                            <li class="transition-colors duration-150">
-                                                <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
+                                            <!-- Asignar técnicos (Administrador del sistema, Jefe de Taller) -->
+                                            
+                                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('conversiones.asignar')): ?>
+                                                <li class="transition-colors duration-150">
+                                                    <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18 = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.responsive-nav-link','data' => ['class' => 'text-sm','href' => ''.e(route('conversiones.asignar')).'','active' => request()->routeIs('conversiones.asignar')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('responsive-nav-link'); ?>
@@ -452,8 +458,8 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes(['class' => 'text-sm','href' => ''.e(route('conversiones.asignar')).'','active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('conversiones.asignar'))]); ?>
-                                                    Asignar técnicos
-                                                 <?php echo $__env->renderComponent(); ?>
+                                                        Asignar técnicos
+                                                     <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginald69b52d99510f1e7cd3d80070b28ca18)): ?>
 <?php $attributes = $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
@@ -463,11 +469,12 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $component = $__componentOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
 <?php unset($__componentOriginald69b52d99510f1e7cd3d80070b28ca18); ?>
 <?php endif; ?>
-                                            </li>
-                                        <?php endif; ?>
-                                        <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('conversiones.mis-asignadas')): ?>
-                                            <li class="transition-colors duration-150">
-                                                <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
+                                                </li>
+                                            <?php endif; ?>
+                                            <!-- Mis conversiones asignadas (Técnico) -->
+                                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('conversiones.mis-asignadas')): ?>
+                                                <li class="transition-colors duration-150">
+                                                    <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18 = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.responsive-nav-link','data' => ['class' => 'text-sm','href' => ''.e(route('conversiones.mis-asignadas')).'','active' => request()->routeIs('conversiones.mis-asignadas')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('responsive-nav-link'); ?>
@@ -477,8 +484,8 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes(['class' => 'text-sm','href' => ''.e(route('conversiones.mis-asignadas')).'','active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('conversiones.mis-asignadas'))]); ?>
-                                                    Mis conversiones asignadas
-                                                 <?php echo $__env->renderComponent(); ?>
+                                                        Mis conversiones asignadas
+                                                     <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginald69b52d99510f1e7cd3d80070b28ca18)): ?>
 <?php $attributes = $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
@@ -488,11 +495,12 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $component = $__componentOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
 <?php unset($__componentOriginald69b52d99510f1e7cd3d80070b28ca18); ?>
 <?php endif; ?>
-                                            </li>
-                                        <?php endif; ?>                                        
-                                        <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('conversiones.entregas-pendientes')): ?>
-                                            <li class="transition-colors duration-150">
-                                                <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
+                                                </li>
+                                            <?php endif; ?>                                        
+                                            <!-- Entregas pendientes (Administrador del sistema, Jefe de Taller) -->
+                                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('conversiones.entregas-pendientes')): ?>
+                                                <li class="transition-colors duration-150">
+                                                    <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18 = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.responsive-nav-link','data' => ['class' => 'text-sm','href' => ''.e(route('conversiones.entregas-pendientes')).'','active' => request()->routeIs('conversiones.entregas-pendientes')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('responsive-nav-link'); ?>
@@ -502,7 +510,61 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes(['class' => 'text-sm','href' => ''.e(route('conversiones.entregas-pendientes')).'','active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('conversiones.entregas-pendientes'))]); ?>
-                                                    Entregas pendientes
+                                                        Entregas pendientes
+                                                     <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginald69b52d99510f1e7cd3d80070b28ca18)): ?>
+<?php $attributes = $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
+<?php unset($__attributesOriginald69b52d99510f1e7cd3d80070b28ca18); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginald69b52d99510f1e7cd3d80070b28ca18)): ?>
+<?php $component = $__componentOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
+<?php unset($__componentOriginald69b52d99510f1e7cd3d80070b28ca18); ?>
+<?php endif; ?>
+                                                </li>
+                                            <?php endif; ?>
+
+                                            
+                                        </ul>
+                                    </div>
+                                </li>
+                            <?php endif; ?>                            
+
+                            
+                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('opciones.almacen')): ?>
+                                <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
+                                    x-data="{ Open: false }">
+                                    <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
+                                        x-on:click="Open = !Open">
+                                        <span class="inline-flex items-center space-x-6  text-sm text-white ">
+                                            <i class="fa-solid fa-store"></i>
+                                            <span class="select-none">Almacen</span>
+                                        </span>
+                                        <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
+                                        <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
+                                    </div>
+                                    <div x-show.transition="Open" style="display:none;">
+                                        <ul x-transition:enter="transition-all ease-in-out duration-300"
+                                            x-transition:enter-start="opacity-25 max-h-0"
+                                            x-transition:enter-end="opacity-100 max-h-xl"
+                                            x-transition:leave="transition-all ease-in-out duration-300"
+                                            x-transition:leave-start="opacity-100 max-h-xl"
+                                            x-transition:leave-end="opacity-0 max-h-0"
+                                            class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
+                                            aria-label="submenu">
+
+                                            <li class="transition-colors duration-150">
+                                                <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.responsive-nav-link','data' => ['class' => 'text-sm','href' => ''.e(route('almacen.categorias.listado')).'','active' => request()->routeIs('almacen.categorias.listado')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('responsive-nav-link'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['class' => 'text-sm','href' => ''.e(route('almacen.categorias.listado')).'','active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('almacen.categorias.listado'))]); ?>
+                                                    Categorías
                                                  <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginald69b52d99510f1e7cd3d80070b28ca18)): ?>
@@ -514,160 +576,8 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php unset($__componentOriginald69b52d99510f1e7cd3d80070b28ca18); ?>
 <?php endif; ?>
                                             </li>
-                                        <?php endif; ?>
-                                    </ul>
-                                </div>
-                            </li>
-                        <?php endif; ?>   
-                        
-                        
-                        <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('opciones.expedientes')): ?>
-                            <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
-                                x-data="{ Open: false }" wire:ignore>
-                                <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
-                                    x-on:click="Open = !Open">
-                                    <span class="inline-flex items-center space-x-6  text-sm text-white ">
-                                        <i class="fa-solid fa-folder-open"></i>
-                                        <span class="select-none">Expedientes</span>
-                                    </span>
-                                    <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
-                                    <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
-                                </div>
-                                <div x-show="Open" x-cloak x-transition:enter="transition-all ease-in-out duration-300"
-                                    x-transition:enter-start="opacity-0 max-h-0"
-                                    x-transition:enter-end="opacity-100 max-h-xl"
-                                    x-transition:leave="transition-all ease-in-out duration-300"
-                                    x-transition:leave-start="opacity-100 max-h-xl"
-                                    x-transition:leave-end="opacity-0 max-h-0">
-                                    <ul class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
-                                        aria-label="submenu">
-
-                                        <li class="transition-colors duration-150">
-                                            <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
-<?php if (isset($attributes)) { $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18 = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.responsive-nav-link','data' => ['class' => 'text-sm','href' => ''.e(route('ListaExpedientes')).'','active' => request()->routeIs('ListaExpedientes')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
-<?php $component->withName('responsive-nav-link'); ?>
-<?php if ($component->shouldRender()): ?>
-<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
-<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
-<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
-<?php endif; ?>
-<?php $component->withAttributes(['class' => 'text-sm','href' => ''.e(route('ListaExpedientes')).'','active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('ListaExpedientes'))]); ?>
-                                                Expedientes
-                                             <?php echo $__env->renderComponent(); ?>
-<?php endif; ?>
-<?php if (isset($__attributesOriginald69b52d99510f1e7cd3d80070b28ca18)): ?>
-<?php $attributes = $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
-<?php unset($__attributesOriginald69b52d99510f1e7cd3d80070b28ca18); ?>
-<?php endif; ?>
-<?php if (isset($__componentOriginald69b52d99510f1e7cd3d80070b28ca18)): ?>
-<?php $component = $__componentOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
-<?php unset($__componentOriginald69b52d99510f1e7cd3d80070b28ca18); ?>
-<?php endif; ?>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </li>
-                        <?php endif; ?>
-
-                        
-                        <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('opciones.egresos')): ?>
-                            <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
-                                x-data="{ Open: false }" wire:ignore>
-                                <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
-                                    x-on:click="Open = !Open">
-                                    <span class="inline-flex items-center space-x-6  text-sm text-white ">
-                                        <i class="fa-solid fa-cash-register"></i>
-                                        <span class="select-none">Egresos</span>
-                                    </span>
-                                    <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
-                                    <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
-                                </div>
-                                <div x-show="Open" x-cloak x-transition:enter="transition-all ease-in-out duration-300"
-                                    x-transition:enter-start="opacity-0 max-h-0"
-                                    x-transition:enter-end="opacity-100 max-h-xl"
-                                    x-transition:leave="transition-all ease-in-out duration-300"
-                                    x-transition:leave-start="opacity-100 max-h-xl"
-                                    x-transition:leave-end="opacity-0 max-h-0">
-                                    <ul class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
-                                        aria-label="submenu">
-
-                                        <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
-<?php if (isset($attributes)) { $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18 = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.responsive-nav-link','data' => ['class' => 'text-sm']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
-<?php $component->withName('responsive-nav-link'); ?>
-<?php if ($component->shouldRender()): ?>
-<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
-<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
-<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
-<?php endif; ?>
-<?php $component->withAttributes(['class' => 'text-sm']); ?>
-                                            <?php echo e(__('Egresos')); ?>
-
-                                         <?php echo $__env->renderComponent(); ?>
-<?php endif; ?>
-<?php if (isset($__attributesOriginald69b52d99510f1e7cd3d80070b28ca18)): ?>
-<?php $attributes = $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
-<?php unset($__attributesOriginald69b52d99510f1e7cd3d80070b28ca18); ?>
-<?php endif; ?>
-<?php if (isset($__componentOriginald69b52d99510f1e7cd3d80070b28ca18)): ?>
-<?php $component = $__componentOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
-<?php unset($__componentOriginald69b52d99510f1e7cd3d80070b28ca18); ?>
-<?php endif; ?>
-
-                                    </ul>
-
-                                </div>
-                            </li>
-                        <?php endif; ?>
-
-                        
-                        <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('opciones.almacen')): ?>
-                            <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
-                                x-data="{ Open: false }" wire:ignore>
-                                <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
-                                    x-on:click="Open = !Open">
-                                    <span class="inline-flex items-center space-x-6  text-sm text-white ">
-                                        <i class="fa-solid fa-store"></i>
-                                        <span class="select-none">Almacen</span>
-                                    </span>
-                                    <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
-                                    <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
-                                </div>
-                                <div x-show="Open" x-cloak x-transition:enter="transition-all ease-in-out duration-300"
-                                    x-transition:enter-start="opacity-0 max-h-0"
-                                    x-transition:enter-end="opacity-100 max-h-xl"
-                                    x-transition:leave="transition-all ease-in-out duration-300"
-                                    x-transition:leave-start="opacity-100 max-h-xl"
-                                    x-transition:leave-end="opacity-0 max-h-0">
-                                    <ul class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
-                                        aria-label="submenu">
-
-                                        <li class="transition-colors duration-150">
-                                            <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
-<?php if (isset($attributes)) { $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18 = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.responsive-nav-link','data' => ['class' => 'text-sm','href' => ''.e(route('almacen.categorias.listado')).'','active' => request()->routeIs('almacen.categorias.listado')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
-<?php $component->withName('responsive-nav-link'); ?>
-<?php if ($component->shouldRender()): ?>
-<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
-<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
-<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
-<?php endif; ?>
-<?php $component->withAttributes(['class' => 'text-sm','href' => ''.e(route('almacen.categorias.listado')).'','active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('almacen.categorias.listado'))]); ?>
-                                                Categorías
-                                             <?php echo $__env->renderComponent(); ?>
-<?php endif; ?>
-<?php if (isset($__attributesOriginald69b52d99510f1e7cd3d80070b28ca18)): ?>
-<?php $attributes = $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
-<?php unset($__attributesOriginald69b52d99510f1e7cd3d80070b28ca18); ?>
-<?php endif; ?>
-<?php if (isset($__componentOriginald69b52d99510f1e7cd3d80070b28ca18)): ?>
-<?php $component = $__componentOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
-<?php unset($__componentOriginald69b52d99510f1e7cd3d80070b28ca18); ?>
-<?php endif; ?>
-                                        </li>
-                                        <li class="transition-colors duration-150">
-                                            <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
+                                            <li class="transition-colors duration-150">
+                                                <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18 = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.responsive-nav-link','data' => ['class' => 'text-sm','href' => ''.e(route('almacen.productos.listado')).'','active' => request()->routeIs('almacen.productos.listado')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('responsive-nav-link'); ?>
@@ -677,8 +587,8 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes(['class' => 'text-sm','href' => ''.e(route('almacen.productos.listado')).'','active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('almacen.productos.listado'))]); ?>
-                                                Productos
-                                             <?php echo $__env->renderComponent(); ?>
+                                                    Productos
+                                                 <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginald69b52d99510f1e7cd3d80070b28ca18)): ?>
 <?php $attributes = $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
@@ -688,9 +598,9 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $component = $__componentOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
 <?php unset($__componentOriginald69b52d99510f1e7cd3d80070b28ca18); ?>
 <?php endif; ?>
-                                        </li>
-                                        <li class="transition-colors duration-150">
-                                            <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
+                                            </li>
+                                            <li class="transition-colors duration-150">
+                                                <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18 = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.responsive-nav-link','data' => ['class' => 'text-sm','href' => ''.e(route('conversiones.almacen-pendientes')).'','active' => request()->routeIs('conversiones.almacen-pendientes')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('responsive-nav-link'); ?>
@@ -700,8 +610,8 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes(['class' => 'text-sm','href' => ''.e(route('conversiones.almacen-pendientes')).'','active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('conversiones.almacen-pendientes'))]); ?>
-                                                Almacen pendientes
-                                             <?php echo $__env->renderComponent(); ?>
+                                                    Almacen pendientes
+                                                 <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginald69b52d99510f1e7cd3d80070b28ca18)): ?>
 <?php $attributes = $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
@@ -711,36 +621,38 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $component = $__componentOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
 <?php unset($__componentOriginald69b52d99510f1e7cd3d80070b28ca18); ?>
 <?php endif; ?>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </li>
-                        <?php endif; ?>
-                        
-                        
-                        <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('opciones.rrhh')): ?>
-                            <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
-                                x-data="{ Open: false }" wire:ignore>
-                                <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
-                                    x-on:click="Open = !Open">
-                                    <span class="inline-flex items-center space-x-6  text-sm text-white ">
-                                        <i class="fa-solid fa-flag -mt-1"></i>
-                                        <span class="select-none">RRHH</span>
-                                    </span>
-                                    <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
-                                    <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
-                                </div>
-                                <div x-show="Open" x-cloak x-transition:enter="transition-all ease-in-out duration-300"
-                                    x-transition:enter-start="opacity-0 max-h-0"
-                                    x-transition:enter-end="opacity-100 max-h-xl"
-                                    x-transition:leave="transition-all ease-in-out duration-300"
-                                    x-transition:leave-start="opacity-100 max-h-xl"
-                                    x-transition:leave-end="opacity-0 max-h-0">
-                                    <ul class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
-                                        aria-label="submenu">
-                                        
-                                        <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('rrhh.contratos')): ?>
-                                            <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
+                                            </li>
+                                            
+                                        </ul>
+                                    </div>
+                                </li>
+                            <?php endif; ?>
+                            
+                            
+                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('opciones.rrhh')): ?>
+                                <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
+                                    x-data="{ Open: false }">
+                                    <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
+                                        x-on:click="Open = !Open">
+                                        <span class="inline-flex items-center space-x-6  text-sm text-white ">
+                                            <i class="fa-solid fa-flag -mt-1"></i>
+                                            <span class="select-none">RRHH</span>
+                                        </span>
+                                        <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
+                                        <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
+                                    </div>
+                                    <div x-show.transition="Open" style="display:none;">
+                                        <ul x-transition:enter="transition-all ease-in-out duration-300"
+                                            x-transition:enter-start="opacity-25 max-h-0"
+                                            x-transition:enter-end="opacity-100 max-h-xl"
+                                            x-transition:leave="transition-all ease-in-out duration-300"
+                                            x-transition:leave-start="opacity-100 max-h-xl"
+                                            x-transition:leave-end="opacity-0 max-h-0"
+                                            class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
+                                            aria-label="submenu">
+                                            
+                                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('rrhh.contratos')): ?>
+                                                <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18 = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.responsive-nav-link','data' => ['class' => 'text-sm','href' => ''.e(route('rrhh.contratos')).'','active' => request()->routeIs('rrhh.contratos')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('responsive-nav-link'); ?>
@@ -750,9 +662,9 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes(['class' => 'text-sm','href' => ''.e(route('rrhh.contratos')).'','active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('rrhh.contratos'))]); ?>
-                                                <?php echo e(__('Empleados')); ?>
+                                                    <?php echo e(__('Empleados')); ?>
 
-                                             <?php echo $__env->renderComponent(); ?>
+                                                 <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginald69b52d99510f1e7cd3d80070b28ca18)): ?>
 <?php $attributes = $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
@@ -762,9 +674,9 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $component = $__componentOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
 <?php unset($__componentOriginald69b52d99510f1e7cd3d80070b28ca18); ?>
 <?php endif; ?>
-                                        <?php endif; ?>
-                                        <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('rrhh.planillas')): ?>
-                                            <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
+                                            <?php endif; ?>
+                                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('rrhh.planillas')): ?>
+                                                <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18 = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.responsive-nav-link','data' => ['class' => 'text-sm','href' => ''.e(route('rrhh.planillas')).'','active' => request()->routeIs('rrhh.planillas')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('responsive-nav-link'); ?>
@@ -774,9 +686,9 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes(['class' => 'text-sm','href' => ''.e(route('rrhh.planillas')).'','active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('rrhh.planillas'))]); ?>
-                                                <?php echo e(__('Planillas')); ?>
+                                                    <?php echo e(__('Planillas')); ?>
 
-                                             <?php echo $__env->renderComponent(); ?>
+                                                 <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginald69b52d99510f1e7cd3d80070b28ca18)): ?>
 <?php $attributes = $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
@@ -786,8 +698,8 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $component = $__componentOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
 <?php unset($__componentOriginald69b52d99510f1e7cd3d80070b28ca18); ?>
 <?php endif; ?>
-                                        <?php endif; ?>
-                                        <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
+                                            <?php endif; ?>
+                                            <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18 = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.responsive-nav-link','data' => ['class' => 'text-sm','href' => ''.e(route('rrhh.mis-planillas')).'','active' => request()->routeIs('rrhh.mis-planillas')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('responsive-nav-link'); ?>
@@ -797,9 +709,9 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes(['class' => 'text-sm','href' => ''.e(route('rrhh.mis-planillas')).'','active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('rrhh.mis-planillas'))]); ?>
-                                            <?php echo e(__('Boletas')); ?>
+                                                <?php echo e(__('Boletas')); ?>
 
-                                         <?php echo $__env->renderComponent(); ?>
+                                             <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginald69b52d99510f1e7cd3d80070b28ca18)): ?>
 <?php $attributes = $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
@@ -810,36 +722,37 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php unset($__componentOriginald69b52d99510f1e7cd3d80070b28ca18); ?>
 <?php endif; ?>
 
-                                    </ul>
+                                        </ul>
 
-                                </div>
-                            </li>
-                        <?php endif; ?>
+                                    </div>
+                                </li>
+                            <?php endif; ?>
 
-                        
-                        <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('opciones.reportes')): ?>
-                            <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
-                                x-data="{ Open: false }" wire:ignore>
-                                <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
-                                    x-on:click="Open = !Open">
-                                    <span class="inline-flex items-center space-x-6  text-sm text-white ">
-                                        <i class="fa-solid fa-chart-column"></i>
-                                        <span class="select-none">Reportes</span>
-                                    </span>
-                                    <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
-                                    <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
-                                </div>
-                                <div x-show="Open" x-cloak x-transition:enter="transition-all ease-in-out duration-300"
-                                    x-transition:enter-start="opacity-0 max-h-0"
-                                    x-transition:enter-end="opacity-100 max-h-xl"
-                                    x-transition:leave="transition-all ease-in-out duration-300"
-                                    x-transition:leave-start="opacity-100 max-h-xl"
-                                    x-transition:leave-end="opacity-0 max-h-0">
-                                    <ul class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
-                                        aria-label="submenu">
+                            
+                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('opciones.reportes')): ?>
+                                <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
+                                    x-data="{ Open: false }">
+                                    <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
+                                        x-on:click="Open = !Open">
+                                        <span class="inline-flex items-center space-x-6  text-sm text-white ">
+                                            <i class="fa-solid fa-chart-column"></i>
+                                            <span class="select-none">Reportes</span>
+                                        </span>
+                                        <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
+                                        <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
+                                    </div>
+                                    <div x-show.transition="Open" style="display:none;">
+                                        <ul x-transition:enter="transition-all ease-in-out duration-300"
+                                            x-transition:enter-start="opacity-25 max-h-0"
+                                            x-transition:enter-end="opacity-100 max-h-xl"
+                                            x-transition:leave="transition-all ease-in-out duration-300"
+                                            x-transition:leave-start="opacity-100 max-h-xl"
+                                            x-transition:leave-end="opacity-0 max-h-0"
+                                            class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
+                                            aria-label="submenu">
 
-                                        <li class="transition-colors duration-150">
-                                            <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
+                                            <li class="transition-colors duration-150">
+                                                <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18 = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.responsive-nav-link','data' => ['class' => 'text-sm','href' => ''.e(route('Rpta.Citas')).'','active' => request()->routeIs('Rpta.Citas')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('responsive-nav-link'); ?>
@@ -849,8 +762,8 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes(['class' => 'text-sm','href' => ''.e(route('Rpta.Citas')).'','active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('Rpta.Citas'))]); ?>
-                                                Reporte de Citas
-                                             <?php echo $__env->renderComponent(); ?>
+                                                    Reporte de Citas
+                                                 <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginald69b52d99510f1e7cd3d80070b28ca18)): ?>
 <?php $attributes = $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
@@ -860,37 +773,37 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $component = $__componentOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
 <?php unset($__componentOriginald69b52d99510f1e7cd3d80070b28ca18); ?>
 <?php endif; ?>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </li>
-                        <?php endif; ?>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </li>
+                            <?php endif; ?>
 
-                        
-                        
-                        <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['opciones.mantenimientotables', 'opciones.vehiculos'])): ?>
-                            <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
-                                x-data="{ Open: false }" wire:ignore>
-                                <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
-                                    x-on:click="Open = !Open">
-                                    <span class="inline-flex items-center space-x-6  text-sm text-white ">
-                                        <i class="fa-solid fa-database"></i>
-                                        <span class="select-none">Mantenimiento Tablas</span>
-                                    </span>
-                                    <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
-                                    <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
-                                </div>
-                                <div x-show="Open" x-cloak x-transition:enter="transition-all ease-in-out duration-300"
-                                    x-transition:enter-start="opacity-0 max-h-0"
-                                    x-transition:enter-end="opacity-100 max-h-xl"
-                                    x-transition:leave="transition-all ease-in-out duration-300"
-                                    x-transition:leave-start="opacity-100 max-h-xl"
-                                    x-transition:leave-end="opacity-0 max-h-0">
-                                    <ul class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
-                                        aria-label="submenu">
+                            
+                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('opciones.mantenimientotables')): ?>
+                                <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
+                                    x-data="{ Open: false }">
+                                    <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
+                                        x-on:click="Open = !Open">
+                                        <span class="inline-flex items-center space-x-6  text-sm text-white ">
+                                            <i class="fa-solid fa-database"></i>
+                                            <span class="select-none">Mantenimiento Tablas</span>
+                                        </span>
+                                        <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
+                                        <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
+                                    </div>
+                                    <div x-show.transition="Open" style="display:none;">
+                                        <ul x-transition:enter="transition-all ease-in-out duration-300"
+                                            x-transition:enter-start="opacity-25 max-h-0"
+                                            x-transition:enter-end="opacity-100 max-h-xl"
+                                            x-transition:leave="transition-all ease-in-out duration-300"
+                                            x-transition:leave-start="opacity-100 max-h-xl"
+                                            x-transition:leave-end="opacity-0 max-h-0"
+                                            class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
+                                            aria-label="submenu">
 
-                                        <li class="transition-colors duration-150">
-                                            <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
+                                            <li class="transition-colors duration-150">
+                                                <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18 = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.responsive-nav-link','data' => ['class' => 'text-sm','href' => ''.e(route('ListaVehiculos')).'','active' => request()->routeIs('ListaVehiculos')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('responsive-nav-link'); ?>
@@ -900,8 +813,8 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes(['class' => 'text-sm','href' => ''.e(route('ListaVehiculos')).'','active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('ListaVehiculos'))]); ?>
-                                                Lista Vehiculos
-                                             <?php echo $__env->renderComponent(); ?>
+                                                    Lista Vehiculos
+                                                 <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginald69b52d99510f1e7cd3d80070b28ca18)): ?>
 <?php $attributes = $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
@@ -911,9 +824,9 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $component = $__componentOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
 <?php unset($__componentOriginald69b52d99510f1e7cd3d80070b28ca18); ?>
 <?php endif; ?>
-                                        </li>
-                                        <li class="transition-colors duration-150">
-                                            <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
+                                            </li>
+                                            <li class="transition-colors duration-150">
+                                                <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18 = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.responsive-nav-link','data' => ['class' => 'text-sm','href' => ''.e(route('ListaClientes')).'','active' => request()->routeIs('ListaClientes')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('responsive-nav-link'); ?>
@@ -923,8 +836,8 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes(['class' => 'text-sm','href' => ''.e(route('ListaClientes')).'','active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('ListaClientes'))]); ?>
-                                                Lista Clientes
-                                             <?php echo $__env->renderComponent(); ?>
+                                                    Lista Clientes
+                                                 <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginald69b52d99510f1e7cd3d80070b28ca18)): ?>
 <?php $attributes = $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
@@ -934,36 +847,37 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $component = $__componentOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
 <?php unset($__componentOriginald69b52d99510f1e7cd3d80070b28ca18); ?>
 <?php endif; ?>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </li>
-                        <?php endif; ?>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </li>
+                            <?php endif; ?>
 
-                        
-                        <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('opciones.cms')): ?>
-                            <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
-                                x-data="{ Open: false }" wire:ignore>
-                                <div class="inline-flex items-center justify-between w-full transition-colors duration-150 text-gray-500 cursor-pointer"
-                                    x-on:click="Open = !Open">
-                                    <span class="inline-flex items-center space-x-6 text-sm text-white">
-                                        <i class="fa-solid fa-globe"></i>
-                                        <span class="select-none">CMS Landing</span>
-                                    </span>
-                                    <i class="fa-solid fa-caret-down ml-1 text-white w-4 h-4" x-show="!Open"></i>
-                                    <i class="fa-solid fa-caret-up ml-1 text-white w-4 h-4" x-show="Open"></i>
-                                </div>
-                                <div x-show="Open" x-cloak x-transition:enter="transition-all ease-in-out duration-300"
-                                    x-transition:enter-start="opacity-0 max-h-0"
-                                    x-transition:enter-end="opacity-100 max-h-xl"
-                                    x-transition:leave="transition-all ease-in-out duration-300"
-                                    x-transition:leave-start="opacity-100 max-h-xl"
-                                    x-transition:leave-end="opacity-0 max-h-0">
-                                    <ul class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
-                                        aria-label="submenu">
+                            
+                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('opciones.cms')): ?>
+                                <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
+                                    x-data="{ Open: false }">
+                                    <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
+                                        x-on:click="Open = !Open">
+                                        <span class="inline-flex items-center space-x-6  text-sm text-white ">
+                                            <i class="fa-solid fa-globe"></i>
+                                            <span class="select-none">CMS Landing</span>
+                                        </span>
+                                        <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
+                                        <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
+                                    </div>
+                                    <div x-show.transition="Open" style="display:none;">
+                                        <ul x-transition:enter="transition-all ease-in-out duration-300"
+                                            x-transition:enter-start="opacity-25 max-h-0"
+                                            x-transition:enter-end="opacity-100 max-h-xl"
+                                            x-transition:leave="transition-all ease-in-out duration-300"
+                                            x-transition:leave-start="opacity-100 max-h-xl"
+                                            x-transition:leave-end="opacity-0 max-h-0"
+                                            class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
+                                            aria-label="submenu">
 
-                                        <li class="transition-colors duration-150">
-                                            <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
+                                            <li class="transition-colors duration-150">
+                                                <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18 = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.responsive-nav-link','data' => ['class' => 'text-sm','href' => ''.e(route('cms.contenido')).'','active' => request()->routeIs('cms.contenido')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('responsive-nav-link'); ?>
@@ -973,8 +887,8 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes(['class' => 'text-sm','href' => ''.e(route('cms.contenido')).'','active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('cms.contenido'))]); ?>
-                                                Contenido
-                                             <?php echo $__env->renderComponent(); ?>
+                                                    Contenido Principal
+                                                 <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginald69b52d99510f1e7cd3d80070b28ca18)): ?>
 <?php $attributes = $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
@@ -984,9 +898,9 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $component = $__componentOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
 <?php unset($__componentOriginald69b52d99510f1e7cd3d80070b28ca18); ?>
 <?php endif; ?>
-                                        </li>
-                                        <li class="transition-colors duration-150">
-                                            <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
+                                            </li>
+                                            <li class="transition-colors duration-150">
+                                                <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18 = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.responsive-nav-link','data' => ['class' => 'text-sm','href' => ''.e(route('cms.servicios')).'','active' => request()->routeIs('cms.servicios')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('responsive-nav-link'); ?>
@@ -996,8 +910,8 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes(['class' => 'text-sm','href' => ''.e(route('cms.servicios')).'','active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('cms.servicios'))]); ?>
-                                                Servicios
-                                             <?php echo $__env->renderComponent(); ?>
+                                                    Servicios
+                                                 <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginald69b52d99510f1e7cd3d80070b28ca18)): ?>
 <?php $attributes = $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
@@ -1007,9 +921,9 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $component = $__componentOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
 <?php unset($__componentOriginald69b52d99510f1e7cd3d80070b28ca18); ?>
 <?php endif; ?>
-                                        </li>
-                                        <li class="transition-colors duration-150">
-                                            <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
+                                            </li>
+                                            <li class="transition-colors duration-150">
+                                                <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18 = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.responsive-nav-link','data' => ['class' => 'text-sm','href' => ''.e(route('cms.pasos')).'','active' => request()->routeIs('cms.pasos')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('responsive-nav-link'); ?>
@@ -1019,8 +933,8 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes(['class' => 'text-sm','href' => ''.e(route('cms.pasos')).'','active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('cms.pasos'))]); ?>
-                                                Pasos
-                                             <?php echo $__env->renderComponent(); ?>
+                                                    Proceso / Pasos
+                                                 <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginald69b52d99510f1e7cd3d80070b28ca18)): ?>
 <?php $attributes = $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
@@ -1030,9 +944,9 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $component = $__componentOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
 <?php unset($__componentOriginald69b52d99510f1e7cd3d80070b28ca18); ?>
 <?php endif; ?>
-                                        </li>
-                                        <li class="transition-colors duration-150">
-                                            <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
+                                            </li>
+                                            <li class="transition-colors duration-150">
+                                                <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18 = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.responsive-nav-link','data' => ['class' => 'text-sm','href' => ''.e(route('cms.porque')).'','active' => request()->routeIs('cms.porque')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('responsive-nav-link'); ?>
@@ -1042,8 +956,8 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes(['class' => 'text-sm','href' => ''.e(route('cms.porque')).'','active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('cms.porque'))]); ?>
-                                                Por Qué Elegirnos
-                                             <?php echo $__env->renderComponent(); ?>
+                                                    Por Qué Elegirnos
+                                                 <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginald69b52d99510f1e7cd3d80070b28ca18)): ?>
 <?php $attributes = $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
@@ -1053,9 +967,9 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $component = $__componentOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
 <?php unset($__componentOriginald69b52d99510f1e7cd3d80070b28ca18); ?>
 <?php endif; ?>
-                                        </li>
-                                        <li class="transition-colors duration-150">
-                                            <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
+                                            </li>
+                                            <li class="transition-colors duration-150">
+                                                <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18 = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.responsive-nav-link','data' => ['class' => 'text-sm','href' => ''.e(route('cms.contacto')).'','active' => request()->routeIs('cms.contacto')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('responsive-nav-link'); ?>
@@ -1065,8 +979,8 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes(['class' => 'text-sm','href' => ''.e(route('cms.contacto')).'','active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('cms.contacto'))]); ?>
-                                                Contacto
-                                             <?php echo $__env->renderComponent(); ?>
+                                                    Contacto
+                                                 <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginald69b52d99510f1e7cd3d80070b28ca18)): ?>
 <?php $attributes = $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
@@ -1076,9 +990,9 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $component = $__componentOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
 <?php unset($__componentOriginald69b52d99510f1e7cd3d80070b28ca18); ?>
 <?php endif; ?>
-                                        </li>
-                                        <li class="transition-colors duration-150">
-                                            <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
+                                            </li>
+                                            <li class="transition-colors duration-150">
+                                                <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18 = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.responsive-nav-link','data' => ['class' => 'text-sm','href' => ''.e(route('cms.redes')).'','active' => request()->routeIs('cms.redes')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('responsive-nav-link'); ?>
@@ -1088,8 +1002,8 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes(['class' => 'text-sm','href' => ''.e(route('cms.redes')).'','active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('cms.redes'))]); ?>
-                                                Redes Sociales
-                                             <?php echo $__env->renderComponent(); ?>
+                                                    Redes Sociales
+                                                 <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginald69b52d99510f1e7cd3d80070b28ca18)): ?>
 <?php $attributes = $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
@@ -1099,37 +1013,84 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $component = $__componentOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
 <?php unset($__componentOriginald69b52d99510f1e7cd3d80070b28ca18); ?>
 <?php endif; ?>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </li>
-                        <?php endif; ?>
+                                            </li>
+                                            <li class="transition-colors duration-150">
+                                                <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.responsive-nav-link','data' => ['class' => 'text-sm','href' => ''.e(route('cms.apariencia')).'','active' => request()->routeIs('cms.apariencia')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('responsive-nav-link'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['class' => 'text-sm','href' => ''.e(route('cms.apariencia')).'','active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('cms.apariencia'))]); ?>
+                                                    Apariencia
+                                                 <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginald69b52d99510f1e7cd3d80070b28ca18)): ?>
+<?php $attributes = $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
+<?php unset($__attributesOriginald69b52d99510f1e7cd3d80070b28ca18); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginald69b52d99510f1e7cd3d80070b28ca18)): ?>
+<?php $component = $__componentOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
+<?php unset($__componentOriginald69b52d99510f1e7cd3d80070b28ca18); ?>
+<?php endif; ?>
+                                            </li>
+                                            <li class="transition-colors duration-150">
+                                                <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.responsive-nav-link','data' => ['class' => 'text-sm','href' => ''.e(route('cms.logo')).'','active' => request()->routeIs('cms.logo')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('responsive-nav-link'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['class' => 'text-sm','href' => ''.e(route('cms.logo')).'','active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('cms.logo'))]); ?>
+                                                    Logo y Favicon
+                                                 <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginald69b52d99510f1e7cd3d80070b28ca18)): ?>
+<?php $attributes = $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
+<?php unset($__attributesOriginald69b52d99510f1e7cd3d80070b28ca18); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginald69b52d99510f1e7cd3d80070b28ca18)): ?>
+<?php $component = $__componentOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
+<?php unset($__componentOriginald69b52d99510f1e7cd3d80070b28ca18); ?>
+<?php endif; ?>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </li>
+                            <?php endif; ?>
 
-                        
-                        <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('opciones.usuarios')): ?>
-                            <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
-                                x-data="{ Open: false }" wire:ignore>
-                                <div class="inline-flex  items-center justify-between w-full  transition-colors duration-150 text-gray-500  cursor-pointer"
-                                    x-on:click="Open = !Open">
-                                    <span class="inline-flex items-center space-x-6  text-sm  text-white ">
-                                        <i class="fa-solid fa-user-shield"></i>
-                                        <span class="select-none">Usuarios y roles</span>
-                                    </span>
-                                    <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
-                                    <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
-                                </div>
-                                <div x-show="Open" x-cloak x-transition:enter="transition-all ease-in-out duration-300"
-                                    x-transition:enter-start="opacity-0 max-h-0"
-                                    x-transition:enter-end="opacity-100 max-h-xl"
-                                    x-transition:leave="transition-all ease-in-out duration-300"
-                                    x-transition:leave-start="opacity-100 max-h-xl"
-                                    x-transition:leave-end="opacity-0 max-h-0">
-                                    <ul class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
-                                        aria-label="submenu">
+                            
+                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('opciones.usuarios')): ?>
+                                <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
+                                    x-data="{ Open: false }">
+                                    <div class="inline-flex  items-center justify-between w-full  transition-colors duration-150 text-gray-500  cursor-pointer"
+                                        x-on:click="Open = !Open">
+                                        <span class="inline-flex items-center space-x-6  text-sm  text-white ">
+                                            <i class="fa-solid fa-user-shield"></i>
+                                            <span class="select-none">Usuarios y roles</span>
+                                        </span>
+                                        <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
+                                        <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
+                                    </div>
+                                    <div x-show.transition="Open" style="display:none;">
+                                        <ul x-transition:enter="transition-all ease-in-out duration-300"
+                                            x-transition:enter-start="opacity-25 max-h-0"
+                                            x-transition:enter-end="opacity-100 max-h-xl"
+                                            x-transition:leave="transition-all ease-in-out duration-300"
+                                            x-transition:leave-start="opacity-100 max-h-xl"
+                                            x-transition:leave-end="opacity-0 max-h-0"
+                                            class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
+                                            aria-label="submenu">
 
-                                        <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('usuarios')): ?>
-                                        <li class="transition-colors duration-150">
-                                            <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
+                                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('usuarios')): ?>
+                                            <li class="transition-colors duration-150">
+                                                <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18 = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.responsive-nav-link','data' => ['class' => 'text-sm','href' => ''.e(route('usuarios')).'','active' => request()->routeIs('usuarios')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('responsive-nav-link'); ?>
@@ -1139,8 +1100,8 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes(['class' => 'text-sm','href' => ''.e(route('usuarios')).'','active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('usuarios'))]); ?>
-                                                Usuarios
-                                             <?php echo $__env->renderComponent(); ?>
+                                                    Usuarios
+                                                 <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginald69b52d99510f1e7cd3d80070b28ca18)): ?>
 <?php $attributes = $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
@@ -1150,11 +1111,11 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $component = $__componentOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
 <?php unset($__componentOriginald69b52d99510f1e7cd3d80070b28ca18); ?>
 <?php endif; ?>
-                                        </li>
-                                        <?php endif; ?>
-                                        <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('usuarios.roles')): ?>
-                                        <li class="transition-colors duration-150">
-                                            <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
+                                            </li>
+                                            <?php endif; ?>
+                                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('usuarios.roles')): ?>
+                                            <li class="transition-colors duration-150">
+                                                <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18 = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.responsive-nav-link','data' => ['class' => 'text-sm','href' => ''.e(route('usuarios.roles')).'','active' => request()->routeIs('usuarios.roles')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('responsive-nav-link'); ?>
@@ -1164,8 +1125,8 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes(['class' => 'text-sm','href' => ''.e(route('usuarios.roles')).'','active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('usuarios.roles'))]); ?>
-                                                Roles
-                                             <?php echo $__env->renderComponent(); ?>
+                                                    Roles
+                                                 <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginald69b52d99510f1e7cd3d80070b28ca18)): ?>
 <?php $attributes = $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
@@ -1175,11 +1136,11 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $component = $__componentOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
 <?php unset($__componentOriginald69b52d99510f1e7cd3d80070b28ca18); ?>
 <?php endif; ?>
-                                        </li>
-                                        <?php endif; ?>
-                                        <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('usuarios.permisos')): ?>
-                                        <li class="transition-colors duration-150">
-                                            <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
+                                            </li>
+                                            <?php endif; ?>
+                                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('usuarios.permisos')): ?>
+                                            <li class="transition-colors duration-150">
+                                                <?php if (isset($component)) { $__componentOriginald69b52d99510f1e7cd3d80070b28ca18 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18 = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.responsive-nav-link','data' => ['class' => 'text-sm','href' => ''.e(route('usuarios.permisos')).'','active' => request()->routeIs('usuarios.permisos')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('responsive-nav-link'); ?>
@@ -1189,8 +1150,8 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes(['class' => 'text-sm','href' => ''.e(route('usuarios.permisos')).'','active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('usuarios.permisos'))]); ?>
-                                                Permisos
-                                             <?php echo $__env->renderComponent(); ?>
+                                                    Permisos
+                                                 <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginald69b52d99510f1e7cd3d80070b28ca18)): ?>
 <?php $attributes = $__attributesOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
@@ -1200,49 +1161,51 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
 <?php $component = $__componentOriginald69b52d99510f1e7cd3d80070b28ca18; ?>
 <?php unset($__componentOriginald69b52d99510f1e7cd3d80070b28ca18); ?>
 <?php endif; ?>
-                                        </li>
-                                        <?php endif; ?>
-                                    </ul>
+                                            </li>
+                                            <?php endif; ?>
+                                        </ul>
 
-                                </div>
-                            </li>
-                        <?php endif; ?>
+                                    </div>
+                                </li>
+                            <?php endif; ?>
 
-                    </ul>
-                </div>
+                        </ul>
+                    </div>
 
-                <!-- navigation group end-->
-                <!-- opciones de cuenta de usuario -->
-                <div class="md:hidden block bg-gradient-to-br from-gray-400 to-blue-600 bottom-0 left-0 px-4 w-full z-10 mt-2">
-                    <h3 class="my-2 text-xs font-medium uppercase text-gray-500">
-                        Opciones de la cuenta
-                    </h3>
-                    <ul class="mb-2 text-sm font-medium ">
-                        <li>
-                            <a class="flex items-center rounded py-3 pl-3 pr-4  space-x-6 text-gray-50 hover:bg-gray-600 "
-                                href="<?php echo e(route('profile.show')); ?>">
-                                <i class="fa-solid fa-user-gear -mt-1"></i>
-                                <span class="select-none">Configurar Perfil</span>
-                            </a>
-                        </li>
-                        <li>
-                            <form method="POST" action="<?php echo e(route('logout')); ?>" x-data>
-                                <?php echo csrf_field(); ?>
+
+
+                    <!-- navigation group end-->
+                    <!-- opciones de cuenta de usuario -->
+                    <div class="md:hidden block bg-gradient-to-br from-gray-400 to-blue-600 bottom-0 left-0 px-4 w-full z-10 mt-2">
+                        <h3 class="my-2 text-xs font-medium uppercase text-gray-500">
+                            Opciones de la cuenta
+                        </h3>
+                        <ul class="mb-2 text-sm font-medium ">
+                            <li>
                                 <a class="flex items-center rounded py-3 pl-3 pr-4  space-x-6 text-gray-50 hover:bg-gray-600 "
-                                    href="<?php echo e(route('logout')); ?>" @click.prevent="$root.submit();">
-                                    <i class="fa-solid fa-arrow-right-from-bracket -mt-1"></i>
-                                    <span class="select-none">Salir</span>
+                                    href="<?php echo e(route('profile.show')); ?>">
+                                    <i class="fa-solid fa-user-gear -mt-1"></i>
+                                    <span class="select-none">Configurar Perfil</span>
                                 </a>
-                            </form>
-                        </li>
-                    </ul>
-                </div>
-                <!-- fin -->
-            </nav>
-        </div>
+                            </li>
+                            <li>
+                                <form method="POST" action="<?php echo e(route('logout')); ?>" x-data>
+                                    <?php echo csrf_field(); ?>
+                                    <a class="flex items-center rounded py-3 pl-3 pr-4  space-x-6 text-gray-50 hover:bg-gray-600 "
+                                        href="<?php echo e(route('logout')); ?>" @click.prevent="$root.submit();">
+                                        <i class="fa-solid fa-arrow-right-from-bracket -mt-1"></i>
+                                        <span class="select-none">Salir</span>
+                                    </a>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- fin -->
+                </nav>
+            </div>
 
-    </div>
-    <!-- Sidebar end -->
+        </div>
+        <!-- Sidebar end -->
 
     <main>
         <!-- your content goes here -->

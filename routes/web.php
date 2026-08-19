@@ -40,6 +40,15 @@ use App\Livewire\ListaVehiculos;
 use App\Livewire\ProcesarCobro;
 use App\Livewire\Reportes\ReporteCitas;
 use App\Livewire\RRHH\Contratos;
+use App\Http\Controllers\CmsController;
+use App\Livewire\Cms\GestionarApariencia;
+use App\Livewire\Cms\GestionarContacto;
+use App\Livewire\Cms\GestionarContenido;
+use App\Livewire\Cms\GestionarLogo;
+use App\Livewire\Cms\GestionarPasos;
+use App\Livewire\Cms\GestionarPorQue;
+use App\Livewire\Cms\GestionarRedes;
+use App\Livewire\Cms\GestionarServicios;
 use App\Livewire\RRHH\GestionarVacaciones;
 use App\Livewire\RRHH\GestionDocumentos;
 use App\Livewire\RRHH\ListaPlanilla;
@@ -189,6 +198,19 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::get('/ordenes/{ordenId}/pdf/evaluacion', [DocumentosConversionController::class, 'evaluacion'])->name('conversiones.pdf.evaluacion');
     Route::get('/ordenes/{ordenId}/pdf/ficha-tecnica', [DocumentosConversionController::class, 'fichaTecnica'])->name('conversiones.pdf.ficha-tecnica');
     Route::get('/ordenes/{ordenId}/pdf/garantia', [DocumentosConversionController::class, 'garantia'])->name('conversiones.pdf.garantia');
+
+    // Rutas modulo CMS
+    Route::middleware('can:opciones.cms')->prefix('cms')->name('cms.')->group(function () {
+        Route::get('/contenido', GestionarContenido::class)->name('contenido');
+        Route::get('/servicios', GestionarServicios::class)->name('servicios');
+        Route::get('/pasos', GestionarPasos::class)->name('pasos');
+        Route::get('/porque', GestionarPorQue::class)->name('porque');
+        Route::get('/contacto', GestionarContacto::class)->name('contacto');
+        Route::get('/redes', GestionarRedes::class)->name('redes');
+        Route::get('/apariencia', GestionarApariencia::class)->name('apariencia');
+        Route::get('/logo', GestionarLogo::class)->name('logo');
+        Route::post('/upload-media', [CmsController::class, 'uploadMedia'])->name('upload-media');
+    });
 
 
 });

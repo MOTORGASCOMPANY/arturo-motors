@@ -11,38 +11,60 @@ class Listado extends Component
     use WithPagination;
 
     public string $buscar = '';
+    public ?string $desde = null;
+    public ?string $hasta = null;
     public string $tipo = 'todos';
-    public string $estado = 'todos';
-    public string $desde = '';
-    public string $hasta = '';
 
-    public function updating($property)
+    public function limpiarFiltros(): void
     {
-        if (in_array($property, ['buscar', 'tipo', 'estado', 'desde', 'hasta'])) {
-            $this->resetPage();
-        }
+        $this->reset(['buscar', 'desde', 'hasta', 'tipo']);
+        $this->resetPage();
     }
 
-    public function limpiarFiltros()
+    public function updatedBuscar(): void
     {
-        $this->reset(['buscar', 'tipo', 'estado', 'desde', 'hasta']);
+        $this->resetPage();
+    }
+
+    public function updatedDesde(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedHasta(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedTipo(): void
+    {
         $this->resetPage();
     }
 
     public function render()
     {
         $ordenes = ServiceOrder::with(['cliente', 'vehiculo', 'service', 'comprobante'])
-            ->when($this->buscar, function ($q) {
-                $termino = $this->buscar;
-                $q->whereHas('cliente', fn ($c) => $c->where('nombre', 'like', "%{$termino}%")
-                                                      ->orWhere('documento', 'like', "%{$termino}%"))
-                  ->orWhereHas('vehiculo', fn ($v) => $v->where('placa', 'like', "%{$termino}%"));
+            ->when($this->buscar, function ($query) {
+                $query->where(function ($q) {
+                    $q->whereHas('cliente', function ($cq) {
+                        $cq->where('nombre', 'like', "%{$this->buscar}%")
+                            ->orWhere('apellido', 'like', "%{$this->buscar}%")
+                            ->orWhere('documento', 'like', "%{$this->buscar}%");
+                    })->orWhereHas('vehiculo', function ($vq) {
+                        $vq->where('placa', 'like', "%{$this->buscar}%");
+                    });
+                });
             })
-            ->when($this->tipo !== 'todos', fn ($q) => $q->whereHas('service', fn ($s) => $s->where('tipo', $this->tipo)))
-            ->when($this->estado !== 'todos', fn ($q) => $q->where('estado', $this->estado))
             ->when($this->desde, fn ($q) => $q->whereDate('created_at', '>=', $this->desde))
             ->when($this->hasta, fn ($q) => $q->whereDate('created_at', '<=', $this->hasta))
-            ->orderByDesc('created_at')
+            ->when($this->tipo !== 'todos', function ($q) {
+                if ($this->tipo === 'conversion') {
+                    $q->tipoConversion();
+                } else {
+                    $q->whereHas('service', fn ($sq) => $sq->where('tipo', 'simple'));
+                }
+            })
+            ->latest()
             ->paginate(15);
 
         return view('livewire.service-orders.listado', compact('ordenes'));
