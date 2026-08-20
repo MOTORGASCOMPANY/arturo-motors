@@ -45,15 +45,7 @@
                     <span>Redes Sociales</span>
                 </a>
 
-                <div class="pt-4 px-3 py-2 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">PERSONALIZACIÓN</div>
-                <a href="{{ route('cms.apariencia') }}" class="cms-nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all {{ request()->routeIs('cms.apariencia') ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}" @click="sidebarOpen = false">
-                    <i class="fa-solid fa-palette w-5 text-center"></i>
-                    <span>Apariencia y Colores</span>
-                </a>
-                <a href="{{ route('cms.logo') }}" class="cms-nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all {{ request()->routeIs('cms.logo') ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}" @click="sidebarOpen = false">
-                    <i class="fa-solid fa-image w-5 text-center"></i>
-                    <span>Logo y Favicon</span>
-                </a>
+
             </nav>
 
             <!-- Sidebar Footer -->
