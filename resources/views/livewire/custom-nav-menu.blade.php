@@ -567,18 +567,6 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                                                     Redes Sociales
                                                 </x-responsive-nav-link>
                                             </li>
-                                            <li class="transition-colors duration-150">
-                                                <x-responsive-nav-link class="text-sm" href="{{ route('cms.apariencia') }}"
-                                                    :active="request()->routeIs('cms.apariencia')">
-                                                    Apariencia
-                                                </x-responsive-nav-link>
-                                            </li>
-                                            <li class="transition-colors duration-150">
-                                                <x-responsive-nav-link class="text-sm" href="{{ route('cms.logo') }}"
-                                                    :active="request()->routeIs('cms.logo')">
-                                                    Logo y Favicon
-                                                </x-responsive-nav-link>
-                                            </li>
                                         </ul>
                                     </div>
                                 </li>
