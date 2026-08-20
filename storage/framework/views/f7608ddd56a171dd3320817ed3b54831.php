@@ -4,7 +4,7 @@
         @documento-eliminado.window="Swal.fire({icon:'success', title:'Eliminado', text: $event.detail.mensaje || 'Documento eliminado.', timer:2200, showConfirmButton:false})"
         @documento-error.window="Swal.fire({icon:'error', title:'Ups', text: $event.detail.mensaje || 'Ocurrió un error.'})">
 
-        <?php if (! $__env->hasRenderedOnce('715a7875-c3b6-463b-95e9-282a4997e8bb')): $__env->markAsRenderedOnce('715a7875-c3b6-463b-95e9-282a4997e8bb'); ?>
+        <?php if (! $__env->hasRenderedOnce('9e1e39fc-21bb-41b2-b2b7-9193c4f5c82c')): $__env->markAsRenderedOnce('9e1e39fc-21bb-41b2-b2b7-9193c4f5c82c'); ?>
             <script>
                 if (typeof Swal === 'undefined') {
                     const s = document.createElement('script');
