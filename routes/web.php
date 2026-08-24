@@ -104,18 +104,9 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
 
      // Citas
      Route::get('/lista-citas', ListaCitas::class)->name('ListaCitas');
-     Route::get('/crear-cita', CrearCitas::class)->name('CrearCita');
 
     // Expedientes
-    Route::get('/lista-expedientes', ListaExpedientes::class)->name('ListaExpedientes');
-    //Route::get('/evaluacion', ExpedienteModal::class)->name('evaluacion');
-
-    // Conversiones
-    //Route::get('/lista-conversiones', ListaConversiones::class)->name('ListaConversiones');
-
-    // Almacen
-    //Route::get('/gestor-repuestos', GestorRepuestos::class)->name('Repuestos');
-    //Route::get('/solicitud-repuestos/{conversionId}', SolicitudRepuestos::class)->name('SolicitudRepuestos');
+    //Route::get('/lista-expedientes', ListaExpedientes::class)->name('ListaExpedientes');
 
     // Reportes
     Route::get('/rpta-citas', ReporteCitas::class)->name('Rpta.Citas');

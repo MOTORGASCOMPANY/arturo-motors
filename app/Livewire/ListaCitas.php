@@ -5,11 +5,13 @@ namespace App\Livewire;
 use App\Models\AsesorExterno;
 use App\Models\Cita;
 use App\Models\Cliente;
-use App\Models\Expediente;
-use App\Models\FiseSolicitud;
+use App\Models\Service;
+use App\Models\ServiceOrder;
 use App\Models\Vehiculo;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -18,102 +20,67 @@ class ListaCitas extends Component
 {
     use WithPagination;
 
-    public $sort;
-
-    public $order;
-
-    public $cant;
-
-    public $search;
-
-    public $direction;
+    public $sort = 'created_at', $order, $cant = 10, $search = '', $direction = 'desc';
 
     // Datos para dialog modal , crear cita, cliente y vehicul0
     public $open = false;
 
-    // Datos del cliente
-    public $nombre;
-
-    public $apellido;
-
+    // Propiedades del Formulario
     public $documento;
-
+    public $nombre;
+    public $apellido;
     public $telefono;
-
     public $email;
-
     public $direccion;
 
-    // Datos del vehículo
-    public $marca;
-
-    public $modelo;
-
-    public $anio;
-
     public $placa;
-
+    public $marca;
+    public $modelo;
+    public $anio;
+    public $serie;
+    public $color;
     public $combustible;
 
-    public $serie;
-
-    public $color;
-
-    // Datos de la cita
     public $fecha_cita;
-
     public $motivo;
 
-    // Control asesor interno/externo
-    public $is_externo = false;           // checkbox: false = asesor interno (por defecto)
+    // Control de asesor externo
+    public $is_externo = false;
+    public $asesor_externo_id = null;
 
-    public $asesor_externo_id = null;     // id seleccionado si is_externo = true
+    // Modal y Propiedades para Aceptar Cita & Crear Órden
+    public $openAceptarModal = false;
+    public $citaSeleccionada = null;
+    public $serviceId = null;
+    public $precioLista = 0;
+    public $precioFinal = 0;
+    public $descuentoMotivo = '';
 
-    public $asesores; // todos los asesores
+    protected $paginationTheme = 'bootstrap';
 
-    protected $rules = [
-        // Cliente
-        'nombre' => 'required|string|max:100',
-        'apellido' => 'required|string|max:100',
-        'documento' => 'required|digits:8',
-        'telefono' => 'nullable|digits:9',
-        'email' => 'nullable|email|max:150',
-        'direccion' => 'nullable|string|max:255',
-
-        // Vehículo
-        'marca' => 'required|string|max:50',
-        'modelo' => 'required|string|max:50',
-        'anio' => 'required|integer|min:1900|max:2100',
-        'placa' => 'required|string|size:6',
-        'combustible' => 'required|string|max:20',
-        'serie' => 'nullable|string|max:50',
-        'color' => 'nullable|string|max:50',
-
-        // Cita
-        // 'fecha_cita' => 'required|date|after_or_equal:today',
-        'fecha_cita' => 'required|date_format:Y-m-d\TH:i|after_or_equal:now',
-        'motivo' => 'nullable|string|max:255',
-
-        // Asesor externo: obligatorio solo si is_externo = 1 (checkbox true)
-        'asesor_externo_id' => 'required_if:is_externo,1|nullable|exists:asesores_externos,id',
-    ];
-
-    public function mount()
+    protected function rules()
     {
-        $this->direction = 'desc';
-        $this->sort = 'id';
-        $this->cant = 10;
-        $this->asesores = AsesorExterno::orderBy('nombre')->get();
-    }
+        return [
+            'documento'         => 'required|string|max:20',
+            'nombre'            => 'required|string|max:100',
+            'apellido'          => 'nullable|string|max:100',
+            'telefono'          => 'nullable|string|max:20',
+            'email'             => 'nullable|email|max:100',
+            'direccion'         => 'nullable|string|max:255',
 
-    public function order($sort)
-    {
-        if ($this->sort === $sort) {
-            $this->direction = $this->direction === 'desc' ? 'asc' : 'desc';
-        } else {
-            $this->sort = $sort;
-            $this->direction = 'asc';
-        }
+            'placa'             => 'required|string|max:15',
+            'marca'             => 'nullable|string|max:50',
+            'modelo'            => 'nullable|string|max:50',
+            'anio'              => 'nullable|numeric',
+            'serie'             => 'nullable|string|max:50',
+            'color'             => 'nullable|string|max:50',
+            'combustible'       => 'nullable|string|max:50',
+
+            'fecha_cita'        => 'required|date|after_or_equal:today',
+            'motivo'            => 'nullable|string|max:500',
+
+            'asesor_externo_id' => 'required_if:is_externo,true',
+        ];
     }
 
     public function updatingSearch()
@@ -129,56 +96,238 @@ class ListaCitas extends Component
     #[On('marcarCitaComoRechazada')]
     public function marcarCitaComoRechazada($id)
     {
-        $cita = Cita::with(['cliente', 'vehiculo'])->findOrFail($id);
-        if ($cita) {
-            $cita->estado = 'rechazada';
-            $cita->save();
-        }
+        $cita = Cita::findOrFail($id);
+        $cita->estado = 'rechazada';
+        $cita->save();
+
         $this->dispatch('citaRechazada');
     }
 
-    // Marca estado de cita como aceptada y crea Expediente
-    #[On('marcarCitaComoAceptada')]
-    public function marcarCitaComoAceptada($id)
+    // Método para abrir el modal de Aceptar Cita
+    public function abrirModalAceptar($citaId)
     {
-        $cita = Cita::with(['cliente', 'vehiculo'])->findOrFail($id);
+        $this->citaSeleccionada = Cita::with(['cliente', 'vehiculo'])->findOrFail($citaId);
+        $this->reset(['serviceId', 'precioLista', 'precioFinal', 'descuentoMotivo']);
+        $this->resetValidation();
+        $this->openAceptarModal = true;
+    }
 
-        if ($cita) {
-            // Cambiar estado de la cita
-            $cita->estado = 'aceptada';
-            $cita->save();
+    // Seleccionar servicio e inicializar precios
+    public function seleccionarServicio($serviceId)
+    {
+        $servicio = Service::find($serviceId);
+        if ($servicio) {
+            $this->serviceId = $servicio->id;
+            $this->precioLista = $servicio->precio_base ?? 0;
+            $this->precioFinal = $servicio->precio_base ?? 0;
+        }
+    }
 
-            // Crear expediente solo si no existe
-            $expedienteExiste = Expediente::where('cita_id', $cita->id)->exists();
-            if (! $expedienteExiste) {
-                Expediente::create([
-                    'cliente_id' => $cita->cliente_id,
-                    'vehiculo_id' => $cita->vehiculo_id,
-                    'cita_id' => $cita->id,
-                    'estado' => 1,
-                ]);
-            }
+    // Procesar Aceptación de la Cita y Crear la Orden de Servicio
+    public function procesarAceptacionCita()
+    {
+        $this->validate([
+            'serviceId'   => 'required|exists:services,id',
+            'precioFinal' => 'required|numeric|min:0',
+            'descuentoMotivo' => 'nullable|string|max:255',
+        ], [
+            'serviceId.required' => 'Debe seleccionar un tipo de servicio.',
+            'precioFinal.required' => 'El precio acordado es obligatorio.',
+        ]);
 
-            // Crear solicitud FISE solo si no existe
-            $fiseExiste = FiseSolicitud::where('cliente_id', $cita->cliente_id)
-                ->where('vehiculo_id', $cita->vehiculo_id)
-                ->exists();
-
-            if (! $fiseExiste) {
-                FiseSolicitud::create([
-                    'cliente_id' => $cita->cliente_id,
-                    'vehiculo_id' => $cita->vehiculo_id,
-                    'fecha_solicitud' => now(),
-                    'estado' => 'pendiente',
-                    'observaciones' => null,
-                ]);
-            }
+        if (!$this->citaSeleccionada) {
+            return;
         }
 
-        $this->dispatch('citaAceptada');
+        try {
+            DB::transaction(function () {
+                $cita = Cita::findOrFail($this->citaSeleccionada->id);
+                $cita->estado = 'aceptada';
+                $cita->save();
+
+                $ordenExiste = ServiceOrder::where('cita_id', $cita->id)->exists();
+
+                if (!$ordenExiste) {
+                    ServiceOrder::create([
+                        'cliente_id'       => $cita->cliente_id,
+                        'vehiculo_id'      => $cita->vehiculo_id,
+                        'service_id'       => $this->serviceId,
+                        'cita_id'          => $cita->id,
+                        'estado'           => 'creada',
+                        'precio_lista'     => $this->precioLista,
+                        'precio_final'     => $this->precioFinal,
+                        'descuento_motivo' => $this->descuentoMotivo,
+                        'creado_por'       => Auth::id(),
+                    ]);
+                }
+            });
+
+            $this->openAceptarModal = false;
+            $this->dispatch('citaAceptada');
+
+        } catch (\Throwable $e) {
+            Log::error('Error al aceptar cita y generar la orden: ' . $e->getMessage(), [
+                'cita_id' => $this->citaSeleccionada->id ?? null,
+                'exception' => $e
+            ]);
+
+            $this->dispatch('minToast', titulo: 'Error', mensaje: 'Ocurrió un problema al aceptar la cita y crear la orden.', icono: 'error');
+        }
+    }
+
+    // Marca estado de cita como aceptada y crea Expediente
+    /*#[On('marcarCitaComoAceptada')]
+    public function marcarCitaComoAceptada($id)
+    {
+        $cita = Cita::findOrFail($id);
+
+        try {
+            DB::transaction(function () use ($cita) {
+                // actualiza estado de la cita
+                $cita->estado = 'aceptada';
+                $cita->save();
+
+                // Crear Orden de Servicio solo si no se ha creado previamente para esta cita
+                $ordenExiste = ServiceOrder::where('cita_id', $cita->id)->exists();
+
+                if (! $ordenExiste) {
+                    // Consultar el servicio para obtener el precio base
+                    $servicio = Service::find($cita->service_id);
+                    $precioBase = $servicio?->precio_base ?? 0;
+
+                    ServiceOrder::create([
+                        'cliente_id'   => $cita->cliente_id,
+                        'vehiculo_id'  => $cita->vehiculo_id,
+                        'service_id'   => $cita->service_id,
+                        'cita_id'      => $cita->id,
+                        'estado'       => 'creada',
+                        'precio_lista' => $precioBase,
+                        'precio_final' => $precioBase,
+                        'creado_por'   => Auth::id(),
+                    ]);
+                }
+            });
+
+            $this->dispatch('citaAceptada');
+
+        } catch (\Throwable $e) {
+            Log::error('Error al aceptar cita y generar la orden: ' . $e->getMessage(), [
+                'cita_id' => $id,
+                'exception' => $e
+            ]);
+
+            $this->dispatch('minToast', titulo: 'Error', mensaje: 'Ocurrió un problema al aceptar la cita y crear la orden.', icono: 'error');
+        }
+    }*/   
+    
+    public function render()
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        $citas = Cita::with(['cliente', 'vehiculo', 'asesor', 'asesorExterno'])
+            // Si el usuario tiene el rol de Vendedor y no es Administrador ni Jefe de Taller,
+            // filtramos solo sus citas asociadas.
+            ->when($user->hasRole('Vendedor') && !$user->hasAnyRole(['Administrador del sistema', 'Cliente', 'Tecnico', 'Jefe de Taller', 'Almacen']), function ($query) use ($user) {
+                $query->where('asesor_id', $user->id);
+            })
+            ->buscar($this->search)
+            ->ordenar($this->sort, $this->direction)
+            ->paginate($this->cant);
+
+        // Se obtienen los asesores externos para el selector
+        $asesoresExternos = AsesorExterno::orderBy('nombre', 'asc')->get();
+        $servicios = Service::activos()->where('tipo', 'conversion')->get();
+        //'servicios' => Service::activos()->where('tipo', 'conversion')->get(),
+
+        return view('livewire.lista-citas', compact('citas', 'asesoresExternos', 'servicios'));
     }
 
     public function crearCita()
+    {
+        $this->validate();
+
+        try {
+            DB::transaction(function () {
+                // 1. Obtener o crear Cliente
+                $cliente = Cliente::firstOrCreate(
+                    ['documento' => trim($this->documento)],
+                    [
+                        'tipo_persona' => 'NATURAL',
+                        'nombre'       => mb_strtoupper(trim($this->nombre)),
+                        'apellido'     => mb_strtoupper(trim($this->apellido)),
+                        'telefono'     => trim($this->telefono),
+                        'email'        => trim($this->email),
+                        'direccion'    => mb_strtoupper(trim($this->direccion)),
+                    ]
+                );
+
+                // 2. Obtener o crear Vehículo
+                $placaLimpia = mb_strtoupper(trim($this->placa));
+                $vehiculo = Vehiculo::where('placa', $placaLimpia)->first();
+
+                if (!$vehiculo) {
+                    $vehiculo = Vehiculo::create([
+                        'placa'  => $placaLimpia,
+                        'marca'       => mb_strtoupper(trim($this->marca)),
+                        'modelo'      => mb_strtoupper(trim($this->modelo)),
+                        'anio'        => $this->anio,
+                        'serie'       => mb_strtoupper(trim($this->serie)),
+                        'color'       => mb_strtoupper(trim($this->color)),
+                        'combustible' => mb_strtoupper(trim($this->combustible)),
+                    ]);
+
+                    // Asociar como Propietario Principal en la pivot cliente_vehiculo
+                    $vehiculo->clientes()->attach($cliente->id, [
+                        'es_principal' => true,
+                        'relacion'     => 'PROPIETARIO',
+                    ]);
+                } else {
+                    // Verificar si el cliente ya está vinculado a este vehículo
+                    $yaAsociado = $vehiculo->clientes()->where('cliente_id', $cliente->id)->exists();
+
+                    if (!$yaAsociado) {
+                        $tienePrincipal = $vehiculo->clientes()->wherePivot('es_principal', true)->exists();
+
+                        $vehiculo->clientes()->attach($cliente->id, [
+                            'es_principal' => !$tienePrincipal,
+                            'relacion'     => $tienePrincipal ? 'ASOCIADO' : 'PROPIETARIO',
+                        ]);
+                    }
+                }
+
+                // 3. Determinar el Asesor Externo (si aplica)
+                $asesorExternoId = $this->is_externo ? $this->asesor_externo_id : null;
+
+                // 4. Registrar la Cita con la estructura correcta
+                Cita::create([
+                    'cliente_id'        => $cliente->id,
+                    'vehiculo_id'       => $vehiculo->id,
+                    'asesor_id'         => Auth::id(),
+                    'asesor_externo_id' => $asesorExternoId,
+                    'fecha_cita'        => Carbon::parse($this->fecha_cita),
+                    'motivo'            => $this->motivo,
+                    'estado'            => 'pendiente',
+                ]);
+            });
+
+            $this->limpiarFormulario();
+            $this->open = false;
+            $this->dispatch('minAlert', titulo: '¡BUEN TRABAJO!', mensaje: 'La cita se programó correctamente.', icono: 'success');
+
+        } catch (\Exception $e) {
+            $this->dispatch('minAlert', titulo: '¡ERROR!', mensaje: 'No se pudo procesar la solicitud: ', icono: 'error');
+        }
+    }
+
+    public function limpiarFormulario()
+    {
+        $this->reset(['documento', 'nombre', 'apellido', 'telefono', 'email', 'direccion', 'placa', 'marca', 'modelo', 'anio', 'serie', 'color', 'combustible', 'fecha_cita', 'motivo', 'is_externo', 'asesor_externo_id']);
+        $this->resetValidation();
+    }
+}
+
+/*public function crearCita22()
     {
         $this->validate();
 
@@ -243,14 +392,14 @@ class ListaCitas extends Component
         $this->resetPage();
         $this->reset(['nombre', 'apellido', 'documento', 'telefono', 'email', 'direccion', 'marca', 'modelo', 'anio', 'placa', 'combustible', 'serie', 'color', 'fecha_cita', 'motivo', 'is_externo', 'asesor_externo_id']);
     }
-
-    public function render()
+*/
+/*public function order($sort)
     {
-        $citas = Cita::with(['cliente', 'vehiculo', 'asesor'])
-            ->buscar($this->search)
-            ->ordenar($this->sort, $this->direction)
-            ->paginate($this->cant);
-
-        return view('livewire.lista-citas', compact('citas'));
+        if ($this->sort === $sort) {
+            $this->direction = $this->direction === 'desc' ? 'asc' : 'desc';
+        } else {
+            $this->sort = $sort;
+            $this->direction = 'asc';
+        }
     }
-}
+*/
