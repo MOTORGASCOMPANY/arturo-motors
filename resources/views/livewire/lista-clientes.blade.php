@@ -39,12 +39,12 @@
                                     </td>
                                     <td class="px-6 py-4 text-left">
                                         <p class="text-sm font-medium leading-none text-gray-600">
-                                            {{ $cli->nombre }}
+                                            {{ $cli->nombre ?? $cli->razon_social }}
                                         </p>
                                     </td>
                                     <td class="px-6 py-4 text-left">
                                         <p class="text-sm leading-none text-gray-600">
-                                            {{ $cli->apellido }}
+                                            {{ $cli->apellido ?? '' }}
                                         </p>
                                     </td>
                                     <td class="px-6 py-4 text-left">

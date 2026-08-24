@@ -346,12 +346,12 @@ class ListaCitas extends Component
         );
 
         // 2️ Verificar si el vehículo ya existe por placa
-        $vehiculoExistente = Vehiculo::where('placa', $this->placa)->first();
+        $vehiculoExistente = Vehiculo::with('clientes')->where('placa', $this->placa)->first();
         if ($vehiculoExistente) {
             // Si el vehículo existe, asignarlo
             $vehiculo = $vehiculoExistente;
-            // Opcional: Validar que pertenezca al mismo cliente
-            if ($vehiculo->cliente_id != $cliente->id) {
+            // Validar que pertenezca al mismo cliente via pivot
+            if (!$vehiculo->clientes->contains($cliente->id)) {
                 $this->dispatch('minAlert', titulo: '¡ERROR!', mensaje: 'El vehiculo ingresado pertenece a otro cliente.', icono: 'error');
 
                 return;
@@ -359,7 +359,6 @@ class ListaCitas extends Component
         } else {
             // Crear vehículo si no existe
             $vehiculo = Vehiculo::create([
-                'cliente_id' => $cliente->id,
                 'marca' => $this->marca,
                 'modelo' => $this->modelo,
                 'anio' => $this->anio,
@@ -367,6 +366,11 @@ class ListaCitas extends Component
                 'combustible' => $this->combustible,
                 'serie' => $this->serie,
                 'color' => $this->color,
+            ]);
+            // Vincular al cliente como propietario principal
+            $vehiculo->clientes()->attach($cliente->id, [
+                'es_principal' => true,
+                'relacion' => 'Propietario',
             ]);
         }
 

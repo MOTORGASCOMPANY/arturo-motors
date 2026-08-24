@@ -626,7 +626,7 @@
             toast.className = 'pointer-events-auto flex items-center gap-3 px-4 py-3.5 rounded-xl shadow-lg border font-medium text-xs sm:text-sm ' +
                 (isError
                     ? 'bg-red-50 border-red-200 text-red-700'
-                    : 'bg-blue-50 border-blue-200 text-blue-800');
+                    : 'bg-green-50 border-green-200 text-green-700');
 
             toast.style.animation = 'toastIn 0.35s ease-out';
 
@@ -634,7 +634,7 @@
                 '<i class="fa-solid ' +
                 (isError
                     ? 'fa-circle-exclamation'
-                    : 'fa-circle-check text-blue-600') +
+                    : 'fa-circle-check text-green-600') +
                 '"></i>' +
                 '<span class="flex-1">' +
                 message +
