@@ -125,7 +125,6 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                             </li>
 
                             {{--             OPCIONES PARA CITAS                    --}}
-                            {{-- 
                             @can('opciones.citas')
                                 <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
                                     x-data="{ Open: false }">
@@ -158,7 +157,6 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                                     </div>
                                 </li>
                             @endcan
-                            --}}
 
                             {{--             OPCIONES PARA CAJA              --}}
                             @can('opciones.caja')
