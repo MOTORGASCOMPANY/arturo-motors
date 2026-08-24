@@ -79,15 +79,15 @@
         <table class="info-table">
             <tr>
                 <th>Apellidos / Nombres o Razón Social:</th>
-                <td>{{ $vehiculo->cliente->nombre ?? '---' }}</td>
+                <td>{{ $vehiculo->clientes->first()?->nombre ?? '---' }}</td>
             </tr>
             <tr>
                 <th>DNI / CE / RUC:</th>
-                <td>{{ $vehiculo->cliente->documento ?? '---' }}</td>
+                <td>{{ $vehiculo->clientes->first()?->documento ?? '---' }}</td>
             </tr>
             <tr>
                 <th>Dirección:</th>
-                <td>{{ $vehiculo->cliente->direccion ?? '---' }}</td>
+                <td>{{ $vehiculo->clientes->first()?->direccion ?? '---' }}</td>
             </tr>
             <tr>
                 <th>Marca / Modelo / Año:</th>

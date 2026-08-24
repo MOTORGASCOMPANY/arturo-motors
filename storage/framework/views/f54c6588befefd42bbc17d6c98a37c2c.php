@@ -79,15 +79,15 @@
         <table class="info-table">
             <tr>
                 <th>Apellidos / Nombres o Razón Social:</th>
-                <td><?php echo e($vehiculo->cliente->nombre ?? '---'); ?></td>
+                <td><?php echo e($vehiculo->clientes->first()?->nombre ?? '---'); ?></td>
             </tr>
             <tr>
                 <th>DNI / CE / RUC:</th>
-                <td><?php echo e($vehiculo->cliente->documento ?? '---'); ?></td>
+                <td><?php echo e($vehiculo->clientes->first()?->documento ?? '---'); ?></td>
             </tr>
             <tr>
                 <th>Dirección:</th>
-                <td><?php echo e($vehiculo->cliente->direccion ?? '---'); ?></td>
+                <td><?php echo e($vehiculo->clientes->first()?->direccion ?? '---'); ?></td>
             </tr>
             <tr>
                 <th>Marca / Modelo / Año:</th>

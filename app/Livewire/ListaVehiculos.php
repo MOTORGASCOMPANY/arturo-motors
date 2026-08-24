@@ -144,8 +144,7 @@ class ListaVehiculos extends Component
             'createColor' => 'required|max:50',
         ]);
 
-        Vehiculo::create([
-            'cliente_id' => $this->cliente_id,
+        $vehiculo = Vehiculo::create([
             'placa' => $this->createPlaca,
             'marca' => $this->createMarca,
             'modelo' => $this->createModelo,
@@ -153,6 +152,12 @@ class ListaVehiculos extends Component
             'combustible' => $this->createCombustible,
             'serie' => $this->createSerie,
             'color' => $this->createColor,
+        ]);
+
+        // Vincular al cliente como propietario principal
+        $vehiculo->clientes()->attach($this->cliente_id, [
+            'es_principal' => true,
+            'relacion' => 'Propietario',
         ]);
 
         $this->resetCreateForm();
@@ -168,7 +173,10 @@ class ListaVehiculos extends Component
 
     public function render()
     {
-        $vehiculos = Vehiculo::with(['cliente'])
+        $vehiculos = Vehiculo::with([
+                'clientes',
+                'serviceOrders.documentos',
+            ])
             ->buscar($this->search)
             ->ordenar($this->sort, $this->direction)
             ->paginate($this->cant);

@@ -53,12 +53,15 @@
                 </div>
             </x-cms.card>
         @empty
-            <div class="col-span-full x-cms.card p-16 text-center" style="animation: emptyPulse 3s ease-in-out infinite">
+            <div class="col-span-full bg-white rounded-2xl shadow-sm border border-gray-100 p-16 text-center" style="animation: emptyPulse 3s ease-in-out infinite">
                 <div class="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mx-auto mb-4 border border-blue-100">
                     <i class="fa-solid fa-location-dot text-2xl text-blue-400"></i>
                 </div>
                 <p class="text-gray-500 font-medium mb-1">No hay información de contacto</p>
-                <p class="text-gray-400 text-sm">Agrega dirección, teléfono, horario, WhatsApp, etc.</p>
+                <p class="text-gray-400 text-sm mb-4">Agrega dirección, teléfono, horario, WhatsApp, etc.</p>
+                <button wire:click="create" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-all">
+                    <i class="fa-solid fa-plus"></i> Agregar Contacto
+                </button>
             </div>
         @endforelse
     </div>
@@ -85,8 +88,8 @@
                     @endif
                     <div class="space-y-5">
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Tipo *</label>
-                            <select class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white"
+                            <label class="block text-sm font-semibold text-gray-700 mb-1.5 pl-3 border-l-3 border-blue-500">Tipo *</label>
+                            <select class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white shadow-sm"
                                     wire:model="type">
                                 @foreach($types as $key => $label)
                                     <option value="{{ $key }}">{{ $label }}</option>
@@ -94,15 +97,15 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Etiqueta *</label>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1.5 pl-3 border-l-3 border-blue-500">Etiqueta *</label>
                             <input type="text"
-                                   class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white"
+                                   class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white shadow-sm"
                                    wire:model="label"
                                    placeholder="Ej: Dirección, Teléfono, Horario">
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Valor *</label>
-                            <textarea class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white"
+                            <label class="block text-sm font-semibold text-gray-700 mb-1.5 pl-3 border-l-3 border-blue-500">Valor *</label>
+                            <textarea class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white shadow-sm"
                                       rows="2"
                                       wire:model="value"
                                       placeholder="Valor del contacto (dirección, teléfono, iframe, etc.)"></textarea>
@@ -112,7 +115,7 @@
                         {{-- ÍCONO: menú visual desplegable (se ve el dibujo, no el nombre de código) --}}
                         {{-- ================================================= --}}
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Ícono</label>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1.5 pl-3 border-l-3 border-blue-500">Ícono</label>
 
                             @php
                                 $typeIconLabels = [
@@ -187,14 +190,14 @@
                         </div>
                     </div>
                 </div>
-                <div class="sticky bottom-0 bg-white border-t border-gray-100 px-6 py-4 flex justify-end gap-3 rounded-b-2xl">
+                <div class="sticky bottom-0 bg-gray-50/80 backdrop-blur-sm border-t border-gray-200 px-6 py-4 flex justify-end gap-3 rounded-b-2xl">
                     <button type="button"
-                            class="px-5 py-2.5 rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 font-semibold transition-all"
+                            class="px-5 py-2.5 rounded-xl bg-white text-gray-600 hover:bg-gray-100 font-semibold transition-all border border-gray-200 shadow-sm"
                             wire:click="resetForm">
                         Cancelar
                     </button>
                     <button type="button"
-                            class="px-5 py-2.5 rounded-xl bg-blue-600 text-white hover:bg-blue-700 font-semibold transition-all shadow-sm"
+                            class="px-5 py-2.5 rounded-xl bg-blue-600 text-white hover:bg-blue-700 font-semibold transition-all shadow-md shadow-blue-200/50 border border-blue-700"
                             wire:click="save"
                             wire:loading.attr="disabled">
                         <span wire:loading.remove><i class="fa-solid fa-check mr-1"></i>Guardar</span>
@@ -208,15 +211,7 @@
         </div>
     @endif
 
-    {{-- Styles --}}
-    <style>
-        @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes cardEntry { from { opacity: 0; transform: translateY(20px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
-        @keyframes emptyPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
-        .animate-slide-down { animation: slideDown 0.3s ease-out; }
-        [x-cloak] { display: none !important; }
-    </style>
+
 
     {{-- Type Icons --}}
     @php
