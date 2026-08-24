@@ -151,6 +151,11 @@
         }
         .animate-slide-down { animation: slideDown 0.3s ease-out; }
 
+        @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        @keyframes cardEntry { from { opacity: 0; transform: translateY(20px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes emptyPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+        [x-cloak] { display: none !important; }
+
         .cms-nav-item { transition: all 0.2s ease; }
         .cms-nav-item:hover { background-color: #f3f4f6; transform: translateX(4px); }
         .dark .cms-nav-item:hover { background-color: #1f2937; }

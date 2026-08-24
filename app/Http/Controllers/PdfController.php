@@ -35,7 +35,7 @@ class PdfController extends Controller
     // Genera manual y mantenimiento de un vehículo específico
     public function generaPdfManual($id)
     {
-        $vehiculo = Vehiculo::findOrFail($id);
+        $vehiculo = Vehiculo::with('clientes')->findOrFail($id);
 
         $meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
         $fechaCert = is_string($vehiculo->created_at) ? new DateTime($vehiculo->created_at) : $vehiculo->created_at;

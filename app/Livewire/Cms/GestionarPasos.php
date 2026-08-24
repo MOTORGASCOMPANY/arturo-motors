@@ -17,8 +17,6 @@ class GestionarPasos extends Component
 
     public $stepNumber = '';
 
-    public $icon = '';
-
     public $active = true;
 
     public $showForm = false;
@@ -49,7 +47,6 @@ class GestionarPasos extends Component
         $this->title = $step->title;
         $this->description = $step->description;
         $this->stepNumber = $step->step_number;
-        $this->icon = $step->icon;
         $this->active = $step->is_active;
         $this->showForm = true;
     }
@@ -70,7 +67,6 @@ class GestionarPasos extends Component
             'title' => $this->title,
             'description' => $this->description,
             'step_number' => $this->stepNumber,
-            'icon' => $this->icon,
             'is_active' => $this->active,
         ];
 
@@ -106,7 +102,7 @@ class GestionarPasos extends Component
 
     public function resetForm()
     {
-        $this->reset(['editingId', 'title', 'description', 'stepNumber', 'icon', 'active', 'showForm']);
+        $this->reset(['editingId', 'title', 'description', 'stepNumber', 'active', 'showForm']);
     }
 
     public function clearSuccessMessage()

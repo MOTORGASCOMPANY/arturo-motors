@@ -1,5 +1,98 @@
-<!-- resources>views>livewire>lista-vehiculos.blade.php -->
-<div class="flex box-border">
+<!-- resources/views/livewire/lista-vehiculos.blade.php -->
+<div class="flex box-border" x-data="visorArchivos">
+
+    {{-- Preload del script del visor una sola vez --}}
+    @once
+        <script>
+            document.addEventListener('alpine:init', () => {
+                Alpine.data('visorArchivos', () => ({
+                    show: false,
+                    everOpened: false,
+                    url: '',
+                    title: '',
+                    status: 'loading',
+                    isImage: false,
+                    zoom: 1,
+                    panning: false,
+                    panStartX: 0,
+                    panStartY: 0,
+                    scrollStartX: 0,
+                    scrollStartY: 0,
+                    moved: false,
+                    cache: {},
+
+                    async abrir(url, title) {
+                        this.everOpened = true;
+                        this.url = url;
+                        this.title = title;
+                        this.status = 'loading';
+                        this.isImage = false;
+                        this.zoom = 1;
+                        this.show = true;
+
+                        if (this.cache[url]) {
+                            this.status = 'ok';
+                            this.isImage = this.cache[url] === 'image';
+                            return;
+                        }
+                        try {
+                            const r = await fetch(url, {
+                                method: 'HEAD',
+                                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                            });
+                            const ct = r.headers.get('content-type') || '';
+                            if (ct.includes('pdf')) {
+                                this.cache[url] = 'pdf';
+                                this.status = 'ok';
+                            } else if (ct.includes('image')) {
+                                this.cache[url] = 'image';
+                                this.status = 'ok';
+                                this.isImage = true;
+                            } else {
+                                this.status = 'error';
+                            }
+                        } catch {
+                            this.status = 'error';
+                        }
+                    },
+                    zoomIn() { this.zoom = Math.min(3, +(this.zoom + 0.25).toFixed(2)); },
+                    zoomOut() { this.zoom = Math.max(0.5, +(this.zoom - 0.25).toFixed(2)); },
+                    zoomReset() { this.zoom = 1; },
+                    cerrar() {
+                        this.show = false;
+                        setTimeout(() => {
+                            this.url = '';
+                            this.status = 'loading';
+                            this.isImage = false;
+                            this.zoom = 1;
+                        }, 150);
+                    },
+                    startPan(e) {
+                        if (this.zoom <= 1) return;
+                        const c = this.$refs.vp;
+                        if (!c) return;
+                        this.panning = true;
+                        this.moved = false;
+                        this.panStartX = e.clientX;
+                        this.panStartY = e.clientY;
+                        this.scrollStartX = c.scrollLeft;
+                        this.scrollStartY = c.scrollTop;
+                    },
+                    movePan(e) {
+                        if (!this.panning) return;
+                        const c = this.$refs.vp;
+                        if (!c) return;
+                        const dx = e.clientX - this.panStartX, dy = e.clientY - this.panStartY;
+                        if (Math.abs(dx) > 3 || Math.abs(dy) > 3) this.moved = true;
+                        c.scrollLeft = this.scrollStartX - dx;
+                        c.scrollTop = this.scrollStartY - dy;
+                    },
+                    stopPan() { this.panning = false; },
+                }));
+            });
+        </script>
+    @endonce
+
     <div class="container mx-auto py-4">
         <x-table-vehiculos>
             @if ($vehiculos->count())
@@ -18,18 +111,58 @@
                     </thead>
                     <tbody class="divide-y divide-gray-200">
                         @foreach ($vehiculos as $veh)
+                            @php
+                                // --- Documentos del sistema (PDFs generados) ---
+                                $docsSistema = collect();
+                                $docsSistema->push([
+                                    'label'   => 'Carta Garantía',
+                                    'url'     => route('vehiculo.pdf', $veh->id),
+                                    'icon'    => 'fa-solid fa-shield-halved',
+                                    'color'   => 'bg-emerald-500',
+                                    'tipo'    => 'sistema',
+                                ]);
+                                $docsSistema->push([
+                                    'label'   => 'Manual Conversión',
+                                    'url'     => route('manual.pdf', $veh->id),
+                                    'icon'    => 'fa-solid fa-book-open',
+                                    'color'   => 'bg-amber-500',
+                                    'tipo'    => 'sistema',
+                                ]);
+
+                                // --- Documentos subidos (desde service_orders -> documentos) ---
+                                $docsSubidos = $veh->serviceOrders->flatMap->documentos->map(function ($d) {
+                                    $nombreLimpio = ucfirst(str_replace('_', ' ', $d->tipo));
+                                    return [
+                                        'label'   => $nombreLimpio,
+                                        'url'     => $d->url,
+                                        'icon'    => 'fa-solid fa-file-pdf',
+                                        'color'   => 'bg-indigo-500',
+                                        'tipo'    => 'subido',
+                                    ];
+                                });
+
+                                $todosDocs = $docsSistema->merge($docsSubidos);
+                                $totalDocs = $todosDocs->count();
+                            @endphp
                             <tr tabindex="0" class="focus:outline-none bg-white h-16 hover:bg-gray-100">
                                 <td class="px-6 py-4 text-left">
                                     <div class="flex items-center">
-                                        <div
-                                            class="bg-indigo-200 rounded-md w-7 h-7 flex flex-shrink-0 justify-center items-center text-indigo-900">
+                                        <div class="bg-indigo-200 rounded-md w-7 h-7 flex flex-shrink-0 justify-center items-center text-indigo-900">
                                             {{ $loop->iteration }}
                                         </div>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 text-left">
                                     <p class="text-sm font-medium leading-none text-gray-600">
-                                        {{ $veh->cliente->nombre . ' ' . $veh->cliente->apellido }}
+                                        @php
+                                            $cliente = $veh->clientes->first();
+                                            $nombreCliente = $cliente
+                                                ? ($cliente->nombre
+                                                    ? $cliente->nombre . ' ' . $cliente->apellido
+                                                    : $cliente->razon_social)
+                                                : '—';
+                                        @endphp
+                                        {{ $nombreCliente }}
                                     </p>
                                 </td>
                                 <td class="px-6 py-4 text-left">
@@ -38,8 +171,7 @@
                                     </p>
                                 </td>
                                 <td class="px-6 py-4 text-left">
-                                    <p
-                                        class="text-sm leading-none text-gray-600 p-2 bg-blue-200 rounded-full inline-block">
+                                    <p class="text-sm leading-none text-gray-600 p-2 bg-blue-200 rounded-full inline-block">
                                         {{ $veh->placa }}
                                     </p>
                                 </td>
@@ -53,48 +185,86 @@
                                         {{ $veh->modelo }}
                                     </p>
                                 </td>
+
+                                {{-- ===================== COLUMNA DOCUMENTOS ===================== --}}
                                 <td class="px-6 py-4 text-left">
-                                    <div class="relative text-center" x-data="{ menu: false }">
-                                        <!-- Boton -->
-                                        <button type="button" x-on:click="menu = ! menu" id="menu-button"
-                                            aria-expanded="true" aria-haspopup="true" data-te-ripple-init
-                                            data-te-ripple-color="light"
-                                            class="hover:animate-pulse inline-block rounded-full bg-teal-500 p-2 uppercase leading-normal text-white shadow-md transition duration-150 ease-in-out hover:bg-teal-700 hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:bg-teal-600 focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:outline-none focus:ring-0 active:bg-teal-700 active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)]">
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                                                fill="currentColor" class="h-4 w-4">
-                                                <path fill-rule="evenodd"
-                                                    d="M19.5 21a3 3 0 003-3V9a3 3 0 00-3-3h-5.379a.75.75 0 01-.53-.22L11.47 3.66A2.25 2.25 0 009.879 3H4.5a3 3 0 00-3 3v12a3 3 0 003 3h15zm-6.75-10.5a.75.75 0 00-1.5 0v4.19l-1.72-1.72a.75.75 0 00-1.06 1.06l3 3a.75.75 0 001.06 0l3-3a.75.75 0 10-1.06-1.06l-1.72 1.72V10.5z"
-                                                    clip-rule="evenodd" />
-                                            </svg>
-                                        </button>
-                                        <!-- Opciones de Boton -->
-                                        <div x-show="menu" x-on:click.away="menu = false"
-                                            x-transition:enter="transition ease-out duration-100"
-                                            x-transition:enter-start="opacity-0 scale-95"
-                                            x-transition:enter-end="opacity-100 scale-100"
-                                            x-transition:leave="transition ease-in duration-75"
-                                            x-transition:leave-start="opacity-100 scale-100"
-                                            x-transition:leave-end="opacity-0 scale-95"
-                                            class="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-gray-300 ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 focus:outline-none z-40"
-                                            role="menu" aria-orientation="vertical" aria-labelledby="menu-button"
-                                            tabindex="-1">
-                                            <div class="" role="none">
-                                                <a href="{{ route('manual.pdf', $veh->id) }}" target="__blank"
-                                                    rel="noopener noreferrer"
-                                                    class="flex px-4 py-2 text-sm text-blue-600 hover:bg-slate-600 hover:text-white justify-between items-center rounded-t-md hover:cursor-pointer">
-                                                    <i class="fa-solid fa-clipboard-list"></i>
-                                                    <span>Manual Conversion</span>
-                                                </a>
-                                                <a href="{{ route('vehiculo.pdf', $veh->id) }}" target="__blank"
-                                                    rel="noopener noreferrer"
-                                                    class="flex px-4 py-2 text-sm text-blue-600 hover:bg-slate-600 hover:text-white justify-between items-center rounded-t-md hover:cursor-pointer">
-                                                    <i class="fa-solid fa-clipboard-list"></i>
-                                                    <span>Carta Garantia</span>
-                                                </a>
+                                    @if ($totalDocs > 0)
+                                        {{-- Dropdown trigger con contador --}}
+                                        <div class="relative" x-data="{ open: false }">
+                                            <button type="button"
+                                                x-on:click="open = !open"
+                                                x-on:keydown.escape.window="open = false"
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all
+                                                       bg-slate-100 text-slate-700 hover:bg-slate-200 hover:text-slate-900
+                                                       focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-1"
+                                                aria-haspopup="true"
+                                                :aria-expanded="open.toString()">
+                                                <i class="fa-solid fa-file-lines text-slate-500"></i>
+                                                <span>{{ $totalDocs }}</span>
+                                                <span class="hidden sm:inline">doc{{ $totalDocs > 1 ? 's' : '' }}</span>
+                                                <svg class="w-3 h-3 ml-0.5 text-slate-400 transition-transform duration-150"
+                                                    :class="open ? 'rotate-180' : ''"
+                                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                                </svg>
+                                            </button>
+
+                                            {{-- Panel del dropdown --}}
+                                            <div x-show="open"
+                                                x-on:click.away="open = false"
+                                                x-transition:enter="transition ease-out duration-100"
+                                                x-transition:enter-start="opacity-0 scale-95"
+                                                x-transition:enter-end="opacity-100 scale-100"
+                                                x-transition:leave="transition ease-in duration-75"
+                                                x-transition:leave-start="opacity-100 scale-100"
+                                                x-transition:leave-end="opacity-0 scale-95"
+                                                class="absolute left-0 mt-2 w-72 rounded-xl shadow-xl bg-white ring-1 ring-black/5 divide-y divide-gray-100 focus:outline-none z-50"
+                                                role="menu" aria-orientation="vertical">
+
+                                                {{-- Header del dropdown --}}
+                                                <div class="px-4 py-2.5 flex items-center justify-between">
+                                                    <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Documentos</span>
+                                                    <span class="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">{{ $totalDocs }}</span>
+                                                </div>
+
+                                                {{-- Lista de documentos --}}
+                                                <div class="py-1 max-h-64 overflow-y-auto" role="none">
+                                                    @foreach ($todosDocs as $doc)
+                                                        <button type="button"
+                                                            x-on:click="open = false; abrir('{{ $doc['url'] }}', '{{ $doc['label'] }}')"
+                                                            class="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors group"
+                                                            role="menuitem">
+                                                            <div class="w-8 h-8 rounded-lg {{ $doc['color'] }} text-white flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-sm">
+                                                                <i class="{{ $doc['icon'] }} text-xs"></i>
+                                                            </div>
+                                                            <div class="min-w-0 flex-1">
+                                                                <p class="text-xs font-bold text-gray-800 truncate">{{ $doc['label'] }}</p>
+                                                                <p class="text-[10px] text-gray-400 font-medium">
+                                                                    {{ $doc['tipo'] === 'sistema' ? 'Generado por sistema' : 'Documento subido' }}
+                                                                </p>
+                                                            </div>
+                                                            <i class="fa-solid fa-eye text-[10px] text-gray-300 group-hover:text-indigo-500 transition-colors shrink-0"></i>
+                                                        </button>
+                                                    @endforeach
+                                                </div>
+
+                                                {{-- Footer --}}
+                                                <div class="px-4 py-2 bg-gray-50 rounded-b-xl">
+                                                    <p class="text-[10px] text-gray-400 font-medium text-center">
+                                                        <i class="fa-solid fa-info-circle mr-1"></i> Haz clic para previsualizar
+                                                    </p>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
+                                    @else
+                                        {{-- Estado vacío --}}
+                                        <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-50 text-gray-400 border border-dashed border-gray-200">
+                                            <i class="fa-solid fa-folder-open text-[10px]"></i>
+                                            <span>Sin docs</span>
+                                        </div>
+                                    @endif
                                 </td>
+
                                 <td class="text-center">
                                     <div class="flex justify-center items-center space-x-2">
                                         <div class="relative group">
@@ -102,8 +272,7 @@
                                                 class="py-1 px-2 text-center rounded-md bg-amber-300 font-bold text-black cursor-pointer hover:bg-amber-400">
                                                 <i class="fa-solid fa-pen-to-square"></i>
                                             </a>
-                                            <span
-                                                class="absolute bottom-full  mb-2 hidden group-hover:block bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap z-10">
+                                            <span class="absolute bottom-full mb-2 hidden group-hover:block bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap z-10">
                                                 Editar
                                             </span>
                                         </div>
@@ -121,13 +290,114 @@
                 @endif
             @else
                 <div class="px-6 py-4 text-center font-bold bg-blue-100 rounded-md">
-                        No se encontró ningún registro.
+                    No se encontró ningún registro.
                 </div>
             @endif
         </x-table-vehiculos>
     </div>
 
-    <!-- Dialog Modal para actualizar -->
+    {{-- ===================== MODAL DE PREVISUALIZACIÓN ===================== --}}
+    <template x-if="everOpened">
+        <template x-teleport="body">
+            <div x-show="show" x-cloak @keydown.escape.window="cerrar()" class="fixed inset-0 z-[90]" style="display:none;">
+                {{-- Backdrop --}}
+                <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" @click="cerrar()"></div>
+
+                {{-- Panel del visor --}}
+                <div class="absolute inset-4 sm:inset-8 md:inset-12 bg-white rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-white/20"
+                    x-show="show"
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 scale-95"
+                    x-transition:enter-end="opacity-100 scale-100"
+                    x-transition:leave="transition ease-in duration-150"
+                    x-transition:leave-start="opacity-100 scale-100"
+                    x-transition:leave-end="opacity-0 scale-95">
+
+                    {{-- Header --}}
+                    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white shrink-0">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
+                                <i class="fa-solid" :class="isImage ? 'fa-image text-emerald-500 text-lg' : 'fa-file-pdf text-red-500 text-lg'"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <span class="text-base font-extrabold text-gray-800 truncate block" x-text="title"></span>
+                                <span class="text-[11px] text-gray-400 font-medium">Previsualización de contenido en pantalla completa</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0">
+                            {{-- Controles de zoom (solo para imágenes) --}}
+                            <template x-if="isImage && status === 'ok'">
+                                <div class="flex items-center gap-1 bg-gray-100 rounded-xl p-1 mr-2 border border-gray-200 shadow-inner">
+                                    <button @click="zoomOut()" class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-600 hover:bg-white shadow-sm transition">
+                                        <i class="fa-solid fa-minus text-xs"></i>
+                                    </button>
+                                    <span class="text-xs font-bold text-gray-700 w-10 text-center select-none" x-text="Math.round(zoom*100)+'%'"></span>
+                                    <button @click="zoomIn()" class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-600 hover:bg-white shadow-sm transition">
+                                        <i class="fa-solid fa-plus text-xs"></i>
+                                    </button>
+                                    <div class="w-px h-4 bg-gray-300 mx-0.5"></div>
+                                    <button @click="zoomReset()" class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-600 hover:bg-white shadow-sm transition" title="Restablecer zoom">
+                                        <i class="fa-solid fa-expand text-xs"></i>
+                                    </button>
+                                </div>
+                            </template>
+                            {{-- Abrir en pestaña --}}
+                            <button @click="window.open(url, '_blank')" x-show="status==='ok'"
+                                class="px-3 py-2 text-xs font-bold text-indigo-600 bg-indigo-50 rounded-xl hover:bg-indigo-100 transition hidden sm:inline-flex items-center gap-1.5 shadow-sm">
+                                <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i> Abrir en pestaña
+                            </button>
+                            {{-- Cerrar --}}
+                            <button @click="cerrar()"
+                                class="w-9 h-9 flex items-center justify-center rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 transition">
+                                <i class="fa-solid fa-xmark text-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- Contenido --}}
+                    <div class="flex-1 bg-slate-900 relative overflow-hidden flex items-center justify-center">
+                        {{-- Loading --}}
+                        <div x-show="status==='loading'" class="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-white z-10">
+                            <div class="w-10 h-10 rounded-full border-4 border-indigo-100 border-t-indigo-600 animate-spin"></div>
+                            <span class="text-xs font-bold text-gray-600">Cargando contenido del documento...</span>
+                        </div>
+                        {{-- Error --}}
+                        <div x-show="status==='error'" class="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-white z-10">
+                            <div class="w-16 h-16 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center text-2xl shadow-inner">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                            </div>
+                            <p class="text-sm font-bold text-gray-700">No se pudo cargar el contenido</p>
+                            <p class="text-xs text-gray-500 max-w-xs text-center">El archivo puede estar dañado o no estar disponible en este momento.</p>
+                            <button @click="cerrar()" class="text-xs font-bold text-gray-600 bg-gray-100 px-4 py-2 rounded-xl hover:bg-gray-200 transition mt-2">Cerrar visor</button>
+                        </div>
+                        {{-- PDF --}}
+                        <template x-if="status==='ok' && !isImage">
+                            <div class="w-full h-full p-2 sm:p-4 flex items-center justify-center bg-slate-950">
+                                <iframe :src="url + '#toolbar=1&view=FitH'" class="w-full h-full rounded-2xl border-0 shadow-2xl bg-white" title="Previsualizador de contenido PDF" loading="lazy"></iframe>
+                            </div>
+                        </template>
+                        {{-- Imagen --}}
+                        <template x-if="status==='ok' && isImage">
+                            <div class="w-full h-full overflow-auto p-6 select-none flex items-center justify-center"
+                                :class="zoom <= 1 ? 'flex items-center justify-center' : ''" x-ref="vp"
+                                @mousedown="startPan($event)"
+                                @mousemove.window.throttle.16ms="movePan($event)"
+                                @mouseup.window="stopPan()" @mouseleave="stopPan()">
+                                <img :src="url" :style="zoom > 1 ? `width:${zoom*100}%` : ''"
+                                    @click="if(moved){moved=false}else{zoom=zoom===1?1.5:1}"
+                                    @dragstart.prevent
+                                    :class="zoom <= 1 ? 'max-w-full max-h-full object-contain cursor-zoom-in' : 'block mx-auto max-w-none cursor-grab'"
+                                    class="rounded-2xl shadow-2xl transition-[width] duration-150 bg-white"
+                                    draggable="false" loading="lazy" alt="Previsualización de imagen">
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </template>
+
+    {{-- ===================== MODAL EDITAR VEHÍCULO ===================== --}}
     <x-dialog-modal wire:model="open" wire:loading.attr="disabled" wire:target="open">
         <x-slot name="title">
             Editar Vehiculo
@@ -196,7 +466,7 @@
         </x-slot>
     </x-dialog-modal>
 
-    <!-- Dialog Modal para crear nuevo vehículo -->
+    {{-- ===================== MODAL CREAR VEHÍCULO ===================== --}}
     <x-dialog-modal wire:model="openCreate" wire:loading.attr="disabled" wire:target="openCreate">
         <x-slot name="title">
             Agregar Nuevo Vehículo
