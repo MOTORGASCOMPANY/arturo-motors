@@ -187,6 +187,9 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::get('/ordenes/{ordenId}/pdf/evaluacion', [DocumentosConversionController::class, 'evaluacion'])->name('conversiones.pdf.evaluacion');
     Route::get('/ordenes/{ordenId}/pdf/ficha-tecnica', [DocumentosConversionController::class, 'fichaTecnica'])->name('conversiones.pdf.ficha-tecnica');
     Route::get('/ordenes/{ordenId}/pdf/garantia', [DocumentosConversionController::class, 'garantia'])->name('conversiones.pdf.garantia');
+    Route::get('/ordenes/{ordenId}/pdf/carta-garantia', [DocumentosConversionController::class, 'cartaGarantia'])->name('conversiones.pdf.carta-garantia');
+    Route::get('/ordenes/{ordenId}/pdf/hoja-recepcion', [DocumentosConversionController::class, 'hojaRecepcion'])->name('conversiones.pdf.hoja-recepcion');
+    Route::get('/ordenes/{ordenId}/pdf/constancia-entrega', [DocumentosConversionController::class, 'constanciaEntrega'])->name('conversiones.pdf.constancia-entrega');
 
     // Rutas modulo CMS
     Route::middleware('can:opciones.cms')->prefix('cms')->name('cms.')->group(function () {

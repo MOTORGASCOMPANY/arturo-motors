@@ -34,7 +34,7 @@
                     </div>
 
                     <div class="mb-4">
-                        <button class="bg-indigo-500 px-6 py-4 rounded-md text-white font-semibold tracking-wide cursor-pointer hover:bg-indigo-600 transition">
+                        <button wire:click="abrirModalCrear" class="bg-indigo-500 px-6 py-4 rounded-md text-white font-semibold tracking-wide cursor-pointer hover:bg-indigo-600 transition">
                             Nuevo Usuario &nbsp;<i class="fas fa-plus"></i>
                         </button>
                     </div>
@@ -111,6 +111,53 @@
         </div>
     </div>
     
+
+    <!-- Modal para crear usuario -->
+    <x-dialog-modal wire:model.live="creando" wire:loading.attr="disabled">
+        <x-slot name="title" class="font-bold">
+            <h1 class="text-xl font-bold"><i class="fa-solid fa-user-plus text-white"></i> &nbsp;Crear Nuevo Usuario</h1>
+        </x-slot>
+
+        <x-slot name="content">
+            <div class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <x-label value="Nombre Completo" />
+                        <x-input type="text" class="w-full" wire:model="new_name" />
+                        <x-input-error for="new_name" />
+                    </div>
+                    <div>
+                        <x-label value="Correo Electrónico" />
+                        <x-input type="email" class="w-full" wire:model="new_email" />
+                        <x-input-error for="new_email" />
+                    </div>
+                    <div>
+                        <x-label value="Contraseña" />
+                        <x-input type="password" class="w-full" wire:model="new_password" placeholder="Mínimo 6 caracteres" />
+                        <x-input-error for="new_password" />
+                    </div>
+                    <div>
+                        <x-label value="DNI / Documento" />
+                        <x-input type="text" class="w-full" wire:model="new_dni" placeholder="DNI, Carnet Extranjería o Carnet Refugio" />
+                        <x-input-error for="new_dni" />
+                    </div>
+                    <div>
+                        <x-label value="Celular" />
+                        <x-input type="text" class="w-full" wire:model="new_celular" />
+                    </div>
+                </div>
+            </div>
+        </x-slot>
+
+        <x-slot name="footer">
+            <x-secondary-button wire:click="$set('creando', false)" class="mx-2">
+                Cancelar
+            </x-secondary-button>
+            <x-button wire:click="store" wire:loading.attr="disabled" wire:target="store">
+                Crear Usuario
+            </x-button>
+        </x-slot>
+    </x-dialog-modal>
 
     <!-- Modal para editar usuario -->
     <x-dialog-modal wire:model.live="editando" wire:loading.attr="disabled">

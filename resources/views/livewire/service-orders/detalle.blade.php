@@ -349,6 +349,16 @@
                             'bgClass' => 'bg-amber-600',
                             'borderClass' => 'border-amber-200 hover:border-amber-400',
                         ],
+                        'Hoja de recepción' => [
+                            'icon' => 'fa-clipboard-check',
+                            'bgClass' => 'bg-indigo-600',
+                            'borderClass' => 'border-indigo-200 hover:border-indigo-400',
+                        ],
+                        'Constancia de entrega' => [
+                            'icon' => 'fa-file-signature',
+                            'bgClass' => 'bg-teal-600',
+                            'borderClass' => 'border-teal-200 hover:border-teal-400',
+                        ],
                     ];
 
                     $sistemaDocs = collect([
@@ -367,7 +377,7 @@
                                 [
                                     'label' => 'Carta garantía',
                                     'badge' => 'Sistema',
-                                    'url' => route('vehiculo.pdf', $orden->vehiculo_id),
+                                    'url' => route('conversiones.pdf.carta-garantia', $orden->id),
                                 ],
                                 $estilosSistema['Carta garantía'],
                             )
@@ -380,6 +390,26 @@
                                     'url' => route('manual.pdf', $orden->vehiculo_id),
                                 ],
                                 $estilosSistema['Manual'],
+                            )
+                            : null,
+                        $orden->vehiculo
+                            ? array_merge(
+                                [
+                                    'label' => 'Hoja de recepción',
+                                    'badge' => 'Sistema',
+                                    'url' => route('conversiones.pdf.hoja-recepcion', $orden->id),
+                                ],
+                                $estilosSistema['Hoja de recepción'],
+                            )
+                            : null,
+                        $orden->vehiculo
+                            ? array_merge(
+                                [
+                                    'label' => 'Constancia de entrega',
+                                    'badge' => 'Sistema',
+                                    'url' => route('conversiones.pdf.constancia-entrega', $orden->id),
+                                ],
+                                $estilosSistema['Constancia de entrega'],
                             )
                             : null,
                     ])->filter();
@@ -456,11 +486,6 @@
                                 <a href="{{ route('conversiones.pdf.evaluacion', $orden->id) }}" target="_blank"
                                     class="bg-white hover:bg-gray-50 text-gray-700 text-xs font-semibold px-3 py-2 rounded-lg border border-gray-200 transition"><i
                                         class="fas fa-clipboard-check mr-1"></i> Evaluación</a>
-                            @endif
-                            @if ($orden->items->count())
-                                <a href="{{ route('conversiones.pdf.ficha-tecnica', $orden->id) }}" target="_blank"
-                                    class="bg-white hover:bg-gray-50 text-gray-700 text-xs font-semibold px-3 py-2 rounded-lg border border-gray-200 transition"><i
-                                        class="fas fa-wrench mr-1"></i> Ficha técnica</a>
                             @endif
                             @if (in_array(strtolower($orden->estado), ['entregado', 'entregada']))
                                 <a href="{{ route('conversiones.pdf.garantia', $orden->id) }}" target="_blank"
