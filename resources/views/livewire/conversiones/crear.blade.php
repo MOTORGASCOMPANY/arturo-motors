@@ -130,12 +130,12 @@
                             <div class="p-4 bg-gray-50 border border-gray-200/80 rounded-xl grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <x-label for="precioFinal" value="Precio Acordado (S/)" class="text-gray-700 font-medium" />
-                                    <x-input id="precioFinal" type="number" step="0.01" wire:model="precioFinal" class="w-full font-semibold text-gray-900 mt-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg" />
+                                    <input id="precioFinal" type="number" step="0.01" wire:model.live="precioFinal" class="w-full font-semibold text-gray-900 mt-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg" />
                                     <span class="text-xs text-gray-500 mt-1 block">Precio base sugerido: S/ {{ number_format($precioLista, 2) }}</span>
                                 </div>
                                 <div>
                                     <x-label for="descuentoMotivo" value="Motivo del Ajuste / Descuento" class="text-gray-700 font-medium" />
-                                    <x-input id="descuentoMotivo" type="text" wire:model="descuentoMotivo" placeholder="Ej: Descuento por kit en oferta" class="w-full mt-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg" />
+                                    <x-input id="descuentoMotivo" type="text" wire:model.live="descuentoMotivo" placeholder="Ej: Descuento por kit en oferta" class="w-full mt-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg" />
                                     <x-input-error for="descuentoMotivo" class="mt-1" />
                                 </div>
                             </div>

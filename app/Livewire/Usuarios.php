@@ -168,6 +168,8 @@ class Usuarios extends Component
 
     public function abrirModalCrear()
     {
+        abort_unless(auth()->user()->hasRole('Administrador del sistema'), 403);
+
         $this->reset([
             'creando', 'new_name', 'new_email', 'new_password', 'new_dni', 'new_celular',
         ]);
@@ -176,6 +178,8 @@ class Usuarios extends Component
 
     public function store()
     {
+        abort_unless(auth()->user()->hasRole('Administrador del sistema'), 403);
+
         $this->validate();
 
         $user = User::create([

@@ -33,11 +33,13 @@
                             type="text" wire:model.live="search" placeholder="Buscar por nombre o correo...">
                     </div>
 
+                    @if(auth()->user()->hasRole('Administrador del sistema'))
                     <div class="mb-4">
                         <button wire:click="abrirModalCrear" class="bg-indigo-500 px-6 py-4 rounded-md text-white font-semibold tracking-wide cursor-pointer hover:bg-indigo-600 transition">
                             Nuevo Usuario &nbsp;<i class="fas fa-plus"></i>
                         </button>
                     </div>
+                    @endif
                 </div>
             </div>
 
@@ -113,6 +115,7 @@
     
 
     <!-- Modal para crear usuario -->
+    @if(auth()->user()->hasRole('Administrador del sistema'))
     <x-dialog-modal wire:model.live="creando" wire:loading.attr="disabled">
         <x-slot name="title" class="font-bold">
             <h1 class="text-xl font-bold"><i class="fa-solid fa-user-plus text-white"></i> &nbsp;Crear Nuevo Usuario</h1>
@@ -158,6 +161,7 @@
             </x-button>
         </x-slot>
     </x-dialog-modal>
+    @endif
 
     <!-- Modal para editar usuario -->
     <x-dialog-modal wire:model.live="editando" wire:loading.attr="disabled">

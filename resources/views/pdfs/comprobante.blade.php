@@ -237,8 +237,22 @@
                     @endif
                 </td>
                 <td class="text-center">1</td>
-                <td class="text-right">S/ {{ number_format($orden->comprobante->monto, 2) }}</td>
-                <td class="text-right">S/ {{ number_format($orden->comprobante->monto, 2) }}</td>
+                <td class="text-right">
+                    @if($orden->precio_lista != $orden->precio_final)
+                        <span style="text-decoration: line-through; color: #94a3b8; font-size: 9px;">S/ {{ number_format($orden->precio_lista, 2) }}</span><br>
+                        <strong>S/ {{ number_format($orden->precio_final, 2) }}</strong>
+                    @else
+                        <strong>S/ {{ number_format($orden->comprobante->monto, 2) }}</strong>
+                    @endif
+                </td>
+                <td class="text-right">
+                    @if($orden->precio_lista != $orden->precio_final)
+                        <span style="text-decoration: line-through; color: #94a3b8; font-size: 9px;">S/ {{ number_format($orden->precio_lista, 2) }}</span><br>
+                        <strong>S/ {{ number_format($orden->precio_final, 2) }}</strong>
+                    @else
+                        <strong>S/ {{ number_format($orden->comprobante->monto, 2) }}</strong>
+                    @endif
+                </td>
             </tr>
         </tbody>
     </table>
@@ -250,21 +264,23 @@
             <td style="width: 55%; vertical-align: top; padding-top: 6px;">
                 <div style="font-size: 9.5px; color: #334155;">
                     <strong>IMPORTE EN LETRAS:</strong><br>
-                    Son {{ number_format($orden->comprobante->monto, 2) }} Soles.
+                    {{ $monto_letras }}
                 </div>
             </td>
 
-            <!-- Columna Derecha: Desglose Op. Gravada, IGV, Total -->
+            <!-- Columna Derecha: Total -->
             <td style="width: 45%;">
                 <table class="w-100">
+                    @if($orden->precio_lista != $orden->precio_final)
                     <tr>
-                        <td class="text-right font-bold" style="color: #475569; padding: 2px 4px;">Op. Gravada:</td>
-                        <td class="text-right" style="width: 40%; padding: 2px 4px;">S/ {{ number_format($orden->comprobante->monto / 1.18, 2) }}</td>
+                        <td class="text-right" style="color: #94a3b8; padding: 2px 4px; font-size: 10px;">Precio original:</td>
+                        <td class="text-right" style="width: 40%; padding: 2px 4px; font-size: 10px;"><span style="text-decoration: line-through; color: #94a3b8;">S/ {{ number_format($orden->precio_lista, 2) }}</span></td>
                     </tr>
                     <tr>
-                        <td class="text-right font-bold" style="color: #475569; padding: 2px 4px;">I.G.V. (18%):</td>
-                        <td class="text-right" style="padding: 2px 4px;">S/ {{ number_format($orden->comprobante->monto - ($orden->comprobante->monto / 1.18), 2) }}</td>
+                        <td class="text-right" style="color: #b45309; padding: 2px 4px; font-size: 10px; font-weight: bold;">Precio renegociado:</td>
+                        <td class="text-right" style="width: 40%; padding: 2px 4px; color: #b45309; font-weight: bold; font-size: 10px;">S/ {{ number_format($orden->precio_final, 2) }}</td>
                     </tr>
+                    @endif
                     <tr class="total-row">
                         <td class="text-right font-bold" style="padding: 5px 4px; color: #0f172a;">TOTAL A PAGAR:</td>
                         <td class="text-right font-bold" style="padding: 5px 4px; color: #1e3a8a;">S/ {{ number_format($orden->comprobante->monto, 2) }}</td>
