@@ -3,6 +3,7 @@
 namespace App\Livewire\Reportes;
 
 use App\Models\Cita;
+use App\Models\Sede;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -24,6 +25,8 @@ class ReporteCitas extends Component
 
     public $fechaFin;
 
+    public $sede_id = 'todos';
+
     public function mount()
     {
         $this->estado = 'todos';
@@ -34,8 +37,7 @@ class ReporteCitas extends Component
 
     public function updating($property)
     {
-        // Resetea la paginación cuando cambia una propiedad que afecta el query
-        if ($property === 'search' || $property === 'estado' || $property === 'fechaInicio' || $property === 'fechaFin') {
+        if (in_array($property, ['search', 'estado', 'fechaInicio', 'fechaFin', 'sede_id'])) {
             $this->resetPage();
         }
     }
@@ -52,9 +54,14 @@ class ReporteCitas extends Component
 
     public function render()
     {
-        $citas = Cita::with(['cliente', 'vehiculo', 'asesor'])
+        $sedes = Sede::all();
+        
+        $citas = Cita::with(['cliente', 'vehiculo', 'asesor', 'sede'])
             ->buscar($this->search)
             ->estado($this->estado)
+            ->when($this->sede_id && $this->sede_id !== 'todos', function ($query) {
+                $query->where('sede_id', $this->sede_id);
+            })
             ->when($this->fechaInicio, function ($query) {
                 $query->whereDate('fecha_cita', '>=', $this->fechaInicio);
             })
@@ -64,6 +71,6 @@ class ReporteCitas extends Component
             ->ordenar($this->sort, $this->direction)
             ->paginate($this->cant);
 
-        return view('livewire.reportes.reporte-citas', compact('citas'));
+        return view('livewire.reportes.reporte-citas', compact('citas', 'sedes'));
     }
 }

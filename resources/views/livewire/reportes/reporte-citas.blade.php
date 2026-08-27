@@ -1,4 +1,3 @@
-<!-- resources>views>livewire>reportes>reporte-citas.blade.php -->
 <div class="container mx-auto py-8 antialiased bg-gray-100">
     <!-- Main Card Container -->
     <div class="bg-white rounded-xl shadow-lg overflow-hidden">
@@ -30,13 +29,25 @@
         <!-- Content Area -->
         <div class="p-8">
             <!-- Filtros -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
                 <!-- Buscar -->
                 <div>
                     <x-label for="search" value="Buscar Cliente/Motivo" class="text-gray-600 font-semibold mb-1" />
                     <x-input id="search" type="text"
                         class="block w-full border-gray-300 rounded-lg shadow-sm focus:ring-green-500 focus:border-green-500 transition"
                         wire:model.live="search" placeholder="Buscar..." />
+                </div>
+                <!-- Sede -->
+                <div>
+                    <x-label for="sede_id" value="Sede" class="text-gray-600 font-semibold mb-1" />
+                    <select id="sede_id"
+                        class="block w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 transition text-sm"
+                        wire:model.live="sede_id">
+                        <option value="todos">Todas las sedes</option>
+                        @foreach ($sedes as $s)
+                            <option value="{{ $s->id }}">{{ $s->nombre }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <!-- Estado -->
                 <div>
@@ -88,6 +99,9 @@
                                     @endif
                                 </th>
                                 <th class="px-6 py-3 text-left text-sm font-semibold uppercase tracking-wider">
+                                    Sede
+                                </th>
+                                <th class="px-6 py-3 text-left text-sm font-semibold uppercase tracking-wider">
                                     Cliente
                                 </th>
                                 <th class="px-6 py-3 text-left text-sm font-semibold uppercase tracking-wider">
@@ -107,17 +121,26 @@
                         <tbody class="divide-y divide-gray-200">
                             @foreach ($citas as $cita)
                                 <tr class="bg-white hover:bg-gray-50 transition-colors duration-200">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ $cita->id }}
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                        {{ $cita->id }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                                        {{ $cita->fecha_cita->format('d/m/Y') }}</td>
+                                        {{ $cita->fecha_cita->format('d/m/Y') }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold">
+                                        {{ $cita->sede->nombre ?? 'N/A' }}
+                                    </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                        {{ $cita->cliente->nombre ?? 'N/A' }} {{ $cita->cliente->apellido ?? '' }}</td>
+                                        {{ $cita->cliente->nombre ?? 'N/A' }} {{ $cita->cliente->apellido ?? '' }}
+                                    </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                                        {{ $cita->vehiculo->placa ?? 'N/A' }}</td>
+                                        {{ $cita->vehiculo->placa ?? 'N/A' }}
+                                    </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                                        {{ $cita->asesor->name ?? 'N/A' }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ $cita->motivo }}
+                                        {{ $cita->asesor->name ?? 'N/A' }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                        {{ $cita->motivo }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                                         @php

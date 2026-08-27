@@ -410,22 +410,29 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                                             aria-label="submenu">
                                             
                                             @can('rrhh.contratos')
-                                                <x-responsive-nav-link class="text-sm" href="{{ route('rrhh.contratos') }}"
-                                                    :active="request()->routeIs('rrhh.contratos')">
-                                                    {{ __('Empleados') }}
-                                                </x-responsive-nav-link>
+                                                <li class="transition-colors duration-150">
+                                                    <x-responsive-nav-link class="text-sm" href="{{ route('rrhh.contratos') }}"
+                                                        :active="request()->routeIs('rrhh.contratos')">
+                                                        {{ __('Empleados') }}
+                                                    </x-responsive-nav-link>
+                                                </li>
                                             @endcan
-                                            @can('rrhh.planillas')
-                                                <x-responsive-nav-link class="text-sm" href="{{ route('rrhh.planillas') }}"
-                                                    :active="request()->routeIs('rrhh.planillas')">
-                                                    {{ __('Planillas') }}
-                                                </x-responsive-nav-link>
-                                            @endcan
-                                            <x-responsive-nav-link class="text-sm" href="{{ route('rrhh.mis-planillas') }}"
-                                                :active="request()->routeIs('rrhh.mis-planillas')">
-                                                {{ __('Boletas') }}
-                                            </x-responsive-nav-link>
 
+                                            @can('rrhh.planillas')
+                                                <li class="transition-colors duration-150">
+                                                    <x-responsive-nav-link class="text-sm" href="{{ route('rrhh.planillas') }}"
+                                                        :active="request()->routeIs('rrhh.planillas')">
+                                                        {{ __('Planillas') }}
+                                                    </x-responsive-nav-link>
+                                                </li>
+                                            @endcan
+
+                                            <li class="transition-colors duration-150">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('rrhh.mis-planillas') }}"
+                                                    :active="request()->routeIs('rrhh.mis-planillas')">
+                                                    {{ __('Boletas') }}
+                                                </x-responsive-nav-link>
+                                            </li>
                                         </ul>
 
                                     </div>
@@ -456,11 +463,30 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                                             aria-label="submenu">
 
                                             <li class="transition-colors duration-150">
-                                                <x-responsive-nav-link class="text-sm" href="{{ route('Rpta.Citas') }}"
-                                                    :active="request()->routeIs('Rpta.Citas')">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('citas.reporte') }}"
+                                                    :active="request()->routeIs('citas.reporte')">
                                                     Reporte de Citas
                                                 </x-responsive-nav-link>
                                             </li>
+                                            <li class="transition-colors duration-150">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('caja.reporte') }}"
+                                                    :active="request()->routeIs('caja.reporte')">
+                                                    Reporte de Cajas
+                                                </x-responsive-nav-link>
+                                            </li>
+                                            <li class="transition-colors duration-150">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('servicios.reporte') }}"
+                                                    :active="request()->routeIs('servicios.reporte')">
+                                                    Reporte de Servicios
+                                                </x-responsive-nav-link>
+                                            </li>
+                                            <li class="transition-colors duration-150">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('almacen.reporte') }}"
+                                                    :active="request()->routeIs('almacen.reporte')">
+                                                    Reporte de Almacen
+                                                </x-responsive-nav-link>
+                                            </li>
+                                            
                                         </ul>
                                     </div>
                                 </li>
