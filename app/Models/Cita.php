@@ -12,6 +12,7 @@ class Cita extends Model
     protected $table = 'citas';
 
     protected $fillable = [
+        'sede_id',
         'cliente_id',
         'vehiculo_id',
         'asesor_id',
@@ -26,6 +27,11 @@ class Cita extends Model
     ];
 
     // Relaciones
+    public function sede()
+    {
+        return $this->belongsTo(Sede::class, 'sede_id');
+    }
+
     public function cliente()
     {
         return $this->belongsTo(Cliente::class, 'cliente_id');
@@ -73,6 +79,13 @@ class Cita extends Model
     // Accesores
 
     // Scope para filtros y orden
+    public function scopePorSede($query, $sedeId)
+    {
+        if ($sedeId && $sedeId !== 'todas') {
+            $query->where('sede_id', $sedeId);
+        }
+    }
+    
     public function scopeBuscar($query, $search)
     {
         if ($search) {

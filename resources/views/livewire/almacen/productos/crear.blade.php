@@ -37,11 +37,25 @@
                         @endforeach
                     </div>
                 @endif
-
+                {{-- 
                 @if ($this->categoria && !$this->categoria->es_serializado)
                     <div>
                         <x-label for="precioReferencial" value="Precio referencial de venta (S/)" />
                         <x-input type="number" step="0.01" wire:model="precioReferencial" class="w-full rounded-lg border-gray-300" />
+                    </div>
+                @endif
+                --}}
+                @if ($this->categoria)
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <x-label for="precioReferencial" value="Precio referencial (S/)" />
+                            <x-input type="number" step="0.01" wire:model="precioReferencial" class="w-full rounded-lg border-gray-300" />
+                        </div>
+                        <div>
+                            <x-label for="stockMinimo" value="Stock mínimo" />
+                            <x-input type="number" min="0" wire:model="stockMinimo" class="w-full rounded-lg border-gray-300" />
+                            <p class="text-xs text-gray-500 mt-1">Se alertará cuando el disponible baje de este número.</p>
+                        </div>
                     </div>
                 @endif
             </div>

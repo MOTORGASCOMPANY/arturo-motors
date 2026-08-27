@@ -18,6 +18,7 @@ class Producto extends Model
         'atributos',
         'precio_referencial',
         'stock',
+        'stock_minimo',
         'activo',
     ];
 
@@ -51,6 +52,11 @@ class Producto extends Model
         }
 
         return $this->stock;
+    }
+
+    public function getStockBajoAttribute()
+    {
+        return $this->stock_minimo > 0 && $this->stock_disponible <= $this->stock_minimo;
     }
 
     // Scopes

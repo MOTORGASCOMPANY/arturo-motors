@@ -1,4 +1,4 @@
-<div wire:init="" wire:loading.attr="disabled">
+<div wire:loading.attr="disabled">
 
     <div class="container mx-auto py-12">
         <div class="bg-gray-200 p-8 rounded-xl w-full">
