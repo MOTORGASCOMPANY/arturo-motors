@@ -32,7 +32,7 @@
         <p>LA GARANT&Iacute;A SE HAR&Aacute; EFECTIVA SI EL CLIENTE CUMPLE CON SU MANTENIMIENTO PREVENTIVO/CORRECTIVO, <strong>A LOS 7 MESES, TENIENDO COSTO DE S/.0.00. DOS MANTENIMIENTOS DE GAS PASANDO LOS 15,000 KM DE RECORRIDO SIN COSTO ADICIONAL.</strong> SI NO SE REALIZARA EL MANTENIMIENTO INDICADO EL EQUIPO SE DETERIORA DE UNA MANERA R&Aacute;PIDA Y LA EMPRESA NO SE HAR&Aacute; RESPONSABLE, POR ELLO SE LE RECOMIENDA CUMPLIR CON LO INDICADO PARA UN MEJOR CUIDADO DEL MOTOR DE LA UNIDAD.</p>
         <p>SIN OTRO PARTICULAR, ME DESPIDO.</p>
         <div class="firma"><div class="linea"></div><p><strong>Firma y Sello</strong></p></div>
-        <p class="footer-note">Documento generado por el Sistema de Gesti&oacute;n de Conversiones &ndash; ARTURO MOTORS</p>
+        <p class="footer-note">Documento generado por el Sistema de Gesti&oacute;n Automotriz/Arturo Motors</p>
     </main>
 </body>
 </html>

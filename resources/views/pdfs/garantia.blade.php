@@ -76,6 +76,6 @@
         <tr><td><div class="firma-linea"></div>Firma del taller</td><td><div class="firma-linea"></div>Firma del cliente</td></tr>
     </table>
 
-    <p class="footer-note">Documento generado por el Sistema de Gesti&oacute;n de Conversiones &ndash; ARTURO MOTORS</p>
+    <p class="footer-note">Documento generado por el Sistema de Gesti&oacute;n Automotriz/Arturo Motors</p>
 </body>
 </html>

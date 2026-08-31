@@ -43,7 +43,13 @@
     {{-- Services Grid --}}
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         @forelse ($services as $service)
-            <x-cms.card class="flex flex-col h-full group" style="animation: cardEntry 0.4s ease-out {{ $loop->index * 0.06 }}s both">
+            <x-cms.card
+                wire:key="service-{{ $service['id'] }}"
+                x-data="{ highlight: false }"
+                x-on:service-moved.window="if ($event.detail.id === {{ $service['id'] }}) { highlight = true; setTimeout(() => highlight = false, 650) }"
+                :class="{ 'ring-2 ring-blue-400 shadow-lg scale-[1.015]': highlight }"
+                class="flex flex-col h-full group transition-all duration-500 ease-out"
+                style="animation: cardEntry 0.4s ease-out {{ $loop->index * 0.06 }}s both">
                 <div class="p-6 flex-1">
                     <div class="flex items-start justify-between mb-4">
                         <div class="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 text-xl border border-blue-100">
@@ -66,8 +72,24 @@
                 </div>
                 <div class="border-t border-gray-100 bg-gray-50/80 px-6 py-3.5 flex items-center justify-between">
                     <div class="flex gap-1">
-                        <x-cms.action-button icon="fa-solid fa-arrow-up" variant="ghost" wireClick="moveUp({{ $service['id'] }})" title="Subir" />
-                        <x-cms.action-button icon="fa-solid fa-arrow-down" variant="ghost" wireClick="moveDown({{ $service['id'] }})" title="Bajar" />
+                        <button wire:click="moveUp({{ $service['id'] }})"
+                                @if($loop->first) disabled @endif
+                                title="Subir"
+                                class="w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-200
+                                       {{ $loop->first
+                                            ? 'text-gray-300 cursor-not-allowed'
+                                            : 'text-gray-400 hover:bg-blue-50 hover:text-blue-600 hover:-translate-y-0.5 active:scale-90' }}">
+                            <i class="fa-solid fa-arrow-up text-xs"></i>
+                        </button>
+                        <button wire:click="moveDown({{ $service['id'] }})"
+                                @if($loop->last) disabled @endif
+                                title="Bajar"
+                                class="w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-200
+                                       {{ $loop->last
+                                            ? 'text-gray-300 cursor-not-allowed'
+                                            : 'text-gray-400 hover:bg-blue-50 hover:text-blue-600 hover:translate-y-0.5 active:scale-90' }}">
+                            <i class="fa-solid fa-arrow-down text-xs"></i>
+                        </button>
                     </div>
                     <div class="flex gap-1">
                         <x-cms.action-button icon="fa-solid fa-pen" variant="warning" wireClick="edit({{ $service['id'] }})" title="Editar" />

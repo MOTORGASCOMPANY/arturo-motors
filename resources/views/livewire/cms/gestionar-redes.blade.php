@@ -3,10 +3,32 @@
     description="Administra los enlaces a redes sociales que se muestran en el footer del landing page"
     headerIcon='<i class="fa-brands fa-instagram text-blue-600"></i>'
 >
+    {{-- Identidad visual por plataforma: SOLO color + iniciales.               --}}
+    {{-- No depende de ninguna librería de íconos externa (FontAwesome, etc.),  --}}
+    {{-- así que siempre se ve, sin importar si el CDN de íconos carga o no.    --}}
+    @php
+        $platformBadges = [
+            'facebook'  => ['label' => 'FB', 'bg' => '#1877F2'],
+            'instagram' => ['label' => 'IG', 'bg' => '#E1306C'],
+            'whatsapp'  => ['label' => 'WA', 'bg' => '#25D366'],
+            'tiktok'    => ['label' => 'TT', 'bg' => '#000000'],
+            'youtube'   => ['label' => 'YT', 'bg' => '#FF0000'],
+            'twitter'   => ['label' => 'X',  'bg' => '#000000'],
+            'x'         => ['label' => 'X',  'bg' => '#000000'],
+            'linkedin'  => ['label' => 'IN', 'bg' => '#0A66C2'],
+        ];
+
+        $badgeFor = function ($platform) use ($platformBadges) {
+            return $platformBadges[$platform] ?? [
+                'label' => strtoupper(Str::substr($platform ?: '?', 0, 2)),
+                'bg' => '#2563EB',
+            ];
+        };
+    @endphp
+
     {{-- Header with Create Button --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 pb-4 border-b border-blue-100">
         <div>
-            {{-- AQUI ESTA LA CORRECCIÓN: usamos count() nativo de PHP --}}
             <h2 class="text-xl font-semibold text-blue-950">{{ count($links) }} redes sociales</h2>
             <p class="text-blue-700/70 text-sm">Facebook, Instagram, WhatsApp, TikTok, YouTube, X/Twitter, LinkedIn</p>
         </div>
@@ -34,11 +56,15 @@
     {{-- Links Grid --}}
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         @forelse ($links as $link)
+            @php
+                $badge = $badgeFor($link['platform']);
+            @endphp
             <x-cms.card class="flex flex-col h-full group bg-white border border-blue-100 hover:border-blue-300 hover:shadow-lg hover:shadow-blue-100/50 transition-all duration-300" style="animation: cardEntry 0.4s ease-out {{ $loop->index * 0.06 }}s both">
                 <div class="p-6 flex-1">
                     <div class="flex items-start justify-between mb-4">
-                        <div class="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 border border-blue-100 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
-                            <i class="{{ $link['icon'] ?? $platformIcons[$link['platform']] ?? 'fa-solid fa-link' }} text-xl"></i>
+                        <div class="w-12 h-12 rounded-xl flex items-center justify-center font-extrabold text-sm tracking-wide shadow-sm transition-transform duration-300 group-hover:scale-105"
+                             style="background-color: {{ $badge['bg'] }}; color: #FFFFFF;">
+                            {{ $badge['label'] }}
                         </div>
                         <x-cms.status-badge :active="$link['is_active']" />
                     </div>
@@ -96,11 +122,12 @@
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-1.5 pl-3 border-l-3 border-blue-500">Plataforma *</label>
                             <select class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white shadow-sm"
-                                    wire:model="platform">
+                                    wire:model.live="platform">
                                 @foreach($platforms as $key => $label)
                                     <option value="{{ $key }}">{{ $label }}</option>
                                 @endforeach
                             </select>
+                            <p class="text-xs text-gray-400 mt-1 pl-3">Al cambiar la plataforma, el ícono sugerido se actualiza abajo.</p>
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-1.5 pl-3 border-l-3 border-blue-500">URL *</label>
@@ -111,76 +138,24 @@
                         </div>
 
                         {{-- ================================================= --}}
-                        {{-- ÍCONO: menú visual desplegable (se ve el dibujo, no el nombre de código) --}}
+                        {{-- ÍCONO: se genera automático según la plataforma,   --}}
+                        {{-- solo se muestra la vista previa (color + iniciales)--}}
+                        {{-- No depende de ninguna librería de íconos externa.  --}}
                         {{-- ================================================= --}}
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1.5 pl-3 border-l-3 border-blue-500">Ícono</label>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1.5 pl-3 border-l-3 border-blue-500">Vista previa</label>
 
-                            @php
-                                $platformIconLabels = [
-                                    'facebook' => 'Facebook',
-                                    'instagram' => 'Instagram',
-                                    'whatsapp' => 'WhatsApp',
-                                    'tiktok' => 'TikTok',
-                                    'youtube' => 'YouTube',
-                                    'twitter' => 'X (Twitter)',
-                                    'x' => 'X (Twitter)',
-                                    'linkedin' => 'LinkedIn',
-                                ];
-
-                                $socialIconOptions = collect($platformIcons)
-                                    ->mapWithKeys(fn ($iconClass, $key) => [
-                                        $iconClass => $platformIconLabels[$key] ?? ucfirst(str_replace('_', ' ', $key)),
-                                    ])
-                                    ->toArray();
-
-                                $currentIcon = $icon ?: ($platformIcons[$platform] ?? null);
-                            @endphp
-
-                            <div class="relative" x-data="{ open: false }">
-
-                                <button type="button"
-                                        @click="open = !open"
-                                        @click.outside="open = false"
-                                        class="w-full flex items-center gap-3 border border-gray-200 rounded-xl px-3.5 py-2.5 bg-white hover:border-blue-400 transition-all text-left">
-
-                                    <div class="w-9 h-9 shrink-0 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-500 text-base">
-                                        <i class="{{ $currentIcon ?: 'fa-solid fa-link' }}"></i>
-                                    </div>
-
-                                    <span class="flex-1 text-sm text-gray-700 truncate">
-                                        {{ $currentIcon ? ($socialIconOptions[$currentIcon] ?? 'Ícono personalizado') : 'Selecciona un ícono...' }}
-                                    </span>
-
-                                    <i class="fa-solid fa-chevron-down text-xs text-gray-400 transition-transform" :class="open ? 'rotate-180' : ''"></i>
-
-                                </button>
-
-                                <div x-show="open"
-                                     x-cloak
-                                     x-transition:enter="transition ease-out duration-150"
-                                     x-transition:enter-start="opacity-0 scale-95"
-                                     x-transition:enter-end="opacity-100 scale-100"
-                                     class="absolute z-30 mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-xl p-3">
-
-                                    <div class="grid grid-cols-5 sm:grid-cols-6 gap-2">
-
-                                        @foreach($socialIconOptions as $iconClass => $iconLabel)
-                                            <button type="button"
-                                                    wire:click="$set('icon', '{{ $iconClass }}')"
-                                                    @click="open = false"
-                                                    title="{{ $iconLabel }}"
-                                                    class="aspect-square rounded-lg border flex items-center justify-center text-lg transition-all {{ $currentIcon === $iconClass ? 'bg-blue-600 text-white border-blue-600' : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600' }}">
-                                                <i class="{{ $iconClass }}"></i>
-                                            </button>
-                                        @endforeach
-
-                                    </div>
-
+                            @php $previewBadge = $badgeFor($platform); @endphp
+                            <div class="flex items-center gap-3 p-3 rounded-xl border border-gray-200 bg-gray-50">
+                                <div class="w-12 h-12 shrink-0 rounded-xl flex items-center justify-center font-extrabold text-sm tracking-wide shadow-sm"
+                                     style="background-color: {{ $previewBadge['bg'] }}; color: #FFFFFF;">
+                                    {{ $previewBadge['label'] }}
                                 </div>
-
+                                <div>
+                                    <p class="text-sm font-semibold text-gray-800 capitalize">{{ $platform ?: 'Selecciona una plataforma' }}</p>
+                                    <p class="text-xs text-gray-400">Así se verá en la tarjeta de la lista</p>
+                                </div>
                             </div>
-
                         </div>
 
                         <div class="flex items-center gap-2.5">

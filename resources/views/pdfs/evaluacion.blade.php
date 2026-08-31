@@ -69,6 +69,6 @@
 
     <div class="resultado {{ $orden->evaluacion_aprobada ? 'apto' : 'no-apto' }}">{{ $orden->evaluacion_aprobada ? 'APTO PARA CONVERSI&Oacute;N' : 'NO APTO PARA CONVERSI&Oacute;N' }}</div>
 
-    <p class="footer-note">Documento generado por el Sistema de Gesti&oacute;n de Conversiones &ndash; ARTURO MOTORS</p>
+    <p class="footer-note">Documento generado por el Sistema de Gesti&oacute;n Automotriz/Arturo Motors</p>
 </body>
 </html>
