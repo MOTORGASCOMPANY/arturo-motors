@@ -42,7 +42,7 @@ class ListaCitas extends Component
     public $color;
     public $combustible;
 
-    public $sede_id = 1; // ID predeterminado (Arturo Motors)
+    public $sede_id = 1; // ID predeterminado (Arturo Motors "Callao")
     public $fecha_cita;
     public $motivo;
 
@@ -63,7 +63,7 @@ class ListaCitas extends Component
     protected function rules()
     {
         return [
-            'documento'         => 'required|string|max:20',
+            'documento'         => 'nullable|string|max:20',
             'nombre'            => 'required|string|max:100',
             'apellido'          => 'nullable|string|max:100',
             'telefono'          => 'nullable|string|max:20',
@@ -254,18 +254,42 @@ class ListaCitas extends Component
 
         try {
             DB::transaction(function () {
+                $docLimpio = trim($this->documento ?? '');
+                $nombreLimpio = mb_strtoupper(trim($this->nombre));
+                $apellidoLimpio = mb_strtoupper(trim($this->apellido ?? ''));
+
                 // 1. Obtener o crear Cliente
-                $cliente = Cliente::firstOrCreate(
-                    ['documento' => trim($this->documento)],
-                    [
-                        'tipo_persona' => 'NATURAL',
-                        'nombre'       => mb_strtoupper(trim($this->nombre)),
-                        'apellido'     => mb_strtoupper(trim($this->apellido)),
-                        'telefono'     => trim($this->telefono),
-                        'email'        => trim($this->email),
-                        'direccion'    => mb_strtoupper(trim($this->direccion)),
-                    ]
-                );
+                if (!empty($docLimpio)) {
+                    // Si se ingresó documento, se busca o crea por documento
+                    $cliente = Cliente::firstOrCreate(
+                        ['documento' => $docLimpio],
+                        [
+                            'tipo_persona' => 'NATURAL',
+                            'nombre'       => $nombreLimpio,
+                            'apellido'     => $apellidoLimpio,
+                            'telefono'     => trim($this->telefono ?? ''),
+                            'email'        => trim($this->email ?? ''),
+                            'direccion'    => mb_strtoupper(trim($this->direccion ?? '')),
+                        ]
+                    );
+                } else {
+                    // Si no se ingresó documento, se busca por nombre/apellido o se crea uno nuevo
+                    $cliente = Cliente::where('nombre', $nombreLimpio)
+                        ->where('apellido', $apellidoLimpio)
+                        ->first();
+
+                    if (!$cliente) {
+                        $cliente = Cliente::create([
+                            'tipo_persona' => 'NATURAL',
+                            'documento'    => null,
+                            'nombre'       => $nombreLimpio,
+                            'apellido'     => $apellidoLimpio,
+                            'telefono'     => trim($this->telefono ?? ''),
+                            'email'        => trim($this->email ?? ''),
+                            'direccion'    => mb_strtoupper(trim($this->direccion ?? '')),
+                        ]);
+                    }
+                }
 
                 // 2. Obtener o crear Vehículo
                 $placaLimpia = mb_strtoupper(trim($this->placa));

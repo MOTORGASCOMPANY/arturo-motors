@@ -78,6 +78,7 @@ class RegistrarEntrada extends Component
                         'producto_id' => $this->producto->id,
                         'serie' => $serie,
                         'estado' => 'en_stock',
+                        'sede_id' => 1,
                     ]);
                 }
             });
@@ -102,7 +103,7 @@ class RegistrarEntrada extends Component
         $this->validate(['cantidadEntrada' => 'required|integer|min:1']);
 
         MovimientoStock::registrar(
-            $this->producto, 'entrada', $this->cantidadEntrada, null, Auth::id(), 'Compra / reposición'
+            $this->producto, 'entrada', $this->cantidadEntrada, null, Auth::id(), 'Compra / reposición', 1
         );
 
         $cantidad = $this->cantidadEntrada;

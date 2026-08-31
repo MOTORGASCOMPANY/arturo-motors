@@ -13,6 +13,7 @@ class Crear extends Component
     public string $nombre = '';
     public bool $esSerializado = false;
     public string $atributosTexto = '';
+    public bool $esKit = false;
 
     #[On('abrir-modal-categoria')]
     public function abrir()
@@ -37,9 +38,9 @@ class Crear extends Component
             CategoriaAlmacen::create([
                 'nombre' => $this->nombre,
                 'es_serializado' => $this->esSerializado,
+                'es_kit' => $this->esKit,
                 'esquema_atributos' => $this->atributosTexto
-                    ? array_map('trim', explode(',', $this->atributosTexto))
-                    : null,
+                    ? array_map('trim', explode(',', $this->atributosTexto)) : null,
             ]);
         } catch (\Throwable $e) {
             report($e);

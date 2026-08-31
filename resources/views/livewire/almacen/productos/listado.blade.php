@@ -77,6 +77,13 @@
                                                 class="text-blue-600 text-xs font-semibold">
                                             Registrar entrada →
                                         </button>
+                                        @if ($p->categoria->es_kit)                                        
+                                            <button wire:click="$dispatch('abrir-modal-componentes', { productoId: {{ $p->id }} })" type="button"
+                                                    class="text-purple-600 text-xs font-semibold mr-2">
+                                                Definir componentes →
+                                            </button>
+                                        @endif
+                                        
                                     </td>
                                 </tr>
                             @endforeach
@@ -97,4 +104,5 @@
 
     <livewire:almacen.productos.crear />
     <livewire:almacen.productos.registrar-entrada />
+    <livewire:almacen.productos.definir-componentes />
 </div>
