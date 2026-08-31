@@ -42,6 +42,8 @@ use App\Livewire\ProcesarCobro;
 use App\Livewire\Reportes\ReporteCitas;
 use App\Livewire\RRHH\Contratos;
 use App\Http\Controllers\CmsController;
+use App\Livewire\Almacen\Kits\Pendientes;
+use App\Livewire\Almacen\Productos\DefinirComponentes;
 use App\Livewire\Cms\GestionarContacto;
 use App\Livewire\Cms\GestionarContenido;
 use App\Livewire\Cms\GestionarPasos;
@@ -136,6 +138,8 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     // Rutas modulo de almacen
     Route::get('/almacen/categorias', CategoriasListado::class)->name('almacen.categorias.listado');
     Route::get('/almacen/productos', ProductosListado::class)->name('almacen.productos.listado');
+    //Route::get('definirKit', DefinirComponentes::class)->name('');
+    Route::get('/almacen/kits', Pendientes::class)->name('almacen.kits.pendientes');
 
     // Reportes
     Route::get('/citas/reporte', ReporteCitas::class)->name('citas.reporte');

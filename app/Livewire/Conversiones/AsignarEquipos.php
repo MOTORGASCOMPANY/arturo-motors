@@ -7,6 +7,7 @@ use App\Models\ItemSerializado;
 use App\Models\Producto;
 use App\Models\CategoriaAlmacen;
 use App\Models\MovimientoStock;
+use App\Models\ProductoStockSede;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -33,6 +34,7 @@ class AsignarEquipos extends Component
     {
         return ItemSerializado::with('producto.categoria')
             ->where('estado', 'en_stock')
+            ->where('sede_id', 1)
             ->whereHas('producto.categoria', fn ($q) => $q->where('es_serializado', true))
             ->when($this->buscarItem, function ($q) {
                 $termino = $this->buscarItem;
@@ -63,7 +65,8 @@ class AsignarEquipos extends Component
     public function getProductosRepuestoProperty()
     {
         return Producto::whereHas('categoria', fn ($q) => $q->where('es_serializado', false))
-            ->where('stock', '>', 0)
+            //->where('stock', '>', 0)
+            ->whereHas('stockPorSede', fn ($q) => $q->where('sede_id', 1)->where('cantidad', '>', 0))
             ->get();
     }
 
@@ -75,9 +78,14 @@ class AsignarEquipos extends Component
         ]);
 
         $producto = Producto::find($this->productoRepuestoId);
+        $disponible = $producto->stockEnSede(1);
 
-        if ($this->cantidadRepuesto > $producto->stock) {
+        /*if ($this->cantidadRepuesto > $producto->stock) {
             $this->addError('cantidadRepuesto', "Solo hay {$producto->stock} unidades en stock.");
+            return;
+        }*/
+        if ($this->cantidadRepuesto > $disponible) {
+            $this->addError('cantidadRepuesto', "Solo hay {$disponible} en stock en Arturo Motors.");
             return;
         }
 
@@ -116,6 +124,7 @@ class AsignarEquipos extends Component
                 foreach (array_keys($this->itemsSeleccionados) as $itemId) {
                     $item = ItemSerializado::where('id', $itemId)
                         ->where('estado', 'en_stock')
+                        ->where('sede_id', 1)
                         ->lockForUpdate()
                         ->first();
 
@@ -127,7 +136,7 @@ class AsignarEquipos extends Component
                 }
 
                 // Bloqueo y descontado de stock de repuestos por cantidad
-                foreach ($this->repuestosSeleccionados as $productoId => $cantidad) {
+                /*foreach ($this->repuestosSeleccionados as $productoId => $cantidad) {
                     $producto = Producto::where('id', $productoId)->lockForUpdate()->first();
 
                     if (!$producto || $producto->stock < $cantidad) {
@@ -137,6 +146,23 @@ class AsignarEquipos extends Component
                     MovimientoStock::registrar(
                         $producto, 'salida', $cantidad, $this->orden->id, Auth::id(),
                         'Entrega para conversión #' . $this->orden->id
+                    );
+                }*/
+
+                foreach ($this->repuestosSeleccionados as $productoId => $cantidad) {
+                    $stockSede = ProductoStockSede::where('producto_id', $productoId)
+                        ->where('sede_id', 1)
+                        ->lockForUpdate()
+                        ->first();
+
+                    if (!$stockSede || $stockSede->cantidad < $cantidad) {
+                        $nombre = Producto::find($productoId)?->nombre;
+                        throw new \RuntimeException("No hay stock suficiente de {$nombre}. Actualiza la lista e intenta de nuevo.");
+                    }
+
+                    MovimientoStock::registrar(
+                        Producto::find($productoId), 'salida', $cantidad, $this->orden->id, Auth::id(),
+                        'Entrega para conversión #' . $this->orden->id, 1
                     );
                 }
 

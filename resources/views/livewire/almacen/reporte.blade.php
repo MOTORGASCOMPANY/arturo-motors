@@ -4,7 +4,7 @@
         <h2 class="text-gray-600 font-semibold text-2xl">
             <i class="fas fa-warehouse mr-2"></i>Reporte de almacén
         </h2>
-        <span class="text-xs">Stock bajo y valorización actual del inventario</span>
+        <span class="text-xs">Stock bajo y valorización actual del inventario en Arturo Motors (Callao)</span>
     </div>
 
     {{-- KPIs --}}

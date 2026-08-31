@@ -16,7 +16,10 @@ class ItemSerializado extends Model
         'serie',
         'atributos',
         'estado',
+        'sede_id',
         'service_order_id',
+        'vehiculo_instalado_id',
+        'fecha_instalacion_reportada',
     ];
 
     protected $casts = [
@@ -32,6 +35,16 @@ class ItemSerializado extends Model
     public function serviceOrder()
     {
         return $this->belongsTo(ServiceOrder::class, 'service_order_id');
+    }
+
+    public function sede()
+    {
+        return $this->belongsTo(Sede::class, 'sede_id');
+    }
+
+    public function vehiculoInstalado()
+    {
+        return $this->belongsTo(Vehiculo::class, 'vehiculo_instalado_id');
     }
 
     // Scopes

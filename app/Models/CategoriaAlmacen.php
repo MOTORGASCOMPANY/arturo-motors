@@ -14,12 +14,14 @@ class CategoriaAlmacen extends Model
     protected $fillable = [
         'nombre',
         'es_serializado',
+        'es_kit',
         'esquema_atributos',
     ];
 
     protected $casts = [
         'es_serializado' => 'boolean',
         'esquema_atributos' => 'array',
+        'es_kit' => 'boolean'
     ];
 
     // Relaciones

@@ -13,6 +13,7 @@ class MovimientoStock extends Model
 
     protected $fillable = [
         'producto_id',
+        'sede_id',
         'tipo',
         'cantidad',
         'service_order_id',
@@ -36,6 +37,11 @@ class MovimientoStock extends Model
         return $this->belongsTo(User::class, 'usuario_id');
     }
 
+    public function sede()
+    {
+        return $this->belongsTo(Sede::class, 'sede_id');
+    }
+
     // Scopes
     public function scopeEntradas($query)
     {
@@ -48,10 +54,11 @@ class MovimientoStock extends Model
     }
 
     // Registrar movimiento y actualizar el stock del producto en un solo paso
-    public static function registrar(Producto $producto, string $tipo, int $cantidad, ?int $serviceOrderId, int $usuarioId, ?string $motivo = null): self
+    public static function registrar(Producto $producto, string $tipo, int $cantidad, ?int $serviceOrderId, int $usuarioId, ?string $motivo = null, int $sedeId = 1): self
     {
         $movimiento = static::create([
             'producto_id' => $producto->id,
+            'sede_id' => $sedeId,
             'tipo' => $tipo,
             'cantidad' => $cantidad,
             'service_order_id' => $serviceOrderId,
@@ -59,7 +66,13 @@ class MovimientoStock extends Model
             'usuario_id' => $usuarioId,
         ]);
 
-        $producto->increment('stock', $tipo === 'entrada' ? $cantidad : -$cantidad);
+        $stockSede = ProductoStockSede::firstOrCreate(
+            ['producto_id' => $producto->id, 'sede_id' => $sedeId],
+            ['cantidad' => 0]
+        );
+
+        //$producto->increment('stock', $tipo === 'entrada' ? $cantidad : -$cantidad);
+        $stockSede->increment('cantidad', $tipo === 'entrada' ? $cantidad : -$cantidad);
 
         return $movimiento;
     }

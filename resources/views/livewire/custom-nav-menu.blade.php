@@ -367,6 +367,13 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                                                     Productos
                                                 </x-responsive-nav-link>
                                             </li>
+                                            
+                                            <li class="transition-colors duration-150">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('almacen.kits.pendientes') }}"
+                                                    :active="request()->routeIs('almacen.kits.pendientes')">
+                                                    Kits de Instlacion
+                                                </x-responsive-nav-link>
+                                            </li>
                                             <li class="transition-colors duration-150">
                                                 <x-responsive-nav-link class="text-sm" href="{{ route('conversiones.almacen-pendientes') }}"
                                                     :active="request()->routeIs('conversiones.almacen-pendientes')">
