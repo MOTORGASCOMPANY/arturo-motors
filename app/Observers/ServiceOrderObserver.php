@@ -36,7 +36,7 @@ class ServiceOrderObserver
                 $orden,
                 $orden->getOriginal('estado'),
                 $orden->estado,
-                auth()->id() ?? $orden->usuario_id ?? 1
+                auth()->id() ?? $orden->creadoPor?->id ?? 1
             );
         }
     }

@@ -13,7 +13,7 @@ class HistorialSesiones extends Component
     public string $desde = '';
     public string $hasta = '';
     public string $estado = 'todos';
-    public int $cant = 15;
+    public int $cant = 10;
 
     public function updating($property)
     {
