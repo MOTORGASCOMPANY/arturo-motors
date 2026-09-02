@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\AsesorExterno;
 use App\Models\Cita;
 use App\Models\Cliente;
+use App\Models\Sede;
 use App\Models\Service;
 use App\Models\ServiceOrder;
 use App\Models\Vehiculo;
@@ -41,6 +42,7 @@ class ListaCitas extends Component
     public $color;
     public $combustible;
 
+    public $sede_id = 1; // ID predeterminado (Arturo Motors "Callao")
     public $fecha_cita;
     public $motivo;
 
@@ -61,7 +63,7 @@ class ListaCitas extends Component
     protected function rules()
     {
         return [
-            'documento'         => 'required|string|max:20',
+            'documento'         => 'nullable|string|max:20',
             'nombre'            => 'required|string|max:100',
             'apellido'          => 'nullable|string|max:100',
             'telefono'          => 'nullable|string|max:20',
@@ -76,6 +78,7 @@ class ListaCitas extends Component
             'color'             => 'nullable|string|max:50',
             'combustible'       => 'nullable|string|max:50',
 
+            'sede_id'           => 'required|exists:sedes,id',
             'fecha_cita'        => 'required|date|after_or_equal:today',
             'motivo'            => 'nullable|string|max:500',
 
@@ -225,7 +228,7 @@ class ListaCitas extends Component
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        $citas = Cita::with(['cliente', 'vehiculo', 'asesor', 'asesorExterno'])
+        $citas = Cita::with(['cliente', 'vehiculo', 'asesor', 'asesorExterno', 'sede'])
             // Si el usuario tiene el rol de Vendedor y no es Administrador ni Jefe de Taller,
             // filtramos solo sus citas asociadas.
             ->when($user->hasRole('Vendedor') && !$user->hasAnyRole(['Administrador del sistema', 'Cliente', 'Tecnico', 'Jefe de Taller', 'Almacen']), function ($query) use ($user) {
@@ -235,12 +238,14 @@ class ListaCitas extends Component
             ->ordenar($this->sort, $this->direction)
             ->paginate($this->cant);
 
+        $sedes = Sede::orderBy('nombre', 'asc')->get();
+        
         // Se obtienen los asesores externos para el selector
         $asesoresExternos = AsesorExterno::orderBy('nombre', 'asc')->get();
         $servicios = Service::activos()->where('tipo', 'conversion')->get();
         //'servicios' => Service::activos()->where('tipo', 'conversion')->get(),
 
-        return view('livewire.lista-citas', compact('citas', 'asesoresExternos', 'servicios'));
+        return view('livewire.lista-citas', compact('citas', 'sedes', 'asesoresExternos', 'servicios'));
     }
 
     public function crearCita()
@@ -249,18 +254,42 @@ class ListaCitas extends Component
 
         try {
             DB::transaction(function () {
+                $docLimpio = trim($this->documento ?? '');
+                $nombreLimpio = mb_strtoupper(trim($this->nombre));
+                $apellidoLimpio = mb_strtoupper(trim($this->apellido ?? ''));
+
                 // 1. Obtener o crear Cliente
-                $cliente = Cliente::firstOrCreate(
-                    ['documento' => trim($this->documento)],
-                    [
-                        'tipo_persona' => 'NATURAL',
-                        'nombre'       => mb_strtoupper(trim($this->nombre)),
-                        'apellido'     => mb_strtoupper(trim($this->apellido)),
-                        'telefono'     => trim($this->telefono),
-                        'email'        => trim($this->email),
-                        'direccion'    => mb_strtoupper(trim($this->direccion)),
-                    ]
-                );
+                if (!empty($docLimpio)) {
+                    // Si se ingresó documento, se busca o crea por documento
+                    $cliente = Cliente::firstOrCreate(
+                        ['documento' => $docLimpio],
+                        [
+                            'tipo_persona' => 'NATURAL',
+                            'nombre'       => $nombreLimpio,
+                            'apellido'     => $apellidoLimpio,
+                            'telefono'     => trim($this->telefono ?? ''),
+                            'email'        => trim($this->email ?? ''),
+                            'direccion'    => mb_strtoupper(trim($this->direccion ?? '')),
+                        ]
+                    );
+                } else {
+                    // Si no se ingresó documento, se busca por nombre/apellido o se crea uno nuevo
+                    $cliente = Cliente::where('nombre', $nombreLimpio)
+                        ->where('apellido', $apellidoLimpio)
+                        ->first();
+
+                    if (!$cliente) {
+                        $cliente = Cliente::create([
+                            'tipo_persona' => 'NATURAL',
+                            'documento'    => null,
+                            'nombre'       => $nombreLimpio,
+                            'apellido'     => $apellidoLimpio,
+                            'telefono'     => trim($this->telefono ?? ''),
+                            'email'        => trim($this->email ?? ''),
+                            'direccion'    => mb_strtoupper(trim($this->direccion ?? '')),
+                        ]);
+                    }
+                }
 
                 // 2. Obtener o crear Vehículo
                 $placaLimpia = mb_strtoupper(trim($this->placa));
@@ -305,6 +334,7 @@ class ListaCitas extends Component
                     'vehiculo_id'       => $vehiculo->id,
                     'asesor_id'         => Auth::id(),
                     'asesor_externo_id' => $asesorExternoId,
+                    'sede_id'           => $this->sede_id,
                     'fecha_cita'        => Carbon::parse($this->fecha_cita),
                     'motivo'            => $this->motivo,
                     'estado'            => 'pendiente',
@@ -322,7 +352,12 @@ class ListaCitas extends Component
 
     public function limpiarFormulario()
     {
-        $this->reset(['documento', 'nombre', 'apellido', 'telefono', 'email', 'direccion', 'placa', 'marca', 'modelo', 'anio', 'serie', 'color', 'combustible', 'fecha_cita', 'motivo', 'is_externo', 'asesor_externo_id']);
+        $this->reset([
+            'documento', 'nombre', 'apellido', 'telefono', 'email', 'direccion',
+            'placa', 'marca', 'modelo', 'anio', 'serie', 'color', 'combustible',
+            'fecha_cita', 'motivo', 'is_externo', 'asesor_externo_id'
+        ]);
+        $this->sede_id = 1;
         $this->resetValidation();
     }
 }

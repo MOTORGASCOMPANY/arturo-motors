@@ -27,6 +27,7 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">#</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vehículo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sede</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Motivo</th>
@@ -41,10 +42,13 @@
                                             {{ $cita->id }}
                                         </td>
                                         <td class="px-6 py-4 text-sm font-medium text-gray-900">
-                                            {{ $cita->cliente->nombre . ' ' . $cita->cliente->apellido }}
+                                            {{ $cita->cliente->nombre ?? null . ' ' . $cita->cliente->apellido ?? null }}
                                         </td>
                                         <td class="px-6 py-4 text-sm text-gray-500">
                                             {{ $cita->vehiculo->placa }}
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-500 font-semibold">
+                                            {{ $cita->sede->nombre ?? '-' }}
                                         </td>
                                         <td class="px-6 py-4 text-sm text-gray-500">
                                             {{ $cita->fecha_cita ? \Carbon\Carbon::parse($cita->fecha_cita)->format('d/m/Y H:i') : '-' }}
@@ -62,7 +66,7 @@
                                             </span>
                                         </td>
                                         <td class="px-6 py-4 text-sm text-gray-500">
-                                            {{ $cita->motivo }}
+                                            {{ $cita->motivo ?? '-' }}
                                         </td>
                                         <td class="px-6 py-4 text-sm text-gray-500">
                                             {{ $cita->created_at->format('d/m/Y H:i') }}
@@ -70,20 +74,17 @@
                                         <td class="text-center">
                                             <div class="flex justify-center items-center space-x-2">
                                                 @if($cita->estado === 'pendiente')
-                                                    <button {{--onclick="confirmarAceptacion({{ $cita->id }})"--}} wire:click="abrirModalAceptar({{ $cita->id }})"
-                                                        type="button"
+                                                    <button {{--onclick="confirmarAceptacion({{ $cita->id }})"--}} wire:click="abrirModalAceptar({{ $cita->id }})" type="button"
                                                         class="group flex py-2 px-2 text-center items-center rounded-md bg-green-700 font-bold text-white cursor-pointer hover:bg-green-800 hover:animate-pulse">
                                                         <i class="fa-solid fa-circle-check"></i>
-                                                        <span
-                                                            class="group-hover:opacity-100 transition-opacity bg-gray-800 px-1 text-sm text-gray-100 rounded-md absolute  translate-y-full opacity-0 m-4 mx-auto z-50">
+                                                        <span class="group-hover:opacity-100 transition-opacity bg-gray-800 px-1 text-sm text-gray-100 rounded-md absolute  translate-y-full opacity-0 m-4 mx-auto z-50">
                                                             Aceptar
                                                         </span>
                                                     </button>
                                                     <button onclick="confirmarRechazo({{ $cita->id }})" type="button"
                                                         class="group flex py-2 px-2 text-center items-center rounded-md bg-red-500 font-bold text-white cursor-pointer hover:bg-red-700 hover:animate-pulse">
                                                         <i class="fa-solid fa-ban"></i>
-                                                        <span
-                                                            class="group-hover:opacity-100 transition-opacity bg-gray-800 px-1 text-sm text-gray-100 rounded-md absolute  translate-y-full opacity-0 m-4 mx-auto z-50">
+                                                        <span class="group-hover:opacity-100 transition-opacity bg-gray-800 px-1 text-sm text-gray-100 rounded-md absolute  translate-y-full opacity-0 m-4 mx-auto z-50">
                                                             Rechazar
                                                         </span>
                                                     </button>
@@ -123,7 +124,8 @@
             <!-- Cliente -->
             <div class="bg-gray-50 p-4 rounded-lg shadow">
                 <h3 class="text-lg font-semibold text-blue-800 border-b pb-1 mb-3">👤 Datos del Cliente</h3>
-                <div class="grid grid-cols-2 gap-3">
+                {{--<div class="grid grid-cols-2 gap-3">--}}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
                         <x-label value="Nombres" />
                         <x-input type="text" class="w-full mt-1" placeholder="Nombre completo"
@@ -131,11 +133,12 @@
                         <x-input-error for="nombre" class="mt-1" />
                     </div>
                     <div>
-                        <x-label value="Apellidos" />
+                        <x-label value="Apellidos (Opcional)" />
                         <x-input type="text" class="w-full mt-1" placeholder="Apellido completo"
                             wire:model="apellido" />
                         <x-input-error for="apellido" class="mt-1" />
                     </div>
+                    {{-- 
                     <div>
                         <x-label value="Documento" />
                         <x-input type="text" class="w-full mt-1" placeholder="DNI o documento"
@@ -160,12 +163,19 @@
                             wire:model="direccion" />
                         <x-input-error for="direccion" class="mt-1" />
                     </div>
+                    --}}
                 </div>
             </div>
             <!-- Vehículo -->
             <div class="bg-gray-50 p-4 rounded-lg shadow mt-4">
                 <h3 class="text-lg font-semibold text-green-800 border-b pb-1 mb-3">🚗 Datos del Vehículo</h3>
-                <div class="grid grid-cols-2 gap-3">
+                {{--<div class="grid grid-cols-2 gap-3">--}}
+                    <div>
+                        <x-label value="Placa" />
+                        <x-input placeholder="ABC123" class="w-full mt-1" type="text" wire:model="placa" />
+                        <x-input-error for="placa" class="mt-1" />
+                    </div>
+                    {{-- 
                     <div>
                         <x-label value="Marca" />
                         <x-input placeholder="Ej. Toyota" class="w-full mt-1" type="text"
@@ -183,13 +193,7 @@
                         <x-input placeholder="Ej. 2022" class="w-full mt-1" type="number"
                             wire:model="anio" />
                         <x-input-error for="anio" class="mt-1" />
-                    </div>
-                    <div>
-                        <x-label value="Placa" />
-                        <x-input placeholder="ABC123" class="w-full mt-1" type="text"
-                            wire:model="placa" />
-                        <x-input-error for="placa" class="mt-1" />
-                    </div>
+                    </div>                    
                     <div>
                         <x-label value="Serie" />
                         <x-input placeholder="N° Motor" class="w-full mt-1" type="text"
@@ -217,24 +221,37 @@
                     </datalist>
                     <x-input-error for="combustible" class="mt-1" />
                 </div>
+                --}}
             </div>
             <!-- Cita -->
             <div class="bg-gray-50 p-4 rounded-lg shadow mt-4">
                 <h3 class="text-lg font-semibold text-yellow-800 border-b pb-1 mb-3">📅 Datos de la Cita</h3>
                 <!-- Fecha y motivo -->
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <x-label value="Sede de Atención" class="mb-1" />
+                        <select wire:model="sede_id"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:border-indigo-500 focus:ring-indigo-500 shadow-sm text-sm">
+                            <option value="">Seleccione una sede...</option>
+                            @foreach ($sedes as $sede)
+                                <option value="{{ $sede->id }}">
+                                    {{ $sede->nombre }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <x-input-error for="sede_id" class="mt-1" />
+                    </div>
                     <div>
                         <x-label value="Fecha de Cita" />
-                        <x-input type="datetime-local" class="w-full mt-1"
-                            wire:model="fecha_cita" />
+                        <x-input type="datetime-local" class="w-full mt-1" wire:model="fecha_cita" />
                         <x-input-error for="fecha_cita" class="mt-1" />
                     </div>
-                    <div>
-                        <x-label value="Motivo" />
-                        <x-input placeholder="Motivo de la cita" class="w-full mt-1" type="text"
-                            wire:model="motivo" />
-                        <x-input-error for="motivo" class="mt-1" />
-                    </div>
+                    
+                </div>
+                <div class="mt-2 mb-2">
+                    <x-label value="Motivo (Opcional)" />
+                    <x-input placeholder="Motivo de la cita" class="w-full mt-1" type="text" wire:model="motivo" />
+                    <x-input-error for="motivo" class="mt-1" />
                 </div>
                 <!-- Toggle: Asesor externo -->
                 <div class="mt-4 mb-2">

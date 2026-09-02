@@ -21,6 +21,7 @@ use App\Livewire\Caja\HistorialSesiones;
 use App\Livewire\Caja\RegistrarEgreso;
 use App\Livewire\Caja\Reporte as ReporteCaja;
 use App\Livewire\Servicios\Reporte as ReporteServicios;
+use App\Livewire\Almacen\Reporte as ReporteAlmacen;
 use App\Livewire\CrearCitas;
 use App\Livewire\Conversiones\AlmacenPendientes;
 use App\Livewire\Conversiones\AsignarEquipos;
@@ -44,6 +45,8 @@ use App\Livewire\ProcesarCobro;
 use App\Livewire\Reportes\ReporteCitas;
 use App\Livewire\RRHH\Contratos;
 use App\Http\Controllers\CmsController;
+use App\Livewire\Almacen\Kits\Pendientes;
+use App\Livewire\Almacen\Productos\DefinirComponentes;
 use App\Livewire\Cms\GestionarContacto;
 use App\Livewire\Cms\GestionarContenido;
 use App\Livewire\Cms\GestionarPasos;
@@ -130,16 +133,11 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::get('/caja/historial', HistorialSesiones::class)->name('caja.historial');
     Route::get('/caja/sesion/{sesionId}', DetalleSesion::class)->name('caja.sesion');
 
-    Route::get('/caja/reporte', ReporteCaja::class)->name('caja.reporte');
-
     // Rutas de servicios
     Route::get('/ordenes', Listado::class)->name('ordenes.listado');
+    Route::get('/ordenes/{ordenId}', Detalle::class)->name('ordenes.detalle');
     Route::get('/ordenes/simple/crear', CrearSimple::class)->name('ordenes.simple.crear');   
     Route::get('/conversiones/crear', Crear::class)->name('conversiones.crear'); // P1: Crear orden de conversión (Vendedor)
-
-    Route::get('/ordenes/{ordenId}', Detalle::class)->name('ordenes.detalle');
-
-    Route::get('/servicios/reporte', ReporteServicios::class)->name('servicios.reporte');
 
     // Rutas modulo de conversiones
     Route::get('/conversiones/asignar', AsignarTecnico::class)->name('conversiones.asignar'); // P2: Asignar técnico (Jefe de taller) — ve todas las órdenes creada
@@ -151,17 +149,25 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::get('/conversiones/entregas/pendientes', EntregaPendientes::class)->name('conversiones.entregas-pendientes'); // P7: Entrega y cobro (Cajero) — reutiliza la lógica de cobro que ya armamos en CrearSimple
     Route::get('/conversiones/{ordenId}/entregar', EntregarCobrar::class)->name('conversiones.entregar'); // P7: Entrega y cobro (Cajero) — reutiliza la lógica de cobro que ya armamos en CrearSimple
 
-    
-    Route::get('/selector', SelectorClienteVehiculo::class)->name('selector'); // component hijo reutilizable "buscar/crear cliente y vehículo" respecto a CrearSimple
-    Route::get('/procesarcobro', ProcesarCobro::class)->name('procesar'); // component hijo reutilizable "entrega y cobro"
-    
-
     // Rutas modulo de almacen
     Route::get('/almacen/categorias', CategoriasListado::class)->name('almacen.categorias.listado');
-    //Route::get('/almacen/categorias/crear', CategoriasCrear::class)->name('almacen.categorias.crear'); componenente hijo anidado
     Route::get('/almacen/productos', ProductosListado::class)->name('almacen.productos.listado');
-    //Route::get('/almacen/productos/crear', ProductosCrear::class)->name('almacen.productos.crear'); componenente hijo anidado
-    //Route::get('/almacen/productos/{productoId}/entrada', RegistrarEntrada::class)->name('almacen.productos.entrada'); // componenente hijo anidado
+    //Route::get('definirKit', DefinirComponentes::class)->name('');
+    Route::get('/almacen/kits', Pendientes::class)->name('almacen.kits.pendientes');
+
+    // Reportes
+    Route::get('/citas/reporte', ReporteCitas::class)->name('citas.reporte');
+    Route::get('/caja/reporte', ReporteCaja::class)->name('caja.reporte');
+    Route::get('/servicios/reporte', ReporteServicios::class)->name('servicios.reporte');
+    Route::get('/almacen/reporte', ReporteAlmacen::class)->name('almacen.reporte');
+
+    // Ruta mantenimiento de tablas (Vehículos y Clientes)
+    Route::get('/lista-vehiculos', ListaVehiculos::class)->name('ListaVehiculos');
+    Route::get('/lista-clientes', ListaClientes::class)->name('ListaClientes');
+
+    // Componentes hijos
+    Route::get('/selector', SelectorClienteVehiculo::class)->name('selector'); // component hijo reutilizable "buscar/crear cliente y vehículo" respecto a CrearSimple
+    Route::get('/procesarcobro', ProcesarCobro::class)->name('procesar'); // component hijo reutilizable "entrega y cobro"  
 
     // Rutas modulo de recursos humanos
     Route::get('/rrhh/contratos', Contratos::class)->middleware('can:rrhh.contratos')->name('rrhh.contratos');
@@ -188,7 +194,6 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
 
     Route::get('/comprobantes/{ordenId}/pdf', [ComprobanteController::class, 'pdf'])->name('comprobantes.pdf');
 
-    
     Route::get('/ordenes/{ordenId}/pdf/evaluacion', [DocumentosConversionController::class, 'evaluacion'])->name('conversiones.pdf.evaluacion');
     Route::get('/ordenes/{ordenId}/pdf/ficha-tecnica', [DocumentosConversionController::class, 'fichaTecnica'])->name('conversiones.pdf.ficha-tecnica');
     Route::get('/ordenes/{ordenId}/pdf/garantia', [DocumentosConversionController::class, 'garantia'])->name('conversiones.pdf.garantia');

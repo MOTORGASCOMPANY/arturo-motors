@@ -20,6 +20,10 @@
                         <x-label for="atributosTexto" value="Atributos adicionales (separados por coma)" />
                         <x-input wire:model="atributosTexto" placeholder="generacion, capacidad" class="w-full rounded-lg border-gray-300" />
                     </div>
+                    <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" wire:model="esKit" class="rounded">
+                        Es un kit que se puede abrir en componentes (ej: Kit de instalación)
+                    </label>
                 @endif
             </div>
         </x-slot>

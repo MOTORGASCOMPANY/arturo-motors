@@ -16,11 +16,12 @@ class Crear extends Component
     public string $marca = '';
     public array $atributos = [];
     public $precioReferencial = 0;
+    public $stockMinimo = 0;
 
     #[On('abrir-modal-producto')]
     public function abrir()
     {
-        $this->reset(['categoriaId', 'nombre', 'marca', 'atributos', 'precioReferencial']);
+        $this->reset(['categoriaId', 'nombre', 'marca', 'atributos', 'precioReferencial', 'stockMinimo']);
         $this->resetErrorBag();
         $this->mostrarModal = true;
     }
@@ -61,6 +62,7 @@ class Crear extends Component
                 'atributos' => array_filter($this->atributos) ?: null,
                 'precio_referencial' => $this->precioReferencial ?: null,
                 'stock' => 0,
+                'stock_minimo' => $this->stockMinimo,
             ]);
         } catch (\Throwable $e) {
             report($e);

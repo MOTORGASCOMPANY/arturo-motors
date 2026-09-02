@@ -18,6 +18,7 @@ class Producto extends Model
         'atributos',
         'precio_referencial',
         'stock',
+        'stock_minimo',
         'activo',
     ];
 
@@ -43,14 +44,41 @@ class Producto extends Model
         return $this->hasMany(MovimientoStock::class, 'producto_id');
     }
 
+    public function stockPorSede()
+    {
+        return $this->hasMany(ProductoStockSede::class, 'producto_id');
+    }
+
+    public function componentes()
+    {
+        return $this->hasMany(KitComponente::class, 'producto_kit_id');
+    }
+
     // Accesor: stock real, ya sea contado o serializado
     public function getStockDisponibleAttribute()
     {
-        if ($this->categoria->es_serializado) {
+        /*if ($this->categoria->es_serializado) {
             return $this->items()->where('estado', 'en_stock')->count();
         }
+        return $this->stock;*/
+        return $this->stockEnSede(1); // 1 = Arturo Motors (Callao)
 
-        return $this->stock;
+    }
+    public function stockEnSede(int $sedeId): int
+    {
+        if ($this->categoria->es_serializado) {
+            return $this->items()
+                ->where('estado', 'en_stock')
+                ->where('sede_id', $sedeId)
+                ->count();
+        }
+
+        return $this->stockPorSede()->where('sede_id', $sedeId)->value('cantidad') ?? 0;
+    }
+
+    public function getStockBajoAttribute()
+    {
+        return $this->stock_minimo > 0 && $this->stock_disponible <= $this->stock_minimo;
     }
 
     // Scopes

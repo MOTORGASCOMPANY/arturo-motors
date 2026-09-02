@@ -31,13 +31,27 @@
 
         <!-- Filtros -->
         <div class="p-6 pb-4">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 mb-6">
+                <!-- Buscar -->
                 <div>
                     <x-label for="search" value="Buscar Cliente/Motivo" class="text-gray-600 font-semibold mb-1" />
                     <x-input id="search" type="text"
                         class="block w-full border-gray-300 rounded-lg shadow-sm focus:ring-green-500 focus:border-green-500 transition"
                         wire:model.live="search" placeholder="Buscar..." />
                 </div>
+                <!-- Sede -->
+                <div>
+                    <x-label for="sede_id" value="Sede" class="text-gray-600 font-semibold mb-1" />
+                    <select id="sede_id"
+                        class="block w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 transition text-sm"
+                        wire:model.live="sede_id">
+                        <option value="todos">Todas las sedes</option>
+                        @foreach ($sedes as $s)
+                            <option value="{{ $s->id }}">{{ $s->nombre }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <!-- Estado -->
                 <div>
                     <x-label for="estado" value="Estado" class="text-gray-600 font-semibold mb-1" />
                     <select id="estado"
@@ -86,16 +100,23 @@
                                         <span class="ml-1 text-indigo-600">{!! $direction === 'asc' ? '&#x25B2;' : '&#x25BC;' !!}</span>
                                     @endif
                                 </th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b-2 border-gray-200">
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b-2 border-gray-200"
+                                    wire:click="order('sede_id')">
+                                    Sede
+                                </th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b-2 border-gray-200"
+                                    wire:click="order('cliente_id')">
                                     Cliente
                                 </th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b-2 border-gray-200">
                                     Placa
                                 </th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b-2 border-gray-200">
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b-2 border-gray-200"
+                                    wire:click="order('asesor_id')">
                                     Asesor
                                 </th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b-2 border-gray-200">
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b-2 border-gray-200"
+                                    wire:click="order('estado')">
                                     Estado
                                 </th>
                             </tr>
@@ -106,6 +127,9 @@
                                     <td class="px-4 py-3 text-sm border-b border-gray-200">{{ $cita->id }}</td>
                                     <td class="px-4 py-3 text-sm border-b border-gray-200">
                                         {{ $cita->fecha_cita->format('d/m/Y') }}
+                                    </td>
+                                    <td class="px-4 py-3 text-sm border-b border-gray-200">
+                                        {{ $cita->sede->nombre ?? 'N/A' }}
                                     </td>
                                     <td class="px-4 py-3 text-sm font-medium text-gray-900 border-b border-gray-200">
                                         {{ $cita->cliente->nombre ?? 'N/A' }} {{ $cita->cliente->apellido ?? '' }}
