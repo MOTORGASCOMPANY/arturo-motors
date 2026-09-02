@@ -118,14 +118,6 @@
                                             {{ ucfirst(str_replace('_', ' ', $orden->estado)) }}
                                         </span>
                                     </td>
-                                    {{-- 
-                                    <td class="px-4 py-3 text-right border-b border-gray-200 bg-white text-sm">
-                                        <a href="{{ route('ordenes.detalle', $orden->id) }}" class="text-gray-600 text-xs font-semibold mr-2">Ver detalle →</a>
-                                        @if ($orden->comprobante)
-                                            <a href="{{ route('comprobantes.pdf', $orden->id) }}" target="_blank" class="text-blue-600 text-xs font-semibold">Ver PDF →</a>
-                                        @endif
-                                    </td>
-                                    --}}
                                     <td class="px-4 py-4 border-b border-gray-200 bg-white text-sm text-right whitespace-nowrap">
                                         <div class="inline-flex items-center justify-end gap-1.5">
                                             <!-- Botón 1: Ver detalles -->
@@ -153,6 +145,37 @@
                                                     <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover:flex flex-col items-center pointer-events-none z-10">
                                                         <span class="relative z-10 p-1.5 text-[10px] font-semibold leading-none text-white whitespace-nowrap bg-gray-800 rounded shadow-md">
                                                             Ver PDF
+                                                        </span>
+                                                        <div class="w-2 h-2 -mt-1 rotate-45 bg-gray-800"></div>
+                                                    </div>
+                                                </div>
+                                            @endif
+                                            <!-- Botón 3: Cancelar (solo simples, no canceladas) -->
+                                            @if ($orden->service->tipo === 'simple' && $orden->estado !== 'cancelada')
+                                                <div class="relative inline-block group" x-data>
+                                                    <button
+                                                        x-on:click="
+                                                            Swal.fire({
+                                                                icon: 'warning',
+                                                                title: '¿Cancelar orden?',
+                                                                text: 'La orden #{{ $orden->id }} será cancelada y se revertirá el cobro en caja. Esta acción no se puede deshacer.',
+                                                                showCancelButton: true,
+                                                                confirmButtonText: 'Sí, cancelar',
+                                                                cancelButtonText: 'No, volver',
+                                                                confirmButtonColor: '#dc2626'
+                                                            }).then(r => {
+                                                                if (r.isConfirmed) {
+                                                                    $wire.call('cancelar', {{ $orden->id }});
+                                                                }
+                                                            })
+                                                        "
+                                                        class="inline-flex items-center justify-center w-8 h-8 text-red-700 bg-red-50 hover:bg-red-100 hover:text-red-900 rounded-lg transition-colors duration-150">
+                                                        <i class="fa-solid fa-ban text-xs"></i>
+                                                    </button>
+                                                    <!-- Tooltip 3 -->
+                                                    <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover:flex flex-col items-center pointer-events-none z-10">
+                                                        <span class="relative z-10 p-1.5 text-[10px] font-semibold leading-none text-white whitespace-nowrap bg-gray-800 rounded shadow-md">
+                                                            Cancelar orden
                                                         </span>
                                                         <div class="w-2 h-2 -mt-1 rotate-45 bg-gray-800"></div>
                                                     </div>

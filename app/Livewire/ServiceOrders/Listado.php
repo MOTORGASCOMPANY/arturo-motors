@@ -2,7 +2,10 @@
 
 namespace App\Livewire\ServiceOrders;
 
+use App\Models\Comprobante;
+use App\Models\MovimientoCaja;
 use App\Models\ServiceOrder;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -39,6 +42,44 @@ class Listado extends Component
     public function updatedTipo(): void
     {
         $this->resetPage();
+    }
+
+    public function cancelar(int $ordenId): void
+    {
+        $orden = ServiceOrder::with(['service', 'comprobante'])->findOrFail($ordenId);
+
+        // Solo cancelar servicios simples, no conversiones
+        if ($orden->service->tipo === 'conversion') {
+            $this->dispatch('minToast', titulo: 'Error', mensaje: 'Las conversiones no se pueden cancelar desde aquí.', icono: 'error');
+            return;
+        }
+
+        if ($orden->estado === 'cancelada') {
+            $this->dispatch('minToast', titulo: 'Error', mensaje: 'Esta orden ya fue cancelada.', icono: 'error');
+            return;
+        }
+
+        try {
+            DB::transaction(function () use ($orden) {
+                // Eliminar comprobante si existe
+                if ($orden->comprobante) {
+                    Comprobante::where('service_order_id', $orden->id)->delete();
+                }
+
+                // Revertir movimiento de caja (eliminar el ingreso)
+                MovimientoCaja::where('service_order_id', $orden->id)
+                    ->where('tipo', 'ingreso')
+                    ->delete();
+
+                // Cambiar estado a cancelada
+                $orden->update(['estado' => 'cancelada']);
+            });
+
+            $this->dispatch('minToast', titulo: '¡Cancelada!', mensaje: "La orden #{$orden->id} fue cancelada. Se revertió el cobro en caja.", icono: 'success');
+        } catch (\Throwable $e) {
+            report($e);
+            $this->dispatch('minToast', titulo: 'Error', mensaje: 'No se pudo cancelar la orden. Intenta de nuevo.', icono: 'error');
+        }
     }
 
     public function render()
