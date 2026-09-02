@@ -4,6 +4,9 @@ use App\Http\Controllers\ComprobanteController;
 use App\Http\Controllers\DocumentosConversionController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\PdfController;
+use App\Http\Controllers\ReporteCitasController;
+use App\Http\Controllers\ReporteCitasPdfController;
+use App\Http\Controllers\ReporteCitasExcelController;
 use App\Livewire\AdminPermisos;
 use App\Livewire\AdminRoles;
 use App\Livewire\Almacen\Categorias\Crear as CategoriasCrear;
@@ -109,7 +112,18 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
      Route::get('/lista-citas', ListaCitas::class)->name('ListaCitas');
 
     // Expedientes
-    //Route::get('/lista-expedientes', ListaExpedientes::class)->name('ListaExpedientes'); 
+    //Route::get('/lista-expedientes', ListaExpedientes::class)->name('ListaExpedientes');
+
+    // Reportes
+    Route::get('/rpta-citas', ReporteCitas::class)->name('Rpta.Citas');
+    Route::get('/rpta-citas/export-pdf', ReporteCitasPdfController::class)->name('Rpta.Citas.Pdf');
+    Route::get('/rpta-citas/export-excel', ReporteCitasExcelController::class)->name('Rpta.Citas.Excel');
+
+    // Vehículos
+    Route::get('/lista-vehiculos', ListaVehiculos::class)->name('ListaVehiculos');
+
+    // Clientes
+    Route::get('/lista-clientes', ListaClientes::class)->name('ListaClientes');
 
     // Rutas modulo de caja (MEJORAR BLADE)
     Route::get('/caja/abrir', AbrirCaja::class)->name('caja.abrir');
@@ -183,6 +197,9 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::get('/ordenes/{ordenId}/pdf/evaluacion', [DocumentosConversionController::class, 'evaluacion'])->name('conversiones.pdf.evaluacion');
     Route::get('/ordenes/{ordenId}/pdf/ficha-tecnica', [DocumentosConversionController::class, 'fichaTecnica'])->name('conversiones.pdf.ficha-tecnica');
     Route::get('/ordenes/{ordenId}/pdf/garantia', [DocumentosConversionController::class, 'garantia'])->name('conversiones.pdf.garantia');
+    Route::get('/ordenes/{ordenId}/pdf/carta-garantia', [DocumentosConversionController::class, 'cartaGarantia'])->name('conversiones.pdf.carta-garantia');
+    Route::get('/ordenes/{ordenId}/pdf/hoja-recepcion', [DocumentosConversionController::class, 'hojaRecepcion'])->name('conversiones.pdf.hoja-recepcion');
+    Route::get('/ordenes/{ordenId}/pdf/constancia-entrega', [DocumentosConversionController::class, 'constanciaEntrega'])->name('conversiones.pdf.constancia-entrega');
 
     // Rutas modulo CMS
     Route::middleware('can:opciones.cms')->prefix('cms')->name('cms.')->group(function () {

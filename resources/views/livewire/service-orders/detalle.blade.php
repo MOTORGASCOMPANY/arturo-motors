@@ -13,6 +13,7 @@
                     document.head.appendChild(s);
                 }
             </script>
+
             <script>
                 document.addEventListener('alpine:init', () => {
                     Alpine.data('visorArchivos', () => ({
@@ -45,6 +46,7 @@
                                 this.isImage = this.cache[url] === 'image';
                                 return;
                             }
+
                             try {
                                 const r = await fetch(url, {
                                     method: 'HEAD',
@@ -52,7 +54,9 @@
                                         'X-Requested-With': 'XMLHttpRequest'
                                     }
                                 });
+
                                 const ct = r.headers.get('content-type') || '';
+
                                 if (ct.includes('pdf')) {
                                     this.cache[url] = 'pdf';
                                     this.status = 'ok';
@@ -60,22 +64,29 @@
                                     this.cache[url] = 'image';
                                     this.status = 'ok';
                                     this.isImage = true;
-                                } else this.status = 'error';
+                                } else {
+                                    this.status = 'error';
+                                }
                             } catch {
                                 this.status = 'error';
                             }
                         },
+
                         zoomIn() {
                             this.zoom = Math.min(3, +(this.zoom + 0.25).toFixed(2));
                         },
+
                         zoomOut() {
                             this.zoom = Math.max(0.5, +(this.zoom - 0.25).toFixed(2));
                         },
+
                         zoomReset() {
                             this.zoom = 1;
                         },
+
                         cerrar() {
                             this.show = false;
+
                             setTimeout(() => {
                                 this.url = '';
                                 this.status = 'loading';
@@ -83,10 +94,13 @@
                                 this.zoom = 1;
                             }, 150);
                         },
+
                         startPan(e) {
                             if (this.zoom <= 1) return;
+
                             const c = this.$refs.vp;
                             if (!c) return;
+
                             this.panning = true;
                             this.moved = false;
                             this.panStartX = e.clientX;
@@ -94,16 +108,24 @@
                             this.scrollStartX = c.scrollLeft;
                             this.scrollStartY = c.scrollTop;
                         },
+
                         movePan(e) {
                             if (!this.panning) return;
+
                             const c = this.$refs.vp;
                             if (!c) return;
-                            const dx = e.clientX - this.panStartX,
-                                dy = e.clientY - this.panStartY;
-                            if (Math.abs(dx) > 3 || Math.abs(dy) > 3) this.moved = true;
+
+                            const dx = e.clientX - this.panStartX;
+                            const dy = e.clientY - this.panStartY;
+
+                            if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+                                this.moved = true;
+                            }
+
                             c.scrollLeft = this.scrollStartX - dx;
                             c.scrollTop = this.scrollStartY - dy;
                         },
+
                         stopPan() {
                             this.panning = false;
                         },
@@ -114,13 +136,19 @@
                         isImage: false,
                         isPdf: false,
                         fileName: '',
+
                         handleFileChange(event) {
                             const file = event.target.files[0];
+
                             if (file) {
                                 this.fileName = file.name;
                                 this.isImage = file.type.startsWith('image/');
                                 this.isPdf = file.type === 'application/pdf';
-                                if (this.previewUrl) URL.revokeObjectURL(this.previewUrl);
+
+                                if (this.previewUrl) {
+                                    URL.revokeObjectURL(this.previewUrl);
+                                }
+
                                 this.previewUrl = URL.createObjectURL(file);
                             } else {
                                 this.previewUrl = null;
@@ -129,8 +157,12 @@
                                 this.fileName = '';
                             }
                         },
+
                         resetPreview() {
-                            if (this.previewUrl) URL.revokeObjectURL(this.previewUrl);
+                            if (this.previewUrl) {
+                                URL.revokeObjectURL(this.previewUrl);
+                            }
+
                             this.previewUrl = null;
                             this.isImage = false;
                             this.isPdf = false;
@@ -142,9 +174,11 @@
         @endonce
 
         <div class="max-w-5xl mx-auto px-4 py-8 space-y-6">
+
             <a href="{{ route('ordenes.listado') }}"
                 class="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-all shadow-sm">
-                <i class="fas fa-arrow-left text-gray-500"></i> Volver a las órdenes de servicios
+                <i class="fas fa-arrow-left text-gray-500"></i>
+                Volver a las órdenes de servicios
             </a>
 
             <div class="bg-gray-200 p-8 rounded-xl w-full border border-gray-300/80 shadow-sm">
@@ -154,105 +188,151 @@
                             class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-sm font-bold text-lg">
                             <i class="fas fa-file-alt"></i>
                         </div>
+
                         <div>
                             <h2 class="text-xl font-bold text-gray-900 leading-tight">
                                 Orden #{{ $orden->id }}
+
                                 @if ($orden->service->tipo === 'conversion')
                                     <span
-                                        class="text-xs bg-purple-200 text-purple-800 px-2 py-0.5 rounded-full font-semibold align-middle ml-1">Conversión</span>
+                                        class="text-xs bg-purple-200 text-purple-800 px-2 py-0.5 rounded-full font-semibold align-middle ml-1">
+                                        Conversión
+                                    </span>
                                 @endif
                             </h2>
+
                             <p class="text-xs text-gray-700 flex items-center gap-1 mt-0.5">
                                 <i class="far font-normal fa-calendar-alt text-gray-600"></i>
-                                Creada el {{ $orden->created_at->format('d/m/Y H:i') }} por <span
-                                    class="font-medium text-gray-800">{{ $orden->creadoPor->name }}</span>
+                                Creada el {{ $orden->created_at->format('d/m/Y H:i') }} por
+                                <span class="font-medium text-gray-800">
+                                    {{ $orden->creadoPor->name }}
+                                </span>
                             </p>
                         </div>
                     </div>
+
                     <span
                         class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-sm animate-pulse">
                         <span
                             class="w-2 h-2 rounded-full {{ match (true) {
-                                str_contains(strtolower($orden->estado), 'cancel') || str_contains(strtolower($orden->estado), 'rechaz')
-                                    => 'bg-red-500',
+                                str_contains(strtolower($orden->estado), 'cancel') || str_contains(strtolower($orden->estado), 'rechaz') => 'bg-red-500',
                                 in_array(strtolower($orden->estado), ['entregada', 'entregado']) => 'bg-emerald-500',
                                 default => 'bg-amber-500',
-                            } }}"></span>
+                            } }}">
+                        </span>
+
                         {{ ucfirst(str_replace('_', ' ', $orden->estado)) }}
                     </span>
                 </div>
             </div>
 
             <div class="bg-gray-200 rounded-xl shadow-sm border border-gray-300/80 p-6">
-                <h3 class="text-sm font-bold text-gray-800 uppercase mb-3"><i
-                        class="fas fa-user mr-1 text-gray-600"></i> Cliente y vehículo</h3>
+                <h3 class="text-sm font-bold text-gray-800 uppercase mb-3">
+                    <i class="fas fa-user mr-1 text-gray-600"></i>
+                    Cliente y vehículo
+                </h3>
+
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                     <div>
                         <p class="text-gray-600 text-xs font-medium">Cliente</p>
-                        <p class="font-bold text-gray-900">{{ $orden->cliente->nombre }} {{ $orden->cliente->apellido }}
+                        <p class="font-bold text-gray-900">
+                            {{ $orden->cliente->nombre }} {{ $orden->cliente->apellido }}
                         </p>
-                        <p class="text-gray-700 text-xs">{{ $orden->cliente->documento }} —
-                            {{ $orden->cliente->telefono ?? 'sin teléfono' }}</p>
+                        <p class="text-gray-700 text-xs">
+                            {{ $orden->cliente->documento }} —
+                            {{ $orden->cliente->telefono ?? 'sin teléfono' }}
+                        </p>
                     </div>
+
                     <div>
                         <p class="text-gray-600 text-xs font-medium">Vehículo</p>
-                        <p class="font-bold text-gray-900">{{ $orden->vehiculo->placa }} —
-                            {{ $orden->vehiculo->marca }} {{ $orden->vehiculo->modelo }}</p>
-                        <p class="text-gray-700 text-xs">Año: {{ $orden->vehiculo->anio ?? '—' }}</p>
+                        <p class="font-bold text-gray-900">
+                            {{ $orden->vehiculo->placa }} —
+                            {{ $orden->vehiculo->marca }} {{ $orden->vehiculo->modelo }}
+                        </p>
+                        <p class="text-gray-700 text-xs">
+                            Año: {{ $orden->vehiculo->anio ?? '—' }}
+                        </p>
                     </div>
                 </div>
             </div>
 
             <div class="bg-gray-200 rounded-xl shadow-sm border border-gray-300/80 p-6">
-                <h3 class="text-sm font-bold text-gray-800 uppercase mb-3"><i class="fas fa-tag mr-1 text-gray-600"></i>
-                    Servicio y precio</h3>
+                <h3 class="text-sm font-bold text-gray-800 uppercase mb-3">
+                    <i class="fas fa-tag mr-1 text-gray-600"></i>
+                    Servicio y precio
+                </h3>
+
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                     <div>
                         <p class="text-gray-600 text-xs font-medium">Servicio</p>
-                        <p class="font-bold text-gray-900">{{ $orden->service->nombre }}</p>
+                        <p class="font-bold text-gray-900">
+                            {{ $orden->service->nombre }}
+                        </p>
                     </div>
+
                     <div>
                         <p class="text-gray-600 text-xs font-medium">Precio de lista</p>
-                        <p class="font-bold text-gray-800">S/ {{ number_format($orden->precio_lista, 2) }}</p>
+                        <p class="font-bold text-gray-800">
+                            S/ {{ number_format($orden->precio_lista, 2) }}
+                        </p>
                     </div>
+
                     <div>
                         <p class="text-gray-600 text-xs font-medium">Precio final</p>
                         <p
                             class="font-bold {{ $orden->precio_final != $orden->precio_lista ? 'text-amber-700' : 'text-gray-900' }}">
-                            S/ {{ number_format($orden->precio_final, 2) }}</p>
+                            S/ {{ number_format($orden->precio_final, 2) }}
+                        </p>
                     </div>
                 </div>
+
                 @if ($orden->descuento_motivo)
-                    <p class="text-xs text-gray-700 mt-3 font-medium"><i
-                            class="fas fa-comment-dots mr-1 text-gray-500"></i> Motivo del ajuste:
-                        {{ $orden->descuento_motivo }}</p>
+                    <p class="text-xs text-gray-700 mt-3 font-medium">
+                        <i class="fas fa-comment-dots mr-1 text-gray-500"></i>
+                        Motivo del ajuste: {{ $orden->descuento_motivo }}
+                    </p>
                 @endif
             </div>
 
             @if ($orden->service->tipo === 'conversion' && $orden->checklist_evaluacion)
                 <div class="bg-gray-200 rounded-xl shadow-sm border border-gray-300/80 p-6">
-                    <h3 class="text-sm font-bold text-gray-800 uppercase mb-3"><i
-                            class="fas fa-clipboard-check mr-1 text-gray-600"></i> Evaluación técnica</h3>
+                    <h3 class="text-sm font-bold text-gray-800 uppercase mb-3">
+                        <i class="fas fa-clipboard-check mr-1 text-gray-600"></i>
+                        Evaluación técnica
+                    </h3>
+
                     <div class="flex items-center gap-3 mb-4 text-sm">
                         <span
-                            class="px-2.5 py-1 rounded-full text-xs font-bold {{ $orden->evaluacion_aprobada ? 'bg-emerald-200 text-emerald-900' : 'bg-red-200 text-red-900' }}">{{ $orden->evaluacion_aprobada ? 'Apto' : 'No apto' }}</span>
-                        <span class="text-gray-700 font-medium">Por {{ $orden->evaluadoPor?->name }} —
-                            {{ $orden->evaluado_en?->format('d/m/Y H:i') }}</span>
+                            class="px-2.5 py-1 rounded-full text-xs font-bold {{ $orden->evaluacion_aprobada ? 'bg-emerald-200 text-emerald-900' : 'bg-red-200 text-red-900' }}">
+                            {{ $orden->evaluacion_aprobada ? 'Apto' : 'No apto' }}
+                        </span>
+
+                        <span class="text-gray-700 font-medium">
+                            Por {{ $orden->evaluadoPor?->name }} —
+                            {{ $orden->evaluado_en?->format('d/m/Y H:i') }}
+                        </span>
                     </div>
+
                     @if ($orden->evaluacion_observaciones)
-                        <p
-                            class="text-sm bg-white/80 border border-gray-300 rounded-lg p-3 mb-4 text-gray-800 font-medium">
-                            {{ $orden->evaluacion_observaciones }}</p>
+                        <p class="text-sm bg-white/80 border border-gray-300 rounded-lg p-3 mb-4 text-gray-800 font-medium">
+                            {{ $orden->evaluacion_observaciones }}
+                        </p>
                     @endif
+
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-xs">
                         @foreach ($checklistGrupos as $grupoKey => $items)
                             @foreach ($items as $clave => $label)
                                 <div class="flex items-center gap-1.5 py-1"
                                     wire:key="chk-{{ $grupoKey }}-{{ $clave }}">
                                     <i
-                                        class="fas {{ $orden->checklist_evaluacion[$clave] ?? false ? 'fa-check-circle text-emerald-600' : 'fa-times-circle text-gray-400' }}"></i>
+                                        class="fas {{ $orden->checklist_evaluacion[$clave] ?? false ? 'fa-check-circle text-emerald-600' : 'fa-times-circle text-gray-400' }}">
+                                    </i>
+
                                     <span
-                                        class="{{ $orden->checklist_evaluacion[$clave] ?? false ? 'text-gray-900 font-semibold' : 'text-gray-600' }}">{{ $label }}</span>
+                                        class="{{ $orden->checklist_evaluacion[$clave] ?? false ? 'text-gray-900 font-semibold' : 'text-gray-600' }}">
+                                        {{ $label }}
+                                    </span>
                                 </div>
                             @endforeach
                         @endforeach
@@ -262,46 +342,71 @@
 
             @if ($orden->service->tipo === 'conversion' && $orden->tecnico)
                 <div class="bg-gray-200 rounded-xl shadow-sm border border-gray-300/80 p-6">
-                    <h3 class="text-sm font-bold text-gray-800 uppercase mb-3"><i
-                            class="fas fa-wrench mr-1 text-gray-600"></i> Conversión</h3>
+                    <h3 class="text-sm font-bold text-gray-800 uppercase mb-3">
+                        <i class="fas fa-wrench mr-1 text-gray-600"></i>
+                        Conversión
+                    </h3>
+
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm mb-4">
                         <div>
                             <p class="text-gray-600 text-xs font-medium">Técnico</p>
                             <p class="font-bold text-gray-900">{{ $orden->tecnico->name }}</p>
                         </div>
+
                         <div>
                             <p class="text-gray-600 text-xs font-medium">Inicio</p>
                             <p class="font-bold text-gray-900">
-                                {{ $orden->fecha_inicio_conversion?->format('d/m/Y H:i') ?? '—' }}</p>
+                                {{ $orden->fecha_inicio_conversion?->format('d/m/Y H:i') ?? '—' }}
+                            </p>
                         </div>
+
                         <div>
                             <p class="text-gray-600 text-xs font-medium">Fin</p>
                             <p class="font-bold text-gray-900">
-                                {{ $orden->fecha_fin_conversion?->format('d/m/Y H:i') ?? '—' }}</p>
+                                {{ $orden->fecha_fin_conversion?->format('d/m/Y H:i') ?? '—' }}
+                            </p>
                         </div>
                     </div>
+
                     @if ($orden->items->count())
-                        <p class="text-xs font-bold text-gray-700 uppercase mb-2">Equipos instalados</p>
+                        <p class="text-xs font-bold text-gray-700 uppercase mb-2">
+                            Equipos instalados
+                        </p>
+
                         <div class="space-y-1.5 mb-4">
                             @foreach ($orden->items as $item)
                                 <div wire:key="item-{{ $item->id }}"
                                     class="flex justify-between text-sm bg-white/80 border border-gray-300 rounded-lg px-3 py-2">
-                                    <span class="font-medium text-gray-800">{{ $item->producto->categoria->nombre }} —
-                                        {{ $item->producto->nombre }} ({{ $item->producto->marca }})</span>
-                                    <span class="font-mono text-xs text-gray-700 font-semibold">Serie:
-                                        {{ $item->serie }}</span>
+                                    <span class="font-medium text-gray-800">
+                                        {{ $item->producto->categoria->nombre }} —
+                                        {{ $item->producto->nombre }}
+                                        ({{ $item->producto->marca }})
+                                    </span>
+
+                                    <span class="font-mono text-xs text-gray-700 font-semibold">
+                                        Serie: {{ $item->serie }}
+                                    </span>
                                 </div>
                             @endforeach
                         </div>
                     @endif
+
                     @if ($orden->movimientosStock->count())
-                        <p class="text-xs font-bold text-gray-700 uppercase mb-2">Repuestos utilizados</p>
+                        <p class="text-xs font-bold text-gray-700 uppercase mb-2">
+                            Repuestos utilizados
+                        </p>
+
                         <div class="space-y-1.5">
                             @foreach ($orden->movimientosStock as $mov)
                                 <div wire:key="mov-{{ $mov->id }}"
                                     class="flex justify-between text-sm bg-white/80 border border-gray-300 rounded-lg px-3 py-2">
-                                    <span class="font-medium text-gray-800">{{ $mov->producto->nombre }}</span>
-                                    <span class="text-gray-700 font-semibold">× {{ $mov->cantidad }}</span>
+                                    <span class="font-medium text-gray-800">
+                                        {{ $mov->producto->nombre }}
+                                    </span>
+
+                                    <span class="text-gray-700 font-semibold">
+                                        × {{ $mov->cantidad }}
+                                    </span>
                                 </div>
                             @endforeach
                         </div>
@@ -310,22 +415,32 @@
             @endif
 
             <div class="bg-gray-200 rounded-xl shadow-sm border border-gray-300/80 p-6">
-                <h3 class="text-sm font-bold text-gray-800 uppercase mb-3"><i
-                        class="fas fa-receipt mr-1 text-gray-600"></i> Comprobante</h3>
+                <h3 class="text-sm font-bold text-gray-800 uppercase mb-3">
+                    <i class="fas fa-receipt mr-1 text-gray-600"></i>
+                    Comprobante
+                </h3>
+
                 @if ($orden->comprobante)
                     <div class="flex items-center justify-between text-sm">
                         <div>
-                            <p class="font-bold text-gray-900">Folio: {{ $orden->comprobante->folio }}</p>
+                            <p class="font-bold text-gray-900">
+                                Folio: {{ $orden->comprobante->folio }}
+                            </p>
+
                             <p class="text-gray-700 text-xs font-medium">
                                 {{ ucfirst($orden->comprobante->metodo_pago) }} —
-                                {{ $orden->comprobante->created_at->format('d/m/Y H:i') }}</p>
+                                {{ $orden->comprobante->created_at->format('d/m/Y H:i') }}
+                            </p>
                         </div>
+
                         <a href="{{ route('comprobantes.pdf', $orden->id) }}" target="_blank"
-                            class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors shadow-sm">Ver
-                            PDF →</a>
+                            class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors shadow-sm">
+                            Ver PDF →
+                        </a>
                     </div>
                 @else
-                    <p class="text-sm text-gray-600 font-medium">Aún no se ha generado comprobante (pendiente de cobro).
+                    <p class="text-sm text-gray-600 font-medium">
+                        Aún no se ha generado comprobante (pendiente de cobro).
                     </p>
                 @endif
             </div>
@@ -349,6 +464,16 @@
                             'bgClass' => 'bg-amber-600',
                             'borderClass' => 'border-amber-200 hover:border-amber-400',
                         ],
+                        'Hoja de recepción' => [
+                            'icon' => 'fa-clipboard-check',
+                            'bgClass' => 'bg-indigo-600',
+                            'borderClass' => 'border-indigo-200 hover:border-indigo-400',
+                        ],
+                        'Constancia de entrega' => [
+                            'icon' => 'fa-file-signature',
+                            'bgClass' => 'bg-teal-600',
+                            'borderClass' => 'border-teal-200 hover:border-teal-400',
+                        ],
                     ];
 
                     $sistemaDocs = collect([
@@ -362,16 +487,18 @@
                                 $estilosSistema['Comprobante'],
                             )
                             : null,
+
                         $orden->vehiculo
                             ? array_merge(
                                 [
                                     'label' => 'Carta garantía',
                                     'badge' => 'Sistema',
-                                    'url' => route('vehiculo.pdf', $orden->vehiculo_id),
+                                    'url' => route('conversiones.pdf.carta-garantia', $orden->id),
                                 ],
                                 $estilosSistema['Carta garantía'],
                             )
                             : null,
+
                         $orden->vehiculo
                             ? array_merge(
                                 [
@@ -380,6 +507,28 @@
                                     'url' => route('manual.pdf', $orden->vehiculo_id),
                                 ],
                                 $estilosSistema['Manual'],
+                            )
+                            : null,
+
+                        $orden->vehiculo
+                            ? array_merge(
+                                [
+                                    'label' => 'Hoja de recepción',
+                                    'badge' => 'Sistema',
+                                    'url' => route('conversiones.pdf.hoja-recepcion', $orden->id),
+                                ],
+                                $estilosSistema['Hoja de recepción'],
+                            )
+                            : null,
+
+                        $orden->vehiculo
+                            ? array_merge(
+                                [
+                                    'label' => 'Constancia de entrega',
+                                    'badge' => 'Sistema',
+                                    'url' => route('conversiones.pdf.constancia-entrega', $orden->id),
+                                ],
+                                $estilosSistema['Constancia de entrega'],
                             )
                             : null,
                     ])->filter();
@@ -394,6 +543,7 @@
                                 'borderClass' => 'border-rose-200 hover:border-rose-400',
                             ];
                         }
+
                         if (str_contains($n, 'revision') || str_contains($n, 'tecnica')) {
                             return [
                                 'icon' => 'fa-screwdriver-wrench',
@@ -401,6 +551,7 @@
                                 'borderClass' => 'border-purple-200 hover:border-purple-400',
                             ];
                         }
+
                         if (
                             str_contains($n, 'dni') ||
                             str_contains($n, 'identidad') ||
@@ -413,6 +564,7 @@
                                 'borderClass' => 'border-cyan-200 hover:border-cyan-400',
                             ];
                         }
+
                         if (str_contains($n, 'tarjeta') || str_contains($n, 'propiedad')) {
                             return [
                                 'icon' => 'fa-address-card',
@@ -420,6 +572,7 @@
                                 'borderClass' => 'border-indigo-200 hover:border-indigo-400',
                             ];
                         }
+
                         if (str_contains($n, 'factura') || str_contains($n, 'boleta')) {
                             return [
                                 'icon' => 'fa-receipt',
@@ -437,8 +590,14 @@
 
                     $docsSubidos = $orden->documentos->map(function ($d) use ($obtenerEstiloExpediente) {
                         $nombreLimpio = ucfirst(str_replace('_', ' ', $d->tipo));
+
                         return array_merge(
-                            ['id' => $d->id, 'label' => $nombreLimpio, 'badge' => 'Subido', 'url' => $d->url],
+                            [
+                                'id' => $d->id,
+                                'label' => $nombreLimpio,
+                                'badge' => 'Subido',
+                                'url' => $d->url,
+                            ],
                             $obtenerEstiloExpediente($nombreLimpio),
                         );
                     });
@@ -446,46 +605,34 @@
 
                 <div class="bg-gray-200 rounded-xl shadow-sm border border-gray-300/80 p-6">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-sm font-bold text-gray-800 uppercase"><i
-                                class="fas fa-file-pdf mr-1 text-gray-600"></i> Documentos</h3>
+                        <h3 class="text-sm font-bold text-gray-800 uppercase">
+                            <i class="fas fa-file-pdf mr-1 text-gray-600"></i>
+                            Documentos
+                        </h3>
                     </div>
-
-                    @if ($orden->service->tipo === 'conversion')
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            @if ($orden->checklist_evaluacion)
-                                <a href="{{ route('conversiones.pdf.evaluacion', $orden->id) }}" target="_blank"
-                                    class="bg-white hover:bg-gray-50 text-gray-700 text-xs font-semibold px-3 py-2 rounded-lg border border-gray-200 transition"><i
-                                        class="fas fa-clipboard-check mr-1"></i> Evaluación</a>
-                            @endif
-                            @if ($orden->items->count())
-                                <a href="{{ route('conversiones.pdf.ficha-tecnica', $orden->id) }}" target="_blank"
-                                    class="bg-white hover:bg-gray-50 text-gray-700 text-xs font-semibold px-3 py-2 rounded-lg border border-gray-200 transition"><i
-                                        class="fas fa-wrench mr-1"></i> Ficha técnica</a>
-                            @endif
-                            @if (in_array(strtolower($orden->estado), ['entregado', 'entregada']))
-                                <a href="{{ route('conversiones.pdf.garantia', $orden->id) }}" target="_blank"
-                                    class="bg-white hover:bg-gray-50 text-gray-700 text-xs font-semibold px-3 py-2 rounded-lg border border-gray-200 transition"><i
-                                        class="fas fa-shield-alt mr-1"></i> Garantía</a>
-                            @endif
-                        </div>
-                    @endif
 
                     @if ($sistemaDocs->count())
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
                             @foreach ($sistemaDocs as $doc)
                                 <div wire:key="sysdoc-{{ Str::slug($doc['label']) }}"
                                     class="flex items-center justify-between p-3 bg-white border {{ $doc['borderClass'] }} rounded-xl shadow-sm hover:shadow-md transition-all group">
+
                                     <button type="button"
-                                        @click="abrir('{{ $doc['url'] }}', '{{ $doc['label'] }}')"
+                                        @click="abrir(@js($doc['url']), @js($doc['label']))"
                                         class="flex items-center gap-3 flex-1 min-w-0 text-left">
+
                                         <div
                                             class="w-10 h-10 rounded-lg {{ $doc['bgClass'] }} text-white flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-sm">
                                             <i class="fa-solid {{ $doc['icon'] }} text-sm"></i>
                                         </div>
+
                                         <div class="min-w-0">
-                                            <p class="text-xs font-bold text-gray-800 truncate">{{ $doc['label'] }}
+                                            <p class="text-xs font-bold text-gray-800 truncate">
+                                                {{ $doc['label'] }}
                                             </p>
-                                            <p class="text-[10px] text-gray-400 font-medium">{{ $doc['badge'] }}</p>
+                                            <p class="text-[10px] text-gray-400 font-medium">
+                                                {{ $doc['badge'] }}
+                                            </p>
                                         </div>
                                     </button>
                                 </div>
@@ -498,18 +645,26 @@
                                 class="w-10 h-10 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center mb-2">
                                 <i class="fa-solid fa-inbox text-sm"></i>
                             </div>
-                            <p class="text-xs font-semibold text-gray-500">Sin documentos</p>
+
+                            <p class="text-xs font-semibold text-gray-500">
+                                Sin documentos
+                            </p>
                         </div>
                     @endif
                 </div>
 
                 <div class="bg-gray-200 rounded-xl shadow-sm border border-gray-300/80 p-6 mt-6">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-sm font-bold text-gray-800 uppercase"><i
-                                class="fas fa-folder-open mr-1 text-gray-600"></i> Expedientes</h3>
-                        <button type="button" wire:click="abrirModalSubida({{ $orden->id }})"
+                        <h3 class="text-sm font-bold text-gray-800 uppercase">
+                            <i class="fas fa-folder-open mr-1 text-gray-600"></i>
+                            Expedientes
+                        </h3>
+
+                        <button type="button"
+                            wire:click="abrirModalSubida({{ $orden->id }})"
                             class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-sm transition active:scale-95">
-                            <i class="fa-solid fa-plus text-[10px]"></i> Subir
+                            <i class="fa-solid fa-plus text-[10px]"></i>
+                            Subir
                         </button>
                     </div>
 
@@ -518,25 +673,42 @@
                             @foreach ($docsSubidos as $doc)
                                 <div wire:key="expdoc-{{ $doc['id'] }}"
                                     class="flex items-center justify-between p-3 bg-white border {{ $doc['borderClass'] }} rounded-xl shadow-sm hover:shadow-md transition-all group">
+
                                     <button type="button"
-                                        @click="abrir('{{ $doc['url'] }}', '{{ $doc['label'] }}')"
+                                        @click="abrir(@js($doc['url']), @js($doc['label']))"
                                         class="flex items-center gap-3 flex-1 min-w-0 text-left">
+
                                         <div
                                             class="w-10 h-10 rounded-lg {{ $doc['bgClass'] }} text-white flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-sm">
                                             <i class="fa-solid {{ $doc['icon'] }} text-sm"></i>
                                         </div>
+
                                         <div class="min-w-0">
-                                            <p class="text-xs font-bold text-gray-800 truncate">{{ $doc['label'] }}
+                                            <p class="text-xs font-bold text-gray-800 truncate">
+                                                {{ $doc['label'] }}
                                             </p>
-                                            <p class="text-[10px] text-gray-400 font-medium">{{ $doc['badge'] }}</p>
+                                            <p class="text-[10px] text-gray-400 font-medium">
+                                                {{ $doc['badge'] }}
+                                            </p>
                                         </div>
                                     </button>
 
                                     <button type="button"
                                         @click="
-                                        Swal.fire({ icon:'warning', title:'¿Eliminar?', text:'Acción irreversible.', showCancelButton:true, confirmButtonText:'Sí', cancelButtonText:'Cancelar', confirmButtonColor:'#dc2626' })
-                                        .then(r => { if(r.isConfirmed) $wire.eliminarDocumento({{ $doc['id'] }}) })
-                                    "
+                                            Swal.fire({
+                                                icon: 'warning',
+                                                title: '¿Eliminar?',
+                                                text: 'Acción irreversible.',
+                                                showCancelButton: true,
+                                                confirmButtonText: 'Sí',
+                                                cancelButtonText: 'Cancelar',
+                                                confirmButtonColor: '#dc2626'
+                                            }).then(r => {
+                                                if (r.isConfirmed) {
+                                                    $wire.eliminarDocumento({{ $doc['id'] }});
+                                                }
+                                            })
+                                        "
                                         class="shrink-0 w-8 h-8 flex items-center justify-center rounded-md text-gray-300 hover:text-red-500 hover:bg-red-50 transition ml-2">
                                         <i class="fa-solid fa-trash text-xs"></i>
                                     </button>
@@ -550,18 +722,26 @@
                                 class="w-10 h-10 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center mb-2">
                                 <i class="fa-solid fa-folder text-sm"></i>
                             </div>
-                            <p class="text-xs font-semibold text-gray-500">Sin expedientes subidos</p>
+
+                            <p class="text-xs font-semibold text-gray-500">
+                                Sin expedientes subidos
+                            </p>
                         </div>
                     @endif
                 </div>
 
                 <template x-if="everOpened">
                     <template x-teleport="body">
-                        <div x-show="show" x-cloak @keydown.escape.window="cerrar()" class="fixed inset-0 z-[90]"
-                            style="display:none;">
-                            <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" @click="cerrar()"></div>
-                            <div class="absolute inset-4 sm:inset-8 md:inset-12 bg-white rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-white/20"
-                                x-show="show" x-transition:enter="transition ease-out duration-200"
+                        <div x-show="show" x-cloak @keydown.escape.window="cerrar()"
+                            class="fixed inset-0 z-[90]" style="display:none;">
+
+                            <div class="absolute inset-0 bg-black/70 backdrop-blur-sm"
+                                @click="cerrar()"></div>
+
+                            <div
+                                class="absolute inset-4 sm:inset-8 md:inset-12 bg-white rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-white/20"
+                                x-show="show"
+                                x-transition:enter="transition ease-out duration-200"
                                 x-transition:enter-start="opacity-0 scale-95"
                                 x-transition:enter-end="opacity-100 scale-100"
                                 x-transition:leave="transition ease-in duration-150"
@@ -570,45 +750,64 @@
 
                                 <div
                                     class="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white shrink-0">
+
                                     <div class="flex items-center gap-3 min-w-0">
                                         <div
                                             class="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
                                             <i class="fa-solid"
-                                                :class="isImage ? 'fa-image text-emerald-500 text-lg' :
-                                                    'fa-file-pdf text-red-500 text-lg'"></i>
+                                                :class="isImage ? 'fa-image text-emerald-500 text-lg' : 'fa-file-pdf text-red-500 text-lg'">
+                                            </i>
                                         </div>
+
                                         <div class="min-w-0">
-                                            <span class="text-base font-extrabold text-gray-800 truncate block"
+                                            <span
+                                                class="text-base font-extrabold text-gray-800 truncate block"
                                                 x-text="title"></span>
-                                            <span class="text-[11px] text-gray-400 font-medium">Previsualización de
-                                                contenido en pantalla completa</span>
+
+                                            <span class="text-[11px] text-gray-400 font-medium">
+                                                Previsualización de contenido en pantalla completa
+                                            </span>
                                         </div>
                                     </div>
+
                                     <div class="flex items-center gap-2 shrink-0">
+
                                         <template x-if="isImage && status === 'ok'">
                                             <div
                                                 class="flex items-center gap-1 bg-gray-100 rounded-xl p-1 mr-2 border border-gray-200 shadow-inner">
+
                                                 <button @click="zoomOut()"
-                                                    class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-600 hover:bg-white shadow-sm transition"><i
-                                                        class="fa-solid fa-minus text-xs"></i></button>
+                                                    class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-600 hover:bg-white shadow-sm transition">
+                                                    <i class="fa-solid fa-minus text-xs"></i>
+                                                </button>
+
                                                 <span
                                                     class="text-xs font-bold text-gray-700 w-10 text-center select-none"
-                                                    x-text="Math.round(zoom*100)+'%'"></span>
+                                                    x-text="Math.round(zoom * 100) + '%'">
+                                                </span>
+
                                                 <button @click="zoomIn()"
-                                                    class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-600 hover:bg-white shadow-sm transition"><i
-                                                        class="fa-solid fa-plus text-xs"></i></button>
+                                                    class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-600 hover:bg-white shadow-sm transition">
+                                                    <i class="fa-solid fa-plus text-xs"></i>
+                                                </button>
+
                                                 <div class="w-px h-4 bg-gray-300 mx-0.5"></div>
+
                                                 <button @click="zoomReset()"
                                                     class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-600 hover:bg-white shadow-sm transition"
-                                                    title="Restablecer zoom"><i
-                                                        class="fa-solid fa-expand text-xs"></i></button>
+                                                    title="Restablecer zoom">
+                                                    <i class="fa-solid fa-expand text-xs"></i>
+                                                </button>
                                             </div>
                                         </template>
-                                        <button @click="window.open(url, '_blank')" x-show="status==='ok'"
+
+                                        <button @click="window.open(url, '_blank')"
+                                            x-show="status === 'ok'"
                                             class="px-3 py-2 text-xs font-bold text-indigo-600 bg-indigo-50 rounded-xl hover:bg-indigo-100 transition hidden sm:inline-flex items-center gap-1.5 shadow-sm">
-                                            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i> Abrir en
-                                            pestaña
+                                            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                                            Abrir en pestaña
                                         </button>
+
                                         <button @click="cerrar()"
                                             class="w-9 h-9 flex items-center justify-center rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 transition">
                                             <i class="fa-solid fa-xmark text-lg"></i>
@@ -618,46 +817,66 @@
 
                                 <div
                                     class="flex-1 bg-slate-900 relative overflow-hidden flex items-center justify-center">
-                                    <div x-show="status==='loading'"
+
+                                    <div x-show="status === 'loading'"
                                         class="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-white z-10">
                                         <div
                                             class="w-10 h-10 rounded-full border-4 border-indigo-100 border-t-indigo-600 animate-spin">
                                         </div>
-                                        <span class="text-xs font-bold text-gray-600">Cargando contenido del
-                                            documento...</span>
+
+                                        <span class="text-xs font-bold text-gray-600">
+                                            Cargando contenido del documento...
+                                        </span>
                                     </div>
-                                    <div x-show="status==='error'"
+
+                                    <div x-show="status === 'error'"
                                         class="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-white z-10">
+
                                         <div
                                             class="w-16 h-16 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center text-2xl shadow-inner">
                                             <i class="fa-solid fa-triangle-exclamation"></i>
                                         </div>
-                                        <p class="text-sm font-bold text-gray-700">No se pudo cargar el contenido</p>
+
+                                        <p class="text-sm font-bold text-gray-700">
+                                            No se pudo cargar el contenido
+                                        </p>
+
                                         <button @click="cerrar()"
-                                            class="text-xs font-bold text-gray-600 bg-gray-100 px-4 py-2 rounded-xl hover:bg-gray-200 transition">Cerrar
-                                            visor</button>
+                                            class="text-xs font-bold text-gray-600 bg-gray-100 px-4 py-2 rounded-xl hover:bg-gray-200 transition">
+                                            Cerrar visor
+                                        </button>
                                     </div>
-                                    <template x-if="status==='ok' && !isImage">
+
+                                    <template x-if="status === 'ok' && !isImage">
                                         <div
                                             class="w-full h-full p-2 sm:p-4 flex items-center justify-center bg-slate-950">
-                                            <iframe :src="url + '#toolbar=1&view=FitH'"
+                                            <iframe
+                                                :src="url + '#toolbar=1&view=FitH'"
                                                 class="w-full h-full rounded-2xl border-0 shadow-2xl bg-white"
-                                                title="Previsualizador de contenido PDF" loading="lazy"></iframe>
+                                                title="Previsualizador de contenido PDF"
+                                                loading="lazy">
+                                            </iframe>
                                         </div>
                                     </template>
-                                    <template x-if="status==='ok' && isImage">
-                                        <div class="w-full h-full overflow-auto p-6 select-none flex items-center justify-center"
-                                            :class="zoom <= 1 ? 'flex items-center justify-center' : ''" x-ref="vp"
+
+                                    <template x-if="status === 'ok' && isImage">
+                                        <div
+                                            class="w-full h-full overflow-auto p-6 select-none flex items-center justify-center"
+                                            x-ref="vp"
                                             @mousedown="startPan($event)"
                                             @mousemove.window.throttle.16ms="movePan($event)"
-                                            @mouseup.window="stopPan()" @mouseleave="stopPan()">
-                                            <img :src="url" :style="zoom > 1 ? `width:${zoom*100}%` : ''"
+                                            @mouseup.window="stopPan()"
+                                            @mouseleave="stopPan()">
+
+                                            <img :src="url"
+                                                :style="zoom > 1 ? `width:${zoom * 100}%` : ''"
                                                 @click="if(moved){moved=false}else{zoom=zoom===1?1.5:1}"
                                                 @dragstart.prevent
-                                                :class="zoom <= 1 ? 'max-w-full max-h-full object-contain cursor-zoom-in' :
-                                                    'block mx-auto max-w-none cursor-grab'"
+                                                :class="zoom <= 1 ? 'max-w-full max-h-full object-contain cursor-zoom-in' : 'block mx-auto max-w-none cursor-grab'"
                                                 class="rounded-2xl shadow-2xl transition-[width] duration-150 bg-white"
-                                                draggable="false" loading="lazy" alt="Previsualización de imagen">
+                                                draggable="false"
+                                                loading="lazy"
+                                                alt="Previsualización de imagen">
                                         </div>
                                     </template>
                                 </div>
@@ -668,24 +887,37 @@
             </div>
 
             <div class="bg-gray-200 rounded-xl shadow-sm border border-gray-300/80 p-6">
-                <h3 class="text-sm font-bold text-gray-800 uppercase mb-3"><i
-                        class="fas fa-history mr-1 text-gray-600"></i> Historial</h3>
+                <h3 class="text-sm font-bold text-gray-800 uppercase mb-3">
+                    <i class="fas fa-history mr-1 text-gray-600"></i>
+                    Historial
+                </h3>
+
                 <div class="space-y-3">
                     @foreach ($orden->historialEstados as $h)
-                        <div wire:key="hist-{{ $h->id }}" class="flex items-start gap-3 text-sm">
+                        <div wire:key="hist-{{ $h->id }}"
+                            class="flex items-start gap-3 text-sm">
+
                             <div class="w-2.5 h-2.5 rounded-full bg-blue-600 mt-1 flex-shrink-0"></div>
+
                             <div>
                                 <p class="text-gray-900">
                                     @if ($h->estado_anterior)
-                                        <span
-                                            class="text-gray-600">{{ ucfirst(str_replace('_', ' ', $h->estado_anterior)) }}</span>
+                                        <span class="text-gray-600">
+                                            {{ ucfirst(str_replace('_', ' ', $h->estado_anterior)) }}
+                                        </span>
                                         →
                                     @endif
-                                    <span
-                                        class="font-bold">{{ ucfirst(str_replace('_', ' ', $h->estado_nuevo)) }}</span>
+
+                                    <span class="font-bold">
+                                        {{ ucfirst(str_replace('_', ' ', $h->estado_nuevo)) }}
+                                    </span>
                                 </p>
-                                <p class="text-xs text-gray-700 font-medium">{{ $h->created_at->format('d/m/Y H:i') }}
-                                    — {{ $h->usuario->name ?? 'Sistema' }}</p>
+
+                                <p class="text-xs text-gray-700 font-medium">
+                                    {{ $h->created_at->format('d/m/Y H:i') }}
+                                    —
+                                    {{ $h->usuario->name ?? 'Sistema' }}
+                                </p>
                             </div>
                         </div>
                     @endforeach
@@ -694,149 +926,216 @@
         </div>
 
         @if ($showUploadModal)
-            <div id="modal-subida-container" class="fixed inset-0 z-[80] flex items-center justify-center p-3 sm:p-6"
+            <div id="modal-subida-container"
+                class="fixed inset-0 z-[80] flex items-center justify-center p-3 sm:p-6"
                 wire:key="modal-subida">
+
                 <div class="fixed inset-0 bg-slate-900/75 backdrop-blur-md transition-opacity"
                     wire:click="cerrarModalSubida"></div>
 
-                <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-7xl transition-all duration-300 overflow-hidden border border-white/20"
-                    x-data="modalSubidaPrevisualizador" x-transition:enter="transition ease-out duration-200"
-                    x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100">
+                <div
+                    class="relative bg-white rounded-3xl shadow-2xl w-full max-w-7xl transition-all duration-300 overflow-hidden border border-white/20"
+                    x-data="modalSubidaPrevisualizador"
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 scale-95"
+                    x-transition:enter-end="opacity-100 scale-100">
 
                     <div wire:loading wire:target="guardarDocumento"
                         class="absolute inset-0 bg-slate-900/90 backdrop-blur-md z-50 flex flex-col items-center justify-center p-6 text-center text-white h-full w-full">
+
                         <div class="relative mb-6">
-                            <div class="w-24 h-24 bg-indigo-500/20 rounded-full absolute -inset-3 animate-ping"></div>
+                            <div
+                                class="w-24 h-24 bg-indigo-500/20 rounded-full absolute -inset-3 animate-ping">
+                            </div>
+
                             <div
                                 class="w-24 h-24 bg-gradient-to-tr from-indigo-600 to-violet-500 rounded-3xl flex items-center justify-center shadow-2xl relative z-10">
                                 <i class="fa-solid fa-cloud-arrow-up text-4xl animate-bounce"></i>
                             </div>
                         </div>
-                        <h4 class="text-xl font-black tracking-wide text-white">Guardando y procesando archivo...</h4>
-                        <p class="text-xs text-slate-300 mt-1.5 mb-6 max-w-sm">Estamos subiendo tu documento de manera
-                            segura al servidor para que esté disponible de inmediato.</p>
+
+                        <h4 class="text-xl font-black tracking-wide text-white">
+                            Guardando y procesando archivo...
+                        </h4>
+
+                        <p class="text-xs text-slate-300 mt-1.5 mb-6 max-w-sm">
+                            Estamos subiendo tu documento de manera segura al servidor para que esté disponible de inmediato.
+                        </p>
 
                         <div
                             class="w-56 bg-slate-800 rounded-full h-2.5 overflow-hidden p-0.5 border border-slate-700 shadow-inner">
-                            <div class="bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-400 h-full rounded-full animate-[progress_1.5s_infinite_ease-in-out]"
-                                style="width: 70%;"></div>
+                            <div
+                                class="bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-400 h-full rounded-full animate-[progress_1.5s_infinite_ease-in-out]"
+                                style="width: 70%;">
+                            </div>
                         </div>
                     </div>
 
                     <div
                         class="flex items-center justify-between px-8 py-5 bg-gradient-to-r from-indigo-900 via-indigo-800 to-indigo-900 text-white">
+
                         <div class="flex items-center gap-3">
                             <div
                                 class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center border border-white/20 shadow-inner">
                                 <i class="fa-solid fa-cloud-arrow-up text-indigo-200 text-lg"></i>
                             </div>
+
                             <div>
-                                <h3 class="text-base font-extrabold tracking-tight">Subir Documento Nuevo</h3>
-                                <p class="text-xs text-indigo-200 font-medium">Adjunta archivos e inspecciona su
-                                    contenido previamente</p>
+                                <h3 class="text-base font-extrabold tracking-tight">
+                                    Subir Documento Nuevo
+                                </h3>
+
+                                <p class="text-xs text-indigo-200 font-medium">
+                                    Adjunta archivos e inspecciona su contenido previamente
+                                </p>
                             </div>
                         </div>
+
                         <button wire:click="cerrarModalSubida"
-                            class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition active:scale-95"><i
-                                class="fa-solid fa-xmark text-lg"></i></button>
+                            class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition active:scale-95">
+                            <i class="fa-solid fa-xmark text-lg"></i>
+                        </button>
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-12 gap-0 max-h-[82vh] overflow-y-auto">
 
                         <div
                             class="lg:col-span-5 p-8 space-y-6 flex flex-col justify-between border-r border-slate-100">
+
                             <div class="space-y-6">
+
                                 @if ($ordenSeleccionada)
                                     <div
                                         class="flex items-center gap-3 p-4 bg-indigo-50/80 border border-indigo-100 rounded-2xl shadow-sm">
+
                                         <div
                                             class="w-10 h-10 rounded-xl bg-indigo-500 text-white flex items-center justify-center shadow-md shadow-indigo-500/20 shrink-0">
                                             <i class="fa-solid fa-car text-base"></i>
                                         </div>
+
                                         <div class="min-w-0">
                                             <span
-                                                class="text-xs font-bold text-indigo-400 uppercase tracking-wide block">Orden
-                                                #{{ $ordenSeleccionada->id }}</span>
-                                            <span class="text-sm font-extrabold text-slate-800 truncate block">Placa:
-                                                {{ $ordenSeleccionada->vehiculo->placa ?? '—' }}</span>
+                                                class="text-xs font-bold text-indigo-400 uppercase tracking-wide block">
+                                                Orden #{{ $ordenSeleccionada->id }}
+                                            </span>
+
+                                            <span
+                                                class="text-sm font-extrabold text-slate-800 truncate block">
+                                                Placa:
+                                                {{ $ordenSeleccionada->vehiculo->placa ?? '—' }}
+                                            </span>
                                         </div>
                                     </div>
                                 @endif
 
                                 <div class="space-y-2">
-                                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Tipo
-                                        de documento</label>
-                                    <input type="text" wire:model="tipoDocumento" list="tiposDoc"
+                                    <label
+                                        class="block text-xs font-bold text-slate-400 uppercase tracking-wider">
+                                        Tipo de documento
+                                    </label>
+
+                                    <input type="text"
+                                        wire:model="tipoDocumento"
+                                        list="tiposDoc"
                                         placeholder="Ej: SOAT, Revisión técnica, DNI..."
                                         class="w-full bg-white border border-slate-200 rounded-2xl text-sm px-4 py-3.5 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition shadow-sm">
+
                                     <datalist id="tiposDoc">
                                         @foreach (collect($tiposDocumento)->reject(fn($t) => in_array(strtolower($t), ['comprobante', 'carta garantía', 'carta garantia', 'manual'])) as $t)
                                             <option value="{{ $t }}"></option>
                                         @endforeach
                                     </datalist>
+
                                     @error('tipoDocumento')
-                                        <span class="text-xs font-bold text-red-500 mt-1 block">{{ $message }}</span>
+                                        <span class="text-xs font-bold text-red-500 mt-1 block">
+                                            {{ $message }}
+                                        </span>
                                     @enderror
                                 </div>
 
-                                <div x-data="{ dragging: false }" @dragover.prevent="dragging=true"
-                                    @dragenter.prevent="dragging=true" @dragleave.self="dragging=false"
+                                <div x-data="{ dragging: false }"
+                                    @dragover.prevent="dragging=true"
+                                    @dragenter.prevent="dragging=true"
+                                    @dragleave.self="dragging=false"
                                     @drop.prevent="dragging=false; const i=$refs.fInput; if($event.dataTransfer.files.length&&i){const dt=new DataTransfer();dt.items.add($event.dataTransfer.files[0]);i.files=dt.files;i.dispatchEvent(new Event('change',{bubbles:true}))}">
+
                                     <label
-                                        class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Archivo
-                                        (Imagen o PDF)</label>
+                                        class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                                        Archivo (Imagen o PDF)
+                                    </label>
+
                                     <div class="rounded-2xl border-2 transition-all p-1.5"
-                                        :class="dragging ? 'border-indigo-500 bg-indigo-50/70 border-dashed shadow-inner' :
-                                            'border-slate-200 bg-slate-50/50'">
-                                        <input type="file" wire:model="archivo" x-ref="fInput"
-                                            accept="image/*,.pdf" @change="handleFileChange($event)"
+                                        :class="dragging ? 'border-indigo-500 bg-indigo-50/70 border-dashed shadow-inner' : 'border-slate-200 bg-slate-50/50'">
+
+                                        <input type="file"
+                                            wire:model="archivo"
+                                            x-ref="fInput"
+                                            accept="image/*,.pdf"
+                                            @change="handleFileChange($event)"
                                             class="w-full text-xs text-slate-500 border-0 rounded-xl cursor-pointer bg-white file:mr-4 file:py-3.5 file:px-5 file:border-0 file:bg-indigo-50 file:text-indigo-600 file:font-bold file:text-xs hover:file:bg-indigo-100 transition shadow-sm">
                                     </div>
+
                                     <div wire:loading wire:target="archivo"
                                         class="flex items-center gap-2 mt-2 text-xs font-bold text-indigo-600">
+
                                         <div
                                             class="w-4 h-4 rounded-full border-2 border-indigo-200 border-t-indigo-600 animate-spin">
-                                        </div> Procesando archivo local...
+                                        </div>
+
+                                        Procesando archivo local...
                                     </div>
+
                                     @error('archivo')
-                                        <span class="text-xs font-bold text-red-500 mt-1 block">{{ $message }}</span>
+                                        <span class="text-xs font-bold text-red-500 mt-1 block">
+                                            {{ $message }}
+                                        </span>
                                     @enderror
                                 </div>
                             </div>
 
                             <div class="text-xs text-slate-400 font-medium pt-4">
-                                <i class="fa-solid fa-circle-info mr-1 text-indigo-500"></i> Puedes inspeccionar el
-                                contenido completo del PDF o imagen antes de confirmar.
+                                <i class="fa-solid fa-circle-info mr-1 text-indigo-500"></i>
+                                Puedes inspeccionar el contenido completo del PDF o imagen antes de confirmar.
                             </div>
                         </div>
 
                         <div
                             class="lg:col-span-7 bg-slate-900 p-8 flex flex-col justify-between relative min-h-[500px]">
+
                             <div class="flex items-center justify-between mb-4">
                                 <span
                                     class="text-xs font-bold text-indigo-300 uppercase tracking-widest flex items-center gap-2">
-                                    <i class="fa-solid fa-eye text-indigo-400"></i> Lector de contenido en vivo
+                                    <i class="fa-solid fa-eye text-indigo-400"></i>
+                                    Lector de contenido en vivo
                                 </span>
+
                                 <template x-if="fileName">
                                     <span
                                         class="text-[11px] font-semibold text-slate-300 truncate max-w-[250px] bg-slate-800 px-3 py-1 rounded-lg border border-slate-700"
-                                        x-text="fileName"></span>
+                                        x-text="fileName">
+                                    </span>
                                 </template>
                             </div>
 
                             <div
                                 class="flex-1 w-full bg-slate-950 rounded-2xl overflow-hidden border border-slate-800 shadow-2xl flex items-center justify-center relative p-3 my-2">
+
                                 <template x-if="!previewUrl">
                                     <div
                                         class="flex flex-col items-center justify-center text-center p-8 text-slate-500 space-y-3">
+
                                         <div
                                             class="w-16 h-16 bg-slate-900 text-slate-600 rounded-2xl flex items-center justify-center text-2xl border border-slate-800">
                                             <i class="fa-solid fa-file-arrow-up"></i>
                                         </div>
-                                        <p class="text-xs font-bold text-slate-400">Selecciona o arrastra un archivo
+
+                                        <p class="text-xs font-bold text-slate-400">
+                                            Selecciona o arrastra un archivo
                                         </p>
-                                        <p class="text-[11px] text-slate-500 max-w-xs">El contenido del PDF o imagen
-                                            aparecerá aquí inmediatamente para que lo revises.</p>
+
+                                        <p class="text-[11px] text-slate-500 max-w-xs">
+                                            El contenido del PDF o imagen aparecerá aquí inmediatamente para que lo revises.
+                                        </p>
                                     </div>
                                 </template>
 
@@ -846,9 +1145,11 @@
                                 </template>
 
                                 <template x-if="previewUrl && isPdf">
-                                    <iframe :src="previewUrl + '#toolbar=1&view=FitH'"
+                                    <iframe
+                                        :src="previewUrl + '#toolbar=1&view=FitH'"
                                         class="w-full h-[420px] rounded-xl border-0 bg-white shadow-inner"
-                                        title="Lector en vivo PDF"></iframe>
+                                        title="Lector en vivo PDF">
+                                    </iframe>
                                 </template>
                             </div>
 
@@ -856,19 +1157,30 @@
                                 Previsualización directa en el navegador sin descargas automáticas.
                             </p>
                         </div>
-
                     </div>
 
-                    <div class="flex items-center justify-end gap-3 px-8 py-5 border-t border-slate-100 bg-slate-50">
+                    <div
+                        class="flex items-center justify-end gap-3 px-8 py-5 border-t border-slate-100 bg-slate-50">
+
                         <button wire:click="cerrarModalSubida"
-                            class="px-5 py-3 text-xs font-bold text-slate-600 bg-gray-200 hover:bg-gray-300 rounded-2xl transition">Cancelar</button>
-                        <button wire:click="guardarDocumento" wire:loading.attr="disabled"
+                            class="px-5 py-3 text-xs font-bold text-slate-600 bg-gray-200 hover:bg-gray-300 rounded-2xl transition">
+                            Cancelar
+                        </button>
+
+                        <button wire:click="guardarDocumento"
+                            wire:loading.attr="disabled"
                             wire:target="guardarDocumento"
                             class="px-6 py-3 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-2xl shadow-xl shadow-indigo-600/30 transition disabled:opacity-50 flex items-center gap-2">
-                            <span wire:loading.remove wire:target="guardarDocumento"><i class="fa-solid fa-check"></i>
-                                Guardar archivo</span>
-                            <span wire:loading wire:target="guardarDocumento"><i
-                                    class="fa-solid fa-circle-notch fa-spin"></i> Subiendo...</span>
+
+                            <span wire:loading.remove wire:target="guardarDocumento">
+                                <i class="fa-solid fa-check"></i>
+                                Guardar archivo
+                            </span>
+
+                            <span wire:loading wire:target="guardarDocumento">
+                                <i class="fa-solid fa-circle-notch fa-spin"></i>
+                                Subiendo...
+                            </span>
                         </button>
                     </div>
                 </div>

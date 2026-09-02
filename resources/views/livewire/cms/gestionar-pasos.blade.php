@@ -3,6 +3,18 @@
     description="Administra los pasos del proceso que se muestran en el landing page"
     headerIcon='<i class="fa-solid fa-route text-blue-600"></i>'
 >
+    {{-- Header with Create Button --}}
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 pb-4 border-b border-gray-200">
+        <div>
+            <h2 class="text-xl font-semibold text-gray-900">{{ count($steps) ?? 0 }} pasos</h2>
+            <p class="text-gray-500 text-sm">Gestiona los pasos del proceso de trabajo</p>
+        </div>
+        <button wire:click="create"
+                class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-blue-600 text-white font-semibold shadow-sm hover:bg-blue-700 hover:shadow-md transition-all flex items-center justify-center gap-2">
+            <i class="fa-solid fa-plus"></i> Nuevo Paso
+        </button>
+    </div>
+
     {{-- Success Message --}}
     @if($successMessage)
         <div x-data="{ show: true }"
@@ -19,7 +31,7 @@
     {{-- Steps Grid --}}
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
         @forelse ($steps as $step)
-            <x-cms.card class="flex flex-col h-full group" style="animation: cardEntry 0.4s ease-out {{ $loop->index * 0.06 }}s both">
+            <x-cms.card wire:key="step-{{ $step['id'] }}" class="flex flex-col h-full group" style="animation: cardEntry 0.4s ease-out {{ $loop->index * 0.06 }}s both">
                 <div class="p-6 flex-1 text-center">
                     <div class="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mx-auto mb-4 border border-blue-100">
                         <span class="text-2xl font-bold text-blue-600">{{ $step['step_number'] }}</span>
@@ -120,7 +132,15 @@
         </div>
     @endif
 
-
+    {{-- Styles --}}
+    <style>
+        @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes cardEntry { from { opacity: 0; transform: translateY(20px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes emptyPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+        .animate-slide-down { animation: slideDown 0.3s ease-out; }
+        [x-cloak] { display: none !important; }
+    </style>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>

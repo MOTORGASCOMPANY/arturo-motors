@@ -31,44 +31,50 @@ class DashboardArturo extends Component
         $user = auth()->user();
         $data = [];
 
-        // Caja
-        $sesionCaja = SesionCaja::abierta()->with('abiertaPor')->orderByDesc('abierta_en')->first();
-        $data['sesionCaja'] = $sesionCaja;
+        // Caja (Solo Admin y Jefe de Taller)
+        if ($user->hasAnyRole(['Administrador del sistema', 'Jefe de Taller'])) {
+            $sesionCaja = SesionCaja::abierta()->with('abiertaPor')->orderByDesc('abierta_en')->first();
+            $data['sesionCaja'] = $sesionCaja;
 
-        if ($sesionCaja) {
-            $data['ingresosHoy'] = $sesionCaja->movimientos()->where('tipo', 'ingreso')->sum('monto');
-            $data['egresosHoy'] = $sesionCaja->movimientos()->where('tipo', 'egreso')->sum('monto');
+            if ($sesionCaja) {
+                $data['ingresosHoy'] = $sesionCaja->movimientos()->where('tipo', 'ingreso')->sum('monto');
+                $data['egresosHoy'] = $sesionCaja->movimientos()->where('tipo', 'egreso')->sum('monto');
+            }
         }
 
-        // Gráfico: ingresos de los últimos 30 días
-        $ingresosPorDia = MovimientoCaja::where('tipo', 'ingreso')
-            ->where('created_at', '>=', now()->subDays(29)->startOfDay())
-            ->selectRaw('DATE(created_at) as fecha, SUM(monto) as total')
-            ->groupBy('fecha')
-            ->pluck('total', 'fecha');
+        // Gráficos: ingresos de los últimos 30 días (Solo Admin)
+        if ($user->hasRole('Administrador del sistema')) {
+            $ingresosPorDia = MovimientoCaja::where('tipo', 'ingreso')
+                ->where('created_at', '>=', now()->subDays(29)->startOfDay())
+                ->selectRaw('DATE(created_at) as fecha, SUM(monto) as total')
+                ->groupBy('fecha')
+                ->pluck('total', 'fecha');
 
-        [$data['ingresosLabels'], $data['ingresosData']] = $this->serieUltimos30Dias($ingresosPorDia);
+            [$data['ingresosLabels'], $data['ingresosData']] = $this->serieUltimos30Dias($ingresosPorDia);
 
-        // Gráfico: conversiones creadas por día, últimos 30 días
-        $conversionesPorDia = ServiceOrder::whereHas('service', fn ($q) => $q->where('tipo', 'conversion'))
-            ->where('created_at', '>=', now()->subDays(29)->startOfDay())
-            ->selectRaw('DATE(created_at) as fecha, COUNT(*) as total')
-            ->groupBy('fecha')
-            ->pluck('total', 'fecha');
+            // Gráfico: conversiones creadas por día, últimos 30 días
+            $conversionesPorDia = ServiceOrder::whereHas('service', fn ($q) => $q->where('tipo', 'conversion'))
+                ->where('created_at', '>=', now()->subDays(29)->startOfDay())
+                ->selectRaw('DATE(created_at) as fecha, COUNT(*) as total')
+                ->groupBy('fecha')
+                ->pluck('total', 'fecha');
 
-        [$data['conversionesLabels'], $data['conversionesData']] = $this->serieUltimos30Dias($conversionesPorDia);
+            [$data['conversionesLabels'], $data['conversionesData']] = $this->serieUltimos30Dias($conversionesPorDia);
+        }
 
-        // Contadores de conversiones
-        $data['conversionesHoy'] = ServiceOrder::whereHas('service', fn ($q) => $q->where('tipo', 'conversion'))
-            ->whereDate('created_at', today())->count();
+        // Contadores de conversiones (No Clientes)
+        if (! $user->hasRole('Cliente')) {
+            $data['conversionesHoy'] = ServiceOrder::whereHas('service', fn ($q) => $q->where('tipo', 'conversion'))
+                ->whereDate('created_at', today())->count();
 
-        $data['conversionesSemana'] = ServiceOrder::whereHas('service', fn ($q) => $q->where('tipo', 'conversion'))
-            ->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->count();
+            $data['conversionesSemana'] = ServiceOrder::whereHas('service', fn ($q) => $q->where('tipo', 'conversion'))
+                ->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->count();
 
-        $data['conversionesMes'] = ServiceOrder::whereHas('service', fn ($q) => $q->where('tipo', 'conversion'))
-            ->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
+            $data['conversionesMes'] = ServiceOrder::whereHas('service', fn ($q) => $q->where('tipo', 'conversion'))
+                ->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
+        }
 
-        // Roles
+        // Roles específicos
         if ($user->hasAnyRole(['Jefe de Taller', 'Administrador del sistema'])) {
             $data['pendientesAsignarTecnico'] = ServiceOrder::whereHas('service', fn ($q) => $q->where('tipo', 'conversion'))
                 ->where('estado', 'creada')->count();
