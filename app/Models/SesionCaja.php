@@ -54,12 +54,23 @@ class SesionCaja extends Model
         return $query->where('estado', 'abierta');
     }
 
-    // Cerrar la sesión calculando el esperado automáticamente
+    /**
+     * Cerrar la sesión calculando el esperado SOLO con efectivo.
+     * Fórmula: apertura + ingresos_efectivo - egresos
+     * (Solo el efectivo está físicamente en el cajón)
+     */
     public function cerrar(float $montoCierre, int $usuarioId): void
     {
-        $ingresos = $this->movimientos()->where('tipo', 'ingreso')->sum('monto');
+        // Efectivo recibido a través de la relación indirecta
+        $efectivoIngresos = $this->movimientos()
+            ->where('tipo', 'ingreso')
+            ->whereHas('serviceOrder.comprobante', function ($q) {
+                $q->where('metodo_pago', 'efectivo');
+            })
+            ->sum('monto');
+
         $egresos = $this->movimientos()->where('tipo', 'egreso')->sum('monto');
-        $esperado = $this->monto_apertura + $ingresos - $egresos;
+        $esperado = $this->monto_apertura + $efectivoIngresos - $egresos;
 
         $this->update([
             'monto_cierre' => $montoCierre,
