@@ -5,6 +5,7 @@ namespace App\Livewire\ServiceOrders;
 use App\Models\Comprobante;
 use App\Models\MovimientoCaja;
 use App\Models\ServiceOrder;
+use App\Models\ServiceOrderStatusHistory;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -61,6 +62,8 @@ class Listado extends Component
 
         try {
             DB::transaction(function () use ($orden) {
+                $estadoAnterior = $orden->estado;
+
                 // Eliminar comprobante si existe
                 if ($orden->comprobante) {
                     Comprobante::where('service_order_id', $orden->id)->delete();
@@ -73,6 +76,14 @@ class Listado extends Component
 
                 // Cambiar estado a cancelada
                 $orden->update(['estado' => 'cancelada']);
+
+                // Registrar historial explícitamente
+                ServiceOrderStatusHistory::registrar(
+                    $orden,
+                    $estadoAnterior,
+                    'cancelada',
+                    auth()->id()
+                );
             });
 
             $this->dispatch('minToast', titulo: '¡Cancelada!', mensaje: "La orden #{$orden->id} fue cancelada. Se revertió el cobro en caja.", icono: 'success');
