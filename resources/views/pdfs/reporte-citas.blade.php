@@ -5,7 +5,7 @@
     <title>Reporte de Citas — Arturo Motors</title>
     <style>
         @page {
-            margin: 15px 20px;
+            margin: 25px 30px;
             orientation: landscape;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -22,7 +22,7 @@
         .header-table td { vertical-align: middle; }
         .logo { max-height: 50px; width: auto; }
         .company-title {
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 800;
             color: #0f172a;
             letter-spacing: 0.5px;
@@ -37,12 +37,12 @@
             font-size: 8px;
             color: #64748b;
             line-height: 1.4;
-            margin-top: 3px;
+            margin-top: 4px;
         }
         .report-title-box {
             background: linear-gradient(135deg, #1e293b, #312e81, #1e3a8a);
             color: #fff;
-            padding: 10px 20px;
+            padding: 12px 24px;
             border-radius: 8px;
             text-align: center;
         }
@@ -54,7 +54,7 @@
         .report-subtitle {
             font-size: 9px;
             opacity: 0.85;
-            margin-top: 2px;
+            margin-top: 3px;
         }
 
         /* FILTROS */
@@ -62,8 +62,8 @@
             background: #f8fafc;
             border: 1px solid #e2e8f0;
             border-radius: 6px;
-            padding: 8px 12px;
-            margin: 10px 0;
+            padding: 8px 14px;
+            margin: 12px 0;
         }
         .filters-label {
             font-size: 8px;
@@ -81,14 +81,14 @@
         /* TABLA */
         .data-table {
             border: 1px solid #cbd5e1;
-            margin-top: 8px;
+            margin-top: 10px;
         }
         .data-table thead th {
             background: #1e293b;
             color: #fff;
             font-size: 8px;
             font-weight: 700;
-            padding: 6px 8px;
+            padding: 7px 10px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             border-right: 1px solid #334155;
@@ -96,7 +96,7 @@
         }
         .data-table thead th:last-child { border-right: none; }
         .data-table tbody td {
-            padding: 5px 8px;
+            padding: 6px 10px;
             font-size: 9px;
             border-bottom: 1px solid #e2e8f0;
             border-right: 1px solid #e2e8f0;
@@ -104,7 +104,6 @@
         }
         .data-table tbody td:last-child { border-right: none; }
         .data-table tbody tr:nth-child(even) { background: #f8fafc; }
-        .data-table tbody tr:hover { background: #f1f5f9; }
 
         /* ESTADOS */
         .badge {
@@ -123,15 +122,13 @@
 
         /* FOOTER */
         .footer {
-            margin-top: 12px;
+            margin-top: 15px;
             font-size: 8px;
             color: #94a3b8;
         }
         .footer-line {
             border-top: 2px solid #1e293b;
-            padding-top: 6px;
-            display: flex;
-            justify-content: space-between;
+            padding-top: 8px;
         }
     </style>
 </head>
@@ -141,11 +138,11 @@
     <table class="header-table w-100">
         <tr>
             <td style="width: 45%; padding-right: 15px;">
-                <img src="{{ public_path('images/logo.png') }}" class="logo">
-                <div class="company-title" style="margin-top: 4px;">ARTURO MOTORS</div>
-                <div class="company-subtitle">ASESOR AUTOMOTRIZ — CENTRO DE INSPECCIÓN TÉCNICA VEHICULAR</div>
+                <img src="{{ public_path('images/icon.png') }}" class="logo">
+                <div class="company-title" style="margin-top: 5px;">ARTURO MOTORS</div>
+                <div class="company-subtitle">ASESOR AUTOMOTRIZ — CENTRO DE INSPECCION TECNICA VEHICULAR</div>
                 <div class="company-info">
-                    Av. Perú N° 5176 - Callao, Perú<br>
+                    Av. Peru N° 5176 - Callao, Peru<br>
                     TEL: 987 288 504 / 943 694 464 · contacto@empresa.com.pe
                 </div>
             </td>
@@ -182,14 +179,15 @@
     <table class="data-table w-100">
         <thead>
             <tr>
-                <th style="width: 5%;">#</th>
+                <th style="width: 4%;">#</th>
                 <th style="width: 10%;">Fecha</th>
-                <th style="width: 20%;">Cliente</th>
-                <th style="width: 10%;">Documento</th>
-                <th style="width: 10%;">Vehiculo</th>
-                <th style="width: 15%;">Asesor</th>
-                <th style="width: 20%;">Motivo</th>
-                <th style="width: 10%;">Estado</th>
+                <th style="width: 18%;">Cliente</th>
+                <th style="width: 9%;">Documento</th>
+                <th style="width: 9%;">Placa</th>
+                <th style="width: 14%;">Asesor</th>
+                <th style="width: 16%;">Servicio</th>
+                <th style="width: 17%;">Motivo</th>
+                <th style="width: 9%;">Estado</th>
             </tr>
         </thead>
         <tbody>
@@ -201,7 +199,8 @@
                 <td>{{ $cita->cliente->documento ?? '—' }}</td>
                 <td>{{ $cita->vehiculo->placa ?? 'N/A' }}</td>
                 <td>{{ $cita->asesor->name ?? 'N/A' }}</td>
-                <td>{{ $cita->motivo }}</td>
+                <td>{{ $cita->serviceOrder->service->nombre ?? '—' }}</td>
+                <td>{{ $cita->motivo ?? '—' }}</td>
                 <td>
                     @php
                         $badgeClass = match($cita->estado) {
@@ -226,7 +225,7 @@
 
     <!-- FOOTER -->
     <div class="footer">
-        <div class="footer-line">
+        <div class="footer-line" style="display: flex; justify-content: space-between;">
             <span>Arturo Motors — Reporte generado automaticamente</span>
             <span>Pagina 1 de 1</span>
         </div>

@@ -12,7 +12,7 @@ class ReporteCitasController extends Controller
 {
     public function exportPdf(Request $request)
     {
-        $citas = Cita::with(['cliente', 'vehiculo', 'asesor'])
+        $citas = Cita::with(['cliente', 'vehiculo', 'asesor', 'serviceOrder.service'])
             ->buscar($request->search)
             ->estado($request->estado ?? 'todos')
             ->when($request->fechaInicio, fn ($q) => $q->whereDate('fecha_cita', '>=', $request->fechaInicio))
