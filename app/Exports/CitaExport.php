@@ -13,7 +13,6 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Color;
-use PhpOffice\PhpSpreadsheet\Style\Font as FontStyle;
 
 class CitaExport implements FromCollection, WithHeadings, WithMapping, WithStyles, WithTitle
 {
@@ -32,7 +31,7 @@ class CitaExport implements FromCollection, WithHeadings, WithMapping, WithStyle
 
     public function collection()
     {
-        return Cita::with(['cliente', 'vehiculo', 'asesor', 'serviceOrder.service'])
+        return Cita::with(['cliente', 'vehiculo', 'asesor'])
             ->buscar($this->search)
             ->estado($this->estado)
             ->when($this->fechaInicio, fn ($q) => $q->whereDate('fecha_cita', '>=', $this->fechaInicio))
@@ -43,7 +42,7 @@ class CitaExport implements FromCollection, WithHeadings, WithMapping, WithStyle
 
     public function headings(): array
     {
-        return ['#', 'Fecha', 'Cliente', 'Documento', 'Placa', 'Asesor', 'Servicio', 'Motivo', 'Estado'];
+        return ['#', 'Fecha', 'Cliente', 'Documento', 'Placa', 'Asesor', 'Motivo', 'Estado'];
     }
 
     public function map($cita): array
@@ -55,7 +54,6 @@ class CitaExport implements FromCollection, WithHeadings, WithMapping, WithStyle
             $cita->cliente->documento ?? '—',
             $cita->vehiculo->placa ?? 'N/A',
             $cita->asesor->name ?? 'N/A',
-            $cita->serviceOrder->service->nombre ?? '—',
             $cita->motivo ?? '—',
             ucfirst($cita->estado),
         ];
@@ -63,21 +61,21 @@ class CitaExport implements FromCollection, WithHeadings, WithMapping, WithStyle
 
     public function styles(Worksheet $sheet): array
     {
-        $lastCol = 'I';
+        $lastCol = 'H';
 
         // Row 1: Company header
         $sheet->mergeCells("A1:{$lastCol}1");
         $sheet->setCellValue('A1', 'ARTURO MOTORS — REPORTE DE CITAS');
-        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16)->setColor(new Color('FFFFFF'));
-        $sheet->getStyle('A1')->getFill()->setFillType(Fill::FILL_SOLID)->startColor->setRGB('1E293B');
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16)->getColor()->setRGB('FFFFFF');
+        $sheet->getStyle('A1')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('1E293B');
         $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setVertical(Alignment::VERTICAL_CENTER);
         $sheet->getRowDimension(1)->setHeight(40);
 
         // Row 2: Subtitle
         $sheet->mergeCells("A2:{$lastCol}2");
         $sheet->setCellValue('A2', 'Generado: ' . now()->format('d/m/Y H:i') . ' — Total: ' . $this->collection()->count() . ' cita(s)');
-        $sheet->getStyle('A2')->getFont()->setSize(10)->setColor(new Color('64748B'));
-        $sheet->getStyle('A2')->getFill()->setFillType(Fill::FILL_SOLID)->startColor->setRGB('F1F5F9');
+        $sheet->getStyle('A2')->getFont()->setSize(10)->getColor()->setRGB('64748B');
+        $sheet->getStyle('A2')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('F1F5F9');
         $sheet->getStyle('A2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
         $sheet->getRowDimension(2)->setHeight(25);
 
@@ -86,8 +84,8 @@ class CitaExport implements FromCollection, WithHeadings, WithMapping, WithStyle
 
         // Row 4: Headings
         $headingStyle = $sheet->getStyle("A4:{$lastCol}4");
-        $headingStyle->getFont()->setBold(true)->setSize(10)->setColor(new Color('FFFFFF'));
-        $headingStyle->getFill()->setFillType(Fill::FILL_SOLID)->startColor->setRGB('312E81');
+        $headingStyle->getFont()->setBold(true)->setSize(10)->getColor()->setRGB('FFFFFF');
+        $headingStyle->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('312E81');
         $headingStyle->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setVertical(Alignment::VERTICAL_CENTER);
         $headingBorders = $headingStyle->getBorders();
         $headingBorders->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
@@ -102,7 +100,7 @@ class CitaExport implements FromCollection, WithHeadings, WithMapping, WithStyle
                 $isEven = ($row % 2 === 0);
                 $rowStyle = $sheet->getStyle("A{$row}:{$lastCol}{$row}");
                 $rowStyle->getFont()->setSize(10);
-                $rowStyle->getFill()->setFillType(Fill::FILL_SOLID)->startColor->setRGB($isEven ? 'F8FAFC' : 'FFFFFF');
+                $rowStyle->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB($isEven ? 'F8FAFC' : 'FFFFFF');
                 $rowBorders = $rowStyle->getBorders();
                 $rowBorders->getBottom()->setBorderStyle(Border::BORDER_THIN);
                 $rowBorders->getBottom()->getColor()->setRGB('E2E8F0');
@@ -118,9 +116,8 @@ class CitaExport implements FromCollection, WithHeadings, WithMapping, WithStyle
         $sheet->getColumnDimension('D')->setWidth(15);
         $sheet->getColumnDimension('E')->setWidth(12);
         $sheet->getColumnDimension('F')->setWidth(22);
-        $sheet->getColumnDimension('G')->setWidth(25);
-        $sheet->getColumnDimension('H')->setWidth(30);
-        $sheet->getColumnDimension('I')->setWidth(14);
+        $sheet->getColumnDimension('G')->setWidth(35);
+        $sheet->getColumnDimension('H')->setWidth(14);
 
         return [];
     }

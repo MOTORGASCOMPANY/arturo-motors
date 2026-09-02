@@ -184,10 +184,9 @@
                 <th style="width: 18%;">Cliente</th>
                 <th style="width: 9%;">Documento</th>
                 <th style="width: 9%;">Placa</th>
-                <th style="width: 14%;">Asesor</th>
-                <th style="width: 16%;">Servicio</th>
-                <th style="width: 17%;">Motivo</th>
-                <th style="width: 9%;">Estado</th>
+                <th style="width: 16%;">Asesor</th>
+                <th style="width: 22%;">Motivo</th>
+                <th style="width: 10%;">Estado</th>
             </tr>
         </thead>
         <tbody>
@@ -199,7 +198,6 @@
                 <td>{{ $cita->cliente->documento ?? '—' }}</td>
                 <td>{{ $cita->vehiculo->placa ?? 'N/A' }}</td>
                 <td>{{ $cita->asesor->name ?? 'N/A' }}</td>
-                <td>{{ $cita->serviceOrder->service->nombre ?? '—' }}</td>
                 <td>{{ $cita->motivo ?? '—' }}</td>
                 <td>
                     @php
