@@ -18,22 +18,40 @@ class AbrirCaja extends Component
     }
 
     /**
-     * Obtiene el efectivo de la última sesión cerrada (monto_cierre).
+     * Calcula el efectivo que debería haber en caja usando la fórmula:
+     * apertura + ingresos_efectivo - egresos
+     *
+     * NO depende de monto_cierre (que puede estar mal ingresado).
      */
     public function cargarEfectivoAnterior(): void
     {
         $ultimaSesion = SesionCaja::where('estado', 'cerrada')
+            ->with(['movimientos' => function ($q) {
+                $q->with('serviceOrder.comprobante');
+            }])
             ->orderByDesc('cerrada_en')
             ->first();
 
-        if ($ultimaSesion && $ultimaSesion->monto_cierre > 0) {
-            $this->efectivoAnterior = (float) $ultimaSesion->monto_cierre;
-            $this->montoApertura = $this->efectivoAnterior;
-        } else {
-            // Si no hay sesión cerrada o monto_cierre es 0, dejar en 0
+        if (!$ultimaSesion) {
             $this->efectivoAnterior = null;
             $this->montoApertura = 0;
+            return;
         }
+
+        // Efectivo recibido (a través de la relación indirecta)
+        $efectivoIngresos = $ultimaSesion->movimientos
+            ->where('tipo', 'ingreso')
+            ->filter(function ($m) {
+                return $m->serviceOrder
+                    && $m->serviceOrder->comprobante
+                    && $m->serviceOrder->comprobante->metodo_pago === 'efectivo';
+            })
+            ->sum('monto');
+
+        $egresos = $ultimaSesion->movimientos->where('tipo', 'egreso')->sum('monto');
+
+        $this->efectivoAnterior = (float) $ultimaSesion->monto_apertura + $efectivoIngresos - $egresos;
+        $this->montoApertura = $this->efectivoAnterior;
     }
 
     /**
@@ -42,10 +60,8 @@ class AbrirCaja extends Component
     public function updatedCuadrar(bool $value): void
     {
         if (!$value && $this->efectivoAnterior !== null) {
-            // Al desmarcar: volver al efectivo anterior
             $this->montoApertura = $this->efectivoAnterior;
         } elseif ($value) {
-            // Al marcar: limpiar para que ingrese manual
             $this->montoApertura = 0;
         }
     }
