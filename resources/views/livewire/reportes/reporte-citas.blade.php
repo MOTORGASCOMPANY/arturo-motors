@@ -5,12 +5,9 @@
         <!-- Header -->
         <div class="bg-gradient-to-r from-slate-900 via-indigo-900 to-blue-900 text-white p-5 rounded-t-xl shadow-lg">
             <div class="flex flex-col md:flex-row justify-between items-center">
-                <div class="flex items-center gap-4">
-                    <img src="{{ asset('images/icon.png') }}" alt="Logo" class="h-10 w-auto opacity-90">
-                    <div>
-                        <h2 class="text-xl font-extrabold tracking-tight">Reporte de Citas</h2>
-                        <p class="text-xs text-blue-200 mt-0.5">Listado completo de citas registradas</p>
-                    </div>
+                <div>
+                    <h2 class="text-xl font-extrabold tracking-tight">Reporte de Citas</h2>
+                    <p class="text-xs text-blue-200 mt-0.5">Listado completo de citas registradas</p>
                 </div>
                 <div class="flex items-center gap-3 mt-4 md:mt-0">
                     <div class="bg-white bg-opacity-20 px-4 py-2 rounded-full text-sm font-semibold backdrop-blur-sm">
