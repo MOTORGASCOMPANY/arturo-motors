@@ -16,7 +16,7 @@ class ServiceOrderObserver
             $serviceOrder,
             null, // no había estado anterior
             $serviceOrder->estado,
-            auth()->id()
+            auth()->id() ?? $serviceOrder->creadoPor?->id ?? 1
         );
     }
 
@@ -36,7 +36,7 @@ class ServiceOrderObserver
                 $orden,
                 $orden->getOriginal('estado'),
                 $orden->estado,
-                auth()->id()
+                auth()->id() ?? $orden->usuario_id ?? 1
             );
         }
     }
