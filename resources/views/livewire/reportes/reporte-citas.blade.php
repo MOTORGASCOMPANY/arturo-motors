@@ -21,8 +21,22 @@
                 <h2 class="text-2xl font-extrabold tracking-tight">
                     Reporte de Citas
                 </h2>
-                <div class="mt-4 md:mt-0 bg-white bg-opacity-20 px-4 py-2 rounded-full text-lg font-semibold">
-                    <p>Total: <span class="font-extrabold">{{ $citas->total() }}</span></p>
+                <div class="flex items-center gap-3 mt-4 md:mt-0">
+                    <div class="bg-white bg-opacity-20 px-4 py-2 rounded-full text-lg font-semibold">
+                        <p>Total: <span class="font-extrabold">{{ $citas->total() }}</span></p>
+                    </div>
+                    <!-- Botones de exportación -->
+                    <a href="{{ $this->exportPdfUrl() }}"
+                       target="_blank"
+                       class="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-full text-sm font-bold transition-colors duration-200 shadow-md">
+                        <i class="fas fa-file-pdf text-sm"></i>
+                        PDF
+                    </a>
+                    <a href="{{ $this->exportExcelUrl() }}"
+                       class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-full text-sm font-bold transition-colors duration-200 shadow-md">
+                        <i class="fas fa-file-excel text-sm"></i>
+                        Excel
+                    </a>
                 </div>
             </div>
         </div>

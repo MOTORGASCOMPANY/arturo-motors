@@ -66,4 +66,24 @@ class ReporteCitas extends Component
 
         return view('livewire.reportes.reporte-citas', compact('citas'));
     }
+
+    public function exportPdfUrl(): string
+    {
+        return route('Rpta.Citas.Pdf', array_filter([
+            'search' => $this->search,
+            'estado' => $this->estado,
+            'fechaInicio' => $this->fechaInicio,
+            'fechaFin' => $this->fechaFin,
+        ]));
+    }
+
+    public function exportExcelUrl(): string
+    {
+        return route('Rpta.Citas.Excel', array_filter([
+            'search' => $this->search,
+            'estado' => $this->estado,
+            'fechaInicio' => $this->fechaInicio,
+            'fechaFin' => $this->fechaFin,
+        ]));
+    }
 }
