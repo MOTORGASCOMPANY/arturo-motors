@@ -5,6 +5,8 @@ use App\Http\Controllers\DocumentosConversionController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\PdfController;
 use App\Http\Controllers\ReporteCitasController;
+use App\Http\Controllers\ReporteCitasPdfController;
+use App\Http\Controllers\ReporteCitasExcelController;
 use App\Livewire\AdminPermisos;
 use App\Livewire\AdminRoles;
 use App\Livewire\Almacen\Categorias\Crear as CategoriasCrear;
@@ -111,8 +113,8 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
 
     // Reportes
     Route::get('/rpta-citas', ReporteCitas::class)->name('Rpta.Citas');
-    Route::get('/rpta-citas/export-pdf', [ReporteCitasController::class, 'exportPdf'])->name('Rpta.Citas.Pdf');
-    Route::get('/rpta-citas/export-excel', [ReporteCitasController::class, 'exportExcel'])->name('Rpta.Citas.Excel');
+    Route::get('/rpta-citas/export-pdf', ReporteCitasPdfController::class)->name('Rpta.Citas.Pdf');
+    Route::get('/rpta-citas/export-excel', ReporteCitasExcelController::class)->name('Rpta.Citas.Excel');
 
     // Vehículos
     Route::get('/lista-vehiculos', ListaVehiculos::class)->name('ListaVehiculos');

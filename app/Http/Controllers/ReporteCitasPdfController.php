@@ -2,17 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\CitaExport;
 use App\Models\Cita;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
 
-class ReporteCitasController extends Controller
+class ReporteCitasPdfController extends Controller
 {
-    public function exportPdf(Request $request)
+    public function __invoke(Request $request)
     {
-        $citas = Cita::with(['cliente', 'vehiculo', 'asesor', 'serviceOrder.service'])
+        $citas = Cita::with(['cliente', 'vehiculo', 'asesor'])
             ->buscar($request->search)
             ->estado($request->estado ?? 'todos')
             ->when($request->fechaInicio, fn ($q) => $q->whereDate('fecha_cita', '>=', $request->fechaInicio))
@@ -20,7 +18,7 @@ class ReporteCitasController extends Controller
             ->orderBy('fecha_cita', 'desc')
             ->get();
 
-        $pdf = Pdf::loadView('pdfs.reporte-citas', [
+        $pdf = Pdf::loadView('pdfs.reportes.citas', [
             'citas' => $citas,
             'search' => $request->search,
             'estado' => $request->estado ?? 'todos',
@@ -29,18 +27,5 @@ class ReporteCitasController extends Controller
         ])->setPaper('a4', 'landscape');
 
         return $pdf->download('reporte-citas-' . now()->format('Y-m-d-Hi') . '.pdf');
-    }
-
-    public function exportExcel(Request $request)
-    {
-        return Excel::download(
-            new CitaExport(
-                $request->search,
-                $request->estado ?? 'todos',
-                $request->fechaInicio,
-                $request->fechaFin
-            ),
-            'reporte-citas-' . now()->format('Y-m-d-Hi') . '.xlsx'
-        );
     }
 }
