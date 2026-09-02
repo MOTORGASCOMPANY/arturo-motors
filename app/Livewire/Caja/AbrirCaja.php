@@ -18,34 +18,35 @@ class AbrirCaja extends Component
     }
 
     /**
-     * Obtiene el efectivo real de la última sesión cerrada.
-     * Fórmula: monto_cierre de la sesión anterior (que ya es efectivo real contado).
+     * Obtiene el efectivo de la última sesión cerrada (monto_cierre).
      */
     public function cargarEfectivoAnterior(): void
     {
         $ultimaSesion = SesionCaja::where('estado', 'cerrada')
-            ->with('movimientos.serviceOrder.comprobante')
             ->orderByDesc('cerrada_en')
             ->first();
 
-        if ($ultimaSesion) {
-            // El monto_cierre ya es el efectivo real contado al cerrar
+        if ($ultimaSesion && $ultimaSesion->monto_cierre > 0) {
             $this->efectivoAnterior = (float) $ultimaSesion->monto_cierre;
-            // Autocompletar si no está cuadrando
-            if (!$this->cuadrar) {
-                $this->montoApertura = $this->efectivoAnterior;
-            }
+            $this->montoApertura = $this->efectivoAnterior;
+        } else {
+            // Si no hay sesión cerrada o monto_cierre es 0, dejar en 0
+            $this->efectivoAnterior = null;
+            $this->montoApertura = 0;
         }
     }
 
     /**
-     * Cuando cambia el checkbox, ajustar el monto automáticamente
+     * Al marcar/desmarcar checkbox: alternar entre editable y automático
      */
     public function updatedCuadrar(bool $value): void
     {
         if (!$value && $this->efectivoAnterior !== null) {
-            // Al desmarcar, volver al efectivo anterior
+            // Al desmarcar: volver al efectivo anterior
             $this->montoApertura = $this->efectivoAnterior;
+        } elseif ($value) {
+            // Al marcar: limpiar para que ingrese manual
+            $this->montoApertura = 0;
         }
     }
 

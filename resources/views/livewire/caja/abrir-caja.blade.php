@@ -66,29 +66,37 @@
                         </label>
                     </div>
 
-                    <!-- Input monto -->
-                    <div>
-                        <x-label for="montoApertura" value="Monto Inicial en Caja (S/)" class="text-gray-700 font-medium mb-1.5 text-xs uppercase tracking-wider" />
+                    <!-- SOLO aparece el input cuando está marcado el checkbox -->
+                    @if ($cuadrar)
+                        <div>
+                            <x-label for="montoApertura" value="Ingrese el monto real en caja (S/)" class="text-gray-700 font-medium mb-1.5 text-xs uppercase tracking-wider" />
 
-                        <div class="relative rounded-xl shadow-xs">
-                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 font-semibold text-sm">
-                                S/
+                            <div class="relative rounded-xl shadow-xs">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 font-semibold text-sm">
+                                    S/
+                                </div>
+                                <x-input id="montoApertura" type="number" step="0.01" wire:model="montoApertura"
+                                         class="w-full pl-9 pr-4 py-2.5 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl text-gray-900 font-semibold text-base"
+                                         placeholder="0.00" autofocus />
                             </div>
-                            <x-input id="montoApertura" type="number" step="0.01" wire:model="montoApertura"
-                                     class="w-full pl-9 pr-4 py-2.5 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl text-gray-900 font-semibold text-base {{ $cuadrar ? '' : 'bg-gray-50' }}"
-                                     placeholder="0.00" {{ $cuadrar ? '' : 'readonly' }} />
+
+                            <x-input-error for="montoApertura" class="mt-1.5" />
                         </div>
+                    @else
+                        <!-- Sin checkbox: muestra el monto automático como texto -->
+                        <div class="text-center py-3">
+                            <p class="text-xs text-gray-500 mb-1">Monto de apertura automático:</p>
+                            <p class="text-2xl font-bold text-blue-700">S/ {{ number_format($montoApertura, 2) }}</p>
+                            @if ($efectivoAnterior !== null)
+                                <p class="text-xs text-gray-400 mt-1">
+                                    <i class="fas fa-lock mr-1"></i>
+                                    Heredado del cierre anterior
+                                </p>
+                            @endif
+                        </div>
+                    @endif
 
-                        @if (!$cuadrar && $efectivoAnterior !== null)
-                            <p class="text-xs text-gray-500 mt-1.5">
-                                <i class="fas fa-lock mr-1"></i>
-                                Autocompletado con el efectivo anterior. Marca "Cuadrar" para editar.
-                            </p>
-                        @endif
-
-                        <x-input-error for="montoApertura" class="mt-1.5" />
-                        <x-input-error for="general" class="mt-1.5" />
-                    </div>
+                    <x-input-error for="general" class="mt-1.5" />
 
                     <div class="pt-2">
                         <x-button type="submit" wire:loading.attr="disabled" class="w-full justify-center bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium py-3 rounded-xl shadow-xs transition-all text-sm">
