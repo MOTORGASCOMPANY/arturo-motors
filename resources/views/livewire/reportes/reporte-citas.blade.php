@@ -96,9 +96,6 @@
                                     Asesor
                                 </th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b-2 border-gray-200">
-                                    Motivo
-                                </th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b-2 border-gray-200">
                                     Estado
                                 </th>
                             </tr>
@@ -118,9 +115,6 @@
                                     </td>
                                     <td class="px-4 py-3 text-sm border-b border-gray-200">
                                         {{ $cita->asesor->name ?? 'N/A' }}
-                                    </td>
-                                    <td class="px-4 py-3 text-sm border-b border-gray-200">
-                                        {{ $cita->motivo }}
                                     </td>
                                     <td class="px-4 py-3 border-b border-gray-200">
                                         @php
