@@ -41,17 +41,50 @@
             @else
                 <!-- FORMULARIO: ABRIR CAJA -->
                 <form wire:submit.prevent="abrir" class="space-y-5">
+
+                    <!-- Referencia: efectivo anterior -->
+                    @if ($efectivoAnterior !== null)
+                        <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-2">
+                            <div class="flex items-center gap-2 text-xs font-semibold text-blue-800">
+                                <i class="fas fa-info-circle"></i>
+                                Efectivo del día anterior
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs text-blue-700">Monto cerrado:</span>
+                                <span class="text-lg font-bold text-blue-900">S/ {{ number_format($efectivoAnterior, 2) }}</span>
+                            </div>
+                        </div>
+                    @endif
+
+                    <!-- Checkbox: Cuadrar caja -->
+                    <div class="flex items-center gap-3 p-3 bg-amber-50 border border-amber-200 rounded-xl">
+                        <input type="checkbox" wire:model.live="cuadrar" id="cuadrar"
+                               class="w-4 h-4 text-amber-600 border-gray-300 rounded focus:ring-amber-500">
+                        <label for="cuadrar" class="text-xs font-medium text-amber-800 cursor-pointer">
+                            <i class="fas fa-edit mr-1"></i>
+                            Cuadrar caja / Actualizar monto
+                        </label>
+                    </div>
+
+                    <!-- Input monto -->
                     <div>
                         <x-label for="montoApertura" value="Monto Inicial en Caja (S/)" class="text-gray-700 font-medium mb-1.5 text-xs uppercase tracking-wider" />
-                        
+
                         <div class="relative rounded-xl shadow-xs">
                             <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 font-semibold text-sm">
                                 S/
                             </div>
                             <x-input id="montoApertura" type="number" step="0.01" wire:model="montoApertura"
-                                     class="w-full pl-9 pr-4 py-2.5 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl text-gray-900 font-semibold text-base" 
-                                     placeholder="0.00" />
+                                     class="w-full pl-9 pr-4 py-2.5 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl text-gray-900 font-semibold text-base {{ $cuadrar ? '' : 'bg-gray-50' }}"
+                                     placeholder="0.00" {{ $cuadrar ? '' : 'readonly' }} />
                         </div>
+
+                        @if (!$cuadrar && $efectivoAnterior !== null)
+                            <p class="text-xs text-gray-500 mt-1.5">
+                                <i class="fas fa-lock mr-1"></i>
+                                Autocompletado con el efectivo anterior. Marca "Cuadrar" para editar.
+                            </p>
+                        @endif
 
                         <x-input-error for="montoApertura" class="mt-1.5" />
                         <x-input-error for="general" class="mt-1.5" />

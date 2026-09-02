@@ -9,8 +9,47 @@ use Livewire\Component;
 class AbrirCaja extends Component
 {
     public $montoApertura = 0;
+    public bool $cuadrar = false;
+    public ?float $efectivoAnterior = null;
 
-    public function abrir()
+    public function mount(): void
+    {
+        $this->cargarEfectivoAnterior();
+    }
+
+    /**
+     * Obtiene el efectivo real de la última sesión cerrada.
+     * Fórmula: monto_cierre de la sesión anterior (que ya es efectivo real contado).
+     */
+    public function cargarEfectivoAnterior(): void
+    {
+        $ultimaSesion = SesionCaja::where('estado', 'cerrada')
+            ->with('movimientos.serviceOrder.comprobante')
+            ->orderByDesc('cerrada_en')
+            ->first();
+
+        if ($ultimaSesion) {
+            // El monto_cierre ya es el efectivo real contado al cerrar
+            $this->efectivoAnterior = (float) $ultimaSesion->monto_cierre;
+            // Autocompletar si no está cuadrando
+            if (!$this->cuadrar) {
+                $this->montoApertura = $this->efectivoAnterior;
+            }
+        }
+    }
+
+    /**
+     * Cuando cambia el checkbox, ajustar el monto automáticamente
+     */
+    public function updatedCuadrar(bool $value): void
+    {
+        if (!$value && $this->efectivoAnterior !== null) {
+            // Al desmarcar, volver al efectivo anterior
+            $this->montoApertura = $this->efectivoAnterior;
+        }
+    }
+
+    public function abrir(): void
     {
         if (SesionCaja::abierta()->exists()) {
             $this->addError('general', 'Ya hay una caja abierta. Ciérrala antes de abrir una nueva.');
@@ -33,10 +72,7 @@ class AbrirCaja extends Component
             'estado' => 'abierta',
         ]);
 
-        //$this->dispatch('minToast', titulo: '¡Caja Abierta!', mensaje: 'La sesión de caja se inició correctamente.', icono: 'success');
-
-        //session()->flash('mensaje', 'Caja abierta correctamente.');
-        //$this->redirect(request()->header('Referer') ?? '/', navigate: true);
+        $this->dispatch('minToast', titulo: '¡Caja Abierta!', mensaje: 'La sesión de caja se inició con S/ ' . number_format($this->montoApertura, 2), icono: 'success');
     }
 
     public function render()
