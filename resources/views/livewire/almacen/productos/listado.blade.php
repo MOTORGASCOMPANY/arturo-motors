@@ -71,19 +71,70 @@
                                     <td class="px-4 py-3 border-b border-gray-200 bg-white text-sm">{{ $p->categoria->nombre }}</td>
                                     <td class="px-4 py-3 border-b border-gray-200 bg-white text-sm">{{ $p->marca ?? '—' }}</td>
                                     <td class="px-4 py-3 text-right font-semibold border-b border-gray-200 bg-white text-sm">{{ $p->stock_disponible }}</td>
+                                    {{-- 
                                     <td class="px-4 py-3 text-right border-b border-gray-200 bg-white text-sm">
-                                        {{--<a href="{{ route('almacen.productos.entrada', $p->id) }}" class="text-blue-600 text-xs font-semibold">Registrar entrada →</a>--}}
                                         <button wire:click="$dispatch('abrir-modal-entrada', { productoId: {{ $p->id }} })" type="button"
                                                 class="text-blue-600 text-xs font-semibold">
                                             Registrar entrada →
+                                        </button>
+                                        <button wire:click="$dispatch('abrir-modal-editar-producto', { productoId: {{ $p->id }} })" type="button" class="text-gray-600 text-xs font-semibold mr-2">
+                                            Editar →
                                         </button>
                                         @if ($p->categoria->es_kit)                                        
                                             <button wire:click="$dispatch('abrir-modal-componentes', { productoId: {{ $p->id }} })" type="button"
                                                     class="text-purple-600 text-xs font-semibold mr-2">
                                                 Definir componentes →
                                             </button>
-                                        @endif
-                                        
+                                        @endif                                        
+                                    </td>
+                                    --}}
+                                    <td class="px-4 py-2 border-b border-gray-200 bg-white text-sm text-right whitespace-nowrap">
+                                        <div class="inline-flex items-center justify-end gap-1.5">
+                                            <!-- Botón 3: Editar (Azul / Modificación) -->
+                                            <div class="relative inline-block group">
+                                                <a wire:click="$dispatch('abrir-modal-editar-producto', { productoId: {{ $p->id }} })"
+                                                class="inline-flex items-center justify-center w-8 h-8 text-blue-700 bg-blue-50 hover:bg-blue-100 hover:text-blue-900 rounded-lg transition-colors duration-150 cursor-pointer">
+                                                    <i class="fa-solid fa-edit text-xs"></i>
+                                                </a>                                                
+                                                <!-- Tooltip 3 -->
+                                                <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover:flex flex-col items-center pointer-events-none z-10">
+                                                    <span class="relative z-10 p-1.5 text-[10px] font-semibold leading-none text-white whitespace-nowrap bg-gray-800 rounded shadow-md">
+                                                        Editar
+                                                    </span>
+                                                    <div class="w-2 h-2 -mt-1 rotate-45 bg-gray-800"></div>
+                                                </div>
+                                            </div>
+                                            <!-- Botón 1: Registrar entrada (Verde / Entrada de inventario) -->
+                                            <div class="relative inline-block group">
+                                                <a wire:click="$dispatch('abrir-modal-entrada', { productoId: {{ $p->id }} })"
+                                                class="inline-flex items-center justify-center w-8 h-8 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 hover:text-emerald-900 rounded-lg transition-colors duration-150 cursor-pointer">
+                                                    <i class="fa-solid fa-plus text-xs"></i>
+                                                </a>                                                
+                                                <!-- Tooltip 1 -->
+                                                <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover:flex flex-col items-center pointer-events-none z-10">
+                                                    <span class="relative z-10 p-1.5 text-[10px] font-semibold leading-none text-white whitespace-nowrap bg-gray-800 rounded shadow-md">
+                                                        Registrar entrada
+                                                    </span>
+                                                    <div class="w-2 h-2 -mt-1 rotate-45 bg-gray-800"></div>
+                                                </div>
+                                            </div>
+                                            <!-- Botón 2: Definir Componentes (Púrpura / Configuración de kit) -->
+                                            @if ($p->categoria->es_kit)
+                                                <div class="relative inline-block group">
+                                                    <a wire:click="$dispatch('abrir-modal-componentes', { productoId: {{ $p->id }} })"
+                                                    class="inline-flex items-center justify-center w-8 h-8 text-purple-700 bg-purple-50 hover:bg-purple-100 hover:text-purple-900 rounded-lg transition-colors duration-150 cursor-pointer">
+                                                        <i class="fa-solid fa-cogs text-xs"></i>
+                                                    </a>                                                
+                                                    <!-- Tooltip 2 -->
+                                                    <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover:flex flex-col items-center pointer-events-none z-10">
+                                                        <span class="relative z-10 p-1.5 text-[10px] font-semibold leading-none text-white whitespace-nowrap bg-gray-800 rounded shadow-md">
+                                                            Definir componentes
+                                                        </span>
+                                                        <div class="w-2 h-2 -mt-1 rotate-45 bg-gray-800"></div>
+                                                    </div>
+                                                </div>
+                                            @endif
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
@@ -105,4 +156,5 @@
     <livewire:almacen.productos.crear />
     <livewire:almacen.productos.registrar-entrada />
     <livewire:almacen.productos.definir-componentes />
+    <livewire:almacen.productos.editar />
 </div>

@@ -126,7 +126,7 @@
                                         @endif
                                     </td>
                                     --}}
-                                    <td class="px-4 py-4 border-b border-gray-200 bg-white text-sm text-right whitespace-nowrap">
+                                    <td class="px-4 py-2 border-b border-gray-200 bg-white text-sm text-right whitespace-nowrap">
                                         <div class="inline-flex items-center justify-end gap-1.5">
                                             <!-- Botón 1: Ver detalles -->
                                             <div class="relative inline-block group">
