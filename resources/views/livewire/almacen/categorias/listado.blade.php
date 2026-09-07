@@ -36,6 +36,7 @@
                                 <th class="px-4 py-3 border-b-2 border-gray-200 bg-gray-100 text-right text-xs font-semibold text-gray-600 uppercase">
                                     Productos
                                 </th>
+                                <th class="px-4 py-3 border-b-2 border-gray-200 bg-gray-100"></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -49,6 +50,31 @@
                                     </td>
                                     <td class="px-4 py-3 text-gray-500 border-b border-gray-200 bg-white text-sm">{{ $c->esquema_atributos ? implode(', ', $c->esquema_atributos) : '—' }}</td>
                                     <td class="px-4 py-3 text-right border-b border-gray-200 bg-white text-sm">{{ $c->productos_count }}</td>
+                                    {{-- 
+                                    <td class="px-4 py-3 border-b border-gray-200 bg-white text-sm text-right">
+                                        <button wire:click="$dispatch('abrir-modal-editar-categoria', { categoriaId: {{ $c->id }} })" type="button" class="text-blue-600 text-xs font-semibold">
+                                            Editar →
+                                        </button>
+                                    </td>
+                                    --}}
+                                    <td class="px-4 py-2 border-b border-gray-200 bg-white text-sm text-right whitespace-nowrap">
+                                        <div class="inline-flex items-center justify-end gap-1.5">
+                                            <!-- Botón 1: Editar -->
+                                            <div class="relative inline-block group">
+                                                <a wire:click="$dispatch('abrir-modal-editar-categoria', { categoriaId: {{ $c->id }} })"
+                                                class="inline-flex items-center justify-center w-8 h-8 text-indigo-700 bg-indigo-50 hover:bg-indigo-100 hover:text-indigo-900 rounded-lg transition-colors duration-150">
+                                                    <i class="fa-solid fa-edit text-xs"></i>
+                                                </a>                                                
+                                                <!-- Tooltip 1 -->
+                                                <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover:flex flex-col items-center pointer-events-none z-10">
+                                                    <span class="relative z-10 p-1.5 text-[10px] font-semibold leading-none text-white whitespace-nowrap bg-gray-800 rounded shadow-md">
+                                                        Editar
+                                                    </span>
+                                                    <div class="w-2 h-2 -mt-1 rotate-45 bg-gray-800"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -63,4 +89,5 @@
     </div>
 
     <livewire:almacen.categorias.crear />
+    <livewire:almacen.categorias.editar />
 </div>

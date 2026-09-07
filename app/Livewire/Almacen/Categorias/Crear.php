@@ -18,7 +18,7 @@ class Crear extends Component
     #[On('abrir-modal-categoria')]
     public function abrir()
     {
-        $this->reset(['nombre', 'esSerializado', 'atributosTexto']);
+        $this->reset(['nombre', 'esSerializado', 'atributosTexto', 'esKit']);
         $this->resetErrorBag();
         $this->mostrarModal = true;
     }
@@ -49,7 +49,7 @@ class Crear extends Component
         }
 
         $this->mostrarModal = false;
-        $this->reset(['nombre', 'esSerializado', 'atributosTexto']);
+        $this->reset(['nombre', 'esSerializado', 'atributosTexto', 'esKit']);
 
         $this->dispatch('categoria-creada');
         $this->dispatch('minToast', titulo: '¡Listo!', mensaje: 'Categoría creada correctamente.', icono: 'success');

@@ -24,6 +24,10 @@
                                     <td class="px-4 py-3 font-medium border-b border-gray-200 bg-white text-sm">{{ $kit->producto->nombre }}</td>
                                     <td class="px-4 py-3 border-b border-gray-200 bg-white text-sm font-mono">{{ $kit->serie }}</td>
                                     <td class="px-4 py-3 text-right border-b border-gray-200 bg-white text-sm">
+                                        <button wire:click="$dispatch('abrir-modal-registrar-serie', { itemId: {{ $kit->id }} })" type="button"
+                                                class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg">
+                                            Registrar serie
+                                        </button>
                                         <button wire:click="$dispatch('abrir-modal-abrir-kit', { itemId: {{ $kit->id }} })" type="button"
                                                 class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg">
                                             Abrir kit
@@ -44,4 +48,5 @@
     </div>
 
     <livewire:almacen.kits.abrir />
+    <livewire:almacen.kits.registrar-serie />
 </div>

@@ -11,7 +11,7 @@
                 </div>
 
                 <label class="flex items-center gap-2 text-sm">
-                    <input type="checkbox" wire:model="esSerializado" class="rounded">
+                    <input type="checkbox" wire:model.live="esSerializado" class="rounded">
                     Se controla por número de serie (ej: reductores, tanques)
                 </label>
 

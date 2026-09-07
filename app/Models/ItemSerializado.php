@@ -13,6 +13,7 @@ class ItemSerializado extends Model
 
     protected $fillable = [
         'producto_id',
+        'kit_padre_id',
         'serie',
         'atributos',
         'estado',
@@ -45,6 +46,16 @@ class ItemSerializado extends Model
     public function vehiculoInstalado()
     {
         return $this->belongsTo(Vehiculo::class, 'vehiculo_instalado_id');
+    }
+
+    public function kitPadre()
+    {
+        return $this->belongsTo(ItemSerializado::class, 'kit_padre_id');
+    }
+
+    public function piezasEnKit()
+    {
+        return $this->hasMany(ItemSerializado::class, 'kit_padre_id');
     }
 
     // Scopes
