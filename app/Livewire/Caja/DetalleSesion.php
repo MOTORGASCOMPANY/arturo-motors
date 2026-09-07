@@ -21,7 +21,7 @@ class DetalleSesion extends Component
     public function render()
     {
         $movimientos = $this->sesion->movimientos()
-            ->with(['usuario', 'serviceOrder.service'])
+            ->with(['usuario', 'serviceOrder.service', 'serviceOrder.comprobante'])
             ->when($this->tipo !== 'todos', fn ($q) => $q->where('tipo', $this->tipo))
             ->orderByDesc('created_at')
             ->paginate(20);
@@ -29,6 +29,30 @@ class DetalleSesion extends Component
         $totalIngresos = $this->sesion->movimientos()->where('tipo', 'ingreso')->sum('monto');
         $totalEgresos = $this->sesion->movimientos()->where('tipo', 'egreso')->sum('monto');
 
-        return view('livewire.caja.detalle-sesion', compact('movimientos', 'totalIngresos', 'totalEgresos'));
+        // Desglose por método de pago (solo ingresos)
+        $efectivo = $this->sesion->movimientos()
+            ->where('tipo', 'ingreso')
+            ->whereHas('serviceOrder.comprobante', fn ($q) => $q->where('metodo_pago', 'efectivo'))
+            ->sum('monto');
+
+        $tarjeta = $this->sesion->movimientos()
+            ->where('tipo', 'ingreso')
+            ->whereHas('serviceOrder.comprobante', fn ($q) => $q->where('metodo_pago', 'tarjeta'))
+            ->sum('monto');
+
+        $transferencia = $this->sesion->movimientos()
+            ->where('tipo', 'ingreso')
+            ->whereHas('serviceOrder.comprobante', fn ($q) => $q->where('metodo_pago', 'transferencia'))
+            ->sum('monto');
+
+        $otro = $this->sesion->movimientos()
+            ->where('tipo', 'ingreso')
+            ->whereHas('serviceOrder.comprobante', fn ($q) => $q->where('metodo_pago', 'otro'))
+            ->sum('monto');
+
+        return view('livewire.caja.detalle-sesion', compact(
+            'movimientos', 'totalIngresos', 'totalEgresos',
+            'efectivo', 'tarjeta', 'transferencia', 'otro'
+        ));
     }
 }

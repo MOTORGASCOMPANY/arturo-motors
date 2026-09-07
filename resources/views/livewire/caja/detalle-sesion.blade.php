@@ -97,6 +97,33 @@
                 </div>
             </div>
         </div>
+
+        <!-- Desglose por método de pago -->
+        @if ($totalIngresos > 0)
+            <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+                <h4 class="text-xs font-bold text-gray-600 uppercase tracking-wider mb-3">
+                    <i class="fas fa-chart-pie mr-1 text-indigo-600"></i> Desglose de Ingresos
+                </h4>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div class="text-center p-2 bg-emerald-50 rounded-lg border border-emerald-200">
+                        <p class="text-xs text-emerald-600 font-medium">Efectivo</p>
+                        <p class="text-sm font-bold text-emerald-700">S/ {{ number_format($efectivo, 2) }}</p>
+                    </div>
+                    <div class="text-center p-2 bg-blue-50 rounded-lg border border-blue-200">
+                        <p class="text-xs text-blue-600 font-medium">Tarjeta</p>
+                        <p class="text-sm font-bold text-blue-700">S/ {{ number_format($tarjeta, 2) }}</p>
+                    </div>
+                    <div class="text-center p-2 bg-purple-50 rounded-lg border border-purple-200">
+                        <p class="text-xs text-purple-600 font-medium">Transferencia</p>
+                        <p class="text-sm font-bold text-purple-700">S/ {{ number_format($transferencia, 2) }}</p>
+                    </div>
+                    <div class="text-center p-2 bg-gray-50 rounded-lg border border-gray-200">
+                        <p class="text-xs text-gray-600 font-medium">Otro</p>
+                        <p class="text-sm font-bold text-gray-700">S/ {{ number_format($otro, 2) }}</p>
+                    </div>
+                </div>
+            </div>
+        @endif
     </div>
 
     <!-- Movimientos -->
@@ -135,6 +162,9 @@
                                 Tipo</th>
                             <th
                                 class="px-4 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase">
+                                Método</th>
+                            <th
+                                class="px-4 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase">
                                 Concepto</th>
                             <th
                                 class="px-4 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase">
@@ -155,6 +185,22 @@
                                         {{ $m->tipo === 'ingreso' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700' }}">
                                         {{ ucfirst($m->tipo) }}
                                     </span>
+                                </td>
+                                <td class="px-4 py-3 border-b border-gray-200 bg-white text-sm">
+                                    @if($m->serviceOrder && $m->serviceOrder->comprobante)
+                                        @php $mp = $m->serviceOrder->comprobante->metodo_pago; @endphp
+                                        <span class="px-2 py-1 rounded-full text-xs font-semibold
+                                            {{ match($mp) {
+                                                'efectivo' => 'bg-emerald-100 text-emerald-700',
+                                                'tarjeta' => 'bg-blue-100 text-blue-700',
+                                                'transferencia' => 'bg-purple-100 text-purple-700',
+                                                default => 'bg-gray-100 text-gray-600',
+                                            } }}">
+                                            {{ ucfirst($mp) }}
+                                        </span>
+                                    @else
+                                        <span class="text-xs text-gray-400">—</span>
+                                    @endif
                                 </td>
                                 <td class="px-4 py-3 border-b border-gray-200 bg-white text-sm">{{ $m->concepto }}
                                 </td>

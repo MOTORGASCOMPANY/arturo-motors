@@ -95,7 +95,7 @@ class ServiceOrder extends Model
 
     public function historialEstados()
     {
-        return $this->hasMany(ServiceOrderStatusHistory::class, 'service_order_id');
+        return $this->hasMany(ServiceOrderStatusHistory::class, 'service_order_id')->oldest();
     }
 
     public function documentos()

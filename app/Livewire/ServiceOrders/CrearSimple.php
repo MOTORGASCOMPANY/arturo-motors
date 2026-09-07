@@ -191,6 +191,13 @@ class CrearSimple extends Component
             'serviceId.required' => 'Debes seleccionar un servicio.',
         ]);
 
+        // DEBUG temporal — quitar después
+        logger('irAPaso3 DEBUG', [
+            'precioLista' => $this->precioLista,
+            'precioFinal' => $this->precioFinal,
+            'descuentoMotivo' => $this->descuentoMotivo,
+        ]);
+
         if (bccomp($this->precioFinal, $this->precioLista, 2) !== 0 && empty($this->descuentoMotivo)) {
             $this->addError('descuentoMotivo', 'Indica el motivo del ajuste de precio.');
 
@@ -220,6 +227,12 @@ class CrearSimple extends Component
 
         try {
             DB::transaction(function () use ($sesion) {
+                // DEBUG temporal — quitar después
+                logger('procesarCobro DEBUG', [
+                    'precio_lista_save' => $this->precioLista,
+                    'precio_final_save' => $this->precioFinal,
+                ]);
+
                 $orden = ServiceOrder::create([
                     'cliente_id' => $this->clienteId,
                     'vehiculo_id' => $this->vehiculoId,

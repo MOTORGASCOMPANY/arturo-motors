@@ -78,6 +78,16 @@ class GestionarContenido extends Component
             ->orderBy('sort_order')
             ->get()
             ->toArray();
+
+        // Precargar sectionData para todas las secciones
+        foreach ($this->sections as $section) {
+            $this->sectionData[$section['id']] = [
+                'title'       => $section['title'],
+                'subtitle'    => $section['subtitle'],
+                'description' => $section['description'],
+                'is_active'   => (bool) $section['is_active'],
+            ];
+        }
     }
 
     public function editSection($id)
@@ -187,25 +197,20 @@ class GestionarContenido extends Component
             $pm = PageMedia::findOrFail($pageMediaId);
             $media = $pm->media;
 
-            // DEBUG: log what we're trying to delete
-            \Log::info('removeMedia DEBUG', [
-                'pageMediaId' => $pageMediaId,
-                'media_id' => $media?->id,
-                'file_path' => $media?->file_path,
-                'full_path' => $media ? \Storage::disk('public')->path($media->file_path) : null,
-                'file_exists' => $media ? \Storage::disk('public')->exists($media->file_path) : false,
-            ]);
-
             // Delete physical file and optimized versions from storage
             if ($media && $media->file_path) {
-                $deleted = \Storage::disk('public')->delete($media->file_path);
-                \Log::info('Storage delete result', ['path' => $media->file_path, 'deleted' => $deleted]);
+                \Storage::disk('public')->delete($media->file_path);
 
-                // Delete optimized versions (webp, responsive sizes)
-                $optimizationService = app(\App\Services\ImageOptimizationService::class);
-                $optimizationService->deleteOptimizedVersions($media->file_path);
+                // Delete optimized versions (webp, responsive sizes) — no falla si no están instaladas
+                try {
+                    $optimizationService = app(\App\Services\ImageOptimizationService::class);
+                    $optimizationService->deleteOptimizedVersions($media->file_path);
+                } catch (\Throwable $optError) {
+                    \Log::warning('removeMedia: no se pudieron borrar versiones optimizadas', ['error' => $optError->getMessage()]);
+                }
             }
 
+            // SIEMPRE borrar las filas de DB sin importar si falló la limpieza de optimizados
             $media->delete();
             $pm->delete();
             $this->loadSections();
@@ -213,7 +218,7 @@ class GestionarContenido extends Component
             $this->successMessage = 'Imagen eliminada';
             session()->flash('success', 'Imagen eliminada');
         } catch (\Throwable $e) {
-            \Log::error('removeMedia ERROR', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            \Log::error('removeMedia ERROR', ['message' => $e->getMessage()]);
             $this->errorMessage = 'No se pudo eliminar la imagen';
         }
     }

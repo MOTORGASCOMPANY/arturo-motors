@@ -179,8 +179,8 @@
                                                     class="w-full text-left flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-lime-500 hover:text-white transition">
                                                     <i class="fas fa-pencil-alt w-5 mr-2 text-lime-600"></i> Editar Datos
                                                 </button>
-                                                <button wire:click="delete({{ $item->id }})"
-                                                    onclick="confirm('¿Seguro de eliminar este contrato?') || event.stopImmediatePropagation()"
+                                                <button
+                                                    onclick="Swal.fire({ title: '¿Estás seguro?', text: 'Este contrato será eliminado permanentemente.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', cancelButtonColor: '#6c757d', confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { @this.call('delete', {{ $item->id }}) } })"
                                                     class="w-full text-left flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-600 hover:text-white transition">
                                                     <i class="fas fa-trash-alt w-5 mr-2"></i> Eliminar
                                                 </button>

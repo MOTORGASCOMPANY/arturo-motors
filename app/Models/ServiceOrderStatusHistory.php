@@ -30,7 +30,7 @@ class ServiceOrderStatusHistory extends Model
     }
 
     // Registrar un cambio de estado
-    public static function registrar(ServiceOrder $orden, ?string $estadoAnterior, string $estadoNuevo, int $usuarioId): self
+    public static function registrar(ServiceOrder $orden, ?string $estadoAnterior, string $estadoNuevo, ?int $usuarioId): self
     {
         return static::create([
             'service_order_id' => $orden->id,

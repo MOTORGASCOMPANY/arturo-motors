@@ -27,7 +27,8 @@
 
     <!-- Grid Principal de Módulo de Caja y Métricas Operativas -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">        
-        <!-- Tarjeta Prominente: Caja (Ocupa 2 columnas en desktop) -->
+        <!-- Tarjeta Prominente: Caja (Solo Admin y Jefe de Taller) -->
+        @role('Administrador del sistema|Jefe de Taller')
         <a href="{{ $sesionCaja ? route('caja.historial') : route('caja.abrir') }}"
            class="md:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-200/80 p-4 hover:shadow-md transition-all duration-150 flex flex-col justify-between relative overflow-hidden group">
             
@@ -72,6 +73,7 @@
                 @endif
             </div>
         </a>
+        @endrole
 
         <!-- Órdenes de hoy -->
         <a href="{{ route('ordenes.listado') }}"
@@ -153,7 +155,8 @@
 
     </div>
 
-    <!-- Conversiones: Resumen Estadístico Integrado -->
+    <!-- Conversiones: Resumen Estadístico Integrado (No Clientes) -->
+    @unless(auth()->user()->hasRole('Cliente'))
     <div class="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-4">
         <div class="flex items-center gap-2 mb-3">
             <div class="w-2 h-2 rounded-full bg-purple-600"></div>
@@ -174,8 +177,10 @@
             </div>
         </div>
     </div>
+    @endunless
 
-    <!-- Gráficos del Sistema (Lado a lado) -->
+    <!-- Gráficos del Sistema (Solo Admin) -->
+    @role('Administrador del sistema')
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <!-- Gráfico 1: Ingresos -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-5" wire:ignore>
@@ -201,8 +206,10 @@
             </div>
         </div>
     </div>
+    @endrole
 
-    <!-- Script Chart.js -->
+    <!-- Script Chart.js (Solo Admin) -->
+    @role('Administrador del sistema')
     <script>
         function renderDashboardCharts() {
             // Gráfico 1: Ingresos
@@ -282,4 +289,5 @@
 
         document.addEventListener('livewire:navigated', renderDashboardCharts);
     </script>
+    @endrole
 </div>
