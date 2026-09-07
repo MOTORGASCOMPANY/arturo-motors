@@ -118,6 +118,14 @@
                                             {{ ucfirst(str_replace('_', ' ', $orden->estado)) }}
                                         </span>
                                     </td>
+                                    {{-- 
+                                    <td class="px-4 py-3 text-right border-b border-gray-200 bg-white text-sm">
+                                        <a href="{{ route('ordenes.detalle', $orden->id) }}" class="text-gray-600 text-xs font-semibold mr-2">Ver detalle →</a>
+                                        @if ($orden->comprobante)
+                                            <a href="{{ route('comprobantes.pdf', $orden->id) }}" target="_blank" class="text-blue-600 text-xs font-semibold">Ver PDF →</a>
+                                        @endif
+                                    </td>
+                                    --}}
                                     <td class="px-4 py-4 border-b border-gray-200 bg-white text-sm text-right whitespace-nowrap">
                                         <div class="inline-flex items-center justify-end gap-1.5">
                                             <!-- Botón 1: Ver detalles -->

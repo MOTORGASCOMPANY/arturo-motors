@@ -31,7 +31,7 @@
                         <select wire:model="componenteId" class="w-full rounded-lg border-gray-300 text-sm">
                             <option value="">-- Selecciona --</option>
                             @foreach ($this->productosDisponibles as $p)
-                                <option value="{{ $p->id }}">{{ $p->nombre }} ({{ $p->categoria->nombre }})</option>
+                                <option value="{{ $p->id }}">{{ $p->nombre . ' - ' . $p->marca }} ({{ $p->categoria->nombre }})</option>
                             @endforeach
                         </select>
                         <x-input-error for="componenteId" class="mt-1" />

@@ -27,8 +27,14 @@ class Abrir extends Component
 
         $this->seriesComponentes = [];
         foreach ($this->componentesKit as $kc) {
-            if ($kc->componente->categoria->es_serializado) {
+            /*if ($kc->componente->categoria->es_serializado) {
                 $this->seriesComponentes[$kc->producto_componente_id] = '';
+            }*/
+            if ($kc->componente->categoria->es_serializado) {
+                $existente = ItemSerializado::where('kit_padre_id', $this->kitItem->id)
+                    ->where('producto_id', $kc->producto_componente_id)
+                    ->first();
+                $this->seriesComponentes[$kc->producto_componente_id] = $existente->serie ?? '';
             }
         }
 
@@ -66,7 +72,7 @@ class Abrir extends Component
                     throw new \RuntimeException('Este kit ya no está disponible para abrir. Actualiza la lista.');
                 }
 
-                foreach ($this->componentesKit as $kc) {
+                /*foreach ($this->componentesKit as $kc) {
                     if ($kc->componente->categoria->es_serializado) {
                         $serie = trim($this->seriesComponentes[$kc->producto_componente_id]);
 
@@ -80,6 +86,36 @@ class Abrir extends Component
                             'estado' => 'en_stock',
                             'sede_id' => 1,
                         ]);
+                    } else {
+                        MovimientoStock::registrar(
+                            $kc->componente, 'entrada', $kc->cantidad_esperada, null, Auth::id(),
+                            'Apertura de kit #' . $item->id, 1
+                        );
+                    }
+                }*/
+                foreach ($this->componentesKit as $kc) {
+                    if ($kc->componente->categoria->es_serializado) {
+                        $existente = ItemSerializado::where('kit_padre_id', $item->id)
+                            ->where('producto_id', $kc->producto_componente_id)
+                            ->first();
+
+                        if ($existente) {
+                            // Ya existía (por "Registrar serie"): solo lo liberamos, no se duplica
+                            $existente->update(['estado' => 'en_stock', 'kit_padre_id' => null]);
+                        } else {
+                            $serie = trim($this->seriesComponentes[$kc->producto_componente_id]);
+
+                            if (ItemSerializado::where('serie', $serie)->exists()) {
+                                throw new \RuntimeException("La serie {$serie} ya existe en el sistema.");
+                            }
+
+                            ItemSerializado::create([
+                                'producto_id' => $kc->producto_componente_id,
+                                'serie' => $serie,
+                                'estado' => 'en_stock',
+                                'sede_id' => 1,
+                            ]);
+                        }
                     } else {
                         MovimientoStock::registrar(
                             $kc->componente, 'entrada', $kc->cantidad_esperada, null, Auth::id(),

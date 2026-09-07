@@ -14,6 +14,7 @@ use App\Livewire\Almacen\Categorias\Listado as CategoriasListado;
 use App\Livewire\Almacen\Productos\Crear as ProductosCrear;
 use App\Livewire\Almacen\Productos\Listado as ProductosListado;
 use App\Livewire\Almacen\Productos\RegistrarEntrada;
+use App\Livewire\Almacen\Traslados\Listado as TrasladosListado;
 use App\Livewire\Caja\AbrirCaja;
 use App\Livewire\Caja\CerrarCaja;
 use App\Livewire\Caja\DetalleSesion;
@@ -154,6 +155,9 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::get('/almacen/productos', ProductosListado::class)->name('almacen.productos.listado');
     //Route::get('definirKit', DefinirComponentes::class)->name('');
     Route::get('/almacen/kits', Pendientes::class)->name('almacen.kits.pendientes');
+
+    Route::get('/almacen/traslados', TrasladosListado::class)->name('almacen.traslados.listado');
+    Route::get('/almacen/traslados/crear', \App\Livewire\Almacen\Traslados\Crear::class)->name('almacen.traslados.crear');
 
     // Reportes
     Route::get('/citas/reporte', ReporteCitas::class)->name('citas.reporte');
