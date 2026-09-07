@@ -21,9 +21,15 @@ class ReporteCitas extends Component
 
     public $estado;
 
+    public $filterEstado;
+
     public $fechaInicio;
 
+    public $filterFechaDesde;
+
     public $fechaFin;
+
+    public $filterFechaHasta;
 
     public $sede_id = 'todos';
 
@@ -37,7 +43,7 @@ class ReporteCitas extends Component
 
     public function updating($property)
     {
-        if (in_array($property, ['search', 'estado', 'fechaInicio', 'fechaFin', 'sede_id'])) {
+        if (in_array($property, ['search', 'estado', 'filterEstado', 'fechaInicio', 'filterFechaDesde', 'fechaFin', 'filterFechaHasta', 'sede_id'])) {
             $this->resetPage();
         }
     }
@@ -74,23 +80,31 @@ class ReporteCitas extends Component
         return view('livewire.reportes.reporte-citas', compact('citas', 'sedes'));
     }
 
-    public function exportPdfUrl(): string
+    public function limpiarFiltros(): void
     {
-        return route('Rpta.Citas.Pdf', array_filter([
-            'search' => $this->search,
-            'estado' => $this->estado,
-            'fechaInicio' => $this->fechaInicio,
-            'fechaFin' => $this->fechaFin,
-        ]));
+        $this->estado = 'todos';
+        $this->sede_id = 'todos';
+        $this->search = '';
+        $this->resetPage();
     }
 
-    public function exportExcelUrl(): string
+    public function descargarPdf(): void
     {
-        return route('Rpta.Citas.Excel', array_filter([
+        $this->dispatch('descargar-pdf', url: url('/rpta-citas/export-pdf?' . http_build_query(array_filter([
             'search' => $this->search,
             'estado' => $this->estado,
             'fechaInicio' => $this->fechaInicio,
             'fechaFin' => $this->fechaFin,
-        ]));
+        ]))));
+    }
+
+    public function descargarExcel(): void
+    {
+        $this->dispatch('descargar-excel', url: url('/rpta-citas/export-excel?' . http_build_query(array_filter([
+            'search' => $this->search,
+            'estado' => $this->estado,
+            'fechaInicio' => $this->fechaInicio,
+            'fechaFin' => $this->fechaFin,
+        ]))));
     }
 }

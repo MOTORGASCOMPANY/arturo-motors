@@ -1,12 +1,19 @@
 <?php
 
+use App\Http\Controllers\Caja\DetalleController;
+use App\Http\Controllers\Caja\FiseDetalleController;
 use App\Http\Controllers\ComprobanteController;
 use App\Http\Controllers\DocumentosConversionController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\PdfController;
-use App\Http\Controllers\ReporteCitasController;
 use App\Http\Controllers\ReporteCitasPdfController;
 use App\Http\Controllers\ReporteCitasExcelController;
+use App\Http\Controllers\ReporteCajaPdfController;
+use App\Http\Controllers\ReporteCajaExcelController;
+use App\Http\Controllers\ReporteServiciosPdfController;
+use App\Http\Controllers\ReporteServiciosExcelController;
+use App\Http\Controllers\ReporteAlmacenPdfController;
+use App\Http\Controllers\ReporteAlmacenExcelController;
 use App\Livewire\AdminPermisos;
 use App\Livewire\AdminRoles;
 use App\Livewire\Almacen\Categorias\Crear as CategoriasCrear;
@@ -17,6 +24,7 @@ use App\Livewire\Almacen\Productos\RegistrarEntrada;
 use App\Livewire\Caja\AbrirCaja;
 use App\Livewire\Caja\CerrarCaja;
 use App\Livewire\Caja\DetalleSesion;
+use App\Livewire\Caja\FiseAuditoria;
 use App\Livewire\Caja\HistorialSesiones;
 use App\Livewire\Caja\RegistrarEgreso;
 use App\Livewire\Caja\Reporte as ReporteCaja;
@@ -127,11 +135,13 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
 
     // Rutas modulo de caja (MEJORAR BLADE)
     Route::get('/caja/abrir', AbrirCaja::class)->name('caja.abrir');
-    //Route::get('/caja/abrir', AbrirCaja::class)->middleware('can:caja.abrir')->name('caja.abrir');
     Route::get('/caja/egreso', RegistrarEgreso::class)->name('caja.egreso');
     Route::get('/caja/cerrar', CerrarCaja::class)->name('caja.cerrar');
     Route::get('/caja/historial', HistorialSesiones::class)->name('caja.historial');
     Route::get('/caja/sesion/{sesionId}', DetalleSesion::class)->name('caja.sesion');
+    Route::get('/caja/sesion/{sesion}/detalle', [DetalleController::class, 'show'])->name('caja.sesion.detalle');
+    Route::get('/caja/sesion/{sesion}/fise', [FiseDetalleController::class, 'show'])->name('caja.sesion.fise');
+    Route::get('/caja/fise-auditoria', FiseAuditoria::class)->name('caja.fise');
 
     // Rutas de servicios
     Route::get('/ordenes', Listado::class)->name('ordenes.listado');
@@ -148,6 +158,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::get('/conversiones/{ordenId}/realizar', Realizar::class)->name('conversiones.realizar'); // P6: Realizar conversión (Técnico) — inicia, marca instalado, finaliza
     Route::get('/conversiones/entregas/pendientes', EntregaPendientes::class)->name('conversiones.entregas-pendientes'); // P7: Entrega y cobro (Cajero) — reutiliza la lógica de cobro que ya armamos en CrearSimple
     Route::get('/conversiones/{ordenId}/entregar', EntregarCobrar::class)->name('conversiones.entregar'); // P7: Entrega y cobro (Cajero) — reutiliza la lógica de cobro que ya armamos en CrearSimple
+    Route::get('/conversiones/{conversionId}/solicitud-repuestos', SolicitudRepuestos::class)->name('SolicitudRepuestos'); // Solicitud de repuestos para conversión
 
     // Rutas modulo de almacen
     Route::get('/almacen/categorias', CategoriasListado::class)->name('almacen.categorias.listado');
@@ -161,9 +172,17 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::get('/servicios/reporte', ReporteServicios::class)->name('servicios.reporte');
     Route::get('/almacen/reporte', ReporteAlmacen::class)->name('almacen.reporte');
 
-    // Ruta mantenimiento de tablas (Vehículos y Clientes)
-    Route::get('/lista-vehiculos', ListaVehiculos::class)->name('ListaVehiculos');
-    Route::get('/lista-clientes', ListaClientes::class)->name('ListaClientes');
+    // Reportes - Exportaciones Servicios
+    Route::get('/reporte-servicios/pdf', [ReporteServiciosPdfController::class, '__invoke'])->name('ReporteServicios.Pdf');
+    Route::get('/reporte-servicios/excel', [ReporteServiciosExcelController::class, '__invoke'])->name('ReporteServicios.Excel');
+
+    // Reportes - Exportaciones Almacén
+    Route::get('/reporte-almacen/pdf', [ReporteAlmacenPdfController::class, '__invoke'])->name('ReporteAlmacen.Pdf');
+    Route::get('/reporte-almacen/excel', [ReporteAlmacenExcelController::class, '__invoke'])->name('ReporteAlmacen.Excel');
+
+    // Reportes - Exportaciones Caja
+    Route::get('/reporte-caja/pdf', [ReporteCajaPdfController::class, '__invoke'])->name('ReporteCaja.Pdf');
+    Route::get('/reporte-caja/excel', [ReporteCajaExcelController::class, '__invoke'])->name('ReporteCaja.Excel');
 
     // Componentes hijos
     Route::get('/selector', SelectorClienteVehiculo::class)->name('selector'); // component hijo reutilizable "buscar/crear cliente y vehículo" respecto a CrearSimple

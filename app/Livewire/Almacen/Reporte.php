@@ -7,6 +7,16 @@ use Livewire\Component;
 
 class Reporte extends Component
 {
+    public function exportPdfUrl(): string
+    {
+        return route('ReporteAlmacen.Pdf', []);
+    }
+
+    public function exportExcelUrl(): string
+    {
+        return route('ReporteAlmacen.Excel', []);
+    }
+
     public function render()
     {
         $productos = Producto::with('categoria')->where('activo', true)->get();

@@ -52,16 +52,23 @@
                             <span class="font-semibold text-gray-600">S/ {{ number_format($this->otroIngresos, 2) }}</span>
                         </div>
 
+                        @if ($this->fiseIngresos > 0)
+                        <div class="flex justify-between items-center text-xs bg-amber-50 -mx-4 px-4 py-2 rounded-lg border border-amber-200">
+                            <span class="text-amber-700 font-medium"><i class="fas fa-landmark text-amber-500 mr-1.5"></i> FISE (Financiamiento):</span>
+                            <span class="font-bold text-amber-700">S/ {{ number_format($this->fiseIngresos, 2) }}</span>
+                        </div>
+                        @endif
+
                         <div class="flex justify-between items-center text-xs border-t border-gray-200 pt-2 mt-1">
                             <span class="text-gray-800 font-bold"><i class="fas fa-calculator text-gray-500 mr-1.5"></i> Total Ingresos:</span>
                             <span class="font-bold text-gray-900">S/ {{ number_format($this->totalIngresos, 2) }}</span>
                         </div>
                     </div>
 
-                    <!-- Resumen de caja (efectivo) -->
+                    <!-- Resumen de caja (todos los métodos) -->
                     <div class="bg-white border border-gray-300/70 rounded-xl p-4 space-y-2.5 shadow-xs">
                         <h4 class="text-xs font-bold text-gray-700 uppercase tracking-wider mb-3">
-                            <i class="fas fa-cash-register mr-1 text-red-600"></i> Arqueo de Efectivo
+                            <i class="fas fa-cash-register mr-1 text-red-600"></i> Arqueo de Caja
                         </h4>
 
                         <div class="flex justify-between items-center text-xs">
@@ -70,8 +77,8 @@
                         </div>
 
                         <div class="flex justify-between items-center text-xs">
-                            <span class="text-emerald-700 font-medium"><i class="fas fa-arrow-down text-emerald-500 mr-1.5"></i> + Efectivo:</span>
-                            <span class="font-semibold text-emerald-700">S/ {{ number_format($this->efectivoIngresos, 2) }}</span>
+                            <span class="text-emerald-700 font-medium"><i class="fas fa-arrow-down text-emerald-500 mr-1.5"></i> + Ingresos:</span>
+                            <span class="font-semibold text-emerald-700">S/ {{ number_format($this->totalIngresos, 2) }}</span>
                         </div>
 
                         <div class="flex justify-between items-center text-xs">
@@ -80,7 +87,7 @@
                         </div>
 
                         <div class="flex justify-between items-center text-xs border-t-2 border-gray-200 pt-2.5 mt-1 font-bold">
-                            <span class="text-gray-800"><i class="fas fa-calculator text-blue-600 mr-1.5"></i> Efectivo Esperado:</span>
+                            <span class="text-gray-800"><i class="fas fa-calculator text-blue-600 mr-1.5"></i> Monto Esperado:</span>
                             <span class="text-sm text-blue-700">S/ {{ number_format($this->montoEsperado, 2) }}</span>
                         </div>
                     </div>

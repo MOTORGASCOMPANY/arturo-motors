@@ -43,7 +43,7 @@ class DocumentosConversionController extends Controller
         $orden = ServiceOrder::with(['cliente', 'vehiculo', 'service', 'items.producto.categoria'])
             ->findOrFail($ordenId);
 
-        abort_unless(in_array($orden->estado, ['entregado', 'entregada']), 404,
+        abort_unless($orden->estado === 'entregado', 404,
             'La garantía solo puede emitirse una vez entregado el vehículo.');
 
         $pdf = Pdf::loadView('pdfs.garantia', ['orden' => $orden]);

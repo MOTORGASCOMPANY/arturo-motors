@@ -12,6 +12,7 @@ class AsignarTecnico extends Component
     use WithPagination;
 
     public array $tecnicoSeleccionado = []; // [ordenId => tecnicoId]
+    public string $search = '';
 
     public function asignar(int $ordenId)
     {
@@ -51,11 +52,29 @@ class AsignarTecnico extends Component
         //session()->flash('mensaje', "Orden #{$ordenId} asignada correctamente.");
     }
 
+    public function updatedSearch(): void
+    {
+        $this->resetPage();
+    }
+
     public function render()
     {
         $ordenes = ServiceOrder::with(['cliente', 'vehiculo', 'service'])
             ->whereHas('service', fn ($q) => $q->where('tipo', 'conversion'))
             ->where('estado', 'creada')
+            ->when($this->search !== '', function ($q) {
+                $q->where(function ($sub) {
+                    $sub->whereHas('cliente', function ($c) {
+                        $c->where('nombre', 'like', "%{$this->search}%")
+                          ->orWhere('apellido', 'like', "%{$this->search}%")
+                          ->orWhere('documento', 'like', "%{$this->search}%");
+                    })
+                    ->orWhereHas('vehiculo', function ($v) {
+                        $v->where('placa', 'like', "%{$this->search}%");
+                    })
+                    ->orWhere('id', $this->search);
+                });
+            })
             ->orderBy('created_at')
             ->paginate(10);
 

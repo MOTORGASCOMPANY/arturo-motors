@@ -5,6 +5,18 @@
             <i class="fas fa-warehouse mr-2"></i>Reporte de almacén
         </h2>
         <span class="text-xs">Stock bajo y valorización actual del inventario en Arturo Motors (Callao)</span>
+        <div class="flex items-center gap-4 mt-3">
+            <button onclick="exportarPDF()"
+                class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-full py-2 px-4 shadow-sm transition-colors flex items-center gap-1.5">
+                <i class="fas fa-file-pdf mr-1"></i>
+                PDF
+            </button>
+            <button onclick="exportarExcel()"
+                class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-full py-2 px-4 shadow-sm transition-colors flex items-center gap-1.5">
+                <i class="fas fa-file-excel mr-1"></i>
+                Excel
+            </button>
+        </div>
     </div>
 
     {{-- KPIs --}}
@@ -104,4 +116,58 @@
             </div>
         </div>
     @endif
+</script>
+
+    {{-- Funciones de exportación --}}
+    <script>
+        window.exportarPDF = function() {
+            Swal.fire({
+                title: 'Exportando PDF',
+                text: 'Generando el reporte, por favor espera...',
+                icon: 'info',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                    window.location.href = '{{ $this->exportPdfUrl() }}';
+                    setTimeout(() => {
+                        Swal.close();
+                        Swal.fire({
+                            title: 'Descarga iniciada',
+                            text: 'El archivo PDF se está descargando.',
+                            icon: 'success',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    }, 3000);
+                }
+            });
+        };
+
+        window.exportarExcel = function() {
+            Swal.fire({
+                title: 'Exportando Excel',
+                text: 'Generando el reporte, por favor espera...',
+                icon: 'info',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                    window.location.href = '{{ $this->exportExcelUrl() }}';
+                    setTimeout(() => {
+                        Swal.close();
+                        Swal.fire({
+                            title: 'Descarga iniciada',
+                            text: 'El archivo Excel se está descargando.',
+                            icon: 'success',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    }, 3000);
+                }
+            });
+        };
+    </script>
 </div>

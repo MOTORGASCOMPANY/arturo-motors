@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class SesionCaja extends Model
 {
@@ -32,7 +33,8 @@ class SesionCaja extends Model
         'cerrada_en' => 'datetime',
     ];
 
-    // Relaciones
+    // ─── Relaciones ────────────────────────────────────────────────────
+
     public function abiertaPor()
     {
         return $this->belongsTo(User::class, 'abierta_por');
@@ -48,34 +50,123 @@ class SesionCaja extends Model
         return $this->hasMany(MovimientoCaja::class, 'sesion_caja_id');
     }
 
-    // Scopes
+    // ─── Scopes ────────────────────────────────────────────────────────
+
     public function scopeAbierta($query)
     {
         return $query->where('estado', 'abierta');
     }
 
+    // ─── Boot: Reglas de integridad ────────────────────────────────────
+
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        // REGLA 1: Solo UNA sesión puede estar abierta a la vez
+        static::creating(function (SesionCaja $sesion) {
+            if (static::abierta()->exists()) {
+                abort(422, 'Ya existe una caja abierta. Ciérrala antes de abrir una nueva.');
+            }
+        });
+
+        // REGLA 2: La apertura no puede ser negativa
+        static::saving(function (SesionCaja $sesion) {
+            if ($sesion->monto_apertura < 0) {
+                abort(422, 'El monto de apertura no puede ser negativo.');
+            }
+        });
+
+        // REGLA 3: Al cerrar, calcular monto_esperado y diferencia AUTOMÁTICAMENTE
+        //           El cierre DEBE ser >= 0
+        static::saving(function (SesionCaja $sesion) {
+            if ($sesion->isDirty('estado') && $sesion->estado === 'cerrada') {
+                if ($sesion->monto_cierre === null || $sesion->monto_cierre < 0) {
+                    abort(422, 'El monto de cierre debe ser un valor positivo.');
+                }
+
+                // Recalcular esperado SIEMPRE desde los movimientos (nunca confiar en valor previo)
+                $esperado = self::calcularEsperado($sesion->id);
+                $sesion->monto_esperado = $esperado;
+                $sesion->diferencia = round($sesion->monto_cierre - $esperado, 2);
+
+                // REGLA 4: Alertar si la diferencia es sospechosamente grande (> S/50)
+                if (abs($sesion->diferencia) > 50) {
+                    abort(422, 'La diferencia de S/ ' . number_format(abs($sesion->diferencia), 2) .
+                        ' es mayor a S/50. Verifica el monto de cierre.');
+                }
+            }
+        });
+    }
+
+    // ─── Métodos de cálculo ────────────────────────────────────────────
+
     /**
-     * Cerrar la sesión calculando el esperado SOLO con efectivo.
-     * Fórmula: apertura + ingresos_efectivo - egresos
-     * (Solo el efectivo está físicamente en el cajón)
+     * Calcula el monto esperado: apertura + TODOS los ingresos - TODOS los egresos
+     * Incluye efectivo, tarjeta, transferencia, FISE y otros.
+     * El efectivo solo se usa para arrastrar el cierre como apertura del día siguiente.
+     */
+    public static function calcularEsperado(int $sesionId): float
+    {
+        $sesion = static::findOrFail($sesionId);
+
+        $ingresos = $sesion->movimientos()
+            ->where('tipo', 'ingreso')
+            ->sum('monto');
+
+        $egresos = $sesion->movimientos()
+            ->where('tipo', 'egreso')
+            ->sum('monto');
+
+        return round($sesion->monto_apertura + $ingresos - $egresos, 2);
+    }
+
+    /**
+     * Obtiene el monto esperado en caja (todos los métodos - egresos).
+     */
+    public function getEfectivoFisicoAttribute(): float
+    {
+        return self::calcularEsperado($this->id);
+    }
+
+    /**
+     * Obtiene el cierre de la última sesión cerrada (para encadenar aperturas).
+     */
+    public static function getLastCierre(): ?float
+    {
+        $ultima = static::where('estado', 'cerrada')
+            ->orderByDesc('cerrada_en')
+            ->first();
+
+        return $ultima ? (float) $ultima->monto_cierre : null;
+    }
+
+    /**
+     * Cierra la sesión con todas las validaciones de integridad.
      */
     public function cerrar(float $montoCierre, int $usuarioId): void
     {
-        // Efectivo recibido a través de la relación indirecta
-        $efectivoIngresos = $this->movimientos()
-            ->where('tipo', 'ingreso')
-            ->whereHas('serviceOrder.comprobante', function ($q) {
-                $q->where('metodo_pago', 'efectivo');
-            })
-            ->sum('monto');
+        if ($this->estado !== 'abierta') {
+            abort(422, 'Esta sesión de caja ya está cerrada.');
+        }
 
-        $egresos = $this->movimientos()->where('tipo', 'egreso')->sum('monto');
-        $esperado = $this->monto_apertura + $efectivoIngresos - $egresos;
+        if ($montoCierre < 0) {
+            abort(422, 'El monto de cierre no puede ser negativo.');
+        }
+
+        // SIEMPRE recalcular desde movimientos — nunca confiar en valor previo
+        $esperado = self::calcularEsperado($this->id);
+        $diferencia = round($montoCierre - $esperado, 2);
+
+        if (abs($diferencia) > 50) {
+            abort(422, 'La diferencia de S/ ' . number_format(abs($diferencia), 2) .
+                ' es mayor a S/50. Verifica el monto de cierre.');
+        }
 
         $this->update([
             'monto_cierre' => $montoCierre,
             'monto_esperado' => $esperado,
-            'diferencia' => $montoCierre - $esperado,
+            'diferencia' => $diferencia,
             'cerrada_en' => now(),
             'cerrada_por' => $usuarioId,
             'estado' => 'cerrada',

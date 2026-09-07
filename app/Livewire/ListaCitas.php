@@ -23,6 +23,10 @@ class ListaCitas extends Component
 
     public $sort = 'created_at', $order, $cant = 10, $search = '', $direction = 'desc';
 
+    public string $filterEstado = 'todos';
+    public string $filterFechaDesde = '';
+    public string $filterFechaHasta = '';
+
     // Datos para dialog modal , crear cita, cliente y vehicul0
     public $open = false;
 
@@ -88,6 +92,19 @@ class ListaCitas extends Component
 
     public function updatingSearch()
     {
+        $this->resetPage();
+    }
+
+    public function updatedFilterEstado(): void { $this->resetPage(); }
+    public function updatedFilterFechaDesde(): void { $this->resetPage(); }
+    public function updatedFilterFechaHasta(): void { $this->resetPage(); }
+
+    public function resetFiltros(): void
+    {
+        $this->filterEstado = 'todos';
+        $this->filterFechaDesde = '';
+        $this->filterFechaHasta = '';
+        $this->search = '';
         $this->resetPage();
     }
 
@@ -235,6 +252,9 @@ class ListaCitas extends Component
                 $query->where('asesor_id', $user->id);
             })
             ->buscar($this->search)
+            ->when($this->filterEstado !== 'todos', fn ($q) => $q->where('estado', $this->filterEstado))
+            ->when($this->filterFechaDesde !== '', fn ($q) => $q->where('fecha_cita', '>=', $this->filterFechaDesde))
+            ->when($this->filterFechaHasta !== '', fn ($q) => $q->where('fecha_cita', '<=', $this->filterFechaHasta))
             ->ordenar($this->sort, $this->direction)
             ->paginate($this->cant);
 

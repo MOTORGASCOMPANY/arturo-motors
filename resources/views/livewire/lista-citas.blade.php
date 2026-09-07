@@ -1,118 +1,177 @@
-<div class="flex box-border">
-    <div class="container mx-auto py-4">
-        <x-custom-table>
-            <x-slot name="titulo">
-                <h2 class="text-gray-600 font-semibold text-2xl">Citas</h2>
-                <span class="text-xs text-gray-500">Todos las citas programadas</span>
-            </x-slot>
+<div class="max-w-7xl mx-auto px-4 py-8 space-y-6">
 
-            <x-slot name="btnAgregar">
-                <x-button wire:click="$toggle('open')"
-                    class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd"
-                            d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-                            clip-rule="evenodd" />
-                    </svg>
-                    Agregar
-                </x-button>                
-            </x-slot>
+    {{-- Header --}}
+    <div class="flex items-center justify-between">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                <i class="fa-solid fa-calendar-check text-blue-600"></i> Citas
+            </h2>
+            <p class="text-sm text-gray-500 mt-1">Gestión de todas las citas programadas</p>
+        </div>
+        <button wire:click="$toggle('open')"
+            class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-5 rounded-lg shadow-sm transition-colors flex items-center gap-2">
+            <i class="fa-solid fa-plus text-sm"></i> Nueva Cita
+        </button>
+    </div>
 
-            <x-slot name="contenido">
-                @if (count($citas))
-                    <div class="overflow-x-auto bg-white rounded-lg shadow">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">#</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vehículo</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sede</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Motivo</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Creación</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200">
-                                @foreach ($citas as $cita)
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-6 py-4 text-sm text-gray-500">
-                                            {{ $cita->id }}
-                                        </td>
-                                        <td class="px-6 py-4 text-sm font-medium text-gray-900">
-                                            {{ $cita->cliente->nombre ?? null . ' ' . $cita->cliente->apellido ?? null }}
-                                        </td>
-                                        <td class="px-6 py-4 text-sm text-gray-500">
-                                            {{ $cita->vehiculo->placa }}
-                                        </td>
-                                        <td class="px-6 py-4 text-sm text-gray-500 font-semibold">
-                                            {{ $cita->sede->nombre ?? '-' }}
-                                        </td>
-                                        <td class="px-6 py-4 text-sm text-gray-500">
-                                            {{ $cita->fecha_cita ? \Carbon\Carbon::parse($cita->fecha_cita)->format('d/m/Y H:i') : '-' }}
-                                        </td>
-                                        <td class="px-6 py-4 text-sm">
-                                            @php
-                                                $colors = [
-                                                    'aceptada' => 'bg-green-100 text-green-800',
-                                                    'rechazada' => 'bg-red-100 text-red-800',
-                                                    'pendiente' => 'bg-yellow-100 text-yellow-800',
-                                                ];
-                                            @endphp
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $colors[$cita->estado] ?? 'bg-gray-100 text-gray-800' }}">
-                                                {{ ucfirst($cita->estado) }}
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 text-sm text-gray-500">
-                                            {{ $cita->motivo ?? '-' }}
-                                        </td>
-                                        <td class="px-6 py-4 text-sm text-gray-500">
-                                            {{ $cita->created_at->format('d/m/Y H:i') }}
-                                        </td>
-                                        <td class="text-center">
-                                            <div class="flex justify-center items-center space-x-2">
-                                                @if($cita->estado === 'pendiente')
-                                                    <button {{--onclick="confirmarAceptacion({{ $cita->id }})"--}} wire:click="abrirModalAceptar({{ $cita->id }})" type="button"
-                                                        class="group flex py-2 px-2 text-center items-center rounded-md bg-green-700 font-bold text-white cursor-pointer hover:bg-green-800 hover:animate-pulse">
-                                                        <i class="fa-solid fa-circle-check"></i>
-                                                        <span class="group-hover:opacity-100 transition-opacity bg-gray-800 px-1 text-sm text-gray-100 rounded-md absolute  translate-y-full opacity-0 m-4 mx-auto z-50">
-                                                            Aceptar
-                                                        </span>
-                                                    </button>
-                                                    <button onclick="confirmarRechazo({{ $cita->id }})" type="button"
-                                                        class="group flex py-2 px-2 text-center items-center rounded-md bg-red-500 font-bold text-white cursor-pointer hover:bg-red-700 hover:animate-pulse">
-                                                        <i class="fa-solid fa-ban"></i>
-                                                        <span class="group-hover:opacity-100 transition-opacity bg-gray-800 px-1 text-sm text-gray-100 rounded-md absolute  translate-y-full opacity-0 m-4 mx-auto z-50">
-                                                            Rechazar
-                                                        </span>
-                                                    </button>
-                                                @else
-                                                    <span class="text-xs text-gray-400 italic">Sin acciones</span>
-                                                @endif
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+    {{-- Filtros --}}
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden" x-data="{ expandir: false }">
+        <div class="px-5 py-4">
+            <div class="flex flex-col md:flex-row md:items-center gap-3">
+                {{-- Buscar --}}
+                <div class="flex-1">
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                            <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                        </span>
+                        <input type="text" wire:model.live.debounce.300ms="buscar"
+                            placeholder="Buscar por cliente o placa..."
+                            class="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500 bg-gray-50">
                     </div>
+                </div>
 
-                    <!-- Paginación -->
-                    @if ($citas->hasPages())
-                        <div class="mt-2 bg-white px-5 py-5 border-t rounded-lg">
-                            {{ $citas->links() }}
-                        </div>
-                    @endif
-                @else
-                    <div class="px-6 py-4 text-center font-bold bg-blue-100 rounded-md">
-                        No se encontró ningún registro.
+                {{-- Estado --}}
+                <div class="w-full md:w-48">
+                    <select wire:model.live="filterEstado"
+                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500 bg-gray-50">
+                        <option value="todos">Todos los estados</option>
+                        <option value="pendiente">Pendiente</option>
+                        <option value="aceptada">Aceptada</option>
+                        <option value="rechazada">Rechazada</option>
+                        <option value="cancelada">Cancelada</option>
+                    </select>
+                </div>
+
+                {{-- Botones --}}
+                <div class="flex items-center gap-2">
+                    <button @click="expandir = !expandir"
+                        class="px-3 py-2 text-xs font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors flex items-center gap-1.5">
+                        <i class="fa-solid fa-sliders"></i> Más filtros
+                        <i class="fa-solid fa-chevron-down text-[10px] transition-transform" :class="expandir ? 'rotate-180' : ''"></i>
+                    </button>
+                    <button wire:click="resetFiltros"
+                        class="px-3 py-2 text-xs font-semibold text-gray-500 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors flex items-center gap-1.5">
+                        <i class="fa-solid fa-eraser"></i> Limpiar
+                    </button>
+                </div>
+            </div>
+
+            {{-- Filtros avanzados --}}
+            <div x-show="expandir" x-collapse class="mt-4 pt-4 border-t border-gray-100">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Fecha desde</label>
+                        <input type="date" wire:model.live="filterFechaDesde"
+                            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500 bg-gray-50">
                     </div>
-                @endif
-            </x-slot>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Fecha hasta</label>
+                        <input type="date" wire:model.live="filterFechaHasta"
+                            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500 bg-gray-50">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        </x-custom-table>
+    {{-- Tabla --}}
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+        @if (count($citas))
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50 border-b border-gray-200">
+                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">#</th>
+                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">Cliente</th>
+                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">Vehículo</th>
+                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">Sede</th>
+                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">Fecha</th>
+                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">Estado</th>
+                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">Motivo</th>
+                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">Creación</th>
+                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        @foreach ($citas as $cita)
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-4 py-3 text-center border-r border-gray-100 text-gray-500">
+                                    {{ $cita->id }}
+                                </td>
+                                <td class="px-4 py-3 text-center border-r border-gray-100 font-medium text-gray-900">
+                                    {{ $cita->cliente->nombre ?? '' }} {{ $cita->cliente->apellido ?? '' }}
+                                </td>
+                                <td class="px-4 py-3 text-center border-r border-gray-100 text-gray-500">
+                                    {{ $cita->vehiculo->placa }}
+                                </td>
+                                <td class="px-4 py-3 text-center border-r border-gray-100 font-semibold text-gray-700">
+                                    {{ $cita->sede->nombre ?? '-' }}
+                                </td>
+                                <td class="px-4 py-3 text-center border-r border-gray-100 text-gray-500">
+                                    {{ $cita->fecha_cita ? \Carbon\Carbon::parse($cita->fecha_cita)->format('d/m/Y H:i') : '-' }}
+                                </td>
+                                <td class="px-4 py-3 text-center border-r border-gray-100">
+                                    @php
+                                        $colors = [
+                                            'aceptada'  => 'bg-green-100 text-green-800',
+                                            'rechazada' => 'bg-red-100 text-red-800',
+                                            'pendiente' => 'bg-yellow-100 text-yellow-800',
+                                            'cancelada' => 'bg-gray-100 text-gray-600',
+                                        ];
+                                    @endphp
+                                    <span class="px-2.5 py-1 inline-flex text-xs font-semibold rounded-full {{ $colors[$cita->estado] ?? 'bg-gray-100 text-gray-800' }}">
+                                        {{ ucfirst($cita->estado) }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 text-center border-r border-gray-100 text-gray-500">
+                                    {{ $cita->motivo ?? '-' }}
+                                </td>
+                                <td class="px-4 py-3 text-center border-r border-gray-100 text-gray-500">
+                                    {{ $cita->created_at->format('d/m/Y H:i') }}
+                                </td>
+                                <td class="px-4 py-3 text-center">
+                                    <div class="flex justify-center items-center gap-1">
+                                        @if($cita->estado === 'pendiente')
+                                            <button wire:click="abrirModalAceptar({{ $cita->id }})" type="button"
+                                                class="group relative flex p-2 items-center justify-center rounded-lg bg-green-50 text-green-700 hover:bg-green-100 transition-colors">
+                                                <i class="fa-solid fa-circle-check text-sm"></i>
+                                                <span class="group-hover:opacity-100 transition-opacity bg-gray-800 px-2 py-1 text-xs text-gray-100 rounded-md absolute translate-y-full opacity-0 z-50 whitespace-nowrap">
+                                                    Aceptar
+                                                </span>
+                                            </button>
+                                            <button onclick="confirmarRechazo({{ $cita->id }})" type="button"
+                                                class="group relative flex p-2 items-center justify-center rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors">
+                                                <i class="fa-solid fa-ban text-sm"></i>
+                                                <span class="group-hover:opacity-100 transition-opacity bg-gray-800 px-2 py-1 text-xs text-gray-100 rounded-md absolute translate-y-full opacity-0 z-50 whitespace-nowrap">
+                                                    Rechazar
+                                                </span>
+                                            </button>
+                                        @else
+                                            <span class="text-xs text-gray-400 italic">Sin acciones</span>
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            {{-- Paginación --}}
+            @if ($citas->hasPages())
+                <div class="px-5 py-3 border-t border-gray-100">
+                    {{ $citas->links() }}
+                </div>
+            @endif
+        @else
+            <div class="px-6 py-16 text-center">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-50 text-blue-400 mb-4">
+                    <i class="fa-solid fa-calendar-xmark text-2xl"></i>
+                </div>
+                <p class="text-gray-500 text-sm font-medium">No se encontraron citas</p>
+                <p class="text-gray-400 text-xs mt-1">Intenta ajustar los filtros o crea una nueva cita</p>
+            </div>
+        @endif
     </div>
 
     <!-- Dialog modal para crear cita con cliente y vehiculo -->

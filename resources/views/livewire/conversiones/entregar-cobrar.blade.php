@@ -70,6 +70,9 @@
                                     <option value="efectivo">💵 Efectivo</option>
                                     <option value="tarjeta">💳 Tarjeta (Débito/Crédito)</option>
                                     <option value="transferencia">📲 Transferencia / Yape / Plin</option>
+                                    @if($orden->service->tipo === 'conversion')
+                                        <option value="fise">🏛️ FISE (Financiamiento)</option>
+                                    @endif
                                     <option value="otro">Otros</option>
                                 </select>
                                 <x-input-error for="metodoPago" class="mt-1" />

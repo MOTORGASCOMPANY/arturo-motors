@@ -65,7 +65,7 @@
                                     <span class="font-medium text-gray-800">{{ $item->producto->nombre }}</span> 
                                     <span class="text-xs text-gray-500">(Serie: <strong class="font-mono text-gray-700">{{ $item->serie }}</strong>)</span>
                                 </div>
-                                <button wire:click="toggleItem({{ $item->id }})" type="button" class="text-red-600 hover:text-red-800 text-xs font-semibold">
+                                <button wire:click="toggleItem({{ $item->id }})" type="button" class="text-red-600 hover:text-red-800 transition-colors text-xs font-semibold">
                                     <i class="fas fa-trash mr-1"></i>Quitar
                                 </button>
                             </li>
@@ -87,7 +87,7 @@
                     <select wire:model="productoRepuestoId" class="w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                         <option value="">-- Selecciona un repuesto --</option>
                         @foreach ($this->productosRepuesto as $p)
-                            <option value="{{ $p->id }}">{{ $p->nombre }} (Stock: {{ $p->stock }})</option>
+                            <option value="{{ $p->id }}">{{ $p->nombre }} (Stock: {{ $p->stock_disponible }})</option>
                         @endforeach
                     </select>
                 </div>
@@ -113,7 +113,7 @@
                                     <span class="font-medium text-gray-800">{{ $p->nombre }}</span> 
                                     <span class="text-xs text-purple-700 font-bold ml-2">× {{ $p->cantidad_solicitada }}</span>
                                 </div>
-                                <button wire:click="quitarRepuesto({{ $p->id }})" type="button" class="text-red-600 hover:text-red-800 text-xs font-semibold">
+                                <button wire:click="quitarRepuesto({{ $p->id }})" type="button" class="text-red-600 hover:text-red-800 transition-colors text-xs font-semibold">
                                     <i class="fas fa-trash mr-1"></i>Quitar
                                 </button>
                             </li>

@@ -118,7 +118,7 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                         <ul class="text-sm font-medium">
                             <li>
                                 <a class="flex items-center rounded py-3 pl-3 pr-4  space-x-6 text-gray-50 hover:bg-gray-600"
-                                    href="{{ route('inicio') }}">
+                                    href="{{ route('dashboard') }}">
                                     <i class="fas fa-home -mt-1"></i>
                                     <span class="select-none">Inicio</span>
                                 </a>
@@ -203,6 +203,12 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                                                 <x-responsive-nav-link class="text-sm" href="{{ route('caja.historial') }}"
                                                     :active="request()->routeIs('caja.historial')">
                                                     Historial de caja
+                                                </x-responsive-nav-link>
+                                            </li>
+                                            <li class="transition-colors duration-150">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('caja.fise') }}"
+                                                    :active="request()->routeIs('caja.fise')">
+                                                    Control FISE
                                                 </x-responsive-nav-link>
                                             </li>
                                         </ul>

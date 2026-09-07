@@ -43,31 +43,31 @@
     @endhasanyrole
 
     <!-- Tabla de Historial (Vacaciones Asignadas) -->
-    <div class="bg-white rounded-lg shadow overflow-hidden">
-        <table class="min-w-full leading-normal">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+        <table class="w-full text-sm border-collapse">
             <thead>
-                <tr class="bg-accent text-white uppercase text-xs">
-                    <th class="px-5 py-3 border-b-2 text-left">F. Inicio</th>
-                    <th class="px-5 py-3 border-b-2 text-left">Días Tomados</th>
-                    <th class="px-5 py-3 border-b-2 text-left">Tipo / Razón</th>
-                    <th class="px-5 py-3 border-b-2 text-left">Observación</th>
-                    <th class="px-5 py-3 border-b-2 text-center">Estado</th>
+                <tr class="bg-gray-50 border-b border-gray-200">
+                    <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">F. Inicio</th>
+                    <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">Días Tomados</th>
+                    <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">Tipo / Razón</th>
+                    <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">Observación</th>
+                    <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">Estado</th>
                     @hasanyrole('Administrador del sistema|administrador')
-                        <th class="px-5 py-3 border-b-2 text-center">Acciones</th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Acciones</th>
                     @endhasanyrole
                 </tr>
             </thead>
-            <tbody>
+            <tbody class="divide-y divide-gray-100">
                 @forelse($asignaciones as $asig)
-                    <tr class="border-b hover:bg-gray-50">
-                        <td class="px-5 py-4 text-sm">{{ $asig->f_inicio->format('d/m/Y') }}</td>
-                        <td class="px-5 py-4 text-sm font-bold text-orange-600">{{ $asig->d_tomados }} días</td>
-                        <td class="px-5 py-4 text-sm">
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-4 py-3 text-center border-r border-gray-100">{{ $asig->f_inicio->format('d/m/Y') }}</td>
+                        <td class="px-4 py-3 text-center border-r border-gray-100 font-bold text-orange-600">{{ $asig->d_tomados }} días</td>
+                        <td class="px-4 py-3 text-center border-r border-gray-100">
                             <span class="block font-medium">{{ $asig->tipo }}</span>
                             <span class="text-xs text-gray-400">{{ $asig->razon }}</span>
                         </td>
-                        <td class="px-5 py-4 text-sm text-gray-500">{{ $asig->observacion }}</td>
-                        <td class="px-5 py-4 text-center">
+                        <td class="px-4 py-3 text-center border-r border-gray-100 text-gray-500">{{ $asig->observacion }}</td>
+                        <td class="px-4 py-3 text-center border-r border-gray-100">
                             @if ($asig->especial)
                                 <span class="bg-indigo-400 text-white px-2 py-1 rounded-full text-[10px] font-bold">ESPECIAL</span>
                             @else
@@ -75,15 +75,30 @@
                             @endif
                         </td>
                         @hasanyrole('Administrador del sistema|administrador')
-                            <td class="px-5 py-4 text-center">
+                            <td class="px-4 py-3 text-center">
                                 <div class="flex justify-center gap-2">
                                     <button wire:click="$dispatch('editar-asignacion', { id: {{ $asig->id }} })"
-                                            class="py-2 px-3 rounded-md bg-lime-500 font-bold text-white hover:bg-lime-600 transition mr-1">
+                                            class="py-2 px-3 rounded-lg bg-lime-500 font-bold text-white hover:bg-lime-600 transition mr-1">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <button wire:confirm="¿Estás seguro de eliminar esta asignación? El saldo será devuelto al empleado."
-                                            wire:click="eliminarAsignacion({{ $asig->id }})"
-                                            class="py-2 px-3 rounded-md bg-red-500 font-bold text-white hover:bg-red-600 transition" title="Eliminar">
+                                    <button x-data
+                                            @click="
+                                                Swal.fire({
+                                                    title: '¿Estás seguro?',
+                                                    text: '¿Eliminar esta asignación? El saldo será devuelto al empleado.',
+                                                    icon: 'warning',
+                                                    showCancelButton: true,
+                                                    confirmButtonColor: '#dc2626',
+                                                    cancelButtonColor: '#64748b',
+                                                    confirmButtonText: 'Sí, eliminar',
+                                                    cancelButtonText: 'Cancelar'
+                                                }).then((result) => {
+                                                    if (result.isConfirmed) {
+                                                        $wire.eliminarAsignacion({{ $asig->id }});
+                                                    }
+                                                })
+                                            "
+                                            class="py-2 px-3 rounded-lg bg-red-500 font-bold text-white hover:bg-red-600 transition" title="Eliminar">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
@@ -92,7 +107,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="px-5 py-10 text-center text-gray-400 italic">
+                        <td colspan="5" class="px-4 py-10 text-center text-gray-400 italic">
                             No hay vacaciones registradas en este periodo.
                         </td>
                     </tr>

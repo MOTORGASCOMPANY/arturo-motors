@@ -26,6 +26,24 @@ class Reporte extends Component
         return $desde->gt($hasta) ? [$hasta->copy()->startOfDay(), $desde->copy()->endOfDay()] : [$desde, $hasta];
     }
 
+    public function descargarPdf(): void
+    {
+        $this->dispatch('descargar-pdf', url: url('/reporte-servicios/pdf?' . http_build_query(array_filter([
+            'desde' => $this->desde,
+            'hasta' => $this->hasta,
+            'tipoServicio' => $this->tipoServicio,
+        ]))));
+    }
+
+    public function descargarExcel(): void
+    {
+        $this->dispatch('descargar-excel', url: url('/reporte-servicios/excel?' . http_build_query(array_filter([
+            'desde' => $this->desde,
+            'hasta' => $this->hasta,
+            'tipoServicio' => $this->tipoServicio,
+        ]))));
+    }
+
     protected function baseQuery($desde, $hasta)
     {
         return Comprobante::whereBetween('created_at', [$desde, $hasta])
@@ -86,6 +104,9 @@ class Reporte extends Component
             'ventasPorTecnico' => $ventasPorTecnico,
             'labels' => $labels,
             'data' => $data,
+            'desde' => $desde,
+            'hasta' => $hasta,
+            'tipoServicio' => $this->tipoServicio,
         ]);
     }
 }

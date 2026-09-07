@@ -1,76 +1,103 @@
 <div wire:loading.class="opacity-50 pointer-events-none">
-    <div class="container mx-auto py-12">
-        <div class="bg-gray-200 p-8 rounded-xl w-full">
-            <div class="items-center pb-6 md:block sm:block">
-                <!-- Titulo y subtitulo -->
-                <div class="px-2 w-full mb-4">
-                    <h2 class="text-gray-600 font-semibold text-2xl">
-                        <i class="fas fa-tools mr-2"></i>Mis conversiones
-                    </h2>
-                    <span class="text-xs text-gray-500">Vehículos asignados para evaluación e instalación</span>
-                </div>
-                <!-- Filtros -->
-                <div class="w-full flex flex-wrap items-center justify-between gap-4">
-                    <!-- Filtro Estado -->
-                    <div class="flex items-center bg-white border border-gray-300 p-2 rounded-lg shadow-sm">
-                        <x-label class="mr-2" value="Estado" />
-                        <select wire:model.live="estado"
-                            class="border-none bg-transparent text-gray-700 text-sm focus:ring-0 focus:outline-none cursor-pointer">
+    <div class="max-w-7xl mx-auto px-4 py-8 space-y-6">
+        <!-- Titulo y subtitulo -->
+        <div>
+            <h2 class="text-gray-600 font-semibold text-2xl">
+                <i class="fas fa-tools mr-2"></i>Mis conversiones
+            </h2>
+            <span class="text-xs text-gray-500">Vehículos asignados para evaluación e instalación</span>
+        </div>
+
+        <!-- Filtros -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden" x-data="{ expandir: false }">
+            <div class="p-4">
+                <div class="flex flex-col sm:flex-row gap-3 items-end">
+                    <div class="flex-1">
+                        <x-label class="text-gray-600 font-semibold mb-1 text-xs">Buscar</x-label>
+                        <div class="relative">
+                            <x-input icon="fas fa-search" wire:model.live="search" placeholder="Cliente, placa o ID..." class="w-full" />
+                        </div>
+                    </div>
+                    <div>
+                        <x-label class="text-gray-600 font-semibold mb-1 text-xs">Estado</x-label>
+                        <select wire:model.live="estado" class="border-gray-300 rounded-lg shadow-sm focus:ring-0 text-sm">
                             <option value="pendientes">Solo pendientes</option>
-                            <option value="todas">Todas (incluye finalizadas)</option>
+                            <option value="todas">Todas</option>
                         </select>
+                    </div>
+                    <button type="button" x-on:click="expandir = !expandir" class="px-3 py-2 text-xs font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors flex items-center gap-1.5">
+                        <i class="fas fa-sliders-h"></i> Más filtros
+                        <i class="fas" :class="expandir ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                    </button>
+                </div>
+                <div x-show="expandir" x-transition class="mt-3 pt-3 border-t border-gray-100">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                            <x-label class="text-gray-600 font-semibold mb-1 text-xs">Estado específico</x-label>
+                            <select wire:model.live="filterGranularEstado" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-0 text-sm">
+                                <option value="">Todos</option>
+                                <option value="en_evaluacion">En evaluación</option>
+                                <option value="aprobado_conversion">Aprobado conversión</option>
+                                <option value="en_conversion">En conversión</option>
+                                <option value="conversion_completada">Conversión completada</option>
+                            </select>
+                        </div>
+                        <div>
+                            <x-label class="text-gray-600 font-semibold mb-1 text-xs">Fecha desde</x-label>
+                            <input type="date" wire:model.live="filterFechaDesde" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-0 text-sm">
+                        </div>
+                        <div>
+                            <x-label class="text-gray-600 font-semibold mb-1 text-xs">Fecha hasta</x-label>
+                            <input type="date" wire:model.live="filterFechaHasta" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-0 text-sm">
+                        </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Tabla -->
-            @if ($ordenes->count())
+        <!-- Tabla -->
+        @if ($ordenes->count())
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
                 <div class="overflow-x-auto">
-                    <table class="min-w-full leading-normal rounded-md overflow-hidden">
+                    <table class="w-full text-sm border-collapse">
                         <thead>
-                            <tr>
-                                <th
-                                    class="px-4 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase">
+                            <tr class="bg-gray-50 border-b border-gray-200">
+                                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">
                                     Fecha
                                 </th>
-                                <th
-                                    class="px-4 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase">
+                                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">
                                     Cliente
                                 </th>
-                                <th
-                                    class="px-4 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase">
+                                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">
                                     Vehículo
                                 </th>
-                                <th
-                                    class="px-4 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase">
+                                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">
                                     Servicio
                                 </th>
-                                <th
-                                    class="px-4 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase">
+                                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">
                                     Estado
                                 </th>
-                                <th
-                                    class="px-4 py-3 border-b-2 border-gray-200 bg-gray-100 text-right text-xs font-semibold text-gray-600 uppercase">
+                                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                     Acciones
                                 </th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="divide-y divide-gray-100">
                             @foreach ($ordenes as $orden)
-                                <tr wire:key="mis-conversion-{{ $orden->id }}">
-                                    <td class="px-4 py-3 border-b border-gray-200 bg-white text-sm whitespace-nowrap">
+                                <tr wire:key="mis-conversion-{{ $orden->id }}" class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-4 py-3 text-center border-r border-gray-100 whitespace-nowrap">
                                         {{ $orden->created_at->format('d/m/Y') }}
                                     </td>
-                                    <td class="px-4 py-3 border-b border-gray-200 bg-white text-sm">
+                                    <td class="px-4 py-3 text-center border-r border-gray-100">
                                         {{ $orden->cliente->nombre }} {{ $orden->cliente->apellido }}
                                     </td>
-                                    <td class="px-4 py-3 border-b border-gray-200 bg-white text-sm whitespace-nowrap">
+                                    <td class="px-4 py-3 text-center border-r border-gray-100 whitespace-nowrap">
                                         <span class="font-bold text-gray-800">{{ $orden->vehiculo->placa }}</span> — {{ $orden->vehiculo->marca }}
                                     </td>
-                                    <td class="px-4 py-3 border-b border-gray-200 bg-white text-sm">
+                                    <td class="px-4 py-3 text-center border-r border-gray-100">
                                         {{ $orden->service->nombre }}
                                     </td>
-                                    <td class="px-4 py-3 text-center border-b border-gray-200 bg-white text-sm whitespace-nowrap">
+                                    <td class="px-4 py-3 text-center border-r border-gray-100 whitespace-nowrap">
                                         <span
                                             class="px-2 py-1 rounded-full text-xs font-semibold
                                             {{ match ($orden->estado) {
@@ -84,7 +111,7 @@
                                             {{ ucfirst(str_replace('_', ' ', $orden->estado)) }}
                                         </span>
                                     </td>
-                                    <td class="px-4 py-3 text-right border-b border-gray-200 bg-white text-sm whitespace-nowrap">
+                                    <td class="px-4 py-3 text-center whitespace-nowrap">
                                         @switch($orden->estado)
                                             @case('en_evaluacion')
                                                 <a href="{{ route('conversiones.evaluar', $orden->id) }}"
@@ -125,17 +152,16 @@
                 <div class="p-4 border-t border-gray-200/60">
                     {{ $ordenes->links() }}
                 </div>
-            @else
-                {{-- 
-                <div class="px-6 py-4 text-center font-bold bg-indigo-200 rounded-md">
-                    No tienes conversiones asignadas.
+            </div>
+        @else
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden px-6 py-12">
+                <div class="text-center">
+                    <div class="mx-auto w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center mb-4">
+                        <i class="fas fa-inbox text-3xl text-indigo-400"></i>
+                    </div>
+                    <p class="text-gray-500 font-medium">No tienes conversiones asignadas actualmente.</p>
                 </div>
-                --}}
-                <div class="px-6 py-8 text-center font-semibold bg-indigo-50 text-indigo-700 rounded-lg border border-indigo-100 shadow-sm">
-                    <i class="fas fa-inbox text-3xl mb-2 block text-indigo-400"></i>
-                    No tienes conversiones asignadas actualmente.
-                </div>
-            @endif
-        </div>
+            </div>
+        @endif
     </div>
 </div>

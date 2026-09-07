@@ -21,6 +21,10 @@ class ListaVehiculos extends Component
 
     public $direction;
 
+    // Propiedades para filtros
+    public string $filterMarca = '';
+    public string $filterCombustible = '';
+
     // Propiedades para el modal de edición
     public $open = false;
 
@@ -171,6 +175,9 @@ class ListaVehiculos extends Component
         $this->reset(['cliente_id', 'createPlaca', 'createMarca', 'createModelo', 'createAnio', 'createCombustible', 'createSerie', 'createColor']);
     }
 
+    public function updatedFilterMarca(): void { $this->resetPage(); }
+    public function updatedFilterCombustible(): void { $this->resetPage(); }
+
     public function render()
     {
         $vehiculos = Vehiculo::with([
@@ -178,6 +185,8 @@ class ListaVehiculos extends Component
                 'serviceOrders.documentos',
             ])
             ->buscar($this->search)
+            ->when($this->filterMarca !== '', fn ($q) => $q->where('marca', $this->filterMarca))
+            ->when($this->filterCombustible !== '', fn ($q) => $q->where('combustible', $this->filterCombustible))
             ->ordenar($this->sort, $this->direction)
             ->paginate($this->cant);
 

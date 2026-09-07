@@ -487,5 +487,25 @@
             }
         })();
     </script>
+    <script>
+        (function() {
+            function scrollToHash() {
+                if (!window.location.hash) return;
+                var id = window.location.hash.substring(1);
+                var el = document.getElementById(id);
+                if (el) {
+                    el.scrollIntoView({ behavior: 'auto', block: 'start' });
+                }
+            }
+            if (document.readyState === 'complete') {
+                scrollToHash();
+            } else {
+                window.addEventListener('load', scrollToHash);
+            }
+            setTimeout(scrollToHash, 200);
+            setTimeout(scrollToHash, 500);
+            setTimeout(scrollToHash, 1000);
+        })();
+    </script>
 </body>
 </html>

@@ -18,6 +18,18 @@
                     <option value="conversion">Solo conversión</option>
                 </select>
             </div>
+            <div class="flex items-center gap-2 mt-3">
+                <button wire:click="descargarPdf"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-full py-2 px-4 shadow-sm transition-colors flex items-center gap-1.5">
+                    <i class="fas fa-file-pdf mr-1"></i>
+                    PDF
+                </button>
+                <button wire:click="descargarExcel"
+                    class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-full py-2 px-4 shadow-sm transition-colors flex items-center gap-1.5">
+                    <i class="fas fa-file-excel mr-1"></i>
+                    Excel
+                </button>
+            </div>
         </div>
     </div>
 
@@ -43,6 +55,7 @@
         <canvas id="chartReporteVentas" height="90"></canvas>
     </div>
 
+    @script
     <script>
         function renderReporteVentasChart() {
             const ctx = document.getElementById('chartReporteVentas');
@@ -71,7 +84,56 @@
         Livewire.hook('morph.updated', ({ component }) => {
             if (component.name === 'servicios.reporte') renderReporteVentasChart();
         });
+
+        Livewire.on('descargar-pdf', (params) => {
+            const url = params.url;
+            if (!url || url === '#') {
+                Swal.fire({ title: 'Sin datos', text: 'No hay datos para exportar en este período.', icon: 'warning', timer: 3000, showConfirmButton: false });
+                return;
+            }
+            Swal.fire({
+                title: 'Exportando PDF',
+                text: 'Generando el reporte, por favor espera...',
+                icon: 'info',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                    window.location.href = url;
+                    setTimeout(() => {
+                        Swal.close();
+                        Swal.fire({ title: 'Descarga iniciada', text: 'El archivo PDF se está descargando.', icon: 'success', timer: 2000, showConfirmButton: false });
+                    }, 3000);
+                }
+            });
+        });
+
+        Livewire.on('descargar-excel', (params) => {
+            const url = params.url;
+            if (!url || url === '#') {
+                Swal.fire({ title: 'Sin datos', text: 'No hay datos para exportar en este período.', icon: 'warning', timer: 3000, showConfirmButton: false });
+                return;
+            }
+            Swal.fire({
+                title: 'Exportando Excel',
+                text: 'Generando el reporte, por favor espera...',
+                icon: 'info',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                    window.location.href = url;
+                    setTimeout(() => {
+                        Swal.close();
+                        Swal.fire({ title: 'Descarga iniciada', text: 'El archivo Excel se está descargando.', icon: 'success', timer: 2000, showConfirmButton: false });
+                    }, 3000);
+                }
+            });
+        });
     </script>
+    @endscript
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {{-- Ventas por servicio --}}

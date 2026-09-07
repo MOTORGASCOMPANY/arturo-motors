@@ -11,11 +11,24 @@ class Reporte extends Component
 {
     public string $desde;
     public string $hasta;
+    public float $efectivoAnterior = 0;
 
-    public function mount()
+    public function mount(): void
     {
-        $this->desde = now()->startOfMonth()->format('Y-m-d');
-        $this->hasta = now()->format('Y-m-d');
+        $ayer = now()->subDay();
+        $this->desde = $ayer->startOfDay()->format('Y-m-d');
+        $this->hasta = $ayer->endOfDay()->format('Y-m-d');
+
+        $this->cargarEfectivoAnterior();
+    }
+
+    public function cargarEfectivoAnterior(): void
+    {
+        $ultimaSesion = SesionCaja::where('estado', 'cerrada')
+            ->orderByDesc('cerrada_en')
+            ->first();
+
+        $this->efectivoAnterior = $ultimaSesion ? (float) $ultimaSesion->monto_cierre : 0;
     }
 
     protected function rangoValido(): array
@@ -23,13 +36,60 @@ class Reporte extends Component
         $desde = Carbon::parse($this->desde)->startOfDay();
         $hasta = Carbon::parse($this->hasta)->endOfDay();
 
-        // Protección simple: si el usuario invierte las fechas, las corregimos en vez de romper la consulta
         return $desde->gt($hasta) ? [$hasta->copy()->startOfDay(), $desde->copy()->endOfDay()] : [$desde, $hasta];
+    }
+
+    protected function validarFechas(): bool
+    {
+        $desde = Carbon::parse($this->desde);
+        $hasta = Carbon::parse($this->hasta);
+
+        if ($desde->gt($hasta)) {
+            $this->addError('fechas', 'La fecha inicial no puede ser mayor a la fecha final.');
+            return false;
+        }
+
+        $dias = $desde->diffInDays($hasta) + 1;
+        if ($dias > 90) {
+            $this->addError('fechas', 'El rango de fechas no puede exceder 90 días.');
+            return false;
+        }
+
+        return true;
+    }
+
+    public function descargarPdf(): void
+    {
+        if (!$this->validarFechas()) {
+            $this->dispatch('minToast', titulo: 'Error', mensaje: 'Corrija las fechas antes de exportar.', icono: 'error');
+            return;
+        }
+        $this->dispatch('descargar-pdf', url: url('/reporte-caja/pdf?' . http_build_query(array_filter([
+            'desde' => $this->desde,
+            'hasta' => $this->hasta,
+        ]))));
+    }
+
+    public function descargarExcel(): void
+    {
+        if (!$this->validarFechas()) {
+            $this->dispatch('minToast', titulo: 'Error', mensaje: 'Corrija las fechas antes de exportar.', icono: 'error');
+            return;
+        }
+        $this->dispatch('descargar-excel', url: url('/reporte-caja/excel?' . http_build_query(array_filter([
+            'desde' => $this->desde,
+            'hasta' => $this->hasta,
+        ]))));
     }
 
     public function render()
     {
         [$desde, $hasta] = $this->rangoValido();
+
+        $ultimaSesion = SesionCaja::where('estado', 'cerrada')
+            ->with(['movimientos'])
+            ->orderByDesc('cerrada_en')
+            ->first();
 
         $sesiones = SesionCaja::with('abiertaPor')
             ->whereBetween('abierta_en', [$desde, $hasta])
@@ -37,14 +97,14 @@ class Reporte extends Component
             ->get();
 
         $totalIngresos = MovimientoCaja::whereBetween('created_at', [$desde, $hasta])
-            ->where('tipo', 'ingreso')->sum('monto');
+            ->where('tipo', 'ingreso')
+            ->sum('monto');
 
         $totalEgresos = MovimientoCaja::whereBetween('created_at', [$desde, $hasta])
             ->where('tipo', 'egreso')->sum('monto');
 
         $sesionesConDescuadre = $sesiones->filter(fn ($s) => $s->diferencia !== null && (float) $s->diferencia != 0);
 
-        // Serie diaria para el gráfico, acotada a un máximo razonable de días
         $dias = min($desde->diffInDays($hasta) + 1, 90);
         $labels = [];
         $ingresosData = [];
@@ -68,6 +128,13 @@ class Reporte extends Component
             $egresosData[] = (float) ($egresosPorDia[$clave] ?? 0);
         }
 
+        $ingresosPorMetodo = MovimientoCaja::where('tipo', 'ingreso')
+            ->whereBetween('created_at', [$desde, $hasta])
+            ->whereNotNull('metodo_pago')
+            ->selectRaw('metodo_pago, SUM(monto) as total')
+            ->groupBy('metodo_pago')
+            ->pluck('total', 'metodo_pago');
+
         return view('livewire.caja.reporte', [
             'sesiones' => $sesiones,
             'totalIngresos' => $totalIngresos,
@@ -77,6 +144,8 @@ class Reporte extends Component
             'labels' => $labels,
             'ingresosData' => $ingresosData,
             'egresosData' => $egresosData,
+            'efectivoAnterior' => $this->efectivoAnterior,
+            'ingresosPorMetodo' => $ingresosPorMetodo,
         ]);
     }
 }

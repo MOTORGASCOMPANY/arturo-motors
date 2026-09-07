@@ -1,7 +1,7 @@
 <!-- resources>views>livewire>crear-citas.blade.php -->
 <div class="mb-4">
     <button wire:click="$set('open',true)"
-        class="bg-slate-600 px-6 py-4 rounded-md text-white font-semibold tracking-wide cursor-pointer">Agregar</button>
+        class="bg-slate-600 px-6 py-4 rounded-lg text-white font-semibold tracking-wide cursor-pointer">Agregar</button>
 
     <x-dialog-modal wire:model="open">
         <x-slot name="title">

@@ -21,73 +21,28 @@ class CerrarCaja extends Component
         $this->sesion = SesionCaja::abierta()->orderByDesc('abierta_en')->first();
     }
 
-    /**
-     * Total de todos los ingresos (todos los métodos)
-     */
+    // ─── Propiedades calculadas ────────────────────────────────────────
+
     public function getTotalIngresosProperty()
     {
         return $this->sesion ? $this->sesion->movimientos()->where('tipo', 'ingreso')->sum('monto') : 0;
     }
 
-    /**
-     * Ingresos SOLO en efectivo (a través de la relación indirecta)
-     */
-    public function getEfectivoIngresosProperty()
+    private function ingresosPorMetodo(string $metodo): float
     {
         if (!$this->sesion) return 0;
 
         return $this->sesion->movimientos()
             ->where('tipo', 'ingreso')
-            ->whereHas('serviceOrder.comprobante', function ($q) {
-                $q->where('metodo_pago', 'efectivo');
-            })
+            ->where('metodo_pago', $metodo)
             ->sum('monto');
     }
 
-    /**
-     * Ingresos por tarjeta
-     */
-    public function getTarjetaIngresosProperty()
-    {
-        if (!$this->sesion) return 0;
-
-        return $this->sesion->movimientos()
-            ->where('tipo', 'ingreso')
-            ->whereHas('serviceOrder.comprobante', function ($q) {
-                $q->where('metodo_pago', 'tarjeta');
-            })
-            ->sum('monto');
-    }
-
-    /**
-     * Ingresos por transferencia
-     */
-    public function getTransferenciaIngresosProperty()
-    {
-        if (!$this->sesion) return 0;
-
-        return $this->sesion->movimientos()
-            ->where('tipo', 'ingreso')
-            ->whereHas('serviceOrder.comprobante', function ($q) {
-                $q->where('metodo_pago', 'transferencia');
-            })
-            ->sum('monto');
-    }
-
-    /**
-     * Ingresos por otro método
-     */
-    public function getOtroIngresosProperty()
-    {
-        if (!$this->sesion) return 0;
-
-        return $this->sesion->movimientos()
-            ->where('tipo', 'ingreso')
-            ->whereHas('serviceOrder.comprobante', function ($q) {
-                $q->where('metodo_pago', 'otro');
-            })
-            ->sum('monto');
-    }
+    public function getEfectivoIngresosProperty(): float  { return $this->ingresosPorMetodo('efectivo'); }
+    public function getTarjetaIngresosProperty(): float   { return $this->ingresosPorMetodo('tarjeta'); }
+    public function getTransferenciaIngresosProperty(): float { return $this->ingresosPorMetodo('transferencia'); }
+    public function getOtroIngresosProperty(): float      { return $this->ingresosPorMetodo('otro'); }
+    public function getFiseIngresosProperty(): float      { return $this->ingresosPorMetodo('fise'); }
 
     public function getTotalEgresosProperty()
     {
@@ -95,24 +50,21 @@ class CerrarCaja extends Component
     }
 
     /**
-     * Monto esperado SOLO en efectivo:
-     * apertura + ingresos_efectivo - egresos
-     * (Los egresos siempre salen de la caja física)
+     * Monto esperado: apertura + TODOS los ingresos - TODOS los egresos.
+     * Incluye efectivo, tarjeta, transferencia, FISE y otros.
      */
     public function getMontoEsperadoProperty()
     {
         if (!$this->sesion) return 0;
-        return $this->sesion->monto_apertura + $this->efectivoIngresos - $this->totalEgresos;
+        return round($this->sesion->monto_apertura + $this->totalIngresos - $this->totalEgresos, 2);
     }
 
-    /**
-     * Monto esperado total (todos los métodos) — para referencia
-     */
-    public function getMontoEsperadoTotalProperty()
+    public function getDiferenciaProperty()
     {
-        if (!$this->sesion) return 0;
-        return $this->sesion->monto_apertura + $this->totalIngresos - $this->totalEgresos;
+        return round($this->montoCierre - $this->montoEsperado, 2);
     }
+
+    // ─── Cerrar sesión ─────────────────────────────────────────────────
 
     public function cerrar()
     {
@@ -121,6 +73,7 @@ class CerrarCaja extends Component
             return;
         }
 
+        // REGLA 1: Validar formato del monto
         $this->validate(
             ['montoCierre' => 'required|numeric|min:0'],
             [
@@ -130,9 +83,28 @@ class CerrarCaja extends Component
             ]
         );
 
+        // REGLA 2: Alertar si la diferencia es sospechosa (> S/10)
+        $diferencia = $this->diferencia;
+        if (abs($diferencia) > 10) {
+            $this->dispatch('minAlert',
+                titulo: '¡Atención!',
+                mensaje: 'La diferencia es S/ ' . number_format(abs($diferencia), 2) .
+                    ($diferencia > 0 ? ' (sobra)' : ' (falta)') .
+                    '. ¿Estás seguro de que el monto es correcto?',
+                icono: 'warning'
+            );
+            return;
+        }
+
+        // REGLA 3: Cerrar sesión (el modelo recalcula monto_esperado y diferencia automáticamente)
         $this->sesion->cerrar((float) $this->montoCierre, Auth::id());
 
-        $this->dispatch('minToast', titulo: '¡Caja Cerrada!', mensaje: 'Sesión cerrada con S/ ' . number_format($this->montoCierre, 2), icono: 'success');
+        $this->dispatch('minToast',
+            titulo: '¡Caja Cerrada!',
+            mensaje: 'Sesión cerrada con S/ ' . number_format($this->montoCierre, 2) .
+                ($diferencia != 0 ? ' | Diferencia: S/ ' . number_format($diferencia, 2) : ' | Cuadrada ✓'),
+            icono: 'success'
+        );
 
         $this->sesion = null;
         $this->montoCierre = 0;

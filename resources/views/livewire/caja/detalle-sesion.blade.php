@@ -20,7 +20,7 @@
                     </h2>
                     <p class="text-xs text-gray-600 flex items-center gap-1">
                         <i class="far font-normal fa-calendar-alt text-gray-500"></i>
-                        Apertura: {{ $sesion->abierta_en->format('d/m/Y - H:i') }} hrs
+                        Apertura: {{ $sesion->abierta_en ? $sesion->abierta_en->format('d/m/Y - H:i') : 'No disponible' }} hrs
                     </p>
                 </div>
             </div>
@@ -104,7 +104,7 @@
                 <h4 class="text-xs font-bold text-gray-600 uppercase tracking-wider mb-3">
                     <i class="fas fa-chart-pie mr-1 text-indigo-600"></i> Desglose de Ingresos
                 </h4>
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     <div class="text-center p-2 bg-emerald-50 rounded-lg border border-emerald-200">
                         <p class="text-xs text-emerald-600 font-medium">Efectivo</p>
                         <p class="text-sm font-bold text-emerald-700">S/ {{ number_format($efectivo, 2) }}</p>
@@ -116,10 +116,6 @@
                     <div class="text-center p-2 bg-purple-50 rounded-lg border border-purple-200">
                         <p class="text-xs text-purple-600 font-medium">Transferencia</p>
                         <p class="text-sm font-bold text-purple-700">S/ {{ number_format($transferencia, 2) }}</p>
-                    </div>
-                    <div class="text-center p-2 bg-gray-50 rounded-lg border border-gray-200">
-                        <p class="text-xs text-gray-600 font-medium">Otro</p>
-                        <p class="text-sm font-bold text-gray-700">S/ {{ number_format($otro, 2) }}</p>
                     </div>
                 </div>
             </div>
@@ -137,14 +133,27 @@
                 <span class="text-xs">Todos los movimientos de caja</span>
             </div>
             <!-- Filtro a la derecha -->
-            <div class="flex items-center bg-white border border-gray-300 p-1 rounded-lg shadow-sm">
-                <x-label value="Tipos:" />
-                <select wire:model.live="tipo"
-                    class="border-none bg-transparent text-gray-700 text-sm focus:ring-0 focus:outline-none cursor-pointer">
-                    <option value="todos">Todos</option>
-                    <option value="ingreso">Solo ingresos</option>
-                    <option value="egreso">Solo egresos</option>
-                </select>
+            <div class="flex items-center gap-2">
+                <div class="flex items-center bg-white border border-gray-300 p-1 rounded-lg shadow-sm">
+                    <x-label value="Tipos:" />
+                    <select wire:model.live="tipo"
+                        class="border-none bg-transparent text-gray-700 text-sm focus:ring-0 focus:outline-none cursor-pointer">
+                        <option value="todos">Todos</option>
+                        <option value="ingreso">Solo ingresos</option>
+                        <option value="egreso">Solo egresos</option>
+                    </select>
+                </div>
+                <div class="flex items-center bg-white border border-gray-300 p-1 rounded-lg shadow-sm">
+                    <x-label value="Método:" />
+                    <select wire:model.live="metodoPago"
+                        class="border-none bg-transparent text-gray-700 text-sm focus:ring-0 focus:outline-none cursor-pointer">
+                        <option value="todos">Todos</option>
+                        <option value="efectivo">Efectivo</option>
+                        <option value="tarjeta">Tarjeta</option>
+                        <option value="transferencia">Transferencia</option>
+                        <option value="otro">Otro</option>
+                    </select>
+                </div>
             </div>
         </div>
 
@@ -178,7 +187,7 @@
                         @foreach ($movimientos as $m)
                             <tr>
                                 <td class="px-4 py-3 border-b border-gray-200 bg-white text-sm">
-                                    {{ $m->created_at->format('H:i') }}</td>
+                                    {{ $m->created_at?->format('H:i') }}</td>
                                 <td class="px-4 py-3 border-b border-gray-200 bg-white text-sm">
                                     <span
                                         class="px-2 py-1 rounded-full text-xs font-semibold
@@ -187,8 +196,8 @@
                                     </span>
                                 </td>
                                 <td class="px-4 py-3 border-b border-gray-200 bg-white text-sm">
-                                    @if($m->serviceOrder && $m->serviceOrder->comprobante)
-                                        @php $mp = $m->serviceOrder->comprobante->metodo_pago; @endphp
+                                    @php $mp = $m->metodo_pago; @endphp
+                                    @if($mp)
                                         <span class="px-2 py-1 rounded-full text-xs font-semibold
                                             {{ match($mp) {
                                                 'efectivo' => 'bg-emerald-100 text-emerald-700',

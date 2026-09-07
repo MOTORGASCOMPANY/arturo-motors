@@ -1,116 +1,135 @@
 <div wire:loading.attr="disabled">
-
-    <div class="container mx-auto py-12">
-        <div class="bg-gray-200 p-8 rounded-xl w-full">
-            <div class="items-center pb-6 md:block sm:block">
-                <div class="px-2 w-64 mb-4 md:w-full">
-                    <h2 class="text-gray-600 font-semibold text-2xl">
-                        <i class="fas fa-users-cog mr-2"></i>Usuarios
-                    </h2>
-                    <span class="text-xs">Todos los usuarios registrados</span>
-                </div>
-
-                <div class="w-full items-center md:flex md:justify-between">
-                    <div class="flex bg-gray-50 items-center p-2 rounded-md mb-4">
-                        <span>Mostrar</span>
-                        <select wire:model.live="cant"
-                            class="bg-gray-50 mx-2 border-indigo-500 rounded-md outline-none ml-1 block">
-                            <option value="10">10</option>
-                            <option value="20">20</option>
-                            <option value="50">50</option>
-                        </select>
-                        <span>Entradas</span>
-                    </div>
-
-                    <div class="flex bg-gray-50 items-center lg:w-3/6 p-2 rounded-md mb-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20"
-                            fill="currentColor">
-                            <path fill-rule="evenodd"
-                                d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                                clip-rule="evenodd" />
-                        </svg>
-                        <input class="bg-gray-50 outline-none block rounded-md border-indigo-500 w-full border-none focus:ring-0"
-                            type="text" wire:model.live="search" placeholder="Buscar por nombre o correo...">
-                    </div>
-
-                    @if(auth()->user()->hasRole('Administrador del sistema'))
-                    <div class="mb-4">
-                        <button wire:click="abrirModalCrear" class="bg-indigo-500 px-6 py-4 rounded-md text-white font-semibold tracking-wide cursor-pointer hover:bg-indigo-600 transition">
-                            Nuevo Usuario &nbsp;<i class="fas fa-plus"></i>
-                        </button>
-                    </div>
-                    @endif
-                </div>
+    <div class="max-w-7xl mx-auto px-4 py-8 space-y-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                    <i class="fas fa-users-cog text-indigo-600"></i> Usuarios
+                </h2>
+                <p class="text-sm text-gray-500 mt-1">Todos los usuarios registrados</p>
             </div>
-
-            @if ($usuarios->count())
-                <div class="overflow-x-auto">
-                    <table class="min-w-full leading-normal rounded-md overflow-hidden">
-                        <thead>
-                            <tr>
-                                <th class="px-6 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase w-16">
-                                    #</th>
-                                <th class="px-6 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase">
-                                    Nombre</th>
-                                <th class="px-6 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase">
-                                    Correo</th>
-                                <th class="px-6 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase">
-                                    Roles</th>
-                                <th class="px-6 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase w-20">
-                                    Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($usuarios as $item)
-                                <tr wire:key="user-{{ $item->id }}">
-                                    <td class="px-6 py-4 border-b border-gray-200 bg-white text-sm text-center font-medium text-gray-500">
-                                        {{ $loop->iteration }}
-                                    </td>
-                                    <td class="px-6 py-4 border-b border-gray-200 bg-white text-sm">
-                                        <div class="flex items-center">
-                                            <div class="flex-shrink-0 w-10 h-10">
-                                                <img class="w-full h-full rounded-full object-cover"
-                                                    src="{{ $item->profile_photo_url }}" alt="{{ $item->name }}">
-                                            </div>
-                                            <div class="ml-3">
-                                                <p class="text-gray-900 font-bold">{{ strtoupper($item->name) }}</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 border-b border-gray-200 bg-white text-sm">
-                                        {{ $item->email }}
-                                    </td>
-                                    <td class="px-6 py-4 border-b border-gray-200 bg-white text-sm">
-                                        @forelse ($item->roles as $role)
-                                            <span
-                                                class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800 mr-1">
-                                                {{ $role->name }}
-                                            </span>
-                                        @empty
-                                            <span class="text-gray-400 italic text-xs">Sin roles</span>
-                                        @endforelse
-                                    </td>
-                                    <td class="px-6 py-4 border-b border-gray-200 bg-white text-sm text-center">
-                                        <button wire:click="editarUsuario({{ $item->id }})"
-                                            class="py-2 px-3 rounded-md bg-lime-500 font-bold text-white hover:bg-lime-600 transition">
-                                            <i class="fa-solid fa-pencil"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="mt-4">
-                    {{ $usuarios->links() }}
-                </div>
-            @else
-                <div class="px-6 py-4 text-center font-bold bg-indigo-200 rounded-md">
-                    No se encontró ningún registro con "{{ $search }}".
-                </div>
+            @if(auth()->user()->hasRole('Administrador del sistema'))
+            <button wire:click="abrirModalCrear"
+                class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors flex items-center gap-2">
+                <i class="fas fa-plus text-xs"></i> Crear usuario
+            </button>
             @endif
         </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden" x-data="{ expandir: false }">
+            <div class="px-5 py-4 border-b border-gray-100">
+                <div class="flex flex-col md:flex-row md:items-center gap-3">
+                    <div class="flex-1 relative">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                        <input type="text" wire:model.live="search"
+                            class="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
+                            placeholder="Buscar por nombre o correo...">
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button @click="expandir = !expandir"
+                            class="px-3 py-2 text-xs font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors flex items-center gap-1.5">
+                            <i class="fas fa-filter"></i> Más filtros
+                            <i class="fas" :class="expandir ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                        </button>
+                        @if($search)
+                        <button wire:click="$set('search', '')"
+                            class="px-3 py-2 text-xs font-semibold text-gray-500 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors flex items-center gap-1.5">
+                            <i class="fas fa-times"></i> Limpiar
+                        </button>
+                        @endif
+                    </div>
+                </div>
+                <div x-show="expandir" x-collapse x-cloak class="mt-4 pt-4 border-t border-gray-100">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Rol</label>
+                            <select wire:model.live="filterRol"
+                                class="w-full text-sm border border-gray-200 rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none">
+                                <option value="">Todos</option>
+                                @foreach($roles as $r)
+                                    <option value="{{ $r->name }}">{{ $r->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Entradas por página</label>
+                            <select wire:model.live="cant"
+                                class="w-full text-sm border border-gray-200 rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none">
+                                <option value="10">10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if ($usuarios->count())
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50 border-b border-gray-200">
+                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100 w-16">#</th>
+                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">Nombre</th>
+                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">Correo</th>
+                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">Roles</th>
+                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-20">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        @foreach ($usuarios as $item)
+                        <tr wire:key="user-{{ $item->id }}" class="hover:bg-gray-50 transition-colors">
+                            <td class="px-4 py-3 text-center border-r border-gray-100 text-gray-500 font-medium">
+                                {{ $loop->iteration }}
+                            </td>
+                            <td class="px-4 py-3 text-center border-r border-gray-100">
+                                <div class="flex items-center justify-center gap-3">
+                                    <img class="w-9 h-9 rounded-full object-cover border-2 border-gray-100"
+                                        src="{{ $item->profile_photo_url }}" alt="{{ $item->name }}">
+                                    <span class="font-semibold text-gray-800">{{ strtoupper($item->name) }}</span>
+                                </div>
+                            </td>
+                            <td class="px-4 py-3 text-center border-r border-gray-100 text-gray-600">
+                                {{ $item->email }}
+                            </td>
+                            <td class="px-4 py-3 text-center border-r border-gray-100">
+                                @forelse ($item->roles as $role)
+                                <span class="px-2.5 py-1 inline-flex text-xs font-semibold rounded-full bg-indigo-100 text-indigo-700 mr-1">
+                                    {{ $role->name }}
+                                </span>
+                                @empty
+                                <span class="text-gray-400 italic text-xs">Sin roles</span>
+                                @endforelse
+                            </td>
+                            <td class="px-4 py-3 text-center">
+                                <button wire:click="editarUsuario({{ $item->id }})"
+                                    class="p-2 rounded-lg bg-amber-50 text-amber-600 hover:bg-amber-100 transition-colors" title="Editar">
+                                    <i class="fa-solid fa-pencil text-sm"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            <div class="px-5 py-3 border-t border-gray-100">
+                {{ $usuarios->links() }}
+            </div>
+        </div>
+        @else
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="flex flex-col items-center justify-center py-16 px-6">
+                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <i class="fas fa-users text-2xl text-gray-400"></i>
+                </div>
+                <p class="text-gray-500 text-sm font-medium">No se encontró ningún registro</p>
+                @if($search)
+                <p class="text-gray-400 text-xs mt-1">Intenta con otros términos de búsqueda</p>
+                @endif
+            </div>
+        </div>
+        @endif
     </div>
     
 

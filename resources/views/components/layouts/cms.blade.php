@@ -32,6 +32,19 @@
                     icon: params["icono"]
                 });
             });
+
+            Livewire.on('minToast', function(params) {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: params["icono"],
+                    title: params['titulo'],
+                    text: params["mensaje"],
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+            });
         });
     </script>
 

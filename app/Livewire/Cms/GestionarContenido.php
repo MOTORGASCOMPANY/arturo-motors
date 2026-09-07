@@ -46,6 +46,7 @@ class GestionarContenido extends Component
         $this->refreshKey = time();
         $section = PageSection::find($sectionId);
         $this->highlightSection = $section ? $section->key : '';
+        $this->dispatch('refresh-preview');
     }
 
     public function loadSections()
@@ -129,6 +130,7 @@ class GestionarContenido extends Component
             $this->refreshKey = time();
             $this->successMessage = 'Sección actualizada correctamente';
             session()->flash('success', 'Sección actualizada');
+            $this->dispatch('refresh-preview');
         } catch (\Throwable $e) {
             $this->errorMessage = 'No se pudo actualizar la sección';
         }
@@ -217,6 +219,7 @@ class GestionarContenido extends Component
             $this->refreshKey = time();
             $this->successMessage = 'Imagen eliminada';
             session()->flash('success', 'Imagen eliminada');
+            $this->dispatch('refresh-preview');
         } catch (\Throwable $e) {
             \Log::error('removeMedia ERROR', ['message' => $e->getMessage()]);
             $this->errorMessage = 'No se pudo eliminar la imagen';

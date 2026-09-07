@@ -1,104 +1,111 @@
-<!-- resources>views>livewire>lista-clientes.blade.php -->
-<div class="flex box-border">
-    <div class="container mx-auto py-4">
-        <x-custom-table>
-            <x-slot name="titulo">
-                <h2 class="text-gray-600 font-semibold text-2xl">Clientes</h2>
-                <span class="text-xs text-gray-500">Todos los registros de clientes</span>
-            </x-slot>
-            <x-slot name="btnAgregar">
-                <button wire:click="openCreateModal()"
-                    class="bg-slate-600 px-6 py-4 rounded-md text-white font-semibold tracking-wide cursor-pointer">Agregar</button>
-            </x-slot>
-            <x-slot name="contenido">
-                <!-- Contenido de la tabla aquí -->
-                @if ($clientes->count())
-                    <table class="w-full whitespace-nowrap table-auto">
-                        <thead class="bg-slate-600 font-bold text-white">
-                            <tr>
-                                <th scope="col" class="px-6 py-4 text-left">#</th>
-                                <th scope="col" class="px-6 py-4 text-left">Nombre</th>
-                                <th scope="col" class="px-6 py-4 text-left">Apellido</th>
-                                <th scope="col" class="px-6 py-4 text-left">Documento</th>
-                                <th scope="col" class="px-6 py-4 text-left">Telefono</th>
-                                <th scope="col" class="px-6 py-4 text-left">Correo</th>
-                                <th scope="col" class="px-6 py-4 text-left">Direccion</th>
-                                <th scope="col" class="px-6 py-4 text-left">Acciones</th>
+<div class="max-w-7xl mx-auto px-4 py-8 space-y-6">
+    <!-- Encabezado -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                <i class="fas fa-users text-amber-600"></i> Clientes
+            </h2>
+            <p class="text-xs text-gray-500 mt-1">Todos los registros de clientes</p>
+        </div>
+        <button wire:click="openCreateModal()"
+            class="px-4 py-2 text-sm font-semibold text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors flex items-center gap-2">
+            <i class="fas fa-plus"></i> Agregar
+        </button>
+    </div>
+
+    <!-- Filtros -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden" x-data="{ expandir: false }">
+        <div class="p-4">
+            <div class="flex flex-wrap items-end gap-3">
+                <div class="flex-1 min-w-[200px]">
+                    <x-label for="search" value="Buscar" class="text-gray-600 font-semibold mb-1 text-xs" />
+                    <x-input id="search" type="text" wire:model.live="search" placeholder="Nombre o documento..." class="w-full" />
+                </div>
+                <div>
+                    <x-label class="text-gray-600 font-semibold mb-1 text-xs">Vehículos</x-label>
+                    <select wire:model.live="tieneVehiculo" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-0 text-sm">
+                        <option value="todos">Todos</option>
+                        <option value="si">Con vehículos</option>
+                        <option value="no">Sin vehículos</option>
+                    </select>
+                </div>
+                <button wire:click="limpiarFiltros"
+                    class="px-3 py-2 text-xs font-semibold text-gray-500 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors flex items-center gap-1.5">
+                    <i class="fas fa-eraser"></i> Limpiar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+        @if ($clientes->count())
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50 border-b border-gray-200">
+                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">#</th>
+                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">Nombre</th>
+                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">Apellido</th>
+                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">Documento</th>
+                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">Teléfono</th>
+                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">Correo</th>
+                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">Dirección</th>
+                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        @foreach ($clientes as $cli)
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-4 py-3 text-center border-r border-gray-100">
+                                    <div class="inline-flex items-center justify-center w-7 h-7 rounded-md bg-indigo-100 text-indigo-700 text-xs font-bold">
+                                        {{ $loop->iteration }}
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 text-center text-gray-700 border-r border-gray-100">
+                                    {{ $cli->nombre ?? $cli->razon_social }}
+                                </td>
+                                <td class="px-4 py-3 text-center text-gray-700 border-r border-gray-100">
+                                    {{ $cli->apellido ?? '' }}
+                                </td>
+                                <td class="px-4 py-3 text-center border-r border-gray-100">
+                                    <span class="px-2 py-1 text-xs font-semibold bg-blue-100 text-blue-700 rounded-full">
+                                        {{ $cli->documento }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 text-center text-gray-700 border-r border-gray-100">
+                                    {{ $cli->telefono }}
+                                </td>
+                                <td class="px-4 py-3 text-center text-gray-700 border-r border-gray-100">
+                                    {{ $cli->email }}
+                                </td>
+                                <td class="px-4 py-3 text-center text-gray-700 border-r border-gray-100">
+                                    {{ $cli->direccion }}
+                                </td>
+                                <td class="px-4 py-3 text-center">
+                                    <button wire:click="edit({{ $cli->id }})"
+                                        class="px-2.5 py-1 text-[11px] font-semibold bg-amber-100 text-amber-700 hover:bg-amber-200 rounded-lg transition-colors"
+                                        title="Editar cliente">
+                                        <i class="fas fa-pen-to-square mr-0.5"></i> Editar
+                                    </button>
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-200">
-                            @foreach ($clientes as $cli)
-                                <tr tabindex="0" class="focus:outline-none bg-white h-16 hover:bg-gray-100">
-                                    <td class="px-6 py-4 text-left">
-                                        <div class="flex items-center">
-                                            <div
-                                                class="bg-indigo-200 rounded-md w-7 h-7 flex flex-shrink-0 justify-center items-center text-indigo-900">
-                                                {{ $loop->iteration }}
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 text-left">
-                                        <p class="text-sm font-medium leading-none text-gray-600">
-                                            {{ $cli->nombre ?? $cli->razon_social }}
-                                        </p>
-                                    </td>
-                                    <td class="px-6 py-4 text-left">
-                                        <p class="text-sm leading-none text-gray-600">
-                                            {{ $cli->apellido ?? '' }}
-                                        </p>
-                                    </td>
-                                    <td class="px-6 py-4 text-left">
-                                        <p
-                                            class="text-sm leading-none text-gray-600 p-2 bg-blue-200 rounded-full inline-block">
-                                            {{ $cli->documento }}
-                                        </p>
-                                    </td>
-                                    <td class="px-6 py-4 text-left">
-                                        <p class="text-sm font-medium leading-none text-gray-600">
-                                            {{ $cli->telefono }}
-                                        </p>
-                                    </td>
-                                    <td class="px-6 py-4 text-left">
-                                        <p class="text-sm font-medium leading-none text-gray-600">
-                                            {{ $cli->email }}
-                                        </p>
-                                    </td>
-                                    <td class="px-6 py-4 text-left">
-                                        <p class="text-sm font-medium leading-none text-gray-600">
-                                            {{ $cli->direccion }}
-                                        </p>
-                                    </td>
-                                    <td class="text-center">
-                                        <div class="flex justify-center items-center space-x-2">
-                                            <div class="relative group">
-                                                <a wire:click="edit({{ $cli->id }})"
-                                                    class="py-1 px-2 text-center rounded-md bg-amber-300 font-bold text-black cursor-pointer hover:bg-amber-400">
-                                                    <i class="fa-solid fa-pen-to-square"></i>
-                                                </a>
-                                                <span
-                                                    class="absolute bottom-full  mb-2 hidden group-hover:block bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap z-10">
-                                                    Editar
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                    {{-- Sección de paginación mejorada --}}
-                    @if ($clientes->hasPages())
-                        <div class="py-4 px-2 bg-white">
-                            {{ $clientes->withQueryString()->links() }}
-                        </div>
-                    @endif
-                @else
-                    <div class="px-6 py-4 text-center font-bold bg-blue-100 rounded-md">
-                        No se encontró ningún registro.
-                    </div>
-                @endif
-            </x-slot>
-        </x-custom-table>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            <div class="px-5 py-3 border-t border-gray-100">
+                {{ $clientes->withQueryString()->links() }}
+            </div>
+        @else
+            <div class="px-6 py-10 text-center">
+                <div class="w-16 h-16 bg-amber-100 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-users text-2xl"></i>
+                </div>
+                <p class="text-gray-600 font-semibold">No hay clientes registrados</p>
+                <p class="text-xs text-gray-400 mt-1">Aún no se han registrado clientes en el sistema.</p>
+            </div>
+        @endif
     </div>
 
     <!-- Dialog Modal para actualizar -->
