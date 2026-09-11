@@ -136,27 +136,7 @@
                                 </div>
                             @endif
 
-                            {{-- Piezas por cantidad (resumen) --}}
-                            @if($this->itemsCantidadInstalados->isNotEmpty())
-                                <div class="border border-gray-200 rounded-lg p-3 mb-3">
-                                    <div class="flex items-center gap-2 mb-2">
-                                        <i class="fas fa-cubes text-gray-400 text-xs"></i>
-                                        <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Piezas por cantidad</span>
-                                    </div>
-                                    <div class="space-y-1.5">
-                                        @foreach($this->itemsCantidadInstalados as $cant)
-                                            <div class="flex items-center justify-between py-1.5 px-2 bg-gray-50 rounded">
-                                                <span class="text-sm text-gray-700">{{ $cant->nombre }}</span>
-                                                <span class="text-xs font-semibold {{ $cant->cantidad_instalada >= $cant->cantidad_esperada ? 'text-green-600' : 'text-amber-600' }}">
-                                                    {{ $cant->cantidad_instalada }} / {{ $cant->cantidad_esperada }}
-                                                </span>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                </div>
-                            @endif
-
-                            @if($this->kitItems->isNotEmpty() || $this->itemsCantidadInstalados->isNotEmpty())
+                            @if($this->kitItems->isNotEmpty())
                                 <button wire:click="abrirPartesGenerales" type="button"
                                         class="w-full flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-200 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition font-medium text-sm">
                                     <i class="fas fa-eye"></i> Ver todos los componentes
