@@ -116,7 +116,7 @@ class Realizar extends Component
 
     /**
      * Las piezas seriales del kit asignado (hijos directos del kit padre)
-     * Incluye piezas que son componentes reales del kit y están asignados a esta orden
+     * Solo productos serializables: Vaporizador, Computadora, Tanque
      */
     public function getKitItemsProperty()
     {
@@ -131,7 +131,44 @@ class Realizar extends Component
             ->whereNotNull('kit_padre_id')
             ->whereIn('producto_id', $componenteIds)
             ->get()
+            ->filter(fn($item) => $this->esSerializable($item->producto->nombre))
             ->values();
+    }
+
+    /**
+     * Items de cantidad agrupados por producto
+     * Muestra: nombre, cantidad instalada, cantidad esperada
+     */
+    public function getItemsCantidadInstaladosProperty()
+    {
+        $padre = $this->kitPadre;
+        if (!$padre) return collect();
+
+        $componenteIds = $padre->producto->componentes->pluck('producto_componente_id')->toArray();
+
+        // Obtener kit_componentes para saber cantidad esperada
+        $kitComponentes = KitComponente::where('producto_kit_id', $padre->producto_id)
+            ->pluck('cantidad_esperada', 'producto_componente_id');
+
+        $items = $this->orden->items()
+            ->where('estado', 'asignado')
+            ->whereNotNull('kit_padre_id')
+            ->whereIn('producto_id', $componenteIds)
+            ->get()
+            ->filter(fn($item) => !$this->esSerializable($item->producto->nombre));
+
+        // Agrupar por producto
+        $agrupados = $items->groupBy('producto_id')->map(function ($group, $productoId) use ($kitComponentes) {
+            $primer = $group->first();
+            return (object) [
+                'producto_id' => $productoId,
+                'nombre' => $primer->producto->nombre,
+                'cantidad_instalada' => $group->count(),
+                'cantidad_esperada' => $kitComponentes[$productoId] ?? $group->count(),
+            ];
+        });
+
+        return $agrupados->values();
     }
 
     /**

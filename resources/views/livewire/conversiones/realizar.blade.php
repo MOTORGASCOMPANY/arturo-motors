@@ -101,13 +101,14 @@
                                     {{ $this->generacionKit }}
                                 </span>
                             @endif
-                            @if($this->kitItems->isNotEmpty())
+                            @if($this->todasPiezasKit->isNotEmpty())
                                 <span class="ml-auto px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-semibold rounded">
                                     {{ $this->todasPiezasKit->count() }} componentes
                                 </span>
                             @endif
                         </div>
                         <div class="p-4">
+                            {{-- Piezas seriales --}}
                             @if($this->kitItems->isNotEmpty())
                                 <div class="space-y-2 mb-3">
                                     @foreach($this->kitItems as $item)
@@ -120,9 +121,9 @@
                                                 <div class="w-8 h-8 {{ $reportado ? 'bg-red-100' : ($reemplazado ? 'bg-blue-100' : 'bg-gray-100') }} rounded-lg flex items-center justify-center">
                                                     <i class="fas fa-microchip {{ $reportado ? 'text-red-500' : ($reemplazado ? 'text-blue-500' : 'text-gray-500') }} text-xs"></i>
                                                 </div>
-                                                <div>
+                                                <div class="flex-1">
                                                     <span class="text-sm font-medium {{ $reportado ? 'text-red-800' : ($reemplazado ? 'text-blue-800' : 'text-gray-900') }} block">{{ $item->producto->nombre }}</span>
-                                                    <span class="text-xs {{ $reportado ? 'text-red-400' : ($reemplazado ? 'text-blue-400' : 'text-gray-400') }} font-mono">Serie: {{ $item->serie }}</span>
+                                                    <span class="text-xs {{ $reportado ? 'text-red-400' : ($reemplazado ? 'text-blue-400' : 'text-gray-400') }} font-mono">Serie: {{ $item->serie ?? 'Pendiente' }}</span>
                                                 </div>
                                                 @if($reportado)
                                                     <span class="px-1.5 py-0.5 bg-red-100 text-red-700 text-[10px] font-semibold rounded ml-1">Reportado</span>
@@ -133,6 +134,29 @@
                                         </div>
                                     @endforeach
                                 </div>
+                            @endif
+
+                            {{-- Piezas por cantidad (resumen) --}}
+                            @if($this->itemsCantidadInstalados->isNotEmpty())
+                                <div class="border border-gray-200 rounded-lg p-3 mb-3">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <i class="fas fa-cubes text-gray-400 text-xs"></i>
+                                        <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Piezas por cantidad</span>
+                                    </div>
+                                    <div class="space-y-1.5">
+                                        @foreach($this->itemsCantidadInstalados as $cant)
+                                            <div class="flex items-center justify-between py-1.5 px-2 bg-gray-50 rounded">
+                                                <span class="text-sm text-gray-700">{{ $cant->nombre }}</span>
+                                                <span class="text-xs font-semibold {{ $cant->cantidad_instalada >= $cant->cantidad_esperada ? 'text-green-600' : 'text-amber-600' }}">
+                                                    {{ $cant->cantidad_instalada }} / {{ $cant->cantidad_esperada }}
+                                                </span>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+
+                            @if($this->kitItems->isNotEmpty() || $this->itemsCantidadInstalados->isNotEmpty())
                                 <button wire:click="abrirPartesGenerales" type="button"
                                         class="w-full flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-200 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition font-medium text-sm">
                                     <i class="fas fa-eye"></i> Ver todos los componentes
