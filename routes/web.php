@@ -14,6 +14,8 @@ use App\Http\Controllers\ReporteServiciosPdfController;
 use App\Http\Controllers\ReporteServiciosExcelController;
 use App\Http\Controllers\ReporteAlmacenPdfController;
 use App\Http\Controllers\ReporteAlmacenExcelController;
+use App\Http\Controllers\ReporteConversionesPdfController;
+use App\Http\Controllers\ReporteConversionesExcelController;
 use App\Livewire\AdminPermisos;
 use App\Livewire\AdminRoles;
 use App\Livewire\Almacen\Categorias\Crear as CategoriasCrear;
@@ -31,6 +33,7 @@ use App\Livewire\Caja\RegistrarEgreso;
 use App\Livewire\Caja\Reporte as ReporteCaja;
 use App\Livewire\Servicios\Reporte as ReporteServicios;
 use App\Livewire\Almacen\Reporte as ReporteAlmacen;
+use App\Livewire\Conversiones\Reporte as ReporteConversiones;
 use App\Livewire\CrearCitas;
 use App\Livewire\Conversiones\AlmacenPendientes;
 use App\Livewire\Conversiones\AsignarEquipos;
@@ -174,6 +177,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::get('/caja/reporte', ReporteCaja::class)->name('caja.reporte');
     Route::get('/servicios/reporte', ReporteServicios::class)->name('servicios.reporte');
     Route::get('/almacen/reporte', ReporteAlmacen::class)->name('almacen.reporte');
+    Route::get('/conversiones/reporte', ReporteConversiones::class)->name('conversiones.reporte');
 
     // Diagrama Gantt
     Route::get('/diagrama-gantt', \App\Http\Controllers\GanttController::class)->name('diagrama-gantt');
@@ -183,6 +187,9 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
 
     Route::get('/reporte-almacen/pdf', [ReporteAlmacenPdfController::class, '__invoke'])->name('ReporteAlmacen.Pdf');
     Route::get('/reporte-almacen/excel', [ReporteAlmacenExcelController::class, '__invoke'])->name('ReporteAlmacen.Excel');
+
+    Route::get('/reporte-conversiones/pdf', [ReporteConversionesPdfController::class, '__invoke'])->name('ReporteConversiones.Pdf');
+    Route::get('/reporte-conversiones/excel', [ReporteConversionesExcelController::class, '__invoke'])->name('ReporteConversiones.Excel');
 
     // Componentes hijos
     Route::get('/selector', SelectorClienteVehiculo::class)->name('selector');

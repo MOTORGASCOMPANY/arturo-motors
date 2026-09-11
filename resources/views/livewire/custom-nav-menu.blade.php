@@ -510,6 +510,12 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                                                     Reporte de Inventario
                                                 </x-responsive-nav-link>
                                             </li>
+                                            <li class="transition-colors duration-150">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('conversiones.reporte') }}"
+                                                    :active="request()->routeIs('conversiones.reporte')">
+                                                    Reporte de Conversiones
+                                                </x-responsive-nav-link>
+                                            </li>
                                             
                                         </ul>
                                     </div>
