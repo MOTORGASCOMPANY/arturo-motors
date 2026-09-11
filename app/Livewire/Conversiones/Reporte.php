@@ -141,6 +141,13 @@ class Reporte extends Component
                 'kit_generacion' => $kitPadre?->producto->atributos['generacion'] ?? '',
                 'total_componentes' => $hijos->count(),
                 'instalados' => $instalados->count(),
+                // Items seriales instalados: Vaporizador, Tanque, etc.
+                'items_serializados' => $instalados
+                    ->filter(fn ($i) => !str_starts_with($i->serie ?? '', 'CANT-') && !empty($i->serie))
+                    ->map(fn ($i) => [
+                        'nombre' => $i->producto->nombre,
+                        'serie' => $i->serie,
+                    ])->values()->toArray(),
                 'reportes' => $o->reportesPendientes()->count(),
                 'fecha_inicio' => $o->fecha_inicio_conversion?->format('d/m/Y H:i'),
                 'fecha_fin' => $o->fecha_fin_conversion?->format('d/m/Y H:i'),

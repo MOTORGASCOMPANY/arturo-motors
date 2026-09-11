@@ -83,6 +83,7 @@
                 <th>Vehículo</th>
                 <th>Técnico</th>
                 <th>Kit</th>
+                <th>Items Serializados</th>
                 <th style="text-align: center;">Gen.</th>
                 <th style="text-align: center;">Comp.</th>
                 <th style="text-align: center;">Inst.</th>
@@ -100,6 +101,13 @@
                 <td>{{ $d['vehiculo'] }}</td>
                 <td>{{ $d['tecnico'] }}</td>
                 <td>{{ $d['kit'] }}</td>
+                <td>
+                    @forelse ($d['items_serializados'] ?? [] as $item)
+                        {{ $item['nombre'] }}: {{ $item['serie'] }}@if(!$loop->last)<br>@endif
+                    @empty
+                        —
+                    @endforelse
+                </td>
                 <td class="text-center">{{ $d['generacion'] }}</td>
                 <td class="text-center">{{ $d['total_componentes'] }}</td>
                 <td class="text-center">{{ $d['instalados'] }}</td>

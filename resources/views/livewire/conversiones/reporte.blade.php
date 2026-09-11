@@ -161,6 +161,7 @@
                         <th class="px-4 py-2.5 text-left">Cliente</th>
                         <th class="px-4 py-2.5 text-left">Placa</th>
                         <th class="px-4 py-2.5 text-left">Kit</th>
+                        <th class="px-4 py-2.5 text-left">Items Serializados</th>
                         <th class="px-4 py-2.5 text-center">Gen.</th>
                         <th class="px-4 py-2.5 text-center">Comp.</th>
                         <th class="px-4 py-2.5 text-center">Inst.</th>
@@ -177,6 +178,16 @@
                             <td class="px-4 py-2.5 font-bold text-slate-800">{{ $d['placa'] }}</td>
                             <td class="px-4 py-2.5">
                                 <span class="text-xs text-slate-600">{{ $d['kit'] }}</span>
+                            </td>
+                            <td class="px-4 py-2.5">
+                                @forelse ($d['items_serializados'] as $item)
+                                    <div class="text-xs leading-relaxed">
+                                        <span class="font-medium text-slate-700">{{ $item['nombre'] }}:</span>
+                                        <span class="font-mono text-slate-500">{{ $item['serie'] }}</span>
+                                    </div>
+                                @empty
+                                    <span class="text-xs text-slate-300">—</span>
+                                @endforelse
                             </td>
                             <td class="px-4 py-2.5 text-center">
                                 <span class="inline-flex items-center rounded-md bg-purple-50 px-2 py-0.5 text-xs text-purple-700 font-semibold">
