@@ -63,17 +63,29 @@ class Listado extends Component
         $sedeId = $this->filtroSedeId;
         $estado = $this->filtroEstado;
 
-        $kits = ItemSerializado::with('producto.categoria', 'sede')
+        // Todos los kits (para agrupar por estado)
+        $kitsQuery = ItemSerializado::with('producto.categoria', 'sede')
             ->whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true))
             ->when($sedeId, fn ($q) => $q->where('sede_id', $sedeId))
-            ->when($estado, fn ($q) => $q->where('estado', $estado))
             ->when($this->busquedaInventario, function ($q) {
                 $q->whereHas('producto', fn ($p) => $p->where('nombre', 'like', "%{$this->busquedaInventario}%"));
             })
-            ->orderByDesc('created_at')
-            ->get()
-            ->groupBy('producto_id');
+            ->orderByDesc('created_at');
 
+        // Aplicar filtro de estado solo si se selecciona uno específico
+        if ($estado) {
+            $kitsQuery->where('estado', $estado);
+        }
+
+        $kitsAll = $kitsQuery->get();
+
+        // Separar por estado
+        $kitsSellados = $kitsAll->where('estado', 'en_stock')->groupBy('producto_id');
+        $kitsUtilizados = $kitsAll->where('estado', 'abierto')->groupBy('producto_id');
+        $kitsAsignados = $kitsAll->where('estado', 'asignado')->groupBy('producto_id');
+        $kitsConsumidos = $kitsAll->where('estado', 'consumido')->groupBy('producto_id');
+
+        // Piezas sueltas
         $sueltos = ItemSerializado::with('producto.categoria', 'sede')
             ->whereHas('producto.categoria', fn ($q) => $q->where('es_kit', false))
             ->when($sedeId, fn ($q) => $q->where('sede_id', $sedeId))
@@ -86,7 +98,11 @@ class Listado extends Component
             ->groupBy('producto_id');
 
         return [
-            'kits' => $kits,
+            'kits' => $kitsSellados,
+            'kitsSellados' => $kitsSellados,
+            'kitsUtilizados' => $kitsUtilizados,
+            'kitsAsignados' => $kitsAsignados,
+            'kitsConsumidos' => $kitsConsumidos,
             'sueltos' => $sueltos,
         ];
     }

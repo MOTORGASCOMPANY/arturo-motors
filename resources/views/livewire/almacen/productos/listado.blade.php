@@ -80,36 +80,36 @@
             </div>
 
             {{-- Kits sellados --}}
-            @php $kits = $resumenInventario['kits'] ?? collect(); @endphp
+            @php $kitsSellados = $resumenInventario['kitsSellados'] ?? collect(); @endphp
             <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
                 <h3 class="text-sm font-bold text-gray-600 uppercase tracking-wider mb-4 flex items-center gap-2">
                     <i class="fas fa-box text-amber-600"></i>
                     Kits sellados
-                    <span class="text-xs font-normal text-gray-400">({{ $kits->flatten()->count() }} unidades)</span>
+                    <span class="text-xs font-normal text-gray-400">({{ $kitsSellados->flatten()->count() }} unidades)</span>
                 </h3>
-                @if ($kits->count())
+                @if ($kitsSellados->count())
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                        @foreach ($kits as $productoId => $items)
+                        @foreach ($kitsSellados as $productoId => $items)
                             @php $prod = $items->first()->producto; @endphp
                             <button type="button" wire:click="verDetalle({{ $productoId }})"
                                 class="text-left bg-white rounded-xl border-2 border-amber-200 bg-amber-50/40 p-4 hover:shadow-md hover:border-amber-400 transition-all flex flex-col">
                                 <div class="flex items-start justify-between mb-3">
                                     <div class="flex items-center gap-3 min-w-0">
-                                        <div class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center flex-shrink-0">
-                                            <i class="fas fa-cube text-indigo-600"></i>
+                                        <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
+                                            <i class="fas fa-box text-amber-600"></i>
                                         </div>
                                         <div class="min-w-0">
                                             <p class="text-sm font-bold text-gray-800 truncate">{{ $prod->nombre }}</p>
                                             <p class="text-xs text-gray-400 truncate">{{ $items->first()->sede?->nombre ?? '—' }}</p>
                                         </div>
                                     </div>
-                                    <span class="px-2 py-0.5 bg-amber-100 text-amber-800 text-[10px] font-bold rounded-full flex-shrink-0 ml-2">KIT</span>
+                                    <span class="px-2 py-0.5 bg-amber-100 text-amber-800 text-[10px] font-bold rounded-full flex-shrink-0 ml-2">SELLADO</span>
                                 </div>
                                 <div class="mt-auto pt-3 border-t border-amber-100 flex items-center justify-between">
                                     <span class="px-3 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-full">
                                         {{ $items->count() }} unidades
                                     </span>
-                                    <span class="text-xs text-indigo-600 font-semibold">
+                                    <span class="text-xs text-amber-600 font-semibold">
                                         Ver detalle →
                                     </span>
                                 </div>
@@ -117,7 +117,91 @@
                         @endforeach
                     </div>
                 @else
-                    <p class="text-gray-400 text-sm text-center py-4">No hay kits en esta vista.</p>
+                    <p class="text-gray-400 text-sm text-center py-4">No hay kits sellados en esta sede.</p>
+                @endif
+            </div>
+
+            {{-- Kits utilizados (abiertos) --}}
+            @php $kitsUtilizados = $resumenInventario['kitsUtilizados'] ?? collect(); @endphp
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
+                <h3 class="text-sm font-bold text-gray-600 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <i class="fas fa-box-open text-orange-600"></i>
+                    Kits utilizados
+                    <span class="text-xs font-normal text-gray-400">({{ $kitsUtilizados->flatten()->count() }} unidades)</span>
+                </h3>
+                @if ($kitsUtilizados->count())
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        @foreach ($kitsUtilizados as $productoId => $items)
+                            @php $prod = $items->first()->producto; @endphp
+                            <button type="button" wire:click="verDetalle({{ $productoId }})"
+                                class="text-left bg-white rounded-xl border-2 border-orange-200 bg-orange-50/40 p-4 hover:shadow-md hover:border-orange-400 transition-all flex flex-col">
+                                <div class="flex items-start justify-between mb-3">
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <div class="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0">
+                                            <i class="fas fa-box-open text-orange-600"></i>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <p class="text-sm font-bold text-gray-800 truncate">{{ $prod->nombre }}</p>
+                                            <p class="text-xs text-gray-400 truncate">{{ $items->first()->sede?->nombre ?? '—' }}</p>
+                                        </div>
+                                    </div>
+                                    <span class="px-2 py-0.5 bg-orange-100 text-orange-800 text-[10px] font-bold rounded-full flex-shrink-0 ml-2">ABIERTO</span>
+                                </div>
+                                <div class="mt-auto pt-3 border-t border-orange-100 flex items-center justify-between">
+                                    <span class="px-3 py-1 bg-orange-100 text-orange-800 text-xs font-bold rounded-full">
+                                        {{ $items->count() }} unidades
+                                    </span>
+                                    <span class="text-xs text-orange-600 font-semibold">
+                                        Ver detalle →
+                                    </span>
+                                </div>
+                            </button>
+                        @endforeach
+                    </div>
+                @else
+                    <p class="text-gray-400 text-sm text-center py-4">No hay kits abiertos en esta sede.</p>
+                @endif
+            </div>
+
+            {{-- Kits asignados --}}
+            @php $kitsAsignados = $resumenInventario['kitsAsignados'] ?? collect(); @endphp
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
+                <h3 class="text-sm font-bold text-gray-600 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <i class="fas fa-link text-blue-600"></i>
+                    Kits asignados
+                    <span class="text-xs font-normal text-gray-400">({{ $kitsAsignados->flatten()->count() }} unidades)</span>
+                </h3>
+                @if ($kitsAsignados->count())
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        @foreach ($kitsAsignados as $productoId => $items)
+                            @php $prod = $items->first()->producto; @endphp
+                            <button type="button" wire:click="verDetalle({{ $productoId }})"
+                                class="text-left bg-white rounded-xl border-2 border-blue-200 bg-blue-50/40 p-4 hover:shadow-md hover:border-blue-400 transition-all flex flex-col">
+                                <div class="flex items-start justify-between mb-3">
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                            <i class="fas fa-link text-blue-600"></i>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <p class="text-sm font-bold text-gray-800 truncate">{{ $prod->nombre }}</p>
+                                            <p class="text-xs text-gray-400 truncate">{{ $items->first()->sede?->nombre ?? '—' }}</p>
+                                        </div>
+                                    </div>
+                                    <span class="px-2 py-0.5 bg-blue-100 text-blue-800 text-[10px] font-bold rounded-full flex-shrink-0 ml-2">ASIGNADO</span>
+                                </div>
+                                <div class="mt-auto pt-3 border-t border-blue-100 flex items-center justify-between">
+                                    <span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-full">
+                                        {{ $items->count() }} unidades
+                                    </span>
+                                    <span class="text-xs text-blue-600 font-semibold">
+                                        Ver detalle →
+                                    </span>
+                                </div>
+                            </button>
+                        @endforeach
+                    </div>
+                @else
+                    <p class="text-gray-400 text-sm text-center py-4">No hay kits asignados en esta sede.</p>
                 @endif
             </div>
 
@@ -173,9 +257,10 @@
             {{-- Modal de detalle de inventario --}}
             @if ($detalleProductoId)
                 @php
-                    $todosItems = $kits->get($detalleProductoId) ?? $sueltos->get($detalleProductoId);
+                    $todosItems = $kitsSellados->get($detalleProductoId) ?? $kitsUtilizados->get($detalleProductoId) ?? $kitsAsignados->get($detalleProductoId) ?? $sueltos->get($detalleProductoId);
                     $prodDetalle = $todosItems?->first()->producto ?? null;
-                    $esKitDetalle = $kits->has($detalleProductoId);
+                    $esKitDetalle = $kitsSellados->has($detalleProductoId) || $kitsUtilizados->has($detalleProductoId) || $kitsAsignados->has($detalleProductoId);
+                    $estadoKitDetalle = $kitsSellados->has($detalleProductoId) ? 'Sellado' : ($kitsUtilizados->has($detalleProductoId) ? 'Utilizado' : ($kitsAsignados->has($detalleProductoId) ? 'Asignado' : 'Pieza suelta'));
                 @endphp
                 <div class="fixed inset-0 z-50 overflow-hidden" wire:key="modal-detalle-{{ $detalleProductoId }}">
                     <div class="fixed inset-0 bg-black/50 transition-opacity z-40" wire:click="$set('detalleProductoId', null)"></div>
@@ -192,6 +277,10 @@
                                             <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-white/20 rounded-full text-xs text-white">
                                                 <i class="fas fa-cubes"></i>
                                                 {{ $detallesInventario->count() }} unidades
+                                            </span>
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-white/20 rounded-full text-xs text-white">
+                                                <i class="fas fa-tag"></i>
+                                                {{ $estadoKitDetalle }}
                                             </span>
                                         </div>
                                     </div>
