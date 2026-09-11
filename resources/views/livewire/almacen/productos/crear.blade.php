@@ -29,22 +29,26 @@
                 @if ($this->categoria && $this->categoria->esquema_atributos)
                     <div class="p-4 bg-gray-50 rounded-lg border space-y-2">
                         <p class="text-xs font-bold text-gray-500 uppercase">Atributos de {{ $this->categoria->nombre }}</p>
-                        @foreach ($this->categoria->esquema_atributos as $campo)
+                        @foreach ($this->categoria->esquema_atributos as $campo => $valor)
                             <div>
-                                <x-label :value="ucfirst($campo)" />
-                                <x-input wire:model="atributos.{{ $campo }}" class="w-full rounded-lg border-gray-300 text-sm" />
+                                @if (is_int($campo))
+                                    {{-- Flat: ["generacion"] --}}
+                                    <x-label :value="ucfirst($valor)" />
+                                    <x-input wire:model="atributos.{{ $valor }}" class="w-full rounded-lg border-gray-300 text-sm" />
+                                @else
+                                    {{-- Nested: {"generacion": ["3RA","5TA"]} --}}
+                                    <x-label :value="ucfirst($campo)" />
+                                    <select wire:model="atributos.{{ $campo }}" class="w-full rounded-lg border-gray-300 text-sm">
+                                        <option value="">-- Selecciona --</option>
+                                        @foreach ((array) $valor as $op)
+                                            <option value="{{ $op }}">{{ $op }}</option>
+                                        @endforeach
+                                    </select>
+                                @endif
                             </div>
                         @endforeach
                     </div>
                 @endif
-                {{-- 
-                @if ($this->categoria && !$this->categoria->es_serializado)
-                    <div>
-                        <x-label for="precioReferencial" value="Precio referencial de venta (S/)" />
-                        <x-input type="number" step="0.01" wire:model="precioReferencial" class="w-full rounded-lg border-gray-300" />
-                    </div>
-                @endif
-                --}}
                 @if ($this->categoria)
                     <div class="grid grid-cols-2 gap-3">
                         <div>

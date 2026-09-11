@@ -102,23 +102,26 @@ class SesionCaja extends Model
     // ─── Métodos de cálculo ────────────────────────────────────────────
 
     /**
-     * Calcula el monto esperado: apertura + TODOS los ingresos - TODOS los egresos
-     * Incluye efectivo, tarjeta, transferencia, FISE y otros.
-     * El efectivo solo se usa para arrastrar el cierre como apertura del día siguiente.
+     * Calcula el monto esperado en caja física: apertura + SOLO efectivo - egresos.
+     *
+     * Solo el efectivo physically pasa por el cajón.
+     * Tarjeta, transferencia y FISE van directo al banco/cuenta.
+     * Los egresos siempre se pagan en efectivo desde el cajón.
      */
     public static function calcularEsperado(int $sesionId): float
     {
         $sesion = static::findOrFail($sesionId);
 
-        $ingresos = $sesion->movimientos()
+        $efectivoIngresos = $sesion->movimientos()
             ->where('tipo', 'ingreso')
+            ->where('metodo_pago', 'efectivo')
             ->sum('monto');
 
         $egresos = $sesion->movimientos()
             ->where('tipo', 'egreso')
             ->sum('monto');
 
-        return round($sesion->monto_apertura + $ingresos - $egresos, 2);
+        return round($sesion->monto_apertura + $efectivoIngresos - $egresos, 2);
     }
 
     /**

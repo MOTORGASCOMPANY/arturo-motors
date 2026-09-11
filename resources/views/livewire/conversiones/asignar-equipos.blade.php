@@ -1,6 +1,6 @@
 <div wire:loading.class="opacity-50 pointer-events-none" class="container mx-auto py-12">
     <div class="bg-gray-200 p-8 rounded-xl w-full max-w-4xl mx-auto space-y-6">        
-        <!-- Encabezado con detalles y botón de retorno -->
+        {{-- Header --}}
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-gray-300 pb-4">
             <div>
                 <h2 class="text-gray-600 font-semibold text-2xl">
@@ -20,66 +20,53 @@
 
         <x-input-error for="general" class="mb-2" />
 
-        <!-- Sección de Equipos Serializados -->
+        {{-- ═══════════════════════════════════════════ --}}
+        {{-- SELECCIONAR KIT COMPLETO --}}
+        {{-- ═══════════════════════════════════════════ --}}
         <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
             <h3 class="font-semibold text-gray-800 mb-3 flex items-center">
-                <i class="fas fa-barcode text-blue-600 mr-2"></i>Equipos Serializados (Reductor, Tanque, Chip...)
+                <i class="fas fa-box text-green-600 mr-2"></i>Seleccionar Kit Completo
             </h3>
+            <p class="text-sm text-gray-500 mb-4">Selecciona un kit sellado para asignar a esta conversión. El kit se abrirá y sus piezas quedarán reservadas para esta orden.</p>
 
-            <div class="mb-4">
-                <x-label value="Buscar por serie, producto o marca" class="mb-1" />
-                <x-input type="text" 
-                         wire:model.live.debounce.300ms="buscarItem"
-                         placeholder="Ingresa número de serie o nombre..." 
-                         class="w-full text-sm" />
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-64 overflow-y-auto pr-1">
-                @forelse ($this->itemsDisponibles as $item)
-                    <label wire:key="item-disp-{{ $item->id }}" 
-                        class="flex items-start gap-3 border rounded-lg p-3 text-sm cursor-pointer transition {{ isset($itemsSeleccionados[$item->id]) ? 'border-blue-600 bg-blue-50/70' : 'border-gray-200 hover:bg-gray-50' }}">
-                        <input type="checkbox" wire:click="toggleItem({{ $item->id }})"
-                            @checked(isset($itemsSeleccionados[$item->id]))
-                            class="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                        <div class="flex-1">
-                            <div class="font-semibold text-gray-800">{{ $item->producto->categoria->nombre }}</div>
-                            <div class="text-xs text-gray-600">{{ $item->producto->nombre }} ({{ $item->producto->marca }})</div>
-                            <div class="text-xs font-mono font-bold text-blue-700 mt-1">Serie: {{ $item->serie }}</div>
-                        </div>
-                    </label>
-                @empty
-                    <div class="col-span-2 text-center py-6 text-sm text-gray-400">
-                        <i class="fas fa-search-minus text-2xl mb-1 block"></i>
-                        No hay equipos disponibles con ese criterio.
-                    </div>
-                @endforelse
-            </div>
-
-            @if ($this->itemsCarrito->count())
-                <div class="mt-4 pt-4 border-t border-gray-200">
-                    <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Equipos listos para entregar</p>
-                    <ul class="space-y-1">
-                        @foreach ($this->itemsCarrito as $item)
-                            <li wire:key="item-cart-{{ $item->id }}" class="flex justify-between items-center text-sm bg-blue-50/50 border border-blue-100 rounded-lg px-3 py-2">
-                                <div>
-                                    <span class="font-medium text-gray-800">{{ $item->producto->nombre }}</span> 
-                                    <span class="text-xs text-gray-500">(Serie: <strong class="font-mono text-gray-700">{{ $item->serie }}</strong>)</span>
+            @if($this->kitsDisponibles->isEmpty())
+                <div class="text-center py-6 text-sm text-gray-500 bg-amber-50 rounded-lg border border-amber-200">
+                    <i class="fas fa-box-open text-2xl mb-2 block text-amber-400"></i>
+                    <span class="font-medium">Sin kit en esta sede</span>
+                    <p class="text-xs text-gray-400 mt-1">No hay kits sellados disponibles en esta sede. Recibir kits en <strong>Recepción de Kits</strong> o trasladar desde otra sede.</p>
+                </div>
+            @else
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    @foreach($this->kitsDisponibles as $kit)
+                        <label class="flex items-center gap-3 border rounded-lg p-4 {{ $kitItemId == $kit->id ? 'border-green-600 bg-green-50' : 'border-gray-200 hover:bg-gray-50 cursor-pointer' }}">
+                            <input type="radio" 
+                                   wire:model="kitItemId" 
+                                   value="{{ $kit->id }}"
+                                   class="mt-1 rounded border-gray-300 text-green-600 focus:ring-green-500">
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-800">{{ $kit->producto->nombre }}</div>
+                                @if(isset($kit->atributos['proveedor']))
+                                    <div class="text-xs text-gray-400 mt-1">Proveedor: {{ $kit->atributos['proveedor'] }}</div>
+                                @endif
+                                <div class="text-xs text-green-600 mt-1">
+                                    <i class="fas fa-check-circle mr-1"></i>Al confirmar se descuenta del almacén
                                 </div>
-                                <button wire:click="toggleItem({{ $item->id }})" type="button" class="text-red-600 hover:text-red-800 transition-colors text-xs font-semibold">
-                                    <i class="fas fa-trash mr-1"></i>Quitar
-                                </button>
-                            </li>
-                        @endforeach
-                    </ul>
+                            </div>
+                        </label>
+                    @endforeach
                 </div>
             @endif
         </div>
 
-        <!-- Sección de Repuestos Varios -->
+        {{-- ═══════════════════════════════════════════ --}}
+        {{-- REPUESTOS POR CANTIDAD (OPCIONAL) --}}
+        {{-- ═══════════════════════════════════════════ --}}
         <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-            <h3 class="font-semibold text-gray-800 mb-3 flex items-center">
-                <i class="fas fa-layer-group text-purple-600 mr-2"></i>Repuestos Varios (Por Cantidad)
+            <h3 class="font-semibold text-gray-800 mb-1 flex items-center">
+                <i class="fas fa-layer-group text-purple-600 mr-2"></i>Repuestos Varios
+                <span class="ml-2 text-xs font-normal text-gray-400 bg-gray-100 px-2 py-0.5 rounded">(Opcional)</span>
             </h3>
+            <p class="text-xs text-gray-400 mb-4">Solo si necesitás piezas adicionales fuera del kit.</p>
 
             <div class="flex flex-col sm:flex-row items-end gap-2">
                 <div class="flex-1 w-full">
@@ -123,19 +110,20 @@
             @endif
         </div>
 
-        <!-- Botón Principal Jetstream -->
+        {{-- Botón Principal --}}
         <div class="pt-2">
             <x-button wire:click="confirmarEntrega" 
                       wire:loading.attr="disabled"
                       wire:target="confirmarEntrega"
                       class="w-full justify-center py-3 text-sm font-semibold">
                 <span wire:loading.remove wire:target="confirmarEntrega">
-                    <i class="fas fa-check-circle mr-2"></i>Confirmar entrega de equipos
+                    <i class="fas fa-check-circle mr-2"></i>Confirmar asignación
                 </span>
                 <span wire:loading wire:target="confirmarEntrega" class="inline-flex items-center">
-                    <i class="fas fa-spinner fa-spin mr-2"></i>Procesando entrega...
+                    <i class="fas fa-spinner fa-spin mr-2"></i>Procesando...
                 </span>
             </x-button>
+            <p class="text-xs text-gray-400 text-center mt-2">El kit es suficiente. Los repuestos son solo si necesitás piezas extra.</p>
         </div>
 
     </div>

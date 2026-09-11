@@ -3,9 +3,7 @@
 namespace App\Livewire\Almacen\Traslados;
 
 use App\Models\ItemSerializado;
-use App\Models\KitComponente;
 use App\Models\Producto;
-use App\Models\ProductoStockSede;
 use App\Models\Sede;
 use App\Models\Traslado;
 use App\Models\TrasladoDetalle;
@@ -15,56 +13,177 @@ use Livewire\Component;
 
 class Crear extends Component
 {
+    // Paso 1: Configuración
     public ?int $sedeDestinoId = null;
     public string $observaciones = '';
 
+    // Paso 2: Tipo de kit
+    public ?string $tipoKit = null; // '3RA' o '5TA'
+
+    // Paso 3: Modo de envío
+    public ?string $modoEnvio = null; // 'completo', 'incompleto', 'cantidad'
     public string $buscarItem = '';
+
+    // Piezas por cantidad
+    public ?int $productoCantidadId = null;
+    public int $cantidadPieza = 1;
+    public array $cantidadSeleccionados = [];
+
+    // Carrito
     public array $itemsSeleccionados = [];
 
-    public ?int $productoRepuestoId = null;
-    public int $cantidadRepuesto = 1;
-    public array $repuestosSeleccionados = [];
+    // Checklist
+    public bool $mostrarChecklist = false;
+    public array $checklistComponentes = [];
+    public bool $esKitCompleto = false;
 
-    public ?int $kitParaArmar = null;
-    public array $faltantesKit = [];
+    // Mapa kit producto_id => generacion
+    protected array $mapaKits = [
+        1 => '3RA',
+        2 => '5TA',
+    ];
 
+    protected function sedeOrigenId(): int
+    {
+        return Sede::activas()->orderBy('id')->first()?->id ?? 1;
+    }
 
     public function getSedesProperty()
     {
-        return Sede::activas()->where('id', '!=', 1)->orderBy('nombre')->get();
+        return Sede::activas()->where('id', '!=', $this->sedeOrigenId())->orderBy('nombre')->get();
     }
 
-    /*public function getItemsDisponiblesProperty()
+    public function seleccionarTipo(string $tipo)
     {
-        return ItemSerializado::with('producto.categoria')
+        $this->tipoKit = $tipo;
+        $this->modoEnvio = null;
+        $this->itemsSeleccionados = [];
+        $this->buscarItem = '';
+        $this->cantidadSeleccionados = [];
+        $this->productoCantidadId = null;
+        $this->cantidadPieza = 1;
+    }
+
+    public function seleccionarModo(string $modo)
+    {
+        $this->modoEnvio = $modo;
+        $this->itemsSeleccionados = [];
+        $this->buscarItem = '';
+        $this->cantidadSeleccionados = [];
+        $this->productoCantidadId = null;
+        $this->cantidadPieza = 1;
+    }
+
+    // ── Piezas por cantidad ──
+
+    public function getProductosCantidadProperty()
+    {
+        return Producto::where('activo', true)
+            ->whereHas('items', function ($q) {
+                $q->where('estado', 'en_stock')->where('sede_id', $this->sedeOrigenId());
+            })
+            ->get()
+            ->filter(fn ($p) => !$p->categoria?->es_kit)
+            ->values();
+    }
+
+    public function agregarPiezaCantidad()
+    {
+        $this->validate([
+            'productoCantidadId' => 'required|exists:productos,id',
+            'cantidadPieza' => 'required|integer|min:1',
+        ]);
+
+        $producto = Producto::find($this->productoCantidadId);
+        $disponible = $producto->stockEnSede($this->sedeOrigenId());
+
+        $yaTiene = $this->cantidadSeleccionados[$this->productoCantidadId] ?? 0;
+
+        if (($yaTiene + $this->cantidadPieza) > $disponible) {
+            $this->addError('cantidadPieza', "Solo hay {$disponible} disponibles en la sede de origen.");
+            return;
+        }
+
+        $this->cantidadSeleccionados[$this->productoCantidadId] = $yaTiene + $this->cantidadPieza;
+        $this->reset(['productoCantidadId', 'cantidadPieza']);
+        $this->cantidadPieza = 1;
+    }
+
+    public function quitarPiezaCantidad(int $productoId)
+    {
+        unset($this->cantidadSeleccionados[$productoId]);
+    }
+
+    public function getPiezasCantidadCarritoProperty()
+    {
+        if (empty($this->cantidadSeleccionados)) return collect();
+
+        return Producto::whereIn('id', array_keys($this->cantidadSeleccionados))->get()
+            ->map(function ($p) {
+                $p->cantidad_solicitada = $this->cantidadSeleccionados[$p->id];
+                return $p;
+            });
+    }
+
+    // ── Kits completos (sellados) ──
+
+    public function getKitsCompletosProperty()
+    {
+        if (!$this->tipoKit) return collect();
+
+        $productoKitId = $this->tipoKit === '3RA' ? 1 : 2;
+
+        return ItemSerializado::with('producto')
+            ->where('producto_id', $productoKitId)
             ->where('estado', 'en_stock')
-            ->where('sede_id', 1)
+            ->where('sede_id', $this->sedeOrigenId())
+            ->whereNull('kit_padre_id')
+            ->when($this->buscarItem, function ($q) {
+                $termino = $this->buscarItem;
+                $q->where('serie', 'like', "%{$termino}%");
+            })
+            ->orderBy('id', 'desc')
+            ->get();
+    }
+
+    // ── Piezas sueltas (de kits abiertos de este tipo) ──
+
+    public function getPiezasSueltasProperty()
+    {
+        if (!$this->tipoKit) return collect();
+
+        $productoKitId = $this->tipoKit === '3RA' ? 1 : 2;
+
+        return ItemSerializado::with('producto', 'kitPadre.producto')
+            ->where('estado', 'en_stock')
+            ->where('sede_id', $this->sedeOrigenId())
+            ->whereNotNull('kit_padre_id')
+            ->whereHas('kitPadre', function ($q) use ($productoKitId) {
+                $q->where('producto_id', $productoKitId);
+            })
             ->when($this->buscarItem, function ($q) {
                 $termino = $this->buscarItem;
                 $q->where('serie', 'like', "%{$termino}%")
-                  ->orWhereHas('producto', fn ($p) => $p->where('nombre', 'like', "%{$termino}%"));
+                    ->orWhereHas('producto', function ($p) use ($termino) {
+                        $p->where('nombre', 'like', "%{$termino}%");
+                    });
             })
-            ->limit(15)
+            ->orderBy('id', 'desc')
             ->get();
-    }*/
-
-    public function toggleItem(int $itemId)
-    {
-        if (isset($this->itemsSeleccionados[$itemId])) {
-            unset($this->itemsSeleccionados[$itemId]);
-        } else {
-            $this->itemsSeleccionados[$itemId] = true;
-        }
     }
 
-    public function getItemsCarritoProperty()
-    {
-        return ItemSerializado::with('producto')->whereIn('id', array_keys($this->itemsSeleccionados))->get();
-    }
+    // ── Repuestos por cantidad ──
 
     public function getProductosRepuestoProperty()
     {
-        return Producto::whereHas('stockPorSede', fn ($q) => $q->where('sede_id', 1)->where('cantidad', '>', 0))->get();
+        return Producto::where('activo', true)
+            ->where('categoria_id', '!=', null)
+            ->whereHas('items', function ($q) {
+                $q->where('estado', 'en_stock')->where('sede_id', $this->sedeOrigenId());
+            })
+            ->get()
+            ->filter(fn ($p) => !$p->categoria?->es_kit)
+            ->values();
     }
 
     public function agregarRepuesto()
@@ -75,10 +194,10 @@ class Crear extends Component
         ]);
 
         $producto = Producto::find($this->productoRepuestoId);
-        $disponible = $producto->stockEnSede(1);
+        $disponible = $producto->stockEnSede($this->sedeOrigenId());
 
         if ($this->cantidadRepuesto > $disponible) {
-            $this->addError('cantidadRepuesto', "Solo hay {$disponible} disponibles en Arturo Motors.");
+            $this->addError('cantidadRepuesto', "Solo hay {$disponible} disponibles en la sede de origen.");
             return;
         }
 
@@ -103,39 +222,114 @@ class Crear extends Component
             });
     }
 
+    // ── Toggle items ──
+
+    public function toggleItem(int $itemId)
+    {
+        if (isset($this->itemsSeleccionados[$itemId])) {
+            unset($this->itemsSeleccionados[$itemId]);
+        } else {
+            $this->itemsSeleccionados[$itemId] = true;
+        }
+    }
+
+    // ── Carrito ──
+
+    public function getItemsCarritoProperty()
+    {
+        if (empty($this->itemsSeleccionados)) return collect();
+
+        return ItemSerializado::with('producto')
+            ->whereIn('id', array_keys($this->itemsSeleccionados))
+            ->get();
+    }
+
+    public function getResumenVacioProperty(): bool
+    {
+        return empty($this->itemsSeleccionados) && empty($this->cantidadSeleccionados);
+    }
+
+    // ── Confirmar ──
+
     public function confirmarTraslado()
     {
         $this->validate(['sedeDestinoId' => 'required|exists:sedes,id']);
 
-        if (empty($this->itemsSeleccionados) && empty($this->repuestosSeleccionados)) {
-            $this->addError('general', 'Selecciona al menos un equipo o repuesto antes de confirmar.');
+        if ($this->resumenVacio) {
+            $this->addError('general', 'Selecciona al menos un item antes de confirmar.');
             return;
         }
 
+        $this->generarChecklist();
+        $this->mostrarChecklist = true;
+    }
+
+    public function generarChecklist()
+    {
+        $componentes = [];
+
+        // Items del carrito (kits completos + piezas sueltas)
+        foreach (array_keys($this->itemsSeleccionados) as $itemId) {
+            $item = ItemSerializado::with('producto.categoria')->find($itemId);
+            if (!$item) continue;
+
+            $componentes[] = [
+                'nombre' => $item->producto->nombre,
+                'tipo' => $item->kit_padre_id ? 'pieza_suelta' : 'kit_sellado',
+                'incluido' => true,
+                'detalle' => $item->kit_padre_id ? ($item->serie ?? 'Sin serie') : ('Caja #' . $item->id),
+                'kit' => $item->kit_padre_id
+                    ? ($item->kitPadre->producto->nombre ?? 'Kit abierto')
+                    : $item->producto->nombre,
+            ];
+        }
+
+        // Piezas por cantidad
+        foreach ($this->cantidadSeleccionados as $productoId => $cantidad) {
+            $producto = Producto::find($productoId);
+            if (!$producto) continue;
+
+            $componentes[] = [
+                'nombre' => $producto->nombre,
+                'tipo' => 'cantidad',
+                'incluido' => true,
+                'detalle' => "x{$cantidad}",
+                'kit' => 'Pieza suelta',
+            ];
+        }
+
+        $this->checklistComponentes = $componentes;
+        $this->esKitCompleto = $this->modoEnvio === 'completo';
+    }
+
+    public function confirmarEnvio()
+    {
+        $this->mostrarChecklist = false;
+        $sedeOrigenId = $this->sedeOrigenId();
+
         try {
-            DB::transaction(function () {
+            DB::transaction(function () use ($sedeOrigenId) {
                 $traslado = Traslado::create([
                     'sede_destino_id' => $this->sedeDestinoId,
                     'enviado_por' => Auth::id(),
                     'observaciones' => $this->observaciones ?: null,
+                    'es_kit_completo' => $this->modoEnvio === 'completo',
+                    'componentes_faltantes' => null,
                 ]);
 
+                // Items serializados (kits completos + piezas sueltas)
                 foreach (array_keys($this->itemsSeleccionados) as $itemId) {
                     $item = ItemSerializado::where('id', $itemId)
                         ->where('estado', 'en_stock')
-                        ->where('sede_id', 1)
+                        ->where('sede_id', $sedeOrigenId)
                         ->lockForUpdate()
                         ->first();
 
                     if (!$item) {
-                        throw new \RuntimeException('Uno de los equipos seleccionados ya no está disponible en Arturo Motors.');
+                        throw new \RuntimeException('Uno de los items seleccionados ya no está disponible.');
                     }
 
                     $item->update(['sede_id' => $this->sedeDestinoId]);
-
-                    // Si este ítem es un kit y ya tiene su reductor registrado (aunque siga sellado),
-                    // el reductor se mueve de sede junto con la caja que lo contiene
-                    ItemSerializado::where('kit_padre_id', $item->id)->update(['sede_id' => $this->sedeDestinoId]);
 
                     TrasladoDetalle::create([
                         'traslado_id' => $traslado->id,
@@ -145,24 +339,23 @@ class Crear extends Component
                     ]);
                 }
 
-                foreach ($this->repuestosSeleccionados as $productoId => $cantidad) {
-                    $stockOrigen = ProductoStockSede::where('producto_id', $productoId)
-                        ->where('sede_id', 1)
+                // Piezas por cantidad
+                foreach ($this->cantidadSeleccionados as $productoId => $cantidad) {
+                    $itemsPieza = ItemSerializado::where('producto_id', $productoId)
+                        ->where('estado', 'en_stock')
+                        ->where('sede_id', $sedeOrigenId)
                         ->lockForUpdate()
-                        ->first();
+                        ->limit($cantidad)
+                        ->get();
 
-                    if (!$stockOrigen || $stockOrigen->cantidad < $cantidad) {
+                    if ($itemsPieza->count() < $cantidad) {
                         $nombre = Producto::find($productoId)?->nombre;
-                        throw new \RuntimeException("No hay stock suficiente de {$nombre} en Arturo Motors.");
+                        throw new \RuntimeException("No hay stock suficiente de {$nombre} en la sede de origen.");
                     }
 
-                    $stockOrigen->decrement('cantidad', $cantidad);
-
-                    $stockDestino = ProductoStockSede::firstOrCreate(
-                        ['producto_id' => $productoId, 'sede_id' => $this->sedeDestinoId],
-                        ['cantidad' => 0]
-                    );
-                    $stockDestino->increment('cantidad', $cantidad);
+                    foreach ($itemsPieza as $itemPieza) {
+                        $itemPieza->update(['sede_id' => $this->sedeDestinoId]);
+                    }
 
                     TrasladoDetalle::create([
                         'traslado_id' => $traslado->id,
@@ -182,111 +375,14 @@ class Crear extends Component
         }
 
         $this->dispatch('minAlert', titulo: '¡Listo!', mensaje: 'Traslado registrado correctamente.', icono: 'success');
-        $this->redirect(route('almacen.traslados.listado'), navigate: true);
+        return $this->redirect(route('almacen.traslados.listado'), navigate: true);
     }
 
-    public function getKitsDisponiblesProperty()
+    public function cerrarChecklist()
     {
-        return Producto::whereHas('categoria', fn ($q) => $q->where('es_kit', true))->get();
+        $this->mostrarChecklist = false;
     }
 
-    public function agregarKitCompleto()
-    {
-        $this->validate(['kitParaArmar' => 'required|exists:productos,id']);
-        $this->faltantesKit = [];
-
-        $haySelladosDeEsteTipo = ItemSerializado::where('producto_id', $this->kitParaArmar)
-        ->where('estado', 'en_stock')
-        ->where('sede_id', 1)
-        ->exists();
-
-        if ($haySelladosDeEsteTipo) {
-            $this->dispatch('minAlert', titulo: 'Espera',
-                mensaje: 'Este kit todavía tiene cajas selladas disponibles. Selecciónalo directo en "Kits sellados" arriba — es más simple y no requiere que esté abierto.',
-                icono: 'info');
-            return;
-        }
-
-        $componentes = KitComponente::with('componente.categoria')
-            ->where('producto_kit_id', $this->kitParaArmar)
-            ->get();
-
-        if ($componentes->isEmpty()) {
-            $this->addError('kitParaArmar', 'Este kit no tiene componentes definidos.');
-            return;
-        }
-
-        foreach ($componentes as $kc) {
-            $componente = $kc->componente;
-
-            if ($componente->categoria->es_serializado) {
-                // Busca una unidad disponible que aún no esté en el carrito
-                $item = ItemSerializado::where('producto_id', $componente->id)
-                    ->where('estado', 'en_stock')
-                    ->where('sede_id', 1)
-                    ->whereNotIn('id', array_keys($this->itemsSeleccionados))
-                    ->first();
-
-                if (!$item) {
-                    $this->faltantesKit[] = $componente->nombre . ' (sin unidad disponible)';
-                    continue;
-                }
-
-                $this->itemsSeleccionados[$item->id] = true;
-            } else {
-                $yaEnCarrito = $this->repuestosSeleccionados[$componente->id] ?? 0;
-                $disponible = $componente->stockEnSede(1);
-                $necesario = $yaEnCarrito + $kc->cantidad_esperada;
-
-                if ($necesario > $disponible) {
-                    $this->faltantesKit[] = "{$componente->nombre} (solo hay {$disponible}, se necesitan {$necesario})";
-                    continue;
-                }
-
-                $this->repuestosSeleccionados[$componente->id] = $necesario;
-            }
-        }
-
-        if (empty($this->faltantesKit)) {
-            $this->dispatch('minToast', titulo: 'Kit agregado', mensaje: 'Se agregaron todos los componentes al traslado.', icono: 'success');
-        } else {
-            $this->dispatch('minAlert', titulo: 'Kit agregado parcialmente',
-                mensaje: 'Faltó stock de: ' . implode(', ', $this->faltantesKit), icono: 'warning');
-        }
-
-        $this->kitParaArmar = null;
-    }
-
-    public function getKitsCerradosProperty()
-    {
-        return ItemSerializado::with('producto.categoria')
-            ->where('estado', 'en_stock')
-            ->where('sede_id', 1)
-            ->whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true))
-            ->when($this->buscarItem, function ($q) {
-                $termino = $this->buscarItem;
-                $q->where('serie', 'like', "%{$termino}%")
-                ->orWhereHas('producto', fn ($p) => $p->where('nombre', 'like', "%{$termino}%"));
-            })
-            ->limit(15)
-            ->get();
-    }
-
-    public function getEquiposIndividualesProperty()
-    {
-        return ItemSerializado::with('producto.categoria')
-            ->where('estado', 'en_stock')
-            ->where('sede_id', 1)
-            ->whereHas('producto.categoria', fn ($q) => $q->where('es_kit', false))
-            ->when($this->buscarItem, function ($q) {
-                $termino = $this->buscarItem;
-                $q->where('serie', 'like', "%{$termino}%")
-                ->orWhereHas('producto', fn ($p) => $p->where('nombre', 'like', "%{$termino}%"));
-            })
-            ->limit(15)
-            ->get();
-    }
-    
     public function render()
     {
         return view('livewire.almacen.traslados.crear');

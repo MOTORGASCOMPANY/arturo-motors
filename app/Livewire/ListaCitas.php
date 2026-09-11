@@ -46,7 +46,7 @@ class ListaCitas extends Component
     public $color;
     public $combustible;
 
-    public $sede_id = 1; // ID predeterminado (Arturo Motors "Callao")
+    public $sede_id; // ID predeterminado (primera sede activa)
     public $fecha_cita;
     public $motivo;
 
@@ -377,7 +377,7 @@ class ListaCitas extends Component
             'placa', 'marca', 'modelo', 'anio', 'serie', 'color', 'combustible',
             'fecha_cita', 'motivo', 'is_externo', 'asesor_externo_id'
         ]);
-        $this->sede_id = 1;
+        $this->sede_id = Sede::activas()->orderBy('id')->first()?->id;
         $this->resetValidation();
     }
 }

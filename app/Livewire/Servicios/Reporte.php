@@ -80,21 +80,62 @@ class Reporte extends Component
             ])
             ->sortByDesc('total');
 
-        // Serie diaria para el gráfico
+        // ─── Datos para gráfico de servicios por día ─────────────────
         $dias = min($desde->diffInDays($hasta) + 1, 90);
-        $ventasPorDia = $this->baseQuery($desde, $hasta)
-            ->selectRaw('DATE(created_at) as fecha, SUM(monto) as total')
-            ->groupBy('fecha')
-            ->pluck('total', 'fecha');
 
-        $labels = [];
-        $data = [];
+        // Contar órdenes por día y categoría
+        $ordenesPorDia = \App\Models\ServiceOrder::whereBetween('created_at', [$desde, $hasta])
+            ->with('service:id,nombre,tipo')
+            ->get();
+
+        $conversionPendientes = [];
+        $conversionCompletadas = [];
+        $simpleCompletadas = [];
+
         for ($i = 0; $i < $dias; $i++) {
-            $fecha = $desde->copy()->addDays($i);
-            $clave = $fecha->format('Y-m-d');
-            $labels[] = $fecha->format('d/m');
-            $data[] = (float) ($ventasPorDia[$clave] ?? 0);
+            $fecha = $desde->copy()->addDays($i)->format('Y-m-d');
+            $labels[] = $desde->copy()->addDays($i)->format('d/m');
+
+            $diaOrdenes = $ordenesPorDia->filter(fn ($o) => $o->created_at->format('Y-m-d') === $fecha);
+
+            // Conversión: pendiente = creada/evaluada/aprobado/en_conversion/completada (NO entregada)
+            $conversionPendientes[] = $diaOrdenes
+                ->filter(fn ($o) => $o->service && $o->service->tipo === 'conversion' && $o->estado !== 'entregada')
+                ->count();
+
+            // Conversión: completada = entregada
+            $conversionCompletadas[] = $diaOrdenes
+                ->filter(fn ($o) => $o->service && $o->service->tipo === 'conversion' && $o->estado === 'entregada')
+                ->count();
+
+            // Simple: completada = entregada (se resuelve al momento)
+            $simpleCompletadas[] = $diaOrdenes
+                ->filter(fn ($o) => $o->service && $o->service->tipo === 'simple' && $o->estado === 'entregada')
+                ->count();
         }
+
+        // Totales para KPIs
+        $totalConversionesPendientes = \App\Models\ServiceOrder::where('estado', '!=', 'entregada')
+            ->whereHas('service', fn ($s) => $s->where('tipo', 'conversion'))
+            ->count();
+        $totalConversionesCompletadas = \App\Models\ServiceOrder::where('estado', 'entregada')
+            ->whereHas('service', fn ($s) => $s->where('tipo', 'conversion'))
+            ->count();
+
+        // Simple: completadas = entregada (se resuelven al momento)
+        $totalSimplesCompletadas = \App\Models\ServiceOrder::where('estado', 'entregada')
+            ->whereHas('service', fn ($s) => $s->where('tipo', 'simple'))
+            ->count();
+
+        $hayDatos = $totalOrdenes > 0;
+
+        // Dispatch chart data to JS (wire:ignore prevents morph from updating data-* attrs)
+        $this->dispatch('chart-data-updated',
+            labels: $labels ?? [],
+            conversionPendientes: $conversionPendientes,
+            conversionCompletadas: $conversionCompletadas,
+            simpleCompletadas: $simpleCompletadas
+        );
 
         return view('livewire.servicios.reporte', [
             'totalVentas' => $totalVentas,
@@ -102,11 +143,17 @@ class Reporte extends Component
             'ticketPromedio' => $totalOrdenes > 0 ? $totalVentas / $totalOrdenes : 0,
             'ventasPorServicio' => $ventasPorServicio,
             'ventasPorTecnico' => $ventasPorTecnico,
-            'labels' => $labels,
-            'data' => $data,
+            'labels' => $labels ?? [],
+            'conversionPendientes' => $conversionPendientes,
+            'conversionCompletadas' => $conversionCompletadas,
+            'simpleCompletadas' => $simpleCompletadas,
             'desde' => $desde,
             'hasta' => $hasta,
             'tipoServicio' => $this->tipoServicio,
+            'totalConversionesPendientes' => $totalConversionesPendientes,
+            'totalConversionesCompletadas' => $totalConversionesCompletadas,
+            'totalSimplesCompletadas' => $totalSimplesCompletadas,
+            'hayDatos' => $hayDatos,
         ]);
     }
 }

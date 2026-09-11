@@ -8,7 +8,12 @@ class Traslado extends Model
 {
     protected $table = 'traslados';
 
-    protected $fillable = ['sede_destino_id', 'enviado_por', 'observaciones'];
+    protected $fillable = ['sede_destino_id', 'enviado_por', 'observaciones', 'es_kit_completo', 'componentes_faltantes'];
+
+    protected $casts = [
+        'es_kit_completo' => 'boolean',
+        'componentes_faltantes' => 'array',
+    ];
 
     public function sedeDestino()
     {

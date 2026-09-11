@@ -86,16 +86,28 @@
                             @foreach ($ordenes as $orden)
                                 <tr wire:key="mis-conversion-{{ $orden->id }}" class="hover:bg-gray-50 transition-colors">
                                     <td class="px-4 py-3 text-center border-r border-gray-100 whitespace-nowrap">
-                                        {{ $orden->created_at->format('d/m/Y') }}
+                                        {{ optional($orden->created_at)->format('d/m/Y') ?? '—' }}
                                     </td>
                                     <td class="px-4 py-3 text-center border-r border-gray-100">
-                                        {{ $orden->cliente->nombre }} {{ $orden->cliente->apellido }}
+                                        @if ($orden->cliente)
+                                            @if ($orden->cliente->tipo_persona === 'JURIDICA')
+                                                {{ $orden->cliente->razon_social ?? '—' }}
+                                            @else
+                                                {{ trim(($orden->cliente->nombre ?? '').' '.($orden->cliente->apellido ?? '')) ?: '—' }}
+                                            @endif
+                                        @else
+                                            <span class="text-gray-400 italic">Cliente no encontrado</span>
+                                        @endif
                                     </td>
                                     <td class="px-4 py-3 text-center border-r border-gray-100 whitespace-nowrap">
-                                        <span class="font-bold text-gray-800">{{ $orden->vehiculo->placa }}</span> — {{ $orden->vehiculo->marca }}
+                                        @if ($orden->vehiculo)
+                                            <span class="font-bold text-gray-800">{{ $orden->vehiculo->placa }}</span> — {{ $orden->vehiculo->marca }}
+                                        @else
+                                            <span class="text-gray-400 italic">Vehículo no encontrado</span>
+                                        @endif
                                     </td>
                                     <td class="px-4 py-3 text-center border-r border-gray-100">
-                                        {{ $orden->service->nombre }}
+                                        {{ $orden->service->nombre ?? 'Servicio no encontrado' }}
                                     </td>
                                     <td class="px-4 py-3 text-center border-r border-gray-100 whitespace-nowrap">
                                         <span
@@ -127,10 +139,22 @@
                                             @break
 
                                             @case('en_conversion')
-                                                <a href="{{ route('conversiones.realizar', $orden->id) }}"
-                                                    class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition inline-block shadow-sm">
-                                                    <i class="fas fa-wrench mr-1"></i> Continuar
-                                                </a>
+                                                {{-- ═══════════════════════════════════════════ --}}
+                                                {{-- FLUJO: Registrar Items → Iniciar --}}
+                                                {{-- ═══════════════════════════════════════════ --}}
+                                                @if(!$orden->fecha_inicio_conversion)
+                                                    {{-- Aún no inicia: primer paso = Registrar Items --}}
+                                                    <a href="{{ route('conversiones.registrar-items-kit', $orden->id) }}"
+                                                        class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition inline-block shadow-sm">
+                                                        <i class="fas fa-clipboard-list mr-1"></i> Registrar Items
+                                                    </a>
+                                                @else
+                                                    {{-- Ya inició: continuar instalando --}}
+                                                    <a href="{{ route('conversiones.realizar', $orden->id) }}"
+                                                        class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition inline-block shadow-sm">
+                                                        <i class="fas fa-wrench mr-1"></i> Continuar
+                                                    </a>
+                                                @endif
                                             @break
 
                                             @case('conversion_completada')

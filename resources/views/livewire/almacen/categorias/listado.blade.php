@@ -48,15 +48,18 @@
                                             {{ $c->es_serializado ? 'Por serie' : 'Por cantidad' }}
                                         </span>
                                     </td>
-                                    <td class="px-4 py-3 text-gray-500 border-b border-gray-200 bg-white text-sm">{{ $c->esquema_atributos ? implode(', ', $c->esquema_atributos) : '—' }}</td>
-                                    <td class="px-4 py-3 text-right border-b border-gray-200 bg-white text-sm">{{ $c->productos_count }}</td>
-                                    {{-- 
-                                    <td class="px-4 py-3 border-b border-gray-200 bg-white text-sm text-right">
-                                        <button wire:click="$dispatch('abrir-modal-editar-categoria', { categoriaId: {{ $c->id }} })" type="button" class="text-blue-600 text-xs font-semibold">
-                                            Editar →
-                                        </button>
+                                    <td class="px-4 py-3 text-gray-500 border-b border-gray-200 bg-white text-sm">
+                                        @php
+                                            $attrs = is_array($c->esquema_atributos) ? $c->esquema_atributos : (json_decode($c->esquema_atributos, true) ?? []);
+                                            $parts = [];
+                                            foreach ($attrs as $key => $val) {
+                                                $oined = is_array($val) ? implode('/', $val) : $val;
+                                                $parts[] = "{$key}: {$oined}";
+                                            }
+                                        @endphp
+                                        {{ count($parts) ? implode(', ', $parts) : '—' }}
                                     </td>
-                                    --}}
+                                    <td class="px-4 py-3 text-right border-b border-gray-200 bg-white text-sm">{{ $c->productos_count }}</td>
                                     <td class="px-4 py-2 border-b border-gray-200 bg-white text-sm text-right whitespace-nowrap">
                                         <div class="inline-flex items-center justify-end gap-1.5">
                                             <!-- Botón 1: Editar -->

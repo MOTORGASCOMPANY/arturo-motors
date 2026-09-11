@@ -35,8 +35,17 @@ class Crear extends Component
     {
         $categoria = CategoriaAlmacen::find($value);
         $this->atributos = [];
-        foreach ($categoria?->esquema_atributos ?? [] as $campo) {
-            $this->atributos[$campo] = '';
+        $schema = $categoria?->esquema_atributos ?? [];
+        // Handle nested: {"generacion": ["3RA","5TA"]} → show as select
+        // Handle flat:   ["generacion"] → show as text input
+        foreach ($schema as $campo => $valor) {
+            if (is_int($campo)) {
+                // Flat: indexed array like ["generacion", "tamaño"]
+                $this->atributos[$valor] = '';
+            } else {
+                // Nested: keyed array like {"generacion": ["3RA","5TA"]}
+                $this->atributos[$campo] = '';
+            }
         }
     }
 

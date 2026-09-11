@@ -4,128 +4,121 @@
     <meta charset="UTF-8">
     <title>Reporte de Almacén - Arturo Motors</title>
     <style>
-        body { font-family: sans-serif; margin: 0; padding: 20px; }
-        .header { text-align: center; margin-bottom: 30px; }
-        .header h1 { font-size: 24px; color: #2d3748; margin-bottom: 5px; }
-        .header p { color: #4a5568; font-size: 14px; }
-        .section { margin-bottom: 30px; }
-        .kpi { text-align: center; padding: 15px; background: #f7fafc; border-radius: 8px; margin: 10px 0; }
-        .kpi .value { font-size: 24px; font-weight: bold; }
-        .kpi .label { font-size: 12px; color: #718096; text-transform: uppercase; margin-top: 5px; }
-        .table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .table th, .table td { border: 1px solid #e2e8f0; padding: 8px 12px; text-align: left; }
-        .table th { background: #edf2f7; font-weight: bold; font-size: 12px; }
-        .table tr:nth-child(even) { background: #fafafa; }
-        .chart { text-align: center; margin: 20px 0; }
-        .stock-bajo { color: #dc2626; }
-        .sin-precio { color: #d97706; }
+        body { font-family: sans-serif; margin: 0; padding: 30px; color: #1e293b; font-size: 12px; }
+        
+        /* Header */
+        .header { text-align: center; margin-bottom: 25px; padding: 20px; background: #1e40af; color: #ffffff; border-radius: 8px; }
+        .header h1 { font-size: 22px; margin-bottom: 5px; color: #ffffff; }
+        .header p { font-size: 12px; color: #ffffff; }
+        
+        /* KPIs - tabla para compatibilidad con DomPDF */
+        .kpi-table { width: 100%; border-collapse: collapse; margin-bottom: 25px; }
+        .kpi-table td { width: 33%; text-align: center; padding: 15px; background: #ffffff; border: 1px solid #e2e8f0; }
+        .kpi-value { font-size: 28px; font-weight: bold; color: #1e293b; }
+        .kpi-value-blue { color: #2563eb; }
+        .kpi-value-red { color: #dc2626; }
+        .kpi-label { font-size: 10px; color: #64748b; text-transform: uppercase; margin-top: 5px; }
+        
+        /* Tabla principal */
+        .section-title { font-size: 14px; font-weight: bold; color: #1e293b; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 2px solid #e2e8f0; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th { background: #f1f5f9; padding: 8px 10px; text-align: left; font-size: 10px; font-weight: bold; color: #475569; text-transform: uppercase; border-bottom: 2px solid #cbd5e1; }
+        td { padding: 8px 10px; font-size: 11px; border-bottom: 1px solid #e2e8f0; }
+        tr:nth-child(even) { background: #f8fafc; }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .font-bold { font-weight: bold; }
+        .text-red { color: #dc2626; }
+        .text-gray { color: #94a3b8; }
+        
+        /* Footer */
+        .footer { text-align: center; margin-top: 30px; color: #94a3b8; font-size: 10px; border-top: 1px solid #e2e8f0; padding-top: 15px; }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <h1>Reporte de Almacén</h1>
-    <p>Arturo Motors - Callao</p>
-</div>
+    {{-- Header --}}
+    <div class="header">
+        <h1>Reporte de Almacén</h1>
+        <p>Arturo Motors — Stock actual en tiempo real</p>
+    </div>
 
-<div class="kpi">
-    <div class="value" style="color: #38a169;">S/ {{ number_format($valorTotal, 2) }}</div>
-    <div class="label">Valor Total del Inventario</div>
-</div>
-
-<h3>Stock Bajo (<span class="stock-bajo">{{ count($stockBajo) }}</span>)</h3>
-<table class="table">
-    <thead>
+    {{-- KPIs --}}
+    <table class="kpi-table">
         <tr>
-            <th>Producto</th>
-            <th>Categoría</th>
-            <th>Disponible</th>
-            <th>Mínimo</th>
+            <td>
+                <div class="kpi-value kpi-value-blue">{{ number_format($totalItems) }}</div>
+                <div class="kpi-label">Total de items</div>
+            </td>
+            <td>
+                <div class="kpi-value">{{ $productosConStock }}</div>
+                <div class="kpi-label">Productos con stock</div>
+            </td>
+            <td>
+                <div class="kpi-value {{ $stockBajo->count() > 0 ? 'kpi-value-red' : '' }}">{{ $stockBajo->count() }}</div>
+                <div class="kpi-label">Stock bajo</div>
+            </td>
         </tr>
-    </thead>
-    <tbody>
-    @forelse ($stockBajo as $p)
-        <tr class="{{ $p->stock_disponible <= $p->stock_minimo ? 'bg-red-50' : '' }}">
-            <td>{{ $p->nombre }}</td>
-            <td>{{ $p->categoria->nombre }}</td>
-            <td class="text-red-600 font-semibold">{{ $p->stock_disponible }}</td>
-            <td class="text-gray-500">{{ $p->stock_minimo }}</td>
-        </tr>
-    @empty
-        <tr><td colspan="4" class="text-center">Ningún producto está bajo su mínimo configurado.</td></tr>
-    @endforelse
-    </tbody>
-</table>
+    </table>
 
-<h3>Stock pero sin precio referencial (<span class="sin-precio">{{ count($sinPrecio) }}</span>)</h3>
-<table class="table">
-    <thead>
-        <tr>
-            <th>Producto</th>
-            <th>Categoría</th>
-            <th>Stock</th>
-        </tr>
-    </thead>
-    <tbody>
-    @forelse ($sinPrecio as $p)
-        <tr class="bg-amber-50">
-            <td>{{ $p->nombre }}</td>
-            <td>{{ $p->categoria->nombre }}</td>
-            <td class="text-amber-600">{{ $p->stock_disponible }}</td>
-        </tr>
-    @empty
-        <tr><td colspan="3" class="text-center">Ningún producto tiene stock sin precio referencial.</td></tr>
-    @endforelse
-    </tbody>
-</table>
+    {{-- Tabla de Distribución --}}
+    <div class="section-title">Distribución de Stock por Sede</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Categoría</th>
+                @foreach ($sedes as $s)
+                    <th style="text-align: right;">{{ $s->nombre }}</th>
+                @endforeach
+                <th style="text-align: right;">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+        @forelse ($distribucion as $row)
+            <tr>
+                <td class="font-bold">{{ $row['producto']->nombre }}</td>
+                <td class="text-gray">{{ $row['producto']->categoria->nombre }}</td>
+                @foreach ($sedes as $s)
+                    <td class="text-right {{ $row['por_sede'][$s->id] > 0 ? 'font-bold' : 'text-gray' }}">
+                        {{ $row['por_sede'][$s->id] }}
+                    </td>
+                @endforeach
+                <td class="text-right font-bold">{{ $row['total'] }}</td>
+            </tr>
+        @empty
+            <tr><td colspan="{{ $sedes->count() + 3 }}" class="text-center text-gray">Sin stock registrado.</td></tr>
+        @endforelse
+        </tbody>
+    </table>
 
-<h3>Productos con stock por debajo del mínimo</h3>
-<table class="table">
-    <thead>
-        <tr>
-            <th>Producto</th>
-            <th>Categoría</th>
-            <th>Disponible</th>
-            <th>Mínimo</th>
-        </tr>
-    </thead>
-    <tbody>
-    @forelse ($productosBajoMinimo as $p)
-        <tr class="bg-red-50 text-red-600">
-            <td>{{ $p->nombre }}</td>
-            <td>{{ $p->categoria->nombre }}</td>
-            <td class="text-red-600">{{ $p->stock_disponible }}</td>
-            <td class="text-red-600">{{ $p->stock_minimo }}</td>
-        </tr>
-    @empty
-        <tr><td colspan="4" class="text-center">Ningún producto requiere reabastecimiento urgente.</td></tr>
-    @endforelse
-    </tbody>
-</table>
+    {{-- Stock Bajo --}}
+    @if ($stockBajo->count())
+        <div class="section-title">Stock Bajo en Callao</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th style="text-align: right;">Disponible</th>
+                    <th style="text-align: right;">Mínimo</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach ($stockBajo as $p)
+                <tr>
+                    <td class="font-bold">{{ $p->nombre }}</td>
+                    <td class="text-right text-red font-bold">{{ $p->stockEnSede(1) }}</td>
+                    <td class="text-right text-gray">{{ $p->stock_minimo }}</td>
+                </tr>
+            @endforeach
+            </tbody>
+        </table>
+    @endif
 
-<h3>Valor de inventario por categoría</h3>
-<table class="table">
-    <thead>
-        <tr>
-            <th>Categoría</th>
-            <th>Valor (S/)</th>
-        </tr>
-    </thead>
-    <tbody>
-    @forelse ($valorPorCategoria as $categoria => $valor)
-        <tr>
-            <td>{{ $categoria }}</td>
-            <td>S/ {{ number_format($valor, 2) }}</td>
-        </tr>
-    @empty
-        <tr><td colspan="2" class="text-center">No hay categorías con valor asignado.</td></tr>
-    @endforelse
-    </tbody>
-</table>
-
-<div class="footer" style="margin-top: 50px; font-size: 12px; color: #718096; text-align: center;">
-    Documento generado el {{ now()->format('d/m/Y H:i') }} — Arturo Motors
-</div>
+    {{-- Footer --}}
+    <div class="footer">
+        Documento generado el {{ now()->format('d/m/Y H:i') }} — Arturo Motors
+    </div>
 
 </body>
 </html>

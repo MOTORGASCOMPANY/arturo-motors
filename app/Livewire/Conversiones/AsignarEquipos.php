@@ -5,9 +5,8 @@ namespace App\Livewire\Conversiones;
 use App\Models\ServiceOrder;
 use App\Models\ItemSerializado;
 use App\Models\Producto;
-use App\Models\CategoriaAlmacen;
 use App\Models\MovimientoStock;
-use App\Models\ProductoStockSede;
+use App\Models\Sede;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -16,58 +15,65 @@ class AsignarEquipos extends Component
 {
     public ServiceOrder $orden;
 
-    public string $buscarItem = '';
-    public array $itemsSeleccionados = []; // [itemId => true]
+    // Kit seleccionado para asignar
+    public ?int $kitItemId = null;
 
+    // Repuestos por cantidad
     public ?int $productoRepuestoId = null;
     public int $cantidadRepuesto = 1;
     public array $repuestosSeleccionados = []; // [productoId => cantidad]
 
+    private const PRODUCTOS_SERIALIZABLES = ['Vaporizador', 'Computadora', 'Tanque'];
+
+    protected function sedePrincipalId(): int
+    {
+        return $this->orden->sede_id ?? (Sede::activas()->orderBy('id')->first()?->id ?? 1);
+    }
+
+    private function esSerializable(string $nombre): bool
+    {
+        foreach (self::PRODUCTOS_SERIALIZABLES as $patron) {
+            if (stripos($nombre, $patron) !== false) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public function mount(int $ordenId)
     {
         $this->orden = ServiceOrder::with(['cliente', 'vehiculo', 'service'])->findOrFail($ordenId);
-
-        abort_unless($this->orden->estado === 'aprobado_conversion', 403, 'Esta orden no está en etapa de asignación de equipos.');
+        
+        // Permitir si está en aprobado_conversion O en_conversion sin items
+        $puedeAcceder = $this->orden->estado === 'aprobado_conversion' 
+            || ($this->orden->estado === 'en_conversion' && $this->orden->items()->count() === 0);
+        
+        abort_unless($puedeAcceder, 403, 'Esta orden no está en etapa de asignación de equipos.');
     }
 
-    public function getItemsDisponiblesProperty()
+    // ═══════════════════════════════════════════════
+    // KITS DISPONIBLES (solo los que NO están reservados)
+    // ═══════════════════════════════════════════════
+    public function getKitsDisponiblesProperty()
     {
         return ItemSerializado::with('producto.categoria')
             ->where('estado', 'en_stock')
-            ->where('sede_id', 1)
-            ->whereHas('producto.categoria', fn ($q) => $q->where('es_serializado', true))
-            ->when($this->buscarItem, function ($q) {
-                $termino = $this->buscarItem;
-                $q->where('serie', 'like', "%{$termino}%")
-                  ->orWhereHas('producto', fn ($p) => $p->where('nombre', 'like', "%{$termino}%")
-                                                         ->orWhere('marca', 'like', "%{$termino}%"));
-            })
-            ->limit(15)
+            ->where('sede_id', $this->sedePrincipalId())
+            ->whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true))
+            //->whereNotIn('id', array_keys($this->itemsReservados))
+            ->orderByDesc('created_at')
             ->get();
     }
 
-    public function toggleItem(int $itemId)
-    {
-        if (isset($this->itemsSeleccionados[$itemId])) {
-            unset($this->itemsSeleccionados[$itemId]);
-        } else {
-            $this->itemsSeleccionados[$itemId] = true;
-        }
-    }
-
-    public function getItemsCarritoProperty()
-    {
-        return ItemSerializado::with('producto')
-            ->whereIn('id', array_keys($this->itemsSeleccionados))
-            ->get();
-    }
-
+    // ═══════════════════════════════════════════════
+    // REPUESTOS POR CANTIDAD
+    // ═══════════════════════════════════════════════
     public function getProductosRepuestoProperty()
     {
         return Producto::whereHas('categoria', fn ($q) => $q->where('es_serializado', false))
-            //->where('stock', '>', 0)
-            ->whereHas('stockPorSede', fn ($q) => $q->where('sede_id', 1)->where('cantidad', '>', 0))
-            ->get();
+            ->get()
+            ->filter(fn($p) => $p->stockEnSede($this->sedePrincipalId()) > 0)
+            ->values();
     }
 
     public function agregarRepuesto()
@@ -78,14 +84,10 @@ class AsignarEquipos extends Component
         ]);
 
         $producto = Producto::find($this->productoRepuestoId);
-        $disponible = $producto->stockEnSede(1);
+        $disponible = $producto->stockEnSede($this->sedePrincipalId());
 
-        /*if ($this->cantidadRepuesto > $producto->stock) {
-            $this->addError('cantidadRepuesto', "Solo hay {$producto->stock} unidades en stock.");
-            return;
-        }*/
         if ($this->cantidadRepuesto > $disponible) {
-            $this->addError('cantidadRepuesto', "Solo hay {$disponible} en stock en Arturo Motors.");
+            $this->addError('cantidadRepuesto', "Solo hay {$disponible} en stock.");
             return;
         }
 
@@ -110,59 +112,115 @@ class AsignarEquipos extends Component
             });
     }
 
+    // ═══════════════════════════════════════════════
+    // CONFIRMAR ASIGNACIÓN
+    // ═══════════════════════════════════════════════
     public function confirmarEntrega()
     {
-        if (empty($this->itemsSeleccionados) && empty($this->repuestosSeleccionados)) {
-            $this->addError('general', 'Selecciona al menos un equipo o repuesto antes de confirmar.');
+        if (empty($this->kitItemId) && empty($this->repuestosSeleccionados)) {
+            $this->addError('general', 'Seleccioná un kit para confirmar.');
+            return;
+        }
+
+        $sedeId = $this->orden->sede_id ?? $this->sedePrincipalId();
+
+        // Guard: no duplicate assignment
+        $yaTieneItems = $this->orden->items()->count() > 0;
+        if ($yaTieneItems) {
+            $this->addError('general', 'Esta orden ya tiene items asignados. No se puede asignar un kit dos veces.');
             return;
         }
 
         try {
-            DB::transaction(function () {
-                // Bloqueo y validación de items serializados
-                // justo antes de asignarlos, por si otro almacenero los tomó primero
-                foreach (array_keys($this->itemsSeleccionados) as $itemId) {
-                    $item = ItemSerializado::where('id', $itemId)
+            DB::transaction(function () use ($sedeId) {
+                // 1. Abrir y asignar kit si se seleccionó uno
+                if ($this->kitItemId) {
+                    $kit = ItemSerializado::where('id', $this->kitItemId)
                         ->where('estado', 'en_stock')
-                        ->where('sede_id', 1)
+                        ->where('sede_id', $sedeId)
                         ->lockForUpdate()
                         ->first();
 
-                    if (!$item) {
-                        throw new \RuntimeException("Uno de los equipos seleccionados ya no está disponible. Actualiza la lista e intenta de nuevo.");
+                    if (!$kit) {
+                        throw new \RuntimeException('El kit ya no está disponible.');
                     }
 
-                    $item->asignarA($this->orden);
+                    // Cambiar estado del kit a asignado
+                    $kit->update([
+                        'estado' => 'asignado',
+                        'service_order_id' => $this->orden->id,
+                    ]);
+
+                    // Crear items para TODOS los componentes REALES del kit
+                    $componentes = $kit->producto->componentes()->with('componente')->get();
+
+                    foreach ($componentes as $kc) {
+                        $producto = $kc->componente;
+                        $esSerializable = $this->esSerializable($producto->nombre);
+
+                        if ($esSerializable) {
+                            // Buscar item en stock de esta sede
+                            $itemEnStock = ItemSerializado::where('producto_id', $producto->id)
+                                ->where('estado', 'en_stock')
+                                ->where('sede_id', $sedeId)
+                                ->first();
+
+                            if ($itemEnStock) {
+                                $itemEnStock->update([
+                                    'estado' => 'asignado',
+                                    'service_order_id' => $this->orden->id,
+                                    'kit_padre_id' => $kit->id,
+                                ]);
+                            } else {
+                                ItemSerializado::create([
+                                    'producto_id' => $producto->id,
+                                    'serie' => null,
+                                    'estado' => 'asignado',
+                                    'service_order_id' => $this->orden->id,
+                                    'kit_padre_id' => $kit->id,
+                                    'sede_id' => $sedeId,
+                                    'atributos' => [
+                                        'tipo' => 'serial',
+                                        'creado_automaticamente' => true,
+                                        'creado_por' => 'asignar-equipos',
+                                        'creado_en' => now()->toDateTimeString(),
+                                    ],
+                                ]);
+                            }
+                        } else {
+                            // Componente por cantidad — crear un item por cada unidad esperada
+                            for ($i = 0; $i < $kc->cantidad_esperada; $i++) {
+                                ItemSerializado::create([
+                                    'producto_id' => $producto->id,
+                                    'serie' => 'CANT-' . strtoupper(uniqid()),
+                                    'estado' => 'asignado',
+                                    'service_order_id' => $this->orden->id,
+                                    'kit_padre_id' => $kit->id,
+                                    'sede_id' => $sedeId,
+                                    'atributos' => [
+                                        'tipo' => 'cantidad',
+                                        'creado_automaticamente' => true,
+                                        'creado_por' => 'asignar-equipos',
+                                        'creado_en' => now()->toDateTimeString(),
+                                    ],
+                                ]);
+                            }
+                        }
+                    }
                 }
 
-                // Bloqueo y descontado de stock de repuestos por cantidad
-                /*foreach ($this->repuestosSeleccionados as $productoId => $cantidad) {
-                    $producto = Producto::where('id', $productoId)->lockForUpdate()->first();
+                // 2. Repuestos por cantidad (opcional)
+                foreach ($this->repuestosSeleccionados as $productoId => $cantidad) {
+                    $producto = Producto::find($productoId);
+                    $disponible = $producto->stockEnSede($sedeId);
 
-                    if (!$producto || $producto->stock < $cantidad) {
-                        throw new \RuntimeException("No hay stock suficiente de {$producto?->nombre}. Actualiza la lista e intenta de nuevo.");
+                    if ($disponible < $cantidad) {
+                        throw new \RuntimeException("No hay stock suficiente de {$producto->nombre}.");
                     }
 
                     MovimientoStock::registrar(
                         $producto, 'salida', $cantidad, $this->orden->id, Auth::id(),
-                        'Entrega para conversión #' . $this->orden->id
-                    );
-                }*/
-
-                foreach ($this->repuestosSeleccionados as $productoId => $cantidad) {
-                    $stockSede = ProductoStockSede::where('producto_id', $productoId)
-                        ->where('sede_id', 1)
-                        ->lockForUpdate()
-                        ->first();
-
-                    if (!$stockSede || $stockSede->cantidad < $cantidad) {
-                        $nombre = Producto::find($productoId)?->nombre;
-                        throw new \RuntimeException("No hay stock suficiente de {$nombre}. Actualiza la lista e intenta de nuevo.");
-                    }
-
-                    MovimientoStock::registrar(
-                        Producto::find($productoId), 'salida', $cantidad, $this->orden->id, Auth::id(),
-                        'Entrega para conversión #' . $this->orden->id, 1
+                        'Entrega para conversión #' . $this->orden->id, $sedeId
                     );
                 }
 
@@ -173,18 +231,15 @@ class AsignarEquipos extends Component
             return;
         } catch (\Throwable $e) {
             report($e);
-            $this->addError('general', 'Ocurrió un error al confirmar la entrega. Intenta de nuevo.');
+            $this->addError('general', 'Ocurrió un error al confirmar. Intenta de nuevo.');
             return;
         }
 
-        //session()->flash('mensaje', 'Equipos entregados. La orden pasó a conversión.');
-        //$this->redirect(route('conversiones.almacen-pendientes'), navigate: true);
-
-        // Usamos session()->flash para que el mensaje sobreviva a la redirección estándar HTTP
-        session()->flash('swal', [
+        // Mostrar alerta centrada (grande) de confirmación
+        $this->dispatch('minAlert', [
             'icono' => 'success',
-            'titulo' => '¡ENTREGA CONFIRMADA!',
-            'mensaje' => 'Equipos entregados. La orden pasó a conversión.',
+            'titulo' => '¡EQUIPOS ASIGNADOS!',
+            'mensaje' => 'Kit asignado y descontado del almacén. La orden pasó a conversión.',
         ]);
 
         $this->redirect(route('conversiones.almacen-pendientes'));

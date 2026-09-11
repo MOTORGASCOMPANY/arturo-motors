@@ -1,5 +1,5 @@
 <div class="container mx-auto py-8 antialiased bg-gray-100">
-    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden m-16">
         <div class="p-5 border-b border-gray-200">
             <div class="flex items-center justify-between">
                 <div>

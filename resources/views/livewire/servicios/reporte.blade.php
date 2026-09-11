@@ -4,9 +4,9 @@
         <div class="flex items-center justify-between flex-wrap gap-4">
             <div>
                 <h2 class="text-gray-600 font-semibold text-2xl">
-                    <i class="fas fa-chart-simple mr-2"></i>Reporte de ventas y servicios
+                    <i class="fas fa-chart-simple mr-2"></i>Reporte de servicios
                 </h2>
-                <span class="text-xs">Qué se vendió, quién convirtió más, y la tendencia del período</span>
+                <span class="text-xs">Conversiones, servicios simples y tendencia del período</span>
             </div>
             <div class="flex items-center gap-2 flex-wrap">
                 <input type="date" wire:model.live="desde" class="text-sm rounded-lg border-gray-300">
@@ -34,55 +34,126 @@
     </div>
 
     {{-- KPIs --}}
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
         <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-5 text-center">
-            <span class="text-xs font-bold text-gray-500 uppercase">Total vendido</span>
-            <p class="text-2xl font-bold text-emerald-600 mt-1">S/ {{ number_format($totalVentas, 2) }}</p>
+            <span class="text-xs font-bold text-gray-500 uppercase">Convers. pendientes</span>
+            <p class="text-2xl font-bold text-amber-600 mt-1">{{ $totalConversionesPendientes }}</p>
         </div>
         <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-5 text-center">
-            <span class="text-xs font-bold text-gray-500 uppercase">Órdenes cobradas</span>
-            <p class="text-2xl font-bold text-blue-600 mt-1">{{ $totalOrdenes }}</p>
+            <span class="text-xs font-bold text-gray-500 uppercase">Convers. completadas</span>
+            <p class="text-2xl font-bold text-emerald-600 mt-1">{{ $totalConversionesCompletadas }}</p>
         </div>
         <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-5 text-center">
-            <span class="text-xs font-bold text-gray-500 uppercase">Ticket promedio</span>
-            <p class="text-2xl font-bold text-gray-700 mt-1">S/ {{ number_format($ticketPromedio, 2) }}</p>
+            <span class="text-xs font-bold text-gray-500 uppercase">Simples completados</span>
+            <p class="text-2xl font-bold text-gray-700 mt-1">{{ $totalSimplesCompletadas }}</p>
         </div>
     </div>
 
-    {{-- Gráfico --}}
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6" wire:ignore>
-        <h3 class="text-sm font-bold text-gray-500 uppercase mb-4">Ventas por día</h3>
-        <canvas id="chartReporteVentas" height="90"></canvas>
+    {{-- Gráfico de servicios por día --}}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6" wire:ignore wire:key="reporte-servicios-chart">
+        <h3 class="text-sm font-bold text-gray-500 uppercase mb-4">Órdenes por día (desglose por tipo y estado)</h3>
+
+        <div class="relative w-full" style="height: 320px;">
+            <canvas id="chartReporteServicios"
+                data-labels='@json($labels)'
+                data-conversion-pendientes='@json($conversionPendientes)'
+                data-conversion-completadas='@json($conversionCompletadas)'
+                data-simple-completadas='@json($simpleCompletadas)'></canvas>
+        </div>
+        @if ($hayDatos)
+            <div class="flex flex-wrap gap-4 mt-3 justify-center">
+                @if ($totalConversionesPendientes > 0)
+                    <div class="flex items-center gap-1.5 text-xs">
+                        <span class="w-3 h-3 rounded-sm" style="background: #d97706"></span>
+                        <span class="font-medium text-gray-600">Conversión pendiente</span>
+                        <span class="text-gray-400">{{ $totalConversionesPendientes }}</span>
+                    </div>
+                @endif
+                @if ($totalConversionesCompletadas > 0)
+                    <div class="flex items-center gap-1.5 text-xs">
+                        <span class="w-3 h-3 rounded-sm" style="background: #059669"></span>
+                        <span class="font-medium text-gray-600">Conversión completada</span>
+                        <span class="text-gray-400">{{ $totalConversionesCompletadas }}</span>
+                    </div>
+                @endif
+                @if ($totalSimplesCompletadas > 0)
+                    <div class="flex items-center gap-1.5 text-xs">
+                        <span class="w-3 h-3 rounded-sm" style="background: #6b7280"></span>
+                        <span class="font-medium text-gray-600">Simple completado</span>
+                        <span class="text-gray-400">{{ $totalSimplesCompletadas }}</span>
+                    </div>
+                @endif
+            </div>
+        @else
+            <div class="flex flex-col items-center justify-center py-16 text-center">
+                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <i class="fas fa-clipboard-list text-gray-400 text-2xl"></i>
+                </div>
+                <p class="text-gray-500 font-medium">Todavía no hay movimiento registrado</p>
+                <p class="text-gray-400 text-sm mt-1">Las órdenes de servicio aparecerán aquí cuando se creen</p>
+            </div>
+        @endif
     </div>
 
     @script
     <script>
-        function renderReporteVentasChart() {
-            const ctx = document.getElementById('chartReporteVentas');
-            if (!ctx) return;
+        window.renderReporteServiciosChart = function () {
+            const canvas = document.getElementById('chartReporteServicios');
+            if (!canvas) return;
 
-            if (window.chartReporteVentasInstance) window.chartReporteVentasInstance.destroy();
+            const labels = JSON.parse(canvas.dataset.labels || '[]');
+            const conversionPendientes = JSON.parse(canvas.dataset.conversionPendientes || '[]');
+            const conversionCompletadas = JSON.parse(canvas.dataset.conversionCompletadas || '[]');
+            const simpleCompletadas = JSON.parse(canvas.dataset.simpleCompletadas || '[]');
 
-            window.chartReporteVentasInstance = new Chart(ctx, {
-                type: 'line',
+            if (window.chartReporteServiciosInstance) window.chartReporteServiciosInstance.destroy();
+
+            window.chartReporteServiciosInstance = new Chart(canvas, {
+                type: 'bar',
                 data: {
-                    labels: @json($labels),
-                    datasets: [{
-                        label: 'Ventas (S/)',
-                        data: @json($data),
-                        borderColor: '#059669',
-                        backgroundColor: 'rgba(5,150,105,0.1)',
-                        tension: 0.3,
-                        fill: true,
-                    }]
+                    labels: labels,
+                    datasets: [
+                        { label: 'Conversión pendiente', data: conversionPendientes, backgroundColor: '#d97706', borderRadius: 3, borderSkipped: false },
+                        { label: 'Conversión completada', data: conversionCompletadas, backgroundColor: '#059669', borderRadius: 3, borderSkipped: false },
+                        { label: 'Simple completado', data: simpleCompletadas, backgroundColor: '#6b7280', borderRadius: 3, borderSkipped: false },
+                    ]
                 },
-                options: { responsive: true, plugins: { legend: { display: false } } }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { callbacks: { label: (ctx) => ctx.dataset.label + ': ' + ctx.parsed.y } }
+                    },
+                    scales: {
+                        x: { stacked: true },
+                        y: { stacked: true, beginAtZero: true, ticks: { stepSize: 1 } }
+                    }
+                }
             });
-        }
+        };
 
-        document.addEventListener('livewire:navigated', renderReporteVentasChart);
+        // Render inicial
+        window.renderReporteServiciosChart();
+
+        // Actualizar cuando Livewire re-renderiza
         Livewire.hook('morph.updated', ({ component }) => {
-            if (component.name === 'servicios.reporte') renderReporteVentasChart();
+            if (component.name === 'servicios.reporte') {
+                window.renderReporteServiciosChart();
+            }
+        });
+
+        // Update canvas data-* attrs when server dispatches new chart data
+        // (wire:ignore prevents morph from updating them)
+        $wire.on('chart-data-updated', (data) => {
+            const canvas = document.getElementById('chartReporteServicios');
+            if (!canvas) return;
+            canvas.dataset.labels = JSON.stringify(data.labels);
+            canvas.dataset.conversionPendientes = JSON.stringify(data.conversionPendientes);
+            canvas.dataset.conversionCompletadas = JSON.stringify(data.conversionCompletadas);
+            canvas.dataset.simplePendientes = JSON.stringify(data.simplePendientes);
+            canvas.dataset.simpleCompletadas = JSON.stringify(data.simpleCompletadas);
+            window.renderReporteServiciosChart();
         });
 
         Livewire.on('descargar-pdf', (params) => {
@@ -134,50 +205,4 @@
         });
     </script>
     @endscript
-
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        {{-- Ventas por servicio --}}
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 overflow-hidden">
-            <div class="p-4 border-b border-gray-200/60">
-                <h3 class="font-semibold text-gray-800 text-sm">Ventas por servicio</h3>
-            </div>
-            <table class="w-full text-sm">
-                <tbody class="divide-y divide-gray-100">
-                    @forelse ($ventasPorServicio as $nombre => $info)
-                        <tr>
-                            <td class="px-4 py-2.5">
-                                {{ $nombre }}
-                                <span class="text-xs text-gray-400">({{ $info['cantidad'] }})</span>
-                            </td>
-                            <td class="px-4 py-2.5 text-right font-semibold">S/ {{ number_format($info['total'], 2) }}</td>
-                        </tr>
-                    @empty
-                        <tr><td class="px-4 py-6 text-center text-gray-400">Sin datos en este período.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-
-        {{-- Ventas por técnico --}}
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 overflow-hidden">
-            <div class="p-4 border-b border-gray-200/60">
-                <h3 class="font-semibold text-gray-800 text-sm">Conversiones por técnico</h3>
-            </div>
-            <table class="w-full text-sm">
-                <tbody class="divide-y divide-gray-100">
-                    @forelse ($ventasPorTecnico as $nombre => $info)
-                        <tr>
-                            <td class="px-4 py-2.5">
-                                {{ $nombre }}
-                                <span class="text-xs text-gray-400">({{ $info['cantidad'] }})</span>
-                            </td>
-                            <td class="px-4 py-2.5 text-right font-semibold">S/ {{ number_format($info['total'], 2) }}</td>
-                        </tr>
-                    @empty
-                        <tr><td class="px-4 py-6 text-center text-gray-400">Sin conversiones cobradas en este período.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
 </div>
