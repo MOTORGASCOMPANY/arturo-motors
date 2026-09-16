@@ -200,6 +200,64 @@
         </div>
     @endif
 
+    {{-- ═══════════════════════════════════════════════════════════ --}}
+    {{-- KITS INSTALADOS — Historial de conversiones por vehículo --}}
+    {{-- ═══════════════════════════════════════════════════════════ --}}
+    @if ($kitsInstalados->isNotEmpty())
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-car text-slate-400 text-sm"></i>
+                    <h3 class="font-semibold text-slate-800 text-sm">Kits instalados por vehículo</h3>
+                </div>
+                <span class="text-xs text-slate-400">{{ $kitsInstalados->count() }} conversiones</span>
+            </div>
+            <div class="overflow-x-auto max-h-[600px] overflow-y-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-slate-50 text-slate-500 text-xs uppercase sticky top-0 z-10">
+                        <tr>
+                            <th class="px-4 py-2.5 text-left">Cliente</th>
+                            <th class="px-4 py-2.5 text-left">Vehículo</th>
+                            <th class="px-4 py-2.5 text-left">Placa</th>
+                            <th class="px-4 py-2.5 text-left">Kit</th>
+                            <th class="px-4 py-2.5 text-left">Gen.</th>
+                            <th class="px-4 py-2.5 text-left">Items Serializados</th>
+                            <th class="px-4 py-2.5 text-center">Técnico</th>
+                            <th class="px-4 py-2.5 text-left">Fecha</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        @foreach ($kitsInstalados as $ki)
+                            <tr class="hover:bg-slate-50/80 transition-colors">
+                                <td class="px-4 py-2.5 font-medium text-slate-700">{{ $ki['cliente'] }}</td>
+                                <td class="px-4 py-2.5 text-slate-600">{{ $ki['vehiculo'] }}</td>
+                                <td class="px-4 py-2.5 font-bold text-slate-800">{{ $ki['placa'] }}</td>
+                                <td class="px-4 py-2.5 text-xs text-slate-600">{{ $ki['kit']->producto->nombre }}</td>
+                                <td class="px-4 py-2.5">
+                                    <span class="inline-flex items-center rounded-md bg-purple-50 px-2 py-0.5 text-xs text-purple-700 font-semibold">
+                                        {{ $ki['generacion'] }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-2.5">
+                                    @forelse ($ki['seriales'] as $s)
+                                        <div class="text-xs leading-relaxed">
+                                            <span class="font-medium text-slate-700">{{ $s['nombre'] }}:</span>
+                                            <span class="font-mono text-slate-500">{{ $s['serie'] }}</span>
+                                        </div>
+                                    @empty
+                                        <span class="text-xs text-slate-300">—</span>
+                                    @endforelse
+                                </td>
+                                <td class="px-4 py-2.5 text-center text-xs text-slate-500">{{ $ki['tecnico'] }}</td>
+                                <td class="px-4 py-2.5 text-xs text-slate-400">{{ $ki['fecha'] }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    @endif
+
     <script>
         function renderCharts() {
             const sedeColors = ['#4f46e5', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];

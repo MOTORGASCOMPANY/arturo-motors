@@ -226,7 +226,7 @@
             </div>
 
             <div class="p-4 border-t border-gray-200/60">
-                {{ $movimientos->links() }}
+                {{ $movimientos->links('pagination::tailwind') }}
             </div>
         @else
             <div class="px-6 py-4 text-center font-bold bg-indigo-200 rounded-md">

@@ -159,7 +159,7 @@
                                                     </div>
                                                 </div>
                                                 @if($s->movimientos()->where('metodo_pago','fise')->exists())
-                                                    <a href="{{ route('caja.sesion.fise', $s->id) }}"
+                                                    <a href="{{ route('fise.detalle', $s->id) }}"
                                                        class="inline-flex items-center justify-center w-8 h-8 text-amber-700 bg-amber-50 hover:bg-amber-100 hover:text-amber-900 rounded-lg transition-colors duration-150 font-bold text-sm"
                                                        title="Ver solo FISE">
                                                         F
@@ -174,7 +174,7 @@
                     </div>
 
                     <div class="px-5 py-3 border-t border-gray-100">
-                        {{ $sesiones->links() }}
+                        {{ $sesiones->links('pagination::tailwind') }}
                     </div>
                 @else
                     <div class="px-6 py-16 text-center">

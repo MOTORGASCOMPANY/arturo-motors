@@ -207,9 +207,10 @@ class CambioPiezaService
         int $productoPiezaId,
         int $sedeId,
         ?string $observaciones = null,
-        ?int $serviceOrderId = null
+        ?int $serviceOrderId = null,
+        ?string $serie = null
     ): ItemSerializado {
-        return DB::transaction(function () use ($kitItem, $productoPiezaId, $sedeId, $observaciones, $serviceOrderId) {
+        return DB::transaction(function () use ($kitItem, $productoPiezaId, $sedeId, $observaciones, $serviceOrderId, $serie) {
             // 1. Marcar kit como abierto
             $kitItem->update([
                 'estado' => 'abierto',
@@ -220,7 +221,7 @@ class CambioPiezaService
                 ]),
             ]);
 
-            // 2. Buscar hijos existentes (creados por RegistrarItemsKit)
+            // 2. Buscar hijos existentes (creados por AsignarEquipos)
             $existentesPorProducto = ItemSerializado::where('kit_padre_id', $kitItem->id)
                 ->get()
                 ->groupBy('producto_id');
@@ -246,23 +247,27 @@ class CambioPiezaService
                 // Reutilizar hijos existentes
                 foreach ($yaExistentes as $existente) {
                     if ($esRequerido && !$nuevaPieza) {
-                        // Esta es la pieza solicitada → asignar a la orden
-                        $existente->update([
+                        // Esta es la pieza solicitada → asignar a la orden con serie
+                        $updateData = [
                             'estado' => 'asignado',
                             'service_order_id' => $serviceOrderId,
                             'atributos' => array_merge($existente->atributos ?? [], [
                                 'extraida_de_kit' => $kitItem->id,
                                 'extraida_en' => now()->toDateTimeString(),
                             ]),
-                        ]);
+                        ];
+                        if ($serie) {
+                            $updateData['serie'] = $serie;
+                        }
+                        $existente->update($updateData);
                         $nuevaPieza = $existente;
                     }
-                    // Si no es requerida, ya está en_stock (de RegistrarItemsKit)
+                    // Si no es requerida, ya está en_stock (de AsignarEquipos)
                 }
 
                 // Crear las piezas faltantes
                 for ($i = 0; $i < $faltantes; $i++) {
-                    $item = ItemSerializado::create([
+                    $itemData = [
                         'producto_id' => $compId,
                         'kit_padre_id' => $kitItem->id,
                         'serie' => null,
@@ -273,7 +278,14 @@ class CambioPiezaService
                         'estado' => ($esRequerido && !$nuevaPieza) ? 'asignado' : 'en_stock',
                         'sede_id' => $sedeId,
                         'service_order_id' => ($esRequerido && !$nuevaPieza) ? $serviceOrderId : null,
-                    ]);
+                    ];
+
+                    // Asignar serie si es la pieza requerida
+                    if ($esRequerido && !$nuevaPieza && $serie) {
+                        $itemData['serie'] = $serie;
+                    }
+
+                    $item = ItemSerializado::create($itemData);
 
                     if ($esRequerido && !$nuevaPieza) {
                         $nuevaPieza = $item;
@@ -323,9 +335,10 @@ class CambioPiezaService
     public function asignarPiezaDesdeAlmacen(
         ReportePiezaNoEncajada $reporte,
         int $itemNuevoId,
-        ?string $observaciones = null
+        ?string $observaciones = null,
+        ?string $serie = null
     ): bool {
-        return DB::transaction(function () use ($reporte, $itemNuevoId, $observaciones) {
+        return DB::transaction(function () use ($reporte, $itemNuevoId, $observaciones, $serie) {
             // 1. Marcar pieza vieja como DEFECTUOSA
             $itemViejo = ItemSerializado::where('id', $reporte->item_no_encajado_id)
                 ->where('estado', 'asignado')
@@ -364,11 +377,22 @@ class CambioPiezaService
                 throw new \Exception('La pieza seleccionada ya no está disponible.');
             }
 
-            $nuevaPieza->update([
+            $updateData = [
                 'estado' => 'asignado',
                 'service_order_id' => $reporte->service_order_id,
                 'kit_padre_id' => $itemViejo->kit_padre_id ?? null,
-            ]);
+            ];
+
+            // Guardar serie si se proporcionó
+            if ($serie) {
+                $updateData['serie'] = $serie;
+                $updateData['atributos'] = array_merge($nuevaPieza->atributos ?? [], [
+                    'serie_capturada_por_almacen' => Auth::id(),
+                    'serie_capturada_en' => now()->toDateTimeString(),
+                ]);
+            }
+
+            $nuevaPieza->update($updateData);
 
             MovimientoStock::registrar(
                 $nuevaPieza->producto,

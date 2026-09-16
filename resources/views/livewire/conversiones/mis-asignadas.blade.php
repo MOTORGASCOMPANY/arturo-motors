@@ -124,7 +124,8 @@
                                         </span>
                                     </td>
                                     <td class="px-4 py-3 text-center whitespace-nowrap">
-                                        @switch($orden->estado)
+                                        <div class="flex items-center justify-center gap-2">
+                                            @switch($orden->estado)
                                             @case('en_evaluacion')
                                                 <a href="{{ route('conversiones.evaluar', $orden->id) }}"
                                                     class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition inline-block shadow-sm">
@@ -139,22 +140,10 @@
                                             @break
 
                                             @case('en_conversion')
-                                                {{-- ═══════════════════════════════════════════ --}}
-                                                {{-- FLUJO: Registrar Items → Iniciar --}}
-                                                {{-- ═══════════════════════════════════════════ --}}
-                                                @if(!$orden->fecha_inicio_conversion)
-                                                    {{-- Aún no inicia: primer paso = Registrar Items --}}
-                                                    <a href="{{ route('conversiones.registrar-items-kit', $orden->id) }}"
-                                                        class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition inline-block shadow-sm">
-                                                        <i class="fas fa-clipboard-list mr-1"></i> Registrar Items
-                                                    </a>
-                                                @else
-                                                    {{-- Ya inició: continuar instalando --}}
-                                                    <a href="{{ route('conversiones.realizar', $orden->id) }}"
-                                                        class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition inline-block shadow-sm">
-                                                        <i class="fas fa-wrench mr-1"></i> Continuar
-                                                    </a>
-                                                @endif
+                                                <a href="{{ route('conversiones.realizar', $orden->id) }}"
+                                                    class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition inline-block shadow-sm">
+                                                    <i class="fas fa-wrench mr-1"></i> {{ $orden->fecha_inicio_conversion ? 'Continuar' : 'Iniciar' }}
+                                                </a>
                                             @break
 
                                             @case('conversion_completada')
@@ -166,6 +155,7 @@
                                             @default
                                                 <span class="text-xs text-gray-400">—</span>
                                         @endswitch
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
@@ -174,7 +164,7 @@
                 </div>
 
                 <div class="p-4 border-t border-gray-200/60">
-                    {{ $ordenes->links() }}
+                    {{ $ordenes->links('pagination::tailwind') }}
                 </div>
             </div>
         @else
@@ -187,5 +177,5 @@
                 </div>
             </div>
         @endif
-    </div>
+</div>
 </div>

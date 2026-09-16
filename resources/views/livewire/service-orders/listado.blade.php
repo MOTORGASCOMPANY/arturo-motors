@@ -37,10 +37,11 @@
                             <option value="todos">Todos</option>
                             <option value="creada">Creada</option>
                             <option value="en_evaluacion">En evaluación</option>
+                            <option value="evaluacion_rechazada">Evaluación rechazada</option>
                             <option value="aprobado_conversion">Aprobado conversión</option>
                             <option value="en_conversion">En conversión</option>
                             <option value="conversion_completada">Conversión completada</option>
-                            <option value="completada">Completada</option>
+                            <option value="entregado">Entregado</option>
                             <option value="cancelada">Cancelada</option>
                         </select>
                     </div>
@@ -177,7 +178,7 @@
                     </table>
                 </div>
                 <div class="px-5 py-3 border-t border-gray-100">
-                    {{ $ordenes->links() }}
+                    {{ $ordenes->links('pagination::tailwind') }}
                 </div>
             @else
                 <div class="px-6 py-10 text-center">

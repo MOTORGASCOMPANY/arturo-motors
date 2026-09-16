@@ -46,7 +46,7 @@ class ListaCitas extends Component
     public $color;
     public $combustible;
 
-    public $sede_id; // ID predeterminado (primera sede activa)
+    public $sede_id = 1;
     public $fecha_cita;
     public $motivo;
 
@@ -245,10 +245,12 @@ class ListaCitas extends Component
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
+        // Determinar si mostrar columna "Vendedor" (Admin o Jefe de Taller ven todas las citas)
+        $mostrarColumnaVendedor = $user->hasAnyRole(['Administrador del sistema', 'Jefe de Taller']);
+
         $citas = Cita::with(['cliente', 'vehiculo', 'asesor', 'asesorExterno', 'sede'])
-            // Si el usuario tiene el rol de Vendedor y no es Administrador ni Jefe de Taller,
-            // filtramos solo sus citas asociadas.
-            ->when($user->hasRole('Vendedor') && !$user->hasAnyRole(['Administrador del sistema', 'Cliente', 'Tecnico', 'Jefe de Taller', 'Almacen']), function ($query) use ($user) {
+            // Vendedor solo ve sus citas; Admin y Jefe de Taller ven todas
+            ->when($user->hasRole('Vendedor') && !$mostrarColumnaVendedor, function ($query) use ($user) {
                 $query->where('asesor_id', $user->id);
             })
             ->buscar($this->search)
@@ -263,9 +265,8 @@ class ListaCitas extends Component
         // Se obtienen los asesores externos para el selector
         $asesoresExternos = AsesorExterno::orderBy('nombre', 'asc')->get();
         $servicios = Service::activos()->where('tipo', 'conversion')->get();
-        //'servicios' => Service::activos()->where('tipo', 'conversion')->get(),
 
-        return view('livewire.lista-citas', compact('citas', 'sedes', 'asesoresExternos', 'servicios'));
+        return view('livewire.lista-citas', compact('citas', 'sedes', 'asesoresExternos', 'servicios', 'mostrarColumnaVendedor'));
     }
 
     public function crearCita()

@@ -18,6 +18,12 @@ class AsignarEquipos extends Component
     // Kit seleccionado para asignar
     public ?int $kitItemId = null;
 
+    // Filtro de generación (3RA, 5TA)
+    public string $filtroGeneracion = '';
+
+    // Series de los componentes del kit (capturados por almacén)
+    public array $seriesKit = []; // [producto_id => 'numero_serie']
+
     // Repuestos por cantidad
     public ?int $productoRepuestoId = null;
     public int $cantidadRepuesto = 1;
@@ -28,6 +34,12 @@ class AsignarEquipos extends Component
     protected function sedePrincipalId(): int
     {
         return $this->orden->sede_id ?? (Sede::activas()->orderBy('id')->first()?->id ?? 1);
+    }
+
+    public function updatedFiltroGeneracion(): void
+    {
+        $this->kitItemId = null;
+        $this->seriesKit = [];
     }
 
     private function esSerializable(string $nombre): bool
@@ -56,13 +68,54 @@ class AsignarEquipos extends Component
     // ═══════════════════════════════════════════════
     public function getKitsDisponiblesProperty()
     {
-        return ItemSerializado::with('producto.categoria')
+        $query = ItemSerializado::with('producto.categoria')
+            ->where('estado', 'en_stock')
+            ->where('sede_id', $this->sedePrincipalId())
+            ->whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true));
+
+        // Filtrar por generación si se seleccionó
+        if ($this->filtroGeneracion) {
+            $query->whereHas('producto', fn ($q) => $q->where('atributos->generacion', $this->filtroGeneracion));
+        }
+
+        return $query->orderByDesc('created_at')->get();
+    }
+
+    /**
+     * Generaciones disponibles en stock
+     */
+    public function getGeneracionesDisponiblesProperty()
+    {
+        return ItemSerializado::with('producto')
             ->where('estado', 'en_stock')
             ->where('sede_id', $this->sedePrincipalId())
             ->whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true))
-            //->whereNotIn('id', array_keys($this->itemsReservados))
-            ->orderByDesc('created_at')
-            ->get();
+            ->get()
+            ->pluck('producto.atributos.generacion')
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values()
+            ->toArray();
+    }
+
+    // ═══════════════════════════════════════════════
+    // COMPONENTES DEL KIT SELECCIONADO (para inputs de serie)
+    // ═══════════════════════════════════════════════
+    public function getComponentesKitProperty()
+    {
+        if (!$this->kitItemId) return collect();
+
+        $kit = ItemSerializado::with('producto.componentes.componente')->find($this->kitItemId);
+        if (!$kit) return collect();
+
+        return $kit->producto->componentes
+            ->filter(fn($kc) => $this->esSerializable($kc->componente->nombre))
+            ->map(fn($kc) => (object) [
+                'producto_id' => $kc->producto_componente_id,
+                'nombre' => $kc->componente->nombre,
+            ])
+            ->values();
     }
 
     // ═══════════════════════════════════════════════
@@ -118,8 +171,38 @@ class AsignarEquipos extends Component
     public function confirmarEntrega()
     {
         if (empty($this->kitItemId) && empty($this->repuestosSeleccionados)) {
-            $this->addError('general', 'Seleccioná un kit para confirmar.');
+            $this->dispatch('minToast', titulo: 'Faltan datos', mensaje: 'Seleccioná un kit para confirmar.', icono: 'warning');
             return;
+        }
+
+        // Validar que todos los componentes seriales tengan serie
+        if ($this->kitItemId) {
+            $componentes = $this->componentesKit;
+            $seriesIngresadas = [];
+
+            foreach ($componentes as $comp) {
+                $serie = trim($this->seriesKit[$comp->producto_id] ?? '');
+
+                if (empty($serie)) {
+                    $this->dispatch('minToast', titulo: 'Serie requerida', mensaje: "Ingrese el número de serie de: {$comp->nombre}", icono: 'warning');
+                    return;
+                }
+
+                // Validar duplicados entre los que se están ingresando
+                $serieUpper = strtoupper($serie);
+                if (in_array($serieUpper, $seriesIngresadas)) {
+                    $this->dispatch('minToast', titulo: 'Serie duplicada', mensaje: "El serie \"{$serie}\" está repetido. Ingrese series diferentes.", icono: 'error');
+                    return;
+                }
+                $seriesIngresadas[] = $serieUpper;
+
+                // Validar que el serie no exista ya en la base de datos
+                $existeEnDb = ItemSerializado::where('serie', $serie)->exists();
+                if ($existeEnDb) {
+                    $this->dispatch('minToast', titulo: 'Serie ya existe', mensaje: "El serie \"{$serie}\" ya está registrado en el sistema.", icono: 'error');
+                    return;
+                }
+            }
         }
 
         $sedeId = $this->orden->sede_id ?? $this->sedePrincipalId();
@@ -127,7 +210,7 @@ class AsignarEquipos extends Component
         // Guard: no duplicate assignment
         $yaTieneItems = $this->orden->items()->count() > 0;
         if ($yaTieneItems) {
-            $this->addError('general', 'Esta orden ya tiene items asignados. No se puede asignar un kit dos veces.');
+            $this->dispatch('minToast', titulo: 'Error', mensaje: 'Esta orden ya tiene items asignados. No se puede asignar un kit dos veces.', icono: 'error');
             return;
         }
 
@@ -159,6 +242,9 @@ class AsignarEquipos extends Component
                         $esSerializable = $this->esSerializable($producto->nombre);
 
                         if ($esSerializable) {
+                            // Usar serie capturada por almacén
+                            $serieCapturada = trim($this->seriesKit[$producto->id] ?? '');
+
                             // Buscar item en stock de esta sede
                             $itemEnStock = ItemSerializado::where('producto_id', $producto->id)
                                 ->where('estado', 'en_stock')
@@ -170,11 +256,16 @@ class AsignarEquipos extends Component
                                     'estado' => 'asignado',
                                     'service_order_id' => $this->orden->id,
                                     'kit_padre_id' => $kit->id,
+                                    'serie' => $serieCapturada,
+                                    'atributos' => array_merge($itemEnStock->atributos ?? [], [
+                                        'serie_capturada_por' => Auth::id(),
+                                        'serie_capturada_en' => now()->toDateTimeString(),
+                                    ]),
                                 ]);
                             } else {
                                 ItemSerializado::create([
                                     'producto_id' => $producto->id,
-                                    'serie' => null,
+                                    'serie' => $serieCapturada,
                                     'estado' => 'asignado',
                                     'service_order_id' => $this->orden->id,
                                     'kit_padre_id' => $kit->id,
@@ -184,6 +275,8 @@ class AsignarEquipos extends Component
                                         'creado_automaticamente' => true,
                                         'creado_por' => 'asignar-equipos',
                                         'creado_en' => now()->toDateTimeString(),
+                                        'serie_capturada_por' => Auth::id(),
+                                        'serie_capturada_en' => now()->toDateTimeString(),
                                     ],
                                 ]);
                             }
@@ -227,22 +320,19 @@ class AsignarEquipos extends Component
                 $this->orden->update(['estado' => 'en_conversion']);
             });
         } catch (\RuntimeException $e) {
-            $this->addError('general', $e->getMessage());
+            $this->dispatch('minToast', titulo: 'Error', mensaje: $e->getMessage(), icono: 'error');
             return;
         } catch (\Throwable $e) {
             report($e);
-            $this->addError('general', 'Ocurrió un error al confirmar. Intenta de nuevo.');
+            $this->dispatch('minToast', titulo: 'Error', mensaje: 'Ocurrió un error al confirmar. Intenta de nuevo.', icono: 'error');
             return;
         }
 
         // Mostrar alerta centrada (grande) de confirmación
-        $this->dispatch('minAlert', [
-            'icono' => 'success',
-            'titulo' => '¡EQUIPOS ASIGNADOS!',
+        $this->dispatch('entrega-confirmada', [
+            'redirectUrl' => route('conversiones.almacen-pendientes'),
             'mensaje' => 'Kit asignado y descontado del almacén. La orden pasó a conversión.',
         ]);
-
-        $this->redirect(route('conversiones.almacen-pendientes'));
     }
 
     public function render()

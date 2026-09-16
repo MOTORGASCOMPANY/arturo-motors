@@ -114,7 +114,7 @@
                 </table>
             </div>
             <div class="px-5 py-3 border-t border-gray-100">
-                {{ $usuarios->links() }}
+                {{ $usuarios->links('pagination::tailwind') }}
             </div>
         </div>
         @else

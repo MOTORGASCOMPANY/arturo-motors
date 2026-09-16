@@ -221,7 +221,7 @@
                     <i class="fa-solid fa-landmark text-amber-600 text-lg"></i>
                     <span class="text-sm font-medium text-amber-800">Ver auditoría completa FISE</span>
                 </div>
-                <a href="{{ route('caja.fise') }}" 
+                <a href="{{ route('fise.control') }}" 
                    class="bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-lg px-4 py-2 transition-colors flex items-center gap-2">
                     <i class="fa-solid fa-chart-bar"></i> Ir a Auditoría FISE
                 </a>

@@ -125,7 +125,7 @@
 
                 {{-- Pagination --}}
                 <div class="px-5 py-3 border-t border-gray-100">
-                    {{ $roles->links() }}
+                    {{ $roles->links('pagination::tailwind') }}
                 </div>
             @else
                 {{-- Empty State --}}

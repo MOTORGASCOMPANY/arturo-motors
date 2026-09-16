@@ -4,6 +4,8 @@ namespace App\Livewire\Almacen;
 
 use App\Models\Producto;
 use App\Models\Sede;
+use App\Models\ItemSerializado;
+use App\Models\KitComponente;
 use Livewire\Component;
 
 class Reporte extends Component
@@ -93,6 +95,49 @@ class Reporte extends Component
         $totalItems = $distribucionFiltrada->sum('total');
         $productosConStock = $distribucionFiltrada->filter(fn ($row) => $row['total'] > 0)->count();
 
+        // ─── Kits instalados (historial de conversiones) ───
+        $kitsInstalados = ItemSerializado::whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true))
+            ->whereIn('estado', ['consumido', 'instalado'])
+            ->with([
+                'producto.categoria',
+                'serviceOrder.cliente',
+                'serviceOrder.vehiculo',
+                'serviceOrder.tecnico',
+                'piezasEnKit.producto',
+            ])
+            ->orderByDesc('updated_at')
+            ->get()
+            ->map(function ($kit) {
+                $generacion = $kit->producto->atributos['generacion'] ?? '';
+                $hijos = $kit->piezasEnKit;
+
+                // Items seriales instalados (no CANT-)
+                $seriales = $hijos->filter(fn ($h) => !str_starts_with($h->serie ?? '', 'CANT-') && !empty($h->serie))
+                    ->map(fn ($h) => [
+                        'nombre' => $h->producto->nombre,
+                        'serie' => $h->serie,
+                    ])->values();
+
+                return [
+                    'kit' => $kit,
+                    'cliente' => $kit->serviceOrder->cliente
+                        ? trim($kit->serviceOrder->cliente->nombre . ' ' . $kit->serviceOrder->cliente->apellido)
+                        : 'N/A',
+                    'placa' => $kit->serviceOrder->vehiculo->placa ?? 'N/A',
+                    'vehiculo' => trim(
+                        ($kit->serviceOrder->vehiculo->marca ?? '') . ' ' .
+                        ($kit->serviceOrder->vehiculo->modelo ?? '') . ' ' .
+                        ($kit->serviceOrder->vehiculo->anio ?? '')
+                    ),
+                    'tecnico' => $kit->serviceOrder->tecnico->name ?? 'N/A',
+                    'generacion' => $generacion,
+                    'seriales' => $seriales,
+                    'total_hijos' => $hijos->count(),
+                    'fecha' => $kit->updated_at?->format('d/m/Y H:i'),
+                    'orden_id' => $kit->serviceOrder->id ?? '—',
+                ];
+            });
+
         return view('livewire.almacen.reporte', [
             'sedes' => $sedes,
             'distribucion' => $distribucionFiltrada->values(),
@@ -105,6 +150,7 @@ class Reporte extends Component
             'dataSedes' => $stockPorSede->values()->toArray(),
             'labelsCategorias' => $stockPorCategoria->keys()->toArray(),
             'dataCategorias' => $stockPorCategoria->values()->toArray(),
+            'kitsInstalados' => $kitsInstalados,
         ]);
     }
 }

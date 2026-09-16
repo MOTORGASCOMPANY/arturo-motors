@@ -104,7 +104,7 @@
                 </div>
 
                 <div class="px-5 py-3 border-t border-gray-100">
-                    {{ $permisos->links() }}
+                    {{ $permisos->links('pagination::tailwind') }}
                 </div>
             </div>
         @else

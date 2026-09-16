@@ -205,9 +205,37 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                                                     Historial de caja
                                                 </x-responsive-nav-link>
                                             </li>
+                                        </ul>
+                                    </div>
+                                </li>
+                            @endcan
+
+                            {{--             OPCIONES PARA FISE                    --}}
+                            @can('opciones.fise')
+                                <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
+                                    x-data="{ Open: false }">
+                                    <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
+                                        x-on:click="Open = !Open">
+                                        <span class="inline-flex items-center space-x-6  text-sm text-white ">
+                                            <i class="fa-solid fa-landmark"></i>
+                                            <span class="select-none">FISE</span>
+                                        </span>
+                                        <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
+                                        <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
+                                    </div>
+                                    <div x-show.transition="Open" style="display:none;">
+                                        <ul x-transition:enter="transition-all ease-in-out duration-300"
+                                            x-transition:enter-start="opacity-25 max-h-0"
+                                            x-transition:enter-end="opacity-100 max-h-xl"
+                                            x-transition:leave="transition-all ease-in-out duration-300"
+                                            x-transition:leave-start="opacity-100 max-h-xl"
+                                            x-transition:leave-end="opacity-0 max-h-0"
+                                            class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
+                                            aria-label="submenu">
+
                                             <li class="transition-colors duration-150">
-                                                <x-responsive-nav-link class="text-sm" href="{{ route('caja.fise') }}"
-                                                    :active="request()->routeIs('caja.fise')">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('fise.control') }}"
+                                                    :active="request()->routeIs('fise.control')">
                                                     Control FISE
                                                 </x-responsive-nav-link>
                                             </li>
@@ -380,6 +408,12 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                                                 </x-responsive-nav-link>
                                             </li>
                                             <li class="transition-colors duration-150">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('almacen.stock.registrar-series') }}"
+                                                    :active="request()->routeIs('almacen.stock.registrar-series')">
+                                                    Registrar Series
+                                                </x-responsive-nav-link>
+                                            </li>
+                                            <li class="transition-colors duration-150">
                                                 <x-responsive-nav-link class="text-sm" href="{{ route('almacen.reportes-piezas') }}"
                                                     :active="request()->routeIs('almacen.reportes-piezas')">
                                                     Reportes de Piezas
@@ -505,7 +539,7 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                                                 </x-responsive-nav-link>
                                             </li>
                                             <li class="transition-colors duration-150">
-                                                <x-responsive-nav-link class="text-sm" href="{{ route('almacen.reporte') }}"
+                                                <x-responsive-nav-link class="text-sm !text-red-600 !border-red-400 hover:!text-red-800 hover:!bg-red-50 hover:!border-red-500" href="{{ route('almacen.reporte') }}"
                                                     :active="request()->routeIs('almacen.reporte')">
                                                     Reporte de Inventario
                                                 </x-responsive-nav-link>

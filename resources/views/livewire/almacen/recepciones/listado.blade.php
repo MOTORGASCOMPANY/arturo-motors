@@ -85,7 +85,7 @@
             </div>
 
             <div class="mt-4">
-                {{ $recepciones->links() }}
+                {{ $recepciones->links('pagination::tailwind') }}
             </div>
         </div>
     </div>

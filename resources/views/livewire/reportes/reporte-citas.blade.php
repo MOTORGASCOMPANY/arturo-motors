@@ -66,6 +66,12 @@
                         </select>
                     </div>
                 </div>
+                <div class="flex items-center gap-3 mt-2">
+                    <label class="inline-flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" wire:model.live="soloVendedores" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                        <span class="text-sm text-gray-700 font-medium">Solo Vendedores</span>
+                    </label>
+                </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <x-label class="text-gray-600 font-semibold mb-1 text-xs">Fecha Desde</x-label>
@@ -172,14 +178,13 @@
 
             @if ($citas->hasPages())
                 <div class="mt-4 p-4 border-t border-gray-200/60">
-                    {{ $citas->links() }}
+                    {{ $citas->links('pagination::tailwind') }}
                 </div>
             @endif
         </div>
     </div>
 </div>
 
-@script
 @script
 <script>
     Livewire.on('descargar-pdf', (params) => {
@@ -230,5 +235,4 @@
         });
     });
 </script>
-@endscript
 @endscript

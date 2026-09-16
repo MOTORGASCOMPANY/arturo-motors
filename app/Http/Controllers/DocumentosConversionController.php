@@ -133,6 +133,7 @@ class DocumentosConversionController extends Controller
         ];
 
         $pdf = Pdf::loadView('pdfs.hoja-recepcion', [
+            'orden'           => $orden,
             'fecha_ingreso'   => $orden->created_at ? $orden->created_at->format('d/m/Y') : '---',
             'fecha_salida'    => $orden->fecha_fin_conversion ? $orden->fecha_fin_conversion->format('d/m/Y') : 'Pendiente',
             'nombre_dueno'    => $cliente->nombre_completo ?? ($cliente->nombre . ' ' . $cliente->apellido),

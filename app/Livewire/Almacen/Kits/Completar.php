@@ -163,6 +163,15 @@ class Completar extends Component
                             'estado' => 'en_stock',
                             'sede_id' => $sedeId,
                         ]);
+
+                        // Registrar movimiento de entrada
+                        $producto = Producto::find($faltante['producto_id']);
+                        if ($producto) {
+                            MovimientoStock::registrar(
+                                $producto, 'entrada', 1, null, Auth::id(),
+                                "Agregado serializado al kit {$this->kit->serie}", $sedeId
+                            );
+                        }
                     } else {
                         // Registrar movimiento de entrada
                         $producto = Producto::find($faltante['producto_id']);

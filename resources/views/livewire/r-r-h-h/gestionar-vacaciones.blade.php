@@ -115,7 +115,7 @@
             </tbody>
         </table>
         <div class="p-4">
-            {{ $asignaciones->links() }}
+            {{ $asignaciones->links('pagination::tailwind') }}
         </div>
     </div>
 

@@ -20,7 +20,7 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <a href="{{ route('caja.sesion.fise', $sesion) }}"
+                    <a href="{{ route('fise.detalle', $sesion) }}"
                        class="text-amber-600 hover:text-amber-800 font-bold px-3 py-1.5 
                               border border-amber-300 rounded-lg text-sm transition-colors flex items-center gap-1.5">
                         <i class="fa-solid fa-landmark"></i> Ver FISE

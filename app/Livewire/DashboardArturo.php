@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\ServiceOrder;
 use App\Models\SesionCaja;
 use App\Models\MovimientoCaja;
+use App\Models\FisePago;
 use Illuminate\Support\Carbon;
 use Livewire\Component;
 
@@ -88,6 +89,11 @@ class DashboardArturo extends Component
 
         if ($user->hasAnyRole(['Almacen', 'Administrador del sistema'])) {
             $data['pendientesAlmacen'] = ServiceOrder::where('estado', 'aprobado_conversion')->count();
+        }
+
+        // FISE pendientes
+        if ($user->hasAnyRole(['Administrador del sistema', 'Jefe de Taller'])) {
+            $data['fisePendientes'] = FisePago::where('estado', 'pendiente')->count();
         }
 
         $data['ordenesHoy'] = ServiceOrder::whereDate('created_at', today())->count();

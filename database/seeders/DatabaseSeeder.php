@@ -23,10 +23,10 @@ class DatabaseSeeder extends Seeder
             ClienteSeeder::class,
             VehiculoSeeder::class,
             ClienteVehiculoSeeder::class,
-            ServiceOrderSeeder::class,
-            SesionCajaSeeder::class,
-            ProductosGnvSeeder::class,
-            DatosPruebaAlmacenSeeder::class,
+            //ServiceOrderSeeder::class,
+            //SesionCajaSeeder::class,
+            //ProductosGnvSeeder::class,
+            //DatosPruebaAlmacenSeeder::class,
         ]);
     }
 }

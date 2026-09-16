@@ -109,7 +109,7 @@
                 </table>
             </div>
             <div class="px-5 py-3 border-t border-gray-100">
-                {{ $servicios->withQueryString()->links() }}
+                {{ $servicios->withQueryString()->links('pagination::tailwind') }}
             </div>
         @else
             <div class="px-6 py-10 text-center">

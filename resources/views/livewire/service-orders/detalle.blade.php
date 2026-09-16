@@ -337,10 +337,34 @@
                             @endforeach
                         @endforeach
                     </div>
+
+        
                 </div>
             @endif
 
             @if ($orden->service->tipo === 'conversion' && $orden->tecnico)
+                @php
+                    $padreIds = $orden->items->pluck('kit_padre_id')->filter()->unique()->toArray();
+                    $kitsConDetalle = collect();
+
+                    foreach ($padreIds as $pid) {
+                        $parent = $orden->items->firstWhere('id', $pid);
+                        $children = $orden->items->where('kit_padre_id', $pid);
+                        $kitsConDetalle->push([
+                            'kit' => $parent ?? $children->first(),
+                            'hijos' => $children,
+                            'total' => $children->count() + ($parent ? 1 : 0),
+                        ]);
+                    }
+
+                    $orden->items->whereNull('kit_padre_id')
+                        ->filter(fn($item) => !in_array($item->id, $padreIds))
+                        ->each(fn($item) => $kitsConDetalle->push([
+                            'kit' => $item,
+                            'hijos' => collect(),
+                            'total' => 1,
+                        ]));
+                @endphp
                 <div class="bg-gray-200 rounded-xl shadow-sm border border-gray-300/80 p-6">
                     <h3 class="text-sm font-bold text-gray-800 uppercase mb-3">
                         <i class="fas fa-wrench mr-1 text-gray-600"></i>
@@ -373,20 +397,70 @@
                             Equipos instalados
                         </p>
 
-                        <div class="space-y-1.5 mb-4">
-                            @foreach ($orden->items as $item)
-                                <div wire:key="item-{{ $item->id }}"
-                                    class="flex justify-between text-sm bg-white/80 border border-gray-300 rounded-lg px-3 py-2">
-                                    <span class="font-medium text-gray-800">
-                                        {{ $item->producto->categoria->nombre }} —
-                                        {{ $item->producto->nombre }}
-                                        ({{ $item->producto->marca }})
-                                    </span>
+                        <div class="space-y-2 mb-4" x-data="{ modalKit: null }">
+                            @foreach ($kitsConDetalle as $kitKey => $grupo)
+                                @php
+                                    $kitItem = $grupo['kit'];
+                                    $hijos = $grupo['hijos'];
+                                    $esKit = $kitItem && $hijos->count() > 0;
+                                @endphp
+                                @if($kitItem)
+                                <div wire:key="kit-{{ $kitKey }}"
+                                    class="bg-white/80 border border-gray-300 rounded-lg overflow-hidden">
 
-                                    <span class="font-mono text-xs text-gray-700 font-semibold">
-                                        Serie: {{ $item->serie }}
-                                    </span>
+                                    <button type="button"
+                                        @click="modalKit = modalKit === '{{ $kitKey }}' ? null : '{{ $kitKey }}'"
+                                        class="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-gray-50 transition-colors">
+
+                                        <div class="flex items-center gap-2.5 min-w-0">
+                                            <div class="w-8 h-8 rounded-lg {{ $esKit ? 'bg-indigo-600' : 'bg-slate-500' }} text-white flex items-center justify-center shrink-0">
+                                                <i class="fa-solid {{ $esKit ? 'fa-cube' : 'fa-puzzle-piece' }} text-xs"></i>
+                                            </div>
+                                            <div class="min-w-0">
+                                                <p class="text-sm font-bold text-gray-800 truncate">
+                                                    {{ $kitItem->producto->nombre ?? $kitItem->producto_id }}
+                                                </p>
+                                                <p class="text-[10px] text-gray-500 font-medium">
+                                                    {{ $esKit ? $hijos->count() . ' componentes' : 'Pieza individual' }}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div class="flex items-center gap-2 shrink-0">
+                                            @if($kitItem->serie)
+                                                <span class="text-[10px] font-mono text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
+                                                    {{ Str::limit($kitItem->serie, 16) }}
+                                                </span>
+                                            @endif
+                                            <i class="fas fa-chevron-down text-gray-400 text-xs transition-transform"
+                                                :class="modalKit === '{{ $kitKey }}' ? 'rotate-180' : ''"></i>
+                                        </div>
+                                    </button>
+
+                                    <div x-show="modalKit === '{{ $kitKey }}'"
+                                        x-collapse
+                                        class="border-t border-gray-200 bg-gray-50/50">
+                                        <div class="p-3 space-y-1.5">
+                                            @foreach ($hijos as $hijo)
+                                                <div class="flex items-center justify-between text-xs py-1 px-2 rounded bg-white border border-gray-200">
+                                                    <div class="flex items-center gap-2 min-w-0">
+                                                        <i class="fa-solid fa-gear text-gray-400 text-[10px]"></i>
+                                                        <span class="font-medium text-gray-700 truncate">
+                                                            {{ $hijo->producto->nombre ?? $hijo->producto_id }}
+                                                        </span>
+                                                        @if($hijo->producto->marca ?? null)
+                                                            <span class="text-[10px] text-gray-400">({{ $hijo->producto->marca }})</span>
+                                                        @endif
+                                                    </div>
+                                                    <span class="font-mono text-[10px] text-gray-500 shrink-0 ml-2">
+                                                        {{ Str::limit($hijo->serie, 20) }}
+                                                    </span>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
                                 </div>
+                                @endif
                             @endforeach
                         </div>
                     @endif
@@ -510,7 +584,7 @@
                             )
                             : null,
 
-                        $orden->vehiculo
+                        $orden->vehiculo && $orden->checklist_evaluacion
                             ? array_merge(
                                 [
                                     'label' => 'Hoja de recepción',
@@ -519,7 +593,17 @@
                                 ],
                                 $estilosSistema['Hoja de recepción'],
                             )
-                            : null,
+                            : ($orden->vehiculo
+                                ? array_merge(
+                                    [
+                                        'label' => 'Hoja de recepción',
+                                        'badge' => 'No disponible',
+                                        'url' => null,
+                                        'disabled' => true,
+                                    ],
+                                    $estilosSistema['Hoja de recepción'],
+                                )
+                                : null),
 
                         $orden->vehiculo
                             ? array_merge(
@@ -617,24 +701,42 @@
                                 <div wire:key="sysdoc-{{ Str::slug($doc['label']) }}"
                                     class="flex items-center justify-between p-3 bg-white border {{ $doc['borderClass'] }} rounded-xl shadow-sm hover:shadow-md transition-all group">
 
-                                    <button type="button"
-                                        @click="abrir(@js($doc['url']), @js($doc['label']))"
-                                        class="flex items-center gap-3 flex-1 min-w-0 text-left">
+                                    @if($doc['disabled'] ?? false)
+                                        <div class="flex items-center gap-3 flex-1 min-w-0 opacity-50 cursor-not-allowed">
+                                            <div
+                                                class="w-10 h-10 rounded-lg bg-gray-400 text-white flex items-center justify-center shrink-0">
+                                                <i class="fa-solid fa-ban text-sm"></i>
+                                            </div>
 
-                                        <div
-                                            class="w-10 h-10 rounded-lg {{ $doc['bgClass'] }} text-white flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-sm">
-                                            <i class="fa-solid {{ $doc['icon'] }} text-sm"></i>
+                                            <div class="min-w-0">
+                                                <p class="text-xs font-bold text-gray-500 truncate">
+                                                    {{ $doc['label'] }}
+                                                </p>
+                                                <p class="text-[10px] text-gray-400 font-medium">
+                                                    <i class="fa-solid fa-lock mr-1"></i>{{ $doc['badge'] }}
+                                                </p>
+                                            </div>
                                         </div>
+                                    @else
+                                        <button type="button"
+                                            @click="abrir(@js($doc['url']), @js($doc['label']))"
+                                            class="flex items-center gap-3 flex-1 min-w-0 text-left">
 
-                                        <div class="min-w-0">
-                                            <p class="text-xs font-bold text-gray-800 truncate">
-                                                {{ $doc['label'] }}
-                                            </p>
-                                            <p class="text-[10px] text-gray-400 font-medium">
-                                                {{ $doc['badge'] }}
-                                            </p>
-                                        </div>
-                                    </button>
+                                            <div
+                                                class="w-10 h-10 rounded-lg {{ $doc['bgClass'] }} text-white flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-sm">
+                                                <i class="fa-solid {{ $doc['icon'] }} text-sm"></i>
+                                            </div>
+
+                                            <div class="min-w-0">
+                                                <p class="text-xs font-bold text-gray-800 truncate">
+                                                    {{ $doc['label'] }}
+                                                </p>
+                                                <p class="text-[10px] text-gray-400 font-medium">
+                                                    {{ $doc['badge'] }}
+                                                </p>
+                                            </div>
+                                        </button>
+                                    @endif
                                 </div>
                             @endforeach
                         </div>

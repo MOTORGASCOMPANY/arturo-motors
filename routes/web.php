@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\Caja\DetalleController;
-use App\Http\Controllers\Caja\FiseDetalleController;
 use App\Http\Controllers\ComprobanteController;
 use App\Http\Controllers\DocumentosConversionController;
 use App\Http\Controllers\LandingController;
@@ -27,7 +26,8 @@ use App\Livewire\Almacen\Traslados\Listado as TrasladosListado;
 use App\Livewire\Caja\AbrirCaja;
 use App\Livewire\Caja\CerrarCaja;
 use App\Livewire\Caja\DetalleSesion;
-use App\Livewire\Caja\FiseAuditoria;
+use App\Livewire\Fise\Auditoria as FiseAuditoria;
+use App\Livewire\Fise\Detalle as FiseDetalle;
 use App\Livewire\Caja\HistorialSesiones;
 use App\Livewire\Caja\RegistrarEgreso;
 use App\Livewire\Caja\Reporte as ReporteCaja;
@@ -127,8 +127,10 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::get('/caja/historial', HistorialSesiones::class)->name('caja.historial');
     Route::get('/caja/sesion/{sesionId}', DetalleSesion::class)->name('caja.sesion');
     Route::get('/caja/sesion/{sesion}/detalle', [DetalleController::class, 'show'])->name('caja.sesion.detalle');
-    Route::get('/caja/sesion/{sesion}/fise', [FiseDetalleController::class, 'show'])->name('caja.sesion.fise');
-    Route::get('/caja/fise-auditoria', FiseAuditoria::class)->name('caja.fise');
+
+    // Rutas modulo FISE (separado de caja)
+    Route::get('/fise/control', FiseAuditoria::class)->name('fise.control');
+    Route::get('/fise/sesion/{sesion}', FiseDetalle::class)->name('fise.detalle');
 
     // Rutas de servicios
     Route::get('/ordenes', Listado::class)->name('ordenes.listado');
@@ -149,6 +151,8 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::get('/conversiones/{ordenId}/entregar', EntregarCobrar::class)->name('conversiones.entregar'); // P7: Entrega y cobro (Cajero) — reutiliza la lógica de cobro que ya armamos en CrearSimple
     Route::get('/conversiones/{conversionId}/solicitud-repuestos', SolicitudRepuestos::class)->name('SolicitudRepuestos'); // Solicitud de repuestos para conversión
 
+    
+
     // Rutas modulo de almacen
     Route::get('/almacen/categorias', CategoriasListado::class)->name('almacen.categorias.listado');
     Route::get('/almacen/productos', ProductosListado::class)->name('almacen.productos.listado');
@@ -162,11 +166,12 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
 
     // Stock
     Route::get('/almacen/stock', \App\Livewire\Almacen\Stock\Ver::class)->name('almacen.stock');
+    Route::get('/almacen/stock/registrar-series', \App\Livewire\Almacen\Stock\RegistrarSeries::class)->name('almacen.stock.registrar-series');
 
     // Solicitudes pendientes (piezas que no calzan) - legacy
     Route::get('/almacen/pendientes', \App\Livewire\Almacen\Pendientes::class)->name('almacen.pendientes');
 
-    // Reportes de piezas que no calzan (nuevo flujo)
+    // Monitoreo de conversiones activas (dashboard en tiempo real)
     Route::get('/almacen/reportes-piezas', \App\Livewire\Almacen\ReportesPendientes::class)->name('almacen.reportes-piezas');
 
     // Traslados

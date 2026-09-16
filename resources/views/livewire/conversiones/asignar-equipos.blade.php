@@ -1,66 +1,115 @@
 <div wire:loading.class="opacity-50 pointer-events-none" class="container mx-auto py-12">
-    <div class="bg-gray-200 p-8 rounded-xl w-full max-w-4xl mx-auto space-y-6">        
-        {{-- Header --}}
+    <div class="bg-gray-200 p-8 rounded-xl w-full max-w-4xl mx-auto space-y-6">
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-gray-300 pb-4">
             <div>
                 <h2 class="text-gray-600 font-semibold text-2xl">
                     <i class="fas fa-boxes-packing mr-2"></i>Asignar equipos — Orden #{{ $orden->id }}
                 </h2>
                 <span class="text-xs text-gray-600 block mt-1">
-                    <strong>Cliente:</strong> {{ $orden->cliente->nombre }} {{ $orden->cliente->apellido }} | 
-                    <strong>Vehículo:</strong> <span class="font-bold">{{ $orden->vehiculo->placa }}</span> | 
+                    <strong>Cliente:</strong> {{ $orden->cliente->nombre }} {{ $orden->cliente->apellido }} |
+                    <strong>Vehículo:</strong> <span class="font-bold">{{ $orden->vehiculo->placa }}</span> |
                     <strong>Servicio:</strong> {{ $orden->service->nombre }}
                 </span>
             </div>
-            <a href="{{ route('conversiones.almacen-pendientes') }}" 
+            <a href="{{ route('conversiones.almacen-pendientes') }}"
                 class="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs font-semibold text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all shadow-sm">
                 <i class="fas fa-arrow-left text-gray-500"></i> Volver a Pendientes
-            </a>            
+            </a>
         </div>
 
         <x-input-error for="general" class="mb-2" />
 
-        {{-- ═══════════════════════════════════════════ --}}
-        {{-- SELECCIONAR KIT COMPLETO --}}
-        {{-- ═══════════════════════════════════════════ --}}
         <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
             <h3 class="font-semibold text-gray-800 mb-3 flex items-center">
                 <i class="fas fa-box text-green-600 mr-2"></i>Seleccionar Kit Completo
             </h3>
-            <p class="text-sm text-gray-500 mb-4">Selecciona un kit sellado para asignar a esta conversión. El kit se abrirá y sus piezas quedarán reservadas para esta orden.</p>
+            <p class="text-sm text-gray-500 mb-4">Selecciona un kit sellado para asignar a esta conversión.</p>
 
-            @if($this->kitsDisponibles->isEmpty())
+            @if($this->kitsDisponibles->isEmpty() && empty($filtroGeneracion))
                 <div class="text-center py-6 text-sm text-gray-500 bg-amber-50 rounded-lg border border-amber-200">
                     <i class="fas fa-box-open text-2xl mb-2 block text-amber-400"></i>
                     <span class="font-medium">Sin kit en esta sede</span>
                     <p class="text-xs text-gray-400 mt-1">No hay kits sellados disponibles en esta sede. Recibir kits en <strong>Recepción de Kits</strong> o trasladar desde otra sede.</p>
                 </div>
             @else
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    @foreach($this->kitsDisponibles as $kit)
-                        <label class="flex items-center gap-3 border rounded-lg p-4 {{ $kitItemId == $kit->id ? 'border-green-600 bg-green-50' : 'border-gray-200 hover:bg-gray-50 cursor-pointer' }}">
-                            <input type="radio" 
-                                   wire:model="kitItemId" 
-                                   value="{{ $kit->id }}"
-                                   class="mt-1 rounded border-gray-300 text-green-600 focus:ring-green-500">
-                            <div class="flex-1">
-                                <div class="font-semibold text-gray-800">{{ $kit->producto->nombre }}</div>
-                                @if(isset($kit->atributos['proveedor']))
-                                    <div class="text-xs text-gray-400 mt-1">Proveedor: {{ $kit->atributos['proveedor'] }}</div>
-                                @endif
-                                <div class="text-xs text-green-600 mt-1">
-                                    <i class="fas fa-check-circle mr-1"></i>Al confirmar se descuenta del almacén
+                {{-- Paso 1: Seleccionar generación --}}
+                @if(!empty($this->generacionesDisponibles) && count($this->generacionesDisponibles) > 1)
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Paso 1: Tipo de kit</label>
+                        <div class="flex gap-2">
+                            <button wire:click="$set('filtroGeneracion', '')" type="button"
+                                    class="px-4 py-2 rounded-lg text-sm font-semibold transition
+                                    {{ empty($filtroGeneracion) ? 'bg-green-600 text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
+                                Todos
+                            </button>
+                            @foreach($this->generacionesDisponibles as $gen)
+                                <button wire:key="gen-{{ $gen }}" wire:click="$set('filtroGeneracion', '{{ $gen }}')" type="button"
+                                        class="px-4 py-2 rounded-lg text-sm font-semibold transition
+                                        {{ $filtroGeneracion === $gen ? 'bg-green-600 text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
+                                    {{ $gen }}
+                                </button>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
+                {{-- Paso 2: Seleccionar kit --}}
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+                        {{ !empty($this->generacionesDisponibles) && count($this->generacionesDisponibles) > 1 ? 'Paso 2: ' : '' }}Kit disponible
+                        <span class="text-gray-400 font-normal normal-case">({{ $this->kitsDisponibles->count() }} en stock)</span>
+                    </label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        @foreach($this->kitsDisponibles as $kit)
+                            <label wire:key="kit-{{ $kit->id }}"
+                                   class="flex items-center gap-3 border rounded-lg p-4 cursor-pointer {{ $kitItemId == $kit->id ? 'border-green-600 bg-green-50' : 'border-gray-200 hover:bg-gray-50' }}">
+                                <input type="radio"
+                                       wire:model.live="kitItemId"
+                                       value="{{ $kit->id }}"
+                                       class="mt-1 rounded border-gray-300 text-green-600 focus:ring-green-500">
+                                <div class="flex-1">
+                                    <div class="font-semibold text-gray-800">{{ $kit->producto->nombre }}</div>
+                                    @if(isset($kit->atributos['proveedor']))
+                                        <div class="text-xs text-gray-400 mt-1">Proveedor: {{ $kit->atributos['proveedor'] }}</div>
+                                    @endif
+                                    <div class="text-xs text-green-600 mt-1">
+                                        <i class="fas fa-check-circle mr-1"></i>Al confirmar se descuenta del almacén
+                                    </div>
                                 </div>
-                            </div>
-                        </label>
-                    @endforeach
+                            </label>
+                        @endforeach
+                    </div>
                 </div>
             @endif
         </div>
 
-        {{-- ═══════════════════════════════════════════ --}}
-        {{-- REPUESTOS POR CANTIDAD (OPCIONAL) --}}
-        {{-- ═══════════════════════════════════════════ --}}
+        {{-- Inputs de serie por componente (solo si kit seleccionado) --}}
+        @if($kitItemId && $this->componentesKit->isNotEmpty())
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <h3 class="font-semibold text-gray-800 mb-1 flex items-center">
+                    <i class="fas fa-barcode text-blue-600 mr-2"></i>Números de Serie
+                </h3>
+                <p class="text-xs text-gray-400 mb-4">Ingrese el serie de cada pieza que viene en el kit sellado.</p>
+
+                <div class="space-y-3">
+                    @foreach($this->componentesKit as $comp)
+                        <div class="flex items-center gap-3" wire:key="comp-{{ $comp->producto_id }}">
+                            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-microchip text-blue-600 text-xs"></i>
+                            </div>
+                            <div class="flex-1">
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">{{ $comp->nombre }}</label>
+                                <input type="text"
+                                       wire:model="seriesKit.{{ $comp->producto_id }}"
+                                       placeholder="Ej: 31312313"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
         <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
             <h3 class="font-semibold text-gray-800 mb-1 flex items-center">
                 <i class="fas fa-layer-group text-purple-600 mr-2"></i>Repuestos Varios
@@ -97,7 +146,7 @@
                         @foreach ($this->repuestosCarrito as $p)
                             <li wire:key="rep-cart-{{ $p->id }}" class="flex justify-between items-center text-sm bg-purple-50/50 border border-purple-100 rounded-lg px-3 py-2">
                                 <div>
-                                    <span class="font-medium text-gray-800">{{ $p->nombre }}</span> 
+                                    <span class="font-medium text-gray-800">{{ $p->nombre }}</span>
                                     <span class="text-xs text-purple-700 font-bold ml-2">× {{ $p->cantidad_solicitada }}</span>
                                 </div>
                                 <button wire:click="quitarRepuesto({{ $p->id }})" type="button" class="text-red-600 hover:text-red-800 transition-colors text-xs font-semibold">
@@ -110,9 +159,8 @@
             @endif
         </div>
 
-        {{-- Botón Principal --}}
         <div class="pt-2">
-            <x-button wire:click="confirmarEntrega" 
+            <x-button wire:click="confirmarEntrega"
                       wire:loading.attr="disabled"
                       wire:target="confirmarEntrega"
                       class="w-full justify-center py-3 text-sm font-semibold">
@@ -128,3 +176,38 @@
 
     </div>
 </div>
+
+<script>
+    document.addEventListener('livewire:initialized', () => {
+        Livewire.on('entrega-confirmada', (event) => {
+            const data = Array.isArray(event) ? event[0] : event;
+            const redirectUrl = data && data.redirectUrl ? data.redirectUrl : null;
+            const mensaje = data && data.mensaje ? data.mensaje : 'Operación realizada correctamente';
+
+            Swal.fire({
+                icon: 'success',
+                title: '¡EQUIPOS ASIGNADOS!',
+                text: mensaje,
+                confirmButtonText: 'Aceptar',
+                allowOutsideClick: false,
+                allowEscapeKey: false
+            }).then(() => {
+                if (redirectUrl) {
+                    window.location.href = redirectUrl;
+                }
+            });
+        });
+
+        Livewire.on('entrega-error', (event) => {
+            const data = Array.isArray(event) ? event[0] : event;
+            const mensaje = data && data.mensaje ? data.mensaje : 'Ocurrió un error';
+
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: mensaje,
+                confirmButtonText: 'Cerrar'
+            });
+        });
+    });
+</script>

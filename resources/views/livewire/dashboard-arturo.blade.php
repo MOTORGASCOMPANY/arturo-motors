@@ -2,14 +2,19 @@
     <!-- Bienvenida + Accesos Rápidos -->
     <div class="bg-gradient-to-r from-slate-900 via-indigo-900 to-blue-900 rounded-2xl shadow-lg p-5 sm:p-6 text-white flex flex-col md:flex-row md:items-center justify-between gap-4">
         {{--<div class="bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 rounded-xl shadow-md text-white p-8">--}}
-        <div>
-            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight flex items-center gap-2">
-                ¡Hola, {{ Auth::user()->name }}! 👋
-            </h1>
-            <p class="mt-1 text-slate-300 text-sm font-medium">
-                Panel de control de Arturo Motors
-            </p>
-        </div>
+            <div>
+                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight flex items-center gap-2">
+                    ¡Hola, {{ Auth::user()->name }}! 👋
+                    @if(Auth::user()->getRoleNames()->isNotEmpty())
+                        <span class="text-xs font-semibold bg-white/20 text-white px-2 py-1 rounded-full uppercase tracking-wide">
+                            {{ Auth::user()->getRoleNames()->implode(', ') }}
+                        </span>
+                    @endif
+                </h1>
+                <p class="mt-1 text-slate-300 text-sm font-medium">
+                    Panel de control de Arturo Motors
+                </p>
+            </div>
 
         @role('Vendedor|Jefe de Taller|Administrador del sistema')
             <div class="flex flex-wrap items-center gap-2">
@@ -149,6 +154,23 @@
                 </div>
                 <div class="w-11 h-11 rounded-2xl {{ $pendientesAlmacen > 0 ? 'bg-amber-50 text-amber-600' : 'bg-gray-100 text-gray-500' }} flex items-center justify-center shrink-0">
                     <i class="fas fa-boxes text-lg"></i>
+                </div>
+            </a>
+        @endrole
+
+        @role('Administrador del sistema|Jefe de Taller')
+            <!-- FISEs pendientes -->
+            <a href="{{ route('fise.control') }}"
+               class="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-4 hover:shadow-md transition-all duration-150 flex items-center justify-between">
+                <div>
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-wider block">FISEs Pendientes</span>
+                    <p class="text-2xl font-black {{ $fisePendientes > 0 ? 'text-amber-600' : 'text-gray-800' }} mt-1">
+                        {{ $fisePendientes }}
+                    </p>
+                    <span class="text-[11px] text-gray-400 font-medium">Cobros por financiar</span>
+                </div>
+                <div class="w-11 h-11 rounded-2xl {{ $fisePendientes > 0 ? 'bg-amber-50 text-amber-600' : 'bg-gray-100 text-gray-500' }} flex items-center justify-center shrink-0">
+                    <i class="fas fa-landmark text-lg"></i>
                 </div>
             </a>
         @endrole

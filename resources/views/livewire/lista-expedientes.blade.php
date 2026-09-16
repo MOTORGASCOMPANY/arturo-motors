@@ -105,7 +105,7 @@
                 <!-- Paginación -->
                 @if ($expedientes->hasPages())
                     <div class="mt-2 bg-white px-5 py-5 border-t rounded-lg">
-                        {{ $expedientes->links() }}
+                        {{ $expedientes->links('pagination::tailwind') }}
                     </div>
                 @endif
             @else

@@ -3,6 +3,7 @@
 namespace App\Livewire\Almacen\Traslados;
 
 use App\Models\ItemSerializado;
+use App\Models\MovimientoStock;
 use App\Models\Producto;
 use App\Models\Sede;
 use App\Models\Traslado;
@@ -329,7 +330,15 @@ class Crear extends Component
                         throw new \RuntimeException('Uno de los items seleccionados ya no está disponible.');
                     }
 
+                    $producto = Producto::find($item->producto_id);
+
                     $item->update(['sede_id' => $this->sedeDestinoId]);
+
+                    // Registrar movimiento: salida de origen, entrada en destino
+                    if ($producto) {
+                        MovimientoStock::registrar($producto, 'salida', 1, null, Auth::id(), "Traslado #{$traslado->id}", $sedeOrigenId);
+                        MovimientoStock::registrar($producto, 'entrada', 1, null, Auth::id(), "Traslado #{$traslado->id}", $this->sedeDestinoId);
+                    }
 
                     TrasladoDetalle::create([
                         'traslado_id' => $traslado->id,
@@ -355,6 +364,13 @@ class Crear extends Component
 
                     foreach ($itemsPieza as $itemPieza) {
                         $itemPieza->update(['sede_id' => $this->sedeDestinoId]);
+                    }
+
+                    // Registrar movimiento: salida de origen, entrada en destino
+                    $producto = Producto::find($productoId);
+                    if ($producto) {
+                        MovimientoStock::registrar($producto, 'salida', $cantidad, null, Auth::id(), "Traslado #{$traslado->id}", $sedeOrigenId);
+                        MovimientoStock::registrar($producto, 'entrada', $cantidad, null, Auth::id(), "Traslado #{$traslado->id}", $this->sedeDestinoId);
                     }
 
                     TrasladoDetalle::create([

@@ -55,7 +55,7 @@
                 <div class="px-6 py-4 text-center font-bold bg-indigo-200 rounded-md">No hay traslados registrados.</div>
             @endforelse
 
-            <div class="mt-4">{{ $traslados->links() }}</div>
+            <div class="mt-4">{{ $traslados->links('pagination::tailwind') }}</div>
         </div>
     </div>
 

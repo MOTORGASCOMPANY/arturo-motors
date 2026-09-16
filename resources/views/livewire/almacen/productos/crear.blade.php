@@ -61,6 +61,19 @@
                             <p class="text-xs text-gray-500 mt-1">Se alertará cuando el disponible baje de este número.</p>
                         </div>
                     </div>
+
+                    @if (!$this->categoria->es_serializado)
+                        <div class="mt-3">
+                            <x-label for="stockInicial" value="Stock inicial" />
+                            <x-input type="number" min="0" wire:model="stockInicial" class="w-full rounded-lg border-gray-300" />
+                            <p class="text-xs text-gray-500 mt-1">Cantidad de unidades a registrar en inventario al crear.</p>
+                        </div>
+                    @else
+                        <p class="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg p-2 mt-3">
+                            <i class="fas fa-barcode mr-1"></i>
+                            Este producto es serializado. Registra las entradas con número de serie desde "Registrar entrada".
+                        </p>
+                    @endif
                 @endif
             </div>
         </x-slot>

@@ -198,7 +198,7 @@
                 </table>
             </div>
             <div class="mt-4">
-                {{ $planillas->links() }}
+                {{ $planillas->links('pagination::tailwind') }}
             </div>
         @else
             <div class="px-6 py-4 text-center font-bold bg-indigo-200 rounded-md">

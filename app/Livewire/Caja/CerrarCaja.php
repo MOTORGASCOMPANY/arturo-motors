@@ -50,13 +50,14 @@ class CerrarCaja extends Component
     }
 
     /**
-     * Monto esperado: apertura + TODOS los ingresos - TODOS los egresos.
-     * Incluye efectivo, tarjeta, transferencia, FISE y otros.
+     * Monto esperado: apertura + solo efectivo - egresos.
+     * Solo el efectivo físico pasa por la gaveta.
+     * FISE, tarjeta y transferencia van directo al banco/cuenta.
      */
     public function getMontoEsperadoProperty()
     {
         if (!$this->sesion) return 0;
-        return round($this->sesion->monto_apertura + $this->totalIngresos - $this->totalEgresos, 2);
+        return round($this->sesion->monto_apertura + $this->efectivoIngresos - $this->totalEgresos, 2);
     }
 
     public function getDiferenciaProperty()

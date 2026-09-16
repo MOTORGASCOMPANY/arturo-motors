@@ -158,9 +158,19 @@
         <tr>
             <td class="esquema">
                 <span class="esquema-titulo">Esquema de Da&ntilde;os</span>
-                <div style="text-align: center; padding: 3px; margin-top: 3px;">
-                    <img src="{{ public_path('images/Diagrama-vechiculos.png') }}" style="width: 100%; max-width: 260px; height: auto;">
-                </div>
+                @if(!empty($orden->ficha_dano) && file_exists(public_path(ltrim($orden->ficha_dano, '/'))))
+                    <div style="text-align: center; padding: 3px; margin-top: 3px;">
+                        <img src="{{ public_path(ltrim($orden->ficha_dano, '/')) }}" style="width: 100%; max-width: 260px; height: auto;">
+                    </div>
+                @elseif(in_array($orden->estado, ['aprobado_conversion', 'en_conversion', 'conversion_completada', 'entregado']))
+                    <div style="text-align: center; padding: 3px; margin-top: 3px;">
+                        <img src="{{ public_path('images/Diagrama-vechiculos.png') }}" style="width: 100%; max-width: 260px; height: auto;">
+                    </div>
+                @else
+                    <div style="text-align: center; padding: 15px; margin-top: 3px; color: #999; font-style: italic; font-size: 11px;">
+                        No disponible — pendiente de evaluaci&oacute;n
+                    </div>
+                @endif
             </td>
             <td class="accesorios">
                 <table class="acc-table">

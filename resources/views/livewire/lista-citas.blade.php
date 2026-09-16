@@ -84,6 +84,9 @@
                             <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">#</th>
                             <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">Cliente</th>
                             <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">Vehículo</th>
+                            @if($mostrarColumnaVendedor)
+                                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">Vendedor</th>
+                            @endif
                             <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">Sede</th>
                             <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">Fecha</th>
                             <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">Estado</th>
@@ -104,6 +107,11 @@
                                 <td class="px-4 py-3 text-center border-r border-gray-100 text-gray-500">
                                     {{ $cita->vehiculo->placa }}
                                 </td>
+                                @if($mostrarColumnaVendedor)
+                                    <td class="px-4 py-3 text-center border-r border-gray-100 text-gray-700">
+                                        {{ $cita->nombreAsesor ?? '—' }}
+                                    </td>
+                                @endif
                                 <td class="px-4 py-3 text-center border-r border-gray-100 font-semibold text-gray-700">
                                     {{ $cita->sede->nombre ?? '-' }}
                                 </td>
@@ -160,7 +168,7 @@
             {{-- Paginación --}}
             @if ($citas->hasPages())
                 <div class="px-5 py-3 border-t border-gray-100">
-                    {{ $citas->links() }}
+                    {{ $citas->links('pagination::tailwind') }}
                 </div>
             @endif
         @else

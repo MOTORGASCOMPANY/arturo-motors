@@ -234,7 +234,7 @@
             {{-- Paginación --}}
             @if ($conversiones->hasPages())
                 <div class="px-5 py-3 border-t border-gray-100">
-                    {{ $conversiones->links() }}
+                    {{ $conversiones->links('pagination::tailwind') }}
                 </div>
             @endif
         </div>

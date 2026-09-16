@@ -33,6 +33,8 @@ class ReporteCitas extends Component
 
     public $sede_id = 'todos';
 
+    public $soloVendedores = false;
+
     public function mount()
     {
         $this->estado = 'todos';
@@ -43,7 +45,7 @@ class ReporteCitas extends Component
 
     public function updating($property)
     {
-        if (in_array($property, ['search', 'estado', 'filterEstado', 'fechaInicio', 'filterFechaDesde', 'fechaFin', 'filterFechaHasta', 'sede_id'])) {
+        if (in_array($property, ['search', 'estado', 'filterEstado', 'fechaInicio', 'filterFechaDesde', 'fechaFin', 'filterFechaHasta', 'sede_id', 'soloVendedores'])) {
             $this->resetPage();
         }
     }
@@ -68,6 +70,13 @@ class ReporteCitas extends Component
             ->when($this->sede_id && $this->sede_id !== 'todos', function ($query) {
                 $query->where('sede_id', $this->sede_id);
             })
+            ->when($this->soloVendedores, function ($query) {
+                $query->whereHas('asesor', function ($q) {
+                    $q->whereHas('roles', function ($qr) {
+                        $qr->where('name', 'Vendedor');
+                    });
+                });
+            })
             ->when($this->fechaInicio, function ($query) {
                 $query->whereDate('fecha_cita', '>=', $this->fechaInicio);
             })
@@ -84,6 +93,7 @@ class ReporteCitas extends Component
     {
         $this->estado = 'todos';
         $this->sede_id = 'todos';
+        $this->soloVendedores = false;
         $this->search = '';
         $this->resetPage();
     }

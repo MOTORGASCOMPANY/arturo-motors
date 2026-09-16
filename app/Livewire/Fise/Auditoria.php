@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Caja;
+namespace App\Livewire\Fise;
 
 use App\Models\FisePago;
 use App\Models\ServiceOrder;
@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-class FiseAuditoria extends Component
+class Auditoria extends Component
 {
     use WithPagination;
 
@@ -135,6 +135,6 @@ class FiseAuditoria extends Component
 
         $tecnicos = \App\Models\User::role('Tecnico')->get();
 
-        return view('livewire.caja.fise-auditoria', compact('pagos', 'totales', 'tecnicos'));
+        return view('livewire.fise.auditoria', compact('pagos', 'totales', 'tecnicos'));
     }
 }

@@ -377,7 +377,7 @@
             {{-- Paginación --}}
             @if ($vehiculos->hasPages())
                 <div class="px-5 py-3 border-t border-gray-100">
-                    {{ $vehiculos->withQueryString()->links() }}
+                    {{ $vehiculos->withQueryString()->links('pagination::tailwind') }}
                 </div>
             @endif
         </div>

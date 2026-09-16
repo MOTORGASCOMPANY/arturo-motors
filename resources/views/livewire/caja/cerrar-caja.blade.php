@@ -77,8 +77,8 @@
                         </div>
 
                         <div class="flex justify-between items-center text-xs">
-                            <span class="text-emerald-700 font-medium"><i class="fas fa-arrow-down text-emerald-500 mr-1.5"></i> + Ingresos:</span>
-                            <span class="font-semibold text-emerald-700">S/ {{ number_format($this->totalIngresos, 2) }}</span>
+                            <span class="text-emerald-700 font-medium"><i class="fas fa-arrow-down text-emerald-500 mr-1.5"></i> + Efectivo:</span>
+                            <span class="font-semibold text-emerald-700">S/ {{ number_format($this->efectivoIngresos, 2) }}</span>
                         </div>
 
                         <div class="flex justify-between items-center text-xs">
