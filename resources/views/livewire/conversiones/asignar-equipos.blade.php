@@ -83,13 +83,13 @@
             @endif
         </div>
 
-        {{-- Inputs de serie por componente (solo si kit seleccionado) --}}
+        {{-- Inputs de serie por componente (solo si kit seleccionado y hay componentes sin serie) --}}
         @if($kitItemId && $this->componentesKit->isNotEmpty())
             <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                 <h3 class="font-semibold text-gray-800 mb-1 flex items-center">
                     <i class="fas fa-barcode text-blue-600 mr-2"></i>Números de Serie
                 </h3>
-                <p class="text-xs text-gray-400 mb-4">Ingrese el serie de cada pieza que viene en el kit sellado.</p>
+                <p class="text-xs text-gray-400 mb-4">Ingrese el serie de las piezas que aún no tienen serie registrada.</p>
 
                 <div class="space-y-3">
                     @foreach($this->componentesKit as $comp)
@@ -108,28 +108,73 @@
                     @endforeach
                 </div>
             </div>
+        @elseif($kitItemId && $this->componentesKit->isEmpty())
+            @php
+                $kit = \App\Models\ItemSerializado::with('producto.componentes.componente')->find($kitItemId);
+                $itemsKit = \App\Models\ItemSerializado::where('kit_padre_id', $kitItemId)->get();
+                $tieneSerializables = false;
+                if ($kit) {
+                    foreach ($kit->producto->componentes as $kc) {
+                        if ($kc->componente->categoria->es_serializado ?? false) {
+                            $tieneSerializables = true;
+                            break;
+                        }
+                    }
+                }
+            @endphp
+            @if($tieneSerializables)
+                <div class="bg-green-50 rounded-xl shadow-sm p-6 border border-green-200">
+                    <h3 class="font-semibold text-green-800 mb-2 flex items-center">
+                        <i class="fas fa-check-circle text-green-600 mr-2"></i>Series ya registradas
+                    </h3>
+                    <p class="text-sm text-green-700 mb-3">Este kit ya tiene sus piezas serializadas registradas en el sistema.</p>
+                    <div class="space-y-1">
+                        @foreach($kit->producto->componentes as $kc)
+                            @php
+                                $comp = $kc->componente;
+                                $esSerial = $comp->categoria->es_serializado ?? false;
+                            @endphp
+                            @if($esSerial)
+                                @php
+                                    $itemComp = $itemsKit->where('producto_id', $comp->id)->first();
+                                @endphp
+                                <div class="flex items-center gap-2 text-sm">
+                                    <i class="fas fa-microchip text-green-600 text-xs"></i>
+                                    <span class="font-medium text-gray-700">{{ $comp->nombre }}</span>
+                                    @if($itemComp && $itemComp->serie)
+                                        <code class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs font-mono">{{ $itemComp->serie }}</code>
+                                    @else
+                                        <span class="text-xs text-gray-400 italic">sin serie</span>
+                                    @endif
+                                </div>
+                            @endif
+                        @endforeach
+                    </div>
+                </div>
+            @endif
         @endif
 
-        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+<div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
             <h3 class="font-semibold text-gray-800 mb-1 flex items-center">
-                <i class="fas fa-layer-group text-purple-600 mr-2"></i>Repuestos Varios
+                <i class="fas fa-layer-group text-purple-600 mr-2"></i>Repuestos Varios (Por Cantidad)
                 <span class="ml-2 text-xs font-normal text-gray-400 bg-gray-100 px-2 py-0.5 rounded">(Opcional)</span>
             </h3>
-            <p class="text-xs text-gray-400 mb-4">Solo si necesitás piezas adicionales fuera del kit.</p>
+            <p class="text-xs text-gray-400 mb-4">Stock suelto del almacén: solo items por cantidad (sin serie).</p>
 
-            <div class="flex flex-col sm:flex-row items-end gap-2">
+            <div class="flex flex-col sm:flex-row items-end gap-2 mb-4">
                 <div class="flex-1 w-full">
                     <x-label value="Seleccionar repuesto" class="mb-1" />
                     <select wire:model="productoRepuestoId" class="w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                        <option value="">-- Selecciona un repuesto --</option>
+                        <option value="">-- Seleccionar un repuesto --</option>
                         @foreach ($this->productosRepuesto as $p)
-                            <option value="{{ $p->id }}">{{ $p->nombre }} (Stock: {{ $p->stock_disponible }})</option>
+                            <option value="{{ $p->producto_id }}">{{ $p->producto->nombre }} (Stock: {{ $p->cantidad_disponible }})</option>
                         @endforeach
                     </select>
                 </div>
                 <div class="w-full sm:w-28">
                     <x-label value="Cantidad" class="mb-1" />
                     <x-input type="number" min="1" wire:model="cantidadRepuesto" class="w-full text-center text-sm" />
+                    <x-input-error for="cantidadRepuesto" class="mt-1" />
                 </div>
                 <div class="w-full sm:w-auto">
                     <x-secondary-button wire:click="agregarRepuesto" type="button" class="w-full justify-center">
@@ -137,19 +182,18 @@
                     </x-secondary-button>
                 </div>
             </div>
-            <x-input-error for="cantidadRepuesto" class="mt-1" />
 
             @if ($this->repuestosCarrito->count())
                 <div class="mt-4 pt-4 border-t border-gray-200">
                     <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Repuestos listos para entregar</p>
                     <ul class="space-y-1">
                         @foreach ($this->repuestosCarrito as $p)
-                            <li wire:key="rep-cart-{{ $p->id }}" class="flex justify-between items-center text-sm bg-purple-50/50 border border-purple-100 rounded-lg px-3 py-2">
+                            <li wire:key="rep-cart-{{ $p->producto_id }}" class="flex justify-between items-center text-sm bg-purple-50/50 border border-purple-100 rounded-lg px-3 py-2">
                                 <div>
-                                    <span class="font-medium text-gray-800">{{ $p->nombre }}</span>
+                                    <span class="font-medium text-gray-800">{{ $p->producto->nombre }}</span>
                                     <span class="text-xs text-purple-700 font-bold ml-2">× {{ $p->cantidad_solicitada }}</span>
                                 </div>
-                                <button wire:click="quitarRepuesto({{ $p->id }})" type="button" class="text-red-600 hover:text-red-800 transition-colors text-xs font-semibold">
+                                <button wire:click="quitarRepuesto({{ $p->producto_id }})" type="button" class="text-red-600 hover:text-red-800 transition-colors text-xs font-semibold">
                                     <i class="fas fa-trash mr-1"></i>Quitar
                                 </button>
                             </li>
@@ -157,6 +201,7 @@
                     </ul>
                 </div>
             @endif
+        </div>
         </div>
 
         <div class="pt-2">
@@ -182,12 +227,39 @@
         Livewire.on('entrega-confirmada', (event) => {
             const data = Array.isArray(event) ? event[0] : event;
             const redirectUrl = data && data.redirectUrl ? data.redirectUrl : null;
-            const mensaje = data && data.mensaje ? data.mensaje : 'Operación realizada correctamente';
+            const resumen = data && data.resumen ? data.resumen : null;
+
+            let html = '';
+
+            if (resumen) {
+                html += '<div style="text-align:left;font-size:14px;">';
+                html += '<p style="margin-bottom:12px;"><strong>Kit:</strong> ' + resumen.nombre + '</p>';
+
+                if (resumen.piezas_cantidad && resumen.piezas_cantidad.length > 0) {
+                    html += '<p style="margin-bottom:6px;"><strong>Piezas por cantidad:</strong></p>';
+                    html += '<ul style="margin:0 0 12px 20px;padding:0;">';
+                    resumen.piezas_cantidad.forEach(function(p) {
+                        html += '<li>' + p.nombre + ' × ' + p.cantidad + '</li>';
+                    });
+                    html += '</ul>';
+                }
+
+                if (resumen.piezas_serializadas && resumen.piezas_serializadas.length > 0) {
+                    html += '<p style="margin-bottom:6px;"><strong>Piezas serializadas:</strong></p>';
+                    html += '<ul style="margin:0 0 0 20px;padding:0;">';
+                    resumen.piezas_serializadas.forEach(function(p) {
+                        html += '<li>' + p.nombre + ' → <code style="background:#f3f4f6;padding:1px 6px;border-radius:4px;">' + p.serie + '</code></li>';
+                    });
+                    html += '</ul>';
+                }
+
+                html += '</div>';
+            }
 
             Swal.fire({
                 icon: 'success',
-                title: '¡EQUIPOS ASIGNADOS!',
-                text: mensaje,
+                title: '¡KIT ASIGNADO!',
+                html: html || 'Kit asignado y descontado del almacén. La orden pasó a conversión.',
                 confirmButtonText: 'Aceptar',
                 allowOutsideClick: false,
                 allowEscapeKey: false

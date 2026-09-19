@@ -13,24 +13,33 @@ class CategoriasAlmacenSeeder extends Seeder
     public function run(): void
     {
         $categorias = [
+            // Serializados
             [
                 'nombre' => 'Reductores',
                 'es_serializado' => true,
-                'esquema_atributos' => ['serie', 'marca', 'generacion'],
+                'esquema_atributos' => ['serie', 'marca', 'generacion', 'produce'],
             ],
             [
                 'nombre' => 'Tanques',
                 'es_serializado' => true,
-                'esquema_atributos' => ['serie', 'marca', 'capacidad'],
+                'esquema_atributos' => ['serie', 'marca', 'capacidad', 'produce'],
             ],
             [
-                'nombre' => 'Kits de inyección',
+                'nombre' => 'Computadoras',
                 'es_serializado' => true,
-                'esquema_atributos' => ['serie', 'marca'],
+                'esquema_atributos' => ['serie'],
+            ],
+            // Por cantidad
+            [
+                'nombre' => 'Kits',
+                'es_serializado' => false,
+                'es_kit' => true,
+                'esquema_atributos' => null,
             ],
             [
-                'nombre' => 'Repuestos varios',
+                'nombre' => 'Componentes Kit',
                 'es_serializado' => false,
+                'es_kit' => false,
                 'esquema_atributos' => null,
             ],
         ];

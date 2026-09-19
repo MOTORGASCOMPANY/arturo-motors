@@ -25,8 +25,15 @@ class MisAsignadas extends Component
 
     public function render()
     {
-        $ordenes = ServiceOrder::with(['cliente', 'vehiculo', 'service'])
-            ->where('tecnico_id', Auth::id())
+        $esAdminOJefe = Auth::user()->hasAnyRole(['Administrador del sistema', 'Jefe de Taller']);
+        
+        $query = ServiceOrder::with(['cliente', 'vehiculo', 'service']);
+
+        if (! $esAdminOJefe) {
+            $query->where('tecnico_id', Auth::id());
+        }
+
+        $ordenes = $query
             ->when($this->estado === 'pendientes', function ($q) {
                 $q->whereIn('estado', ['en_evaluacion', 'aprobado_conversion', 'en_conversion']);
             })

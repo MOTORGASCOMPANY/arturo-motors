@@ -8,7 +8,7 @@ use Livewire\Component;
 
 class CerrarCaja extends Component
 {
-    public $montoCierre = 0;
+    public $montoCierre = '0.00';
     public ?SesionCaja $sesion = null;
 
     public function mount()
@@ -19,9 +19,12 @@ class CerrarCaja extends Component
     public function cargarSesion()
     {
         $this->sesion = SesionCaja::abierta()->orderByDesc('abierta_en')->first();
-    }
 
-    // ─── Propiedades calculadas ────────────────────────────────────────
+        // Pre-llenar con el monto esperado en efectivo (lo que debería haber en caja)
+        if ($this->sesion) {
+            $this->montoCierre = number_format($this->montoEsperado, 2, '.', '');
+        }
+    }
 
     public function getTotalIngresosProperty()
     {
@@ -49,24 +52,64 @@ class CerrarCaja extends Component
         return $this->sesion ? $this->sesion->movimientos()->where('tipo', 'egreso')->sum('monto') : 0;
     }
 
-    /**
-     * Monto esperado: apertura + solo efectivo - egresos.
-     * Solo el efectivo físico pasa por la gaveta.
-     * FISE, tarjeta y transferencia van directo al banco/cuenta.
-     */
     public function getMontoEsperadoProperty()
     {
         if (!$this->sesion) return 0;
         return round($this->sesion->monto_apertura + $this->efectivoIngresos - $this->totalEgresos, 2);
     }
 
-    public function getDiferenciaProperty()
+    public function getMontoCierreNumericoProperty(): float
     {
-        return round($this->montoCierre - $this->montoEsperado, 2);
+        $valor = trim((string) $this->montoCierre);
+        $valor = preg_replace('/[^\d.,\-]/', '', $valor);
+
+        if (empty($valor)) return 0;
+
+        // Handle negative
+        $negativo = str_starts_with($valor, '-');
+        if ($negativo) $valor = substr($valor, 1);
+
+        // Determine format based on last separator position
+        $lastDot = strrpos($valor, '.');
+        $lastComma = strrpos($valor, ',');
+
+        if ($lastDot !== false && $lastComma !== false) {
+            // Both present: last one is decimal separator
+            if ($lastComma > $lastDot) {
+                // European format: 1.910,00 → remove dots, replace comma with dot
+                $valor = str_replace('.', '', $valor);
+                $valor = str_replace(',', '.', $valor);
+            } else {
+                // US format: 1,910.00 → remove commas
+                $valor = str_replace(',', '', $valor);
+            }
+        } elseif ($lastComma !== false) {
+            // Only comma: check if it's a decimal separator (followed by 1-2 digits at end)
+            $afterComma = substr($valor, $lastComma + 1);
+            if (strlen($afterComma) <= 2) {
+                // Decimal separator: 1910,50 → replace with dot
+                $valor = str_replace(',', '.', $valor);
+            } else {
+                // Thousands separator: 1,910 or 1,910,000 → remove commas
+                $valor = str_replace(',', '', $valor);
+            }
+        }
+        // If only dot or no separator: no transformation needed (PHP handles dot as decimal)
+
+        $resultado = (float) $valor;
+        return $negativo ? -$resultado : $resultado;
     }
 
-    // ─── Cerrar sesión ─────────────────────────────────────────────────
+    public function getDiferenciaProperty()
+    {
+        return round($this->montoCierreNumerico - $this->montoEsperado, 2);
+    }
 
+    /**
+     * Called from the form submit via Livewire.
+     * Validates and closes directly. The SweetAlert confirmation
+     * is handled entirely in the blade (Alpine + SweetAlert2).
+     */
     public function cerrar()
     {
         if (!$this->sesion) {
@@ -74,41 +117,34 @@ class CerrarCaja extends Component
             return;
         }
 
-        // REGLA 1: Validar formato del monto
         $this->validate(
-            ['montoCierre' => 'required|numeric|min:0'],
+            ['montoCierre' => 'required|regex:/^\d[\d.,]*$/'],
             [
                 'montoCierre.required' => 'El monto real en caja es obligatorio.',
-                'montoCierre.numeric' => 'Debe ingresar un valor numérico válido.',
-                'montoCierre.min' => 'El monto no puede ser un valor negativo.',
+                'montoCierre.regex' => 'Debe ingresar un valor numérico válido.',
             ]
         );
 
-        // REGLA 2: Alertar si la diferencia es sospechosa (> S/10)
-        $diferencia = $this->diferencia;
-        if (abs($diferencia) > 10) {
-            $this->dispatch('minAlert',
-                titulo: '¡Atención!',
-                mensaje: 'La diferencia es S/ ' . number_format(abs($diferencia), 2) .
-                    ($diferencia > 0 ? ' (sobra)' : ' (falta)') .
-                    '. ¿Estás seguro de que el monto es correcto?',
-                icono: 'warning'
-            );
+        $montoCierreNumerico = $this->montoCierreNumerico;
+
+        if ($montoCierreNumerico < 0) {
+            $this->addError('montoCierre', 'El monto no puede ser un valor negativo.');
             return;
         }
 
-        // REGLA 3: Cerrar sesión (el modelo recalcula monto_esperado y diferencia automáticamente)
-        $this->sesion->cerrar((float) $this->montoCierre, Auth::id());
+        $diferencia = round($montoCierreNumerico - $this->montoEsperado, 2);
+
+        $this->sesion->cerrar($montoCierreNumerico, Auth::id());
 
         $this->dispatch('minToast',
             titulo: '¡Caja Cerrada!',
-            mensaje: 'Sesión cerrada con S/ ' . number_format($this->montoCierre, 2) .
+            mensaje: 'Sesión cerrada con S/ ' . number_format($montoCierreNumerico, 2) .
                 ($diferencia != 0 ? ' | Diferencia: S/ ' . number_format($diferencia, 2) : ' | Cuadrada ✓'),
             icono: 'success'
         );
 
         $this->sesion = null;
-        $this->montoCierre = 0;
+        $this->montoCierre = '0.00';
     }
 
     public function render()

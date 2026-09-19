@@ -28,7 +28,7 @@
                                     Nombre
                                 </th>
                                 <th class="px-4 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase">
-                                    Serializado
+                                    Tipo
                                 </th>
                                 <th class="px-4 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase">
                                     Atributos
@@ -44,9 +44,13 @@
                                 <tr wire:key="categoria-{{ $c->id }}">
                                     <td class="px-4 py-3 font-medium border-b border-gray-200 bg-white text-sm">{{ $c->nombre }}</td>
                                     <td class="px-4 py-3 text-center border-b border-gray-200 bg-white text-sm">
-                                        <span class="px-2 py-1 rounded-full text-xs font-semibold {{ $c->es_serializado ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600' }}">
-                                            {{ $c->es_serializado ? 'Por serie' : 'Por cantidad' }}
-                                        </span>
+                                        @if($c->es_kit)
+                                            <span class="px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">Kit</span>
+                                        @elseif($c->es_serializado)
+                                            <span class="px-2 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700">Serializado</span>
+                                        @else
+                                            <span class="px-2 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600">Por cantidad</span>
+                                        @endif
                                     </td>
                                     <td class="px-4 py-3 text-gray-500 border-b border-gray-200 bg-white text-sm">
                                         @php

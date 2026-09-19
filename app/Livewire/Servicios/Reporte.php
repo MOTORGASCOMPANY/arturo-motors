@@ -129,6 +129,20 @@ class Reporte extends Component
 
         $hayDatos = $totalOrdenes > 0;
 
+        // Descuentos: precio_lista vs precio_final
+        $totalPrecioLista = $comprobantes->sum(fn ($c) => (float) ($c->serviceOrder->precio_lista ?? 0));
+        $totalPrecioFinal = $comprobantes->sum(fn ($c) => (float) ($c->serviceOrder->precio_final ?? 0));
+        $totalDescuentos = max(0, $totalPrecioLista - $totalPrecioFinal);
+
+        // Tiempo promedio de conversión
+        $ordenesConDuracion = \App\Models\ServiceOrder::whereIn('id', $comprobantes->pluck('service_order_id'))
+            ->whereNotNull('fecha_inicio_conversion')
+            ->whereNotNull('fecha_fin_conversion')
+            ->get();
+        $tiempoPromedio = $ordenesConDuracion->count() > 0
+            ? round($ordenesConDuracion->avg(fn ($o) => $o->fecha_inicio_conversion->diffInHours($o->fecha_fin_conversion)), 1)
+            : 0;
+
         // Dispatch chart data to JS (wire:ignore prevents morph from updating data-* attrs)
         $this->dispatch('chart-data-updated',
             labels: $labels ?? [],
@@ -154,6 +168,8 @@ class Reporte extends Component
             'totalConversionesCompletadas' => $totalConversionesCompletadas,
             'totalSimplesCompletadas' => $totalSimplesCompletadas,
             'hayDatos' => $hayDatos,
+            'totalDescuentos' => $totalDescuentos,
+            'tiempoPromedio' => $tiempoPromedio,
         ]);
     }
 }

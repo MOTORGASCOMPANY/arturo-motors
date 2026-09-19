@@ -2,9 +2,15 @@
     <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
             <div class="flex items-center justify-between mb-6">
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-800">Historial de Recepciones</h1>
-                    <p class="text-sm text-gray-500 mt-1">Kits recibidos del proveedor</p>
+                <div class="flex items-center gap-3">
+                    <a href="{{ route('almacen.recepciones.crear') }}" 
+                       class="w-9 h-9 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 transition" title="Volver a crear recepción">
+                        <i class="fas fa-arrow-left text-sm"></i>
+                    </a>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-800">Historial de Recepciones</h1>
+                        <p class="text-sm text-gray-500 mt-1">Kits recibidos del proveedor</p>
+                    </div>
                 </div>
                 <a href="{{ route('almacen.recepciones.crear') }}" 
                    class="bg-indigo-500 px-5 py-3 rounded-md text-white font-semibold hover:bg-indigo-600 transition">

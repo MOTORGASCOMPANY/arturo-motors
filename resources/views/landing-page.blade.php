@@ -7,8 +7,8 @@
     <meta name="description" content="Especialistas en conversiones GNV y GLP, certificaciones y mantenimiento automotriz en Perú.">
     <meta property="og:title" content="Arturo Motors | Conversiones GNV/GLP">
     <meta property="og:description" content="Certificaciones, conversiones y mantenimiento automotriz.">
-    <meta property="og:image" content="https://arturomotorsperu.com/images/icon.png">
-    <link rel="icon" type="image/png" href="images/icon.png" />
+    <meta property="og:image" content="https://arturomotorsperu.com/images/LOGOFINAL.jpg">
+    <link rel="icon" type="image/jpg" href="images/LOGOFINAL.jpg" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -23,9 +23,7 @@
     <nav class="navbar navbar-expand-lg fixed-top custom-navbar">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center gap-2" href="#">
-                <div class="brand-icon">
-                    <img src="images/icon.png" alt="ARTURO MOTORS" style="width: 35px; height: 35px;">
-                </div>
+                <img src="images/LOGOFINAL.jpg" alt="ARTURO MOTORS" style="height: 45px; width: auto; border-radius: 8px;">
                 <div class="brand-text-container">
                     <span class="brand-title">ARTURO <span class="text-blue">MOTORS</span></span>
                     <span class="brand-subtitle">TECNOLOGÍA AUTOMOTRIZ</span>
@@ -409,9 +407,7 @@
             <div class="row gy-4 align-items-center">
                 <div class="col-md-4 text-center text-md-start">
                     <a class="d-inline-flex align-items-center gap-2 text-decoration-none mb-2" href="#">
-                        <div class="brand-icon">
-                            <img src="images/icon.png" alt="ARTURO MOTORS" style="width: 35px; height: 35px;">
-                        </div>
+                        <img src="images/LOGOFINAL.jpg" alt="ARTURO MOTORS" style="height: 45px; width: auto; border-radius: 8px;">
                         <span class="brand-title">ARTURO <span class="text-blue">MOTORS</span></span>
                     </a>
                     <p class="small text-sub mb-0 mt-2">Especialistas en conversiones GNV/GLP, certificaciones oficiales y mecánica integral.</p>

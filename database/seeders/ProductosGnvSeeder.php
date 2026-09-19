@@ -11,36 +11,41 @@ class ProductosGnvSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. CATEGORÍAS — Separadas por generación
-        $catEquipo3ra = CategoriaAlmacen::updateOrCreate(
-            ['nombre' => 'Equipo 3RA'],
-            ['es_serializado' => true, 'es_kit' => true, 'esquema_atributos' => ['procedencia']]
+        // 1. CATEGORÍAS — Usar las 5 categorías base del sistema
+        $catKits = CategoriaAlmacen::firstOrCreate(
+            ['nombre' => 'Kits'],
+            ['es_serializado' => false, 'es_kit' => true, 'esquema_atributos' => null]
         );
 
-        $catEquipo5ta = CategoriaAlmacen::updateOrCreate(
-            ['nombre' => 'Equipo 5TA'],
-            ['es_serializado' => true, 'es_kit' => true, 'esquema_atributos' => ['procedencia']]
-        );
-
-        $catTanques = CategoriaAlmacen::updateOrCreate(
+        $catTanques = CategoriaAlmacen::firstOrCreate(
             ['nombre' => 'Tanques'],
             ['es_serializado' => true, 'es_kit' => false, 'esquema_atributos' => ['serie', 'marca', 'capacidad', 'produce']]
         );
 
-        $catRepuestos = CategoriaAlmacen::updateOrCreate(
-            ['nombre' => 'Repuestos'],
+        $catReductores = CategoriaAlmacen::firstOrCreate(
+            ['nombre' => 'Reductores'],
+            ['es_serializado' => true, 'es_kit' => false, 'esquema_atributos' => ['serie', 'marca', 'generacion', 'produce']]
+        );
+
+        $catComputadoras = CategoriaAlmacen::firstOrCreate(
+            ['nombre' => 'Computadoras'],
+            ['es_serializado' => true, 'es_kit' => false, 'esquema_atributos' => ['serie']]
+        );
+
+        $catCompKit = CategoriaAlmacen::firstOrCreate(
+            ['nombre' => 'Componentes Kit'],
             ['es_serializado' => false, 'es_kit' => false, 'esquema_atributos' => null]
         );
 
         // 2. PRODUCTOS — KITS (uno por generación)
         $kit3ra = Producto::updateOrCreate(
             ['nombre' => 'Kit Instalación 3RA'],
-            ['categoria_id' => $catEquipo3ra->id, 'atributos' => ['procedencia' => 'local'], 'activo' => true]
+            ['categoria_id' => $catKits->id, 'atributos' => ['procedencia' => 'local'], 'activo' => true]
         );
 
         $kit5ta = Producto::updateOrCreate(
             ['nombre' => 'Kit Instalación 5TA'],
-            ['categoria_id' => $catEquipo5ta->id, 'atributos' => ['procedencia' => 'local'], 'activo' => true]
+            ['categoria_id' => $catKits->id, 'atributos' => ['procedencia' => 'local'], 'activo' => true]
         );
 
         // 3. PRODUCTOS — COMPONENTES 3RA
@@ -48,89 +53,89 @@ class ProductosGnvSeeder extends Seeder
 
         $comp3ra['vaporizador'] = Producto::updateOrCreate(
             ['nombre' => 'Vaporizador'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp3ra['toma_llenado'] = Producto::updateOrCreate(
             ['nombre' => 'Toma de Llenado'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp3ra['valvula_cilindro'] = Producto::updateOrCreate(
             ['nombre' => 'Válvula de Cilindro'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp3ra['manometro'] = Producto::updateOrCreate(
             ['nombre' => 'Manómetro'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp3ra['regulador_alta'] = Producto::updateOrCreate(
             ['nombre' => 'Regulador de Alta'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp3ra['electrovalvula'] = Producto::updateOrCreate(
             ['nombre' => 'Electrovalvula Ramal'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp3ra['conmutador'] = Producto::updateOrCreate(
             ['nombre' => 'Conmutador'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp3ra['terminal_hembra'] = Producto::updateOrCreate(
             ['nombre' => 'Terminal Hembra'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp3ra['relay'] = Producto::updateOrCreate(
             ['nombre' => 'Relay (Inyectado)'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
 
         // Mangueras 3RA
         $comp3ra['manguera_gas'] = Producto::updateOrCreate(
             ['nombre' => 'Manguera 3/4 Gas (1MT)'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp3ra['manguera_gasolina'] = Producto::updateOrCreate(
             ['nombre' => 'Manguera 5/16 Gasolina (1MT)'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp3ra['manguera_agua'] = Producto::updateOrCreate(
             ['nombre' => 'Manguera 5/16 Agua (1.5MT)'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp3ra['corrugado'] = Producto::updateOrCreate(
             ['nombre' => 'Corrugado'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp3ra['caneria'] = Producto::updateOrCreate(
             ['nombre' => 'Cañería de 6'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp3ra['conos'] = Producto::updateOrCreate(
             ['nombre' => 'Conos de 6'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp3ra['t_agua'] = Producto::updateOrCreate(
             ['nombre' => 'T de Agua'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp3ra['niples'] = Producto::updateOrCreate(
             ['nombre' => 'Niples de 6'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp3ra['tapones'] = Producto::updateOrCreate(
             ['nombre' => 'Tapones'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp3ra['bolsa_venteo'] = Producto::updateOrCreate(
             ['nombre' => 'Bolsa de Venteo'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp3ra['abrazadera_grande'] = Producto::updateOrCreate(
             ['nombre' => 'Abrazadera 16/27'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp3ra['abrazadera_chica'] = Producto::updateOrCreate(
             ['nombre' => 'Abrazadera 10/16'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
 
         // 4. PRODUCTOS — COMPONENTES 5TA
@@ -138,101 +143,101 @@ class ProductosGnvSeeder extends Seeder
 
         $comp5ta['vaporizador'] = Producto::updateOrCreate(
             ['nombre' => 'Vaporizador'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp5ta['toma_llenado'] = Producto::updateOrCreate(
             ['nombre' => 'Toma de Llenado'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp5ta['valvula_cilindro'] = Producto::updateOrCreate(
             ['nombre' => 'Válvula de Cilindro'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp5ta['electronica_aeb'] = Producto::updateOrCreate(
             ['nombre' => 'Electrónica AEB'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp5ta['computadora'] = Producto::updateOrCreate(
             ['nombre' => 'Computadora'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp5ta['filtro_gas'] = Producto::updateOrCreate(
             ['nombre' => 'Filtro de Gas'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp5ta['sensor'] = Producto::updateOrCreate(
             ['nombre' => 'Sensor'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp5ta['ramal'] = Producto::updateOrCreate(
             ['nombre' => 'Ramal Eléctrico'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp5ta['conmutador'] = Producto::updateOrCreate(
             ['nombre' => 'Conmutador'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp5ta['manometro'] = Producto::updateOrCreate(
             ['nombre' => 'Manómetro'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp5ta['porta_fusible'] = Producto::updateOrCreate(
             ['nombre' => 'Porta Fusible'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp5ta['inyectores'] = Producto::updateOrCreate(
             ['nombre' => 'Inyectores'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
 
         // Mangueras 5TA
         $comp5ta['manguera_gas'] = Producto::updateOrCreate(
             ['nombre' => 'Manguera 1/2 Gas'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp5ta['manguera_inyectores'] = Producto::updateOrCreate(
             ['nombre' => 'Manguera 3/16 Inyectores'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp5ta['manguera_agua'] = Producto::updateOrCreate(
             ['nombre' => 'Manguera 5/16 Agua'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp5ta['manguera_vacio'] = Producto::updateOrCreate(
             ['nombre' => 'Manguera 3/16 Vacío'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp5ta['corrugado'] = Producto::updateOrCreate(
             ['nombre' => 'Corrugado'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp5ta['caneria'] = Producto::updateOrCreate(
             ['nombre' => 'Cañería de 6'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp5ta['conos'] = Producto::updateOrCreate(
             ['nombre' => 'Conos de 6'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp5ta['t_agua'] = Producto::updateOrCreate(
             ['nombre' => 'T de Agua'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp5ta['niples'] = Producto::updateOrCreate(
             ['nombre' => 'Niples de 6'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp5ta['tapones'] = Producto::updateOrCreate(
             ['nombre' => 'Tapones'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp5ta['bolsa_venteo'] = Producto::updateOrCreate(
             ['nombre' => 'Bolsa de Venteo'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
         $comp5ta['abrazaderas'] = Producto::updateOrCreate(
             ['nombre' => 'Abrazaderas'],
-            ['categoria_id' => $catRepuestos->id, 'activo' => true]
+            ['categoria_id' => $catCompKit->id, 'activo' => true]
         );
 
         // 5. COMPONENTES DEL KIT 3RA

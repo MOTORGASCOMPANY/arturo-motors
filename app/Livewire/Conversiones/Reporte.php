@@ -70,6 +70,12 @@ class Reporte extends Component
         $totalConversiones = $ordenes->count();
         $completadas = $ordenes->where('estado', 'conversion_completada')->count();
         $enProceso = $ordenes->where('estado', 'en_conversion')->count();
+        $tasaCompletado = $totalConversiones > 0 ? round(($completadas / $totalConversiones) * 100, 1) : 0;
+
+        // Duración promedio de conversiones completadas
+        $duracionPromedio = $ordenes->filter(fn ($o) => $o->fecha_inicio_conversion && $o->fecha_fin_conversion)
+            ->avg(fn ($o) => $o->fecha_inicio_conversion->diffInHours($o->fecha_fin_conversion));
+        $duracionPromedio = round($duracionPromedio ?? 0, 1);
 
         // Items instalados (todos los hijos de kits en estado instalado)
         $itemsInstalados = ItemSerializado::where('estado', 'instalado')
@@ -77,13 +83,10 @@ class Reporte extends Component
             ->whereHas('serviceOrder', fn ($q) => $q->whereIn('estado', ['en_conversion', 'conversion_completada']))
             ->count();
 
-        // Piezas por cantidad instaladas (CANT- o tipo cantidad)
+        // Piezas por cantidad instaladas (atributos tipo cantidad)
         $piezasCantidad = ItemSerializado::where('estado', 'instalado')
             ->whereNotNull('kit_padre_id')
-            ->where(function ($q) {
-                $q->where('serie', 'like', 'CANT-%')
-                  ->orWhereRaw("JSON_EXTRACT(atributos, '$.tipo') = 'cantidad'");
-            })
+            ->whereRaw("JSON_EXTRACT(atributos, '$.tipo') = 'cantidad'")
             ->count();
 
         // Balance del almacén — piezas sueltas en stock (no kits)
@@ -143,7 +146,7 @@ class Reporte extends Component
                 'instalados' => $instalados->count(),
                 // Items seriales instalados: Vaporizador, Tanque, etc.
                 'items_serializados' => $instalados
-                    ->filter(fn ($i) => !str_starts_with($i->serie ?? '', 'CANT-') && !empty($i->serie))
+                    ->filter(fn ($i) => ($i->atributos['tipo'] ?? '') !== 'cantidad' && !empty($i->serie))
                     ->map(fn ($i) => [
                         'nombre' => $i->producto->nombre,
                         'serie' => $i->serie,
@@ -164,6 +167,8 @@ class Reporte extends Component
             'totalConversiones' => $totalConversiones,
             'completadas' => $completadas,
             'enProceso' => $enProceso,
+            'tasaCompletado' => $tasaCompletado,
+            'duracionPromedio' => $duracionPromedio,
             'itemsInstalados' => $itemsInstalados,
             'piezasCantidad' => $piezasCantidad,
             'stockPiezasSueltas' => $stockPiezasSueltas,

@@ -9,8 +9,8 @@
             <!-- Top Header (Logo y Botón Volver) -->
             <div class="relative z-10 flex items-center justify-between">
                 <a href="/" class="flex items-center gap-3 group">
-                    <div class="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400 group-hover:scale-105 transition-transform duration-300">
-                        <img src="{{ asset('images/icon.png') }}" alt="Logo" class="w-6 h-6 object-contain">
+                    <div class="w-12 h-12 rounded-xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform duration-300">
+                        <img src="{{ asset('images/LOGOFINAL.jpg') }}" alt="Logo" class="w-10 h-10 object-contain">
                     </div>
                     <div>
                         <span class="font-extrabold text-xl tracking-tight text-white block leading-none">ARTURO <span class="text-sky-400">MOTORS</span></span>

@@ -29,7 +29,7 @@ class AsignarEquipos extends Component
     public int $cantidadRepuesto = 1;
     public array $repuestosSeleccionados = []; // [productoId => cantidad]
 
-    private const PRODUCTOS_SERIALIZABLES = ['Vaporizador', 'Computadora', 'Tanque'];
+    // Se determina por categoría (es_serializado), NO por nombre hardcodeado
 
     protected function sedePrincipalId(): int
     {
@@ -42,14 +42,18 @@ class AsignarEquipos extends Component
         $this->seriesKit = [];
     }
 
-    private function esSerializable(string $nombre): bool
+    private function esSerializable($producto): bool
     {
-        foreach (self::PRODUCTOS_SERIALIZABLES as $patron) {
-            if (stripos($nombre, $patron) !== false) {
-                return true;
-            }
+        if (is_int($producto)) {
+            $producto = \App\Models\Producto::with('categoria')->find($producto);
         }
-        return false;
+        if (is_string($producto)) {
+            $producto = \App\Models\Producto::where('nombre', $producto)->first();
+        }
+        if (!$producto instanceof \App\Models\Producto) {
+            return false;
+        }
+        return $producto->categoria->es_serializado ?? false;
     }
 
     public function mount(int $ordenId)
@@ -101,6 +105,7 @@ class AsignarEquipos extends Component
 
     // ═══════════════════════════════════════════════
     // COMPONENTES DEL KIT SELECCIONADO (para inputs de serie)
+    // Solo muestra componentes que NECESITAN serie (no la tienen aún)
     // ═══════════════════════════════════════════════
     public function getComponentesKitProperty()
     {
@@ -109,8 +114,16 @@ class AsignarEquipos extends Component
         $kit = ItemSerializado::with('producto.componentes.componente')->find($this->kitItemId);
         if (!$kit) return collect();
 
+        // Obtener items ya existentes dentro de este kit
+        $itemsExistentes = ItemSerializado::where('kit_padre_id', $kit->id)->get();
+
         return $kit->producto->componentes
             ->filter(fn($kc) => $this->esSerializable($kc->componente->nombre))
+            ->filter(function ($kc) use ($itemsExistentes) {
+                // Solo mostrar si NO tiene serie ya registrada
+                $itemDelKit = $itemsExistentes->firstWhere('producto_id', $kc->producto_componente_id);
+                return !$itemDelKit || empty($itemDelKit->serie);
+            })
             ->map(fn($kc) => (object) [
                 'producto_id' => $kc->producto_componente_id,
                 'nombre' => $kc->componente->nombre,
@@ -119,13 +132,76 @@ class AsignarEquipos extends Component
     }
 
     // ═══════════════════════════════════════════════
-    // REPUESTOS POR CANTIDAD
+    // RESUMEN DEL KIT (para la alerta de confirmación)
     // ═══════════════════════════════════════════════
+    public function getResumenKitProperty(): ?array
+    {
+        if (!$this->kitItemId) return null;
+
+        $kit = ItemSerializado::with('producto')->find($this->kitItemId);
+        if (!$kit) return null;
+
+        $itemsExistentes = ItemSerializado::where('kit_padre_id', $kit->id)->get();
+        $componentes = $kit->producto->componentes()->with('componente')->get();
+
+        $piezasCantidad = [];
+        $piezasSerializadas = [];
+
+        foreach ($componentes as $kc) {
+            $producto = $kc->componente;
+            $itemsComp = $itemsExistentes->where('producto_id', $kc->producto_componente_id);
+
+            if ($this->esSerializable($producto->nombre)) {
+                foreach ($itemsComp as $item) {
+                    $serie = $item->serie ?? ($this->seriesKit[$producto->id] ?? null);
+                    if ($serie) {
+                        $piezasSerializadas[] = [
+                            'nombre' => $producto->nombre,
+                            'serie' => $serie,
+                        ];
+                    }
+                }
+            } else {
+                $cantidad = $itemsComp->count();
+                if ($cantidad > 0) {
+                    $piezasCantidad[] = [
+                        'nombre' => $producto->nombre,
+                        'cantidad' => $cantidad,
+                    ];
+                }
+            }
+        }
+
+        return [
+            'nombre' => $kit->producto->nombre,
+            'piezas_cantidad' => $piezasCantidad,
+            'piezas_serializadas' => $piezasSerializadas,
+        ];
+    }
+
+    // ═══════════════════════════════════════════════
+    // REPUESTOS VARIOS (solo items POR CANTIDAD - es_serializado=false)
+    // ═══════════════════════════════════════════════
+
     public function getProductosRepuestoProperty()
     {
-        return Producto::whereHas('categoria', fn ($q) => $q->where('es_serializado', false))
+        $sedeId = $this->sedePrincipalId();
+
+        // SOLO items POR CANTIDAD (es_serializado=false, no kits)
+        return Producto::whereHas('categoria', fn ($q) => $q->where('es_serializado', false)->where('es_kit', false))
+            ->whereHas('stockPorSede', fn ($q) => $q->where('sede_id', $sedeId)->where('cantidad', '>', 0))
+            ->with(['stockPorSede' => fn ($q) => $q->where('sede_id', $sedeId)->where('cantidad', '>', 0)])
             ->get()
-            ->filter(fn($p) => $p->stockEnSede($this->sedePrincipalId()) > 0)
+            ->map(function ($p) use ($sedeId) {
+                $stock = $p->stockPorSede->where('sede_id', $sedeId)->sum('cantidad');
+                return (object) [
+                    'producto_id' => $p->id,
+                    'producto' => $p,
+                    'tipo' => 'cantidad',
+                    'cantidad_disponible' => $stock,
+                ];
+            })
+            ->filter(fn ($p) => $p->cantidad_disponible > 0)
             ->values();
     }
 
@@ -137,14 +213,33 @@ class AsignarEquipos extends Component
         ]);
 
         $producto = Producto::find($this->productoRepuestoId);
-        $disponible = $producto->stockEnSede($this->sedePrincipalId());
+        if (!$producto) {
+            $this->addError('productoRepuestoId', 'Producto no encontrado.');
+            return;
+        }
+
+        $sedeId = $this->sedePrincipalId();
+        $disponible = $producto->stockEnSede($sedeId);
 
         if ($this->cantidadRepuesto > $disponible) {
             $this->addError('cantidadRepuesto', "Solo hay {$disponible} en stock.");
             return;
         }
 
-        $this->repuestosSeleccionados[$this->productoRepuestoId] = $this->cantidadRepuesto;
+        $key = $producto->id;
+        if (isset($this->repuestosSeleccionados[$key])) {
+            $this->addError('cantidadRepuesto', 'Este producto ya está en la lista. Quitalo y volvé a agregarlo con la cantidad total.');
+            return;
+        }
+
+        $this->repuestosSeleccionados[$key] = (object) [
+            'key' => $key,
+            'producto_id' => $producto->id,
+            'tipo' => 'cantidad',
+            'producto' => $producto,
+            'cantidad_solicitada' => $this->cantidadRepuesto,
+        ];
+
         $this->reset(['productoRepuestoId', 'cantidadRepuesto']);
         $this->cantidadRepuesto = 1;
     }
@@ -158,11 +253,15 @@ class AsignarEquipos extends Component
     {
         if (empty($this->repuestosSeleccionados)) return collect();
 
-        return Producto::whereIn('id', array_keys($this->repuestosSeleccionados))->get()
-            ->map(function ($p) {
-                $p->cantidad_solicitada = $this->repuestosSeleccionados[$p->id];
-                return $p;
-            });
+        return collect($this->repuestosSeleccionados)->map(function ($p) {
+            return (object) [
+                'key' => $p->key,
+                'producto_id' => $p->producto_id,
+                'producto' => $p->producto,
+                'tipo' => 'cantidad',
+                'cantidad_solicitada' => $p->cantidad_solicitada,
+            ];
+        })->values();
     }
 
     // ═══════════════════════════════════════════════
@@ -175,9 +274,9 @@ class AsignarEquipos extends Component
             return;
         }
 
-        // Validar que todos los componentes seriales tengan serie
+        // Validar series SOLO para componentes que necesitan serie (no la tienen aún)
         if ($this->kitItemId) {
-            $componentes = $this->componentesKit;
+            $componentes = $this->componentesKit; // Solo retorna los que necesitan serie
             $seriesIngresadas = [];
 
             foreach ($componentes as $comp) {
@@ -196,10 +295,12 @@ class AsignarEquipos extends Component
                 }
                 $seriesIngresadas[] = $serieUpper;
 
-                // Validar que el serie no exista ya en la base de datos
-                $existeEnDb = ItemSerializado::where('serie', $serie)->exists();
-                if ($existeEnDb) {
-                    $this->dispatch('minToast', titulo: 'Serie ya existe', mensaje: "El serie \"{$serie}\" ya está registrado en el sistema.", icono: 'error');
+                // Validar que el serie no exista en OTRO item (no en el de este kit)
+                $existeEnOtro = ItemSerializado::where('serie', $serie)
+                    ->where('kit_padre_id', '!=', $this->kitItemId)
+                    ->exists();
+                if ($existeEnOtro) {
+                    $this->dispatch('minToast', titulo: 'Serie ya existe', mensaje: "El serie \"{$serie}\" ya está registrado en otro kit/item.", icono: 'error');
                     return;
                 }
             }
@@ -213,6 +314,9 @@ class AsignarEquipos extends Component
             $this->dispatch('minToast', titulo: 'Error', mensaje: 'Esta orden ya tiene items asignados. No se puede asignar un kit dos veces.', icono: 'error');
             return;
         }
+
+        // Preparar datos para la alerta
+        $resumenKit = $this->resumenKit;
 
         try {
             DB::transaction(function () use ($sedeId) {
@@ -234,7 +338,10 @@ class AsignarEquipos extends Component
                         'service_order_id' => $this->orden->id,
                     ]);
 
-                    // Crear items para TODOS los componentes REALES del kit
+                    // Obtener items existentes dentro del kit
+                    $itemsExistentes = ItemSerializado::where('kit_padre_id', $kit->id)->get();
+
+                    // Procesar TODOS los componentes REALES del kit
                     $componentes = $kit->producto->componentes()->with('componente')->get();
 
                     foreach ($componentes as $kc) {
@@ -242,20 +349,18 @@ class AsignarEquipos extends Component
                         $esSerializable = $this->esSerializable($producto->nombre);
 
                         if ($esSerializable) {
-                            // Usar serie capturada por almacén
-                            $serieCapturada = trim($this->seriesKit[$producto->id] ?? '');
+                            // Buscar item existente de este kit
+                            $itemEnStock = $itemsExistentes->where('producto_id', $producto->id)->first();
 
-                            // Buscar item en stock de esta sede
-                            $itemEnStock = ItemSerializado::where('producto_id', $producto->id)
-                                ->where('estado', 'en_stock')
-                                ->where('sede_id', $sedeId)
-                                ->first();
+                            // Usar serie: si ya tiene, reutilizar; si no, usar la ingresada
+                            $serieCapturada = $itemEnStock && $itemEnStock->serie
+                                ? $itemEnStock->serie
+                                : trim($this->seriesKit[$producto->id] ?? '');
 
                             if ($itemEnStock) {
                                 $itemEnStock->update([
                                     'estado' => 'asignado',
                                     'service_order_id' => $this->orden->id,
-                                    'kit_padre_id' => $kit->id,
                                     'serie' => $serieCapturada,
                                     'atributos' => array_merge($itemEnStock->atributos ?? [], [
                                         'serie_capturada_por' => Auth::id(),
@@ -281,11 +386,23 @@ class AsignarEquipos extends Component
                                 ]);
                             }
                         } else {
-                            // Componente por cantidad — crear un item por cada unidad esperada
-                            for ($i = 0; $i < $kc->cantidad_esperada; $i++) {
+                            // Componente por cantidad — usar items existentes del kit
+                            $itemsComp = $itemsExistentes->where('producto_id', $producto->id);
+                            $itemsAAsignar = $itemsComp->take($kc->cantidad_esperada);
+
+                            foreach ($itemsAAsignar as $item) {
+                                $item->update([
+                                    'estado' => 'asignado',
+                                    'service_order_id' => $this->orden->id,
+                                ]);
+                            }
+
+                            // Si faltan items, crear los que falten
+                            $faltantes = $kc->cantidad_esperada - $itemsAAsignar->count();
+                            for ($i = 0; $i < $faltantes; $i++) {
                                 ItemSerializado::create([
                                     'producto_id' => $producto->id,
-                                    'serie' => 'CANT-' . strtoupper(uniqid()),
+                                    'serie' => null,
                                     'estado' => 'asignado',
                                     'service_order_id' => $this->orden->id,
                                     'kit_padre_id' => $kit->id,
@@ -302,9 +419,15 @@ class AsignarEquipos extends Component
                     }
                 }
 
-                // 2. Repuestos por cantidad (opcional)
-                foreach ($this->repuestosSeleccionados as $productoId => $cantidad) {
-                    $producto = Producto::find($productoId);
+                // 2. Repuestos varios (solo cantidad)
+                foreach ($this->repuestosSeleccionados as $key => $repuesto) {
+                    $producto = Producto::find($repuesto->producto_id);
+                    if (!$producto) continue;
+
+                    $sedeId = $this->orden->sede_id ?? $this->sedePrincipalId();
+
+                    // Cantidad
+                    $cantidad = $repuesto->cantidad_solicitada;
                     $disponible = $producto->stockEnSede($sedeId);
 
                     if ($disponible < $cantidad) {
@@ -328,10 +451,10 @@ class AsignarEquipos extends Component
             return;
         }
 
-        // Mostrar alerta centrada (grande) de confirmación
+        // Mostrar alerta con resumen del kit asignado
         $this->dispatch('entrega-confirmada', [
             'redirectUrl' => route('conversiones.almacen-pendientes'),
-            'mensaje' => 'Kit asignado y descontado del almacén. La orden pasó a conversión.',
+            'resumen' => $resumenKit,
         ]);
     }
 

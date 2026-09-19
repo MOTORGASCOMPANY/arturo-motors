@@ -73,7 +73,7 @@
     <table width="100%" height="100%" style="position: fixed; top: 0; left: 0; z-index: -1;">
         <tr>
             <td align="center" valign="middle">
-                <img src="{{ public_path('images/icon.png') }}" style="width: 450px; opacity: 0.12;">
+                <img src="{{ public_path('images/LOGOFINAL.jpg') }}" style="width: 450px; opacity: 0.12;">
             </td>
         </tr>
     </table>
@@ -82,7 +82,7 @@
     <table class="header">
         <tr>
             <td style="width: 15%;">
-                <img src="{{ public_path('images/icon.png') }}" style="width: 70px; height: 70px;">
+                <img src="{{ public_path('images/LOGOFINAL.jpg') }}" style="width: 70px; height: 70px;">
             </td>
             <td style="width: 55%;">
                 <p class="brand-title">ARTURO MOTORS</p>

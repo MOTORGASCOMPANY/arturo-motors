@@ -90,10 +90,12 @@ class Pendientes extends Component
                     throw new \Exception('El kit no contiene esta pieza.');
                 }
 
-                // 4. Crear item serializado para la pieza obtenida del kit
+                // 4. Crear item para la pieza obtenida del kit
+                $esSerializado = $componenteEncontrado->categoria?->es_serializado ?? false;
+
                 $nuevaPieza = ItemSerializado::create([
                     'producto_id' => $componenteEncontrado->id,
-                    'serie' => 'KIT-' . $kit->serie . '-' . strtoupper(uniqid()),
+                    'serie' => $esSerializado ? 'KIT-' . $kit->serie . '-' . strtoupper(uniqid()) : null,
                     'estado' => 'en_stock',
                     'sede_id' => $this->itemSolicitado->sede_id,
                     'atributos' => [

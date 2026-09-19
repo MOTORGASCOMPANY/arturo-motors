@@ -90,10 +90,10 @@ class SesionCaja extends Model
                 $sesion->monto_esperado = $esperado;
                 $sesion->diferencia = round($sesion->monto_cierre - $esperado, 2);
 
-                // REGLA 4: Alertar si la diferencia es sospechosamente grande (> S/50)
-                if (abs($sesion->diferencia) > 50) {
+                // REGLA 4: Alertar si la diferencia es sospechosamente grande (> S/1000)
+                if (abs($sesion->diferencia) > 1000) {
                     abort(422, 'La diferencia de S/ ' . number_format(abs($sesion->diferencia), 2) .
-                        ' es mayor a S/50. Verifica el monto de cierre.');
+                        ' es mayor a S/1000. Verifica el monto de cierre.');
                 }
             }
         });
@@ -161,9 +161,9 @@ class SesionCaja extends Model
         $esperado = self::calcularEsperado($this->id);
         $diferencia = round($montoCierre - $esperado, 2);
 
-        if (abs($diferencia) > 50) {
+        if (abs($diferencia) > 1000) {
             abort(422, 'La diferencia de S/ ' . number_format(abs($diferencia), 2) .
-                ' es mayor a S/50. Verifica el monto de cierre.');
+                ' es mayor a S/1000. Verifica el monto de cierre.');
         }
 
         $this->update([

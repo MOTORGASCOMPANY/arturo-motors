@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\ItemSerializado;
+use App\Models\KitPiezaExtraida;
 use App\Models\ReportePiezaNoEncajada;
 use App\Models\ServiceOrder;
 use App\Models\Producto;
@@ -24,7 +25,8 @@ class CambioPiezaService
             ->where('producto_id', $productoId)
             ->where('estado', 'en_stock')
             ->where('sede_id', $sedeId)
-            ->whereNull('service_order_id');
+            ->whereNull('service_order_id')
+            ->whereNull('kit_padre_id'); // solo piezas sueltas, no las que están dentro de un kit
 
         if ($excludeItemId) {
             $query->where('id', '!=', $excludeItemId);
@@ -47,6 +49,7 @@ class CambioPiezaService
             ->where('estado', 'en_stock')
             ->where('sede_id', $sedeId)
             ->whereNull('service_order_id')
+            ->whereNull('kit_padre_id') // solo piezas sueltas
             ->limit(10)
             ->get();
     }
@@ -194,13 +197,14 @@ class CambioPiezaService
             ->where('estado', 'en_stock')
             ->where('sede_id', $sedeId)
             ->whereNull('service_order_id')
+            ->whereNull('kit_padre_id')
             ->get();
     }
 
     /**
-     * Abrir kit y extraer pieza específica
-     * Al abrir, TODOS los componentes se convierten en piezas sueltas.
-     * La pieza solicitada se asigna a la orden, el resto queda en_stock.
+     * Abrir kit y extraer SOLO la pieza necesaria.
+     * El kit queda incompleto — el resto de los componentes siguen conceptualmente
+     * dentro del kit, NO se crean piezas sueltas para todo.
      */
     public function abrirKitYExtraerPieza(
         ItemSerializado $kitItem,
@@ -211,122 +215,192 @@ class CambioPiezaService
         ?string $serie = null
     ): ItemSerializado {
         return DB::transaction(function () use ($kitItem, $productoPiezaId, $sedeId, $observaciones, $serviceOrderId, $serie) {
-            // 1. Marcar kit como abierto
-            $kitItem->update([
-                'estado' => 'abierto',
-                'atributos' => array_merge($kitItem->atributos ?? [], [
-                    'abierto_por' => Auth::id(),
-                    'abierto_en' => now()->toDateTimeString(),
-                    'motivo_apertura' => $observaciones ?? 'Extracción pieza para reemplazo',
-                ]),
+            // 1. Verificar que el producto extraído pertenece al kit
+            $kitProducto = $kitItem->producto;
+            $componente = $kitProducto->componentes
+                ->firstWhere('producto_componente_id', $productoPiezaId);
+
+            if (!$componente) {
+                throw new \Exception(
+                    "El producto #{$productoPiezaId} no es componente del kit '{$kitProducto->nombre}'."
+                );
+            }
+
+            // 2. Verificar que esta pieza no fue ya extraída
+            $yaExtraida = KitPiezaExtraida::where('item_serializado_id', $kitItem->id)
+                ->where('producto_componente_id', $productoPiezaId)
+                ->exists();
+
+            if ($yaExtraida) {
+                throw new \Exception(
+                    "El componente ya fue extraído de este kit anteriormente."
+                );
+            }
+
+            // 3. Marcar kit como abierto (si no lo está)
+            if ($kitItem->estado !== 'abierto') {
+                $kitItem->update([
+                    'estado' => 'abierto',
+                    'atributos' => array_merge($kitItem->atributos ?? [], [
+                        'abierto_por' => Auth::id(),
+                        'abierto_en' => now()->toDateTimeString(),
+                        'motivo_apertura' => $observaciones ?? 'Extracción pieza',
+                    ]),
+                ]);
+            }
+
+            // 4. Crear la pieza extraída como item_serializado independiente
+            $piezaExtraida = ItemSerializado::create([
+                'producto_id' => $productoPiezaId,
+                'kit_padre_id' => $kitItem->id,
+                'serie' => $serie,
+                'atributos' => [
+                    'extraida_de_kit' => $kitItem->id,
+                    'extraida_en' => now()->toDateTimeString(),
+                ],
+                'estado' => $serviceOrderId ? 'asignado' : 'en_stock',
+                'sede_id' => $sedeId,
+                'service_order_id' => $serviceOrderId,
             ]);
 
-            // 2. Buscar hijos existentes (creados por AsignarEquipos)
-            $existentesPorProducto = ItemSerializado::where('kit_padre_id', $kitItem->id)
-                ->get()
-                ->groupBy('producto_id');
+            // 5. Registrar extracción en kit_piezas_extraidas
+            KitPiezaExtraida::create([
+                'item_serializado_id' => $kitItem->id,
+                'producto_componente_id' => $productoPiezaId,
+                'cantidad_extraida' => 1,
+                'service_order_id' => $serviceOrderId,
+                'extraida_por' => Auth::id(),
+                'extraida_en' => now(),
+            ]);
 
-            // 3. Obtener todos los componentes del kit
-            $kitProducto = $kitItem->producto;
-            $componentes = $kitProducto->componentes;
-
-            $nuevaPieza = null;
-
-            // 4. Para cada componente: crear piezas sueltas
-            foreach ($componentes as $kc) {
-                $compId = $kc->producto_componente_id;
-                $cantidad = $kc->cantidad_esperada;
-                $esRequerido = ($compId == $productoPiezaId);
-
-                // Cuántos ya existen como hijos del kit?
-                $yaExistentes = isset($existentesPorProducto[$compId])
-                    ? $existentesPorProducto[$compId]
-                    : collect();
-                $faltantes = max(0, $cantidad - $yaExistentes->count());
-
-                // Reutilizar hijos existentes
-                foreach ($yaExistentes as $existente) {
-                    if ($esRequerido && !$nuevaPieza) {
-                        // Esta es la pieza solicitada → asignar a la orden con serie
-                        $updateData = [
-                            'estado' => 'asignado',
-                            'service_order_id' => $serviceOrderId,
-                            'atributos' => array_merge($existente->atributos ?? [], [
-                                'extraida_de_kit' => $kitItem->id,
-                                'extraida_en' => now()->toDateTimeString(),
-                            ]),
-                        ];
-                        if ($serie) {
-                            $updateData['serie'] = $serie;
-                        }
-                        $existente->update($updateData);
-                        $nuevaPieza = $existente;
-                    }
-                    // Si no es requerida, ya está en_stock (de AsignarEquipos)
-                }
-
-                // Crear las piezas faltantes
-                for ($i = 0; $i < $faltantes; $i++) {
-                    $itemData = [
-                        'producto_id' => $compId,
-                        'kit_padre_id' => $kitItem->id,
-                        'serie' => null,
-                        'atributos' => [
-                            'extraida_de_kit' => $kitItem->id,
-                            'extraida_en' => now()->toDateTimeString(),
-                        ],
-                        'estado' => ($esRequerido && !$nuevaPieza) ? 'asignado' : 'en_stock',
-                        'sede_id' => $sedeId,
-                        'service_order_id' => ($esRequerido && !$nuevaPieza) ? $serviceOrderId : null,
-                    ];
-
-                    // Asignar serie si es la pieza requerida
-                    if ($esRequerido && !$nuevaPieza && $serie) {
-                        $itemData['serie'] = $serie;
-                    }
-
-                    $item = ItemSerializado::create($itemData);
-
-                    if ($esRequerido && !$nuevaPieza) {
-                        $nuevaPieza = $item;
-                    }
-                }
-            }
-
-            if (!$nuevaPieza) {
-                throw new \Exception('No se encontró la pieza solicitada en los componentes del kit.');
-            }
-
-            // 5. Registrar movimiento: salida del kit sellado
+            // 6. Movimiento: salida del componente extraído
             MovimientoStock::registrar(
                 $kitItem->producto,
                 'salida',
                 1,
-                null,
+                $serviceOrderId,
                 Auth::id(),
-                "Apertura kit #{$kitItem->id} — componentes liberados como piezas sueltas",
+                "Apertura kit #{$kitItem->id} — extracción {$kitProducto->nombre}",
                 $sedeId
             );
 
-            // 6. Registrar entrada de cada componente como pieza suelta
-            foreach ($componentes as $kc) {
-                $compId = $kc->producto_componente_id;
-                $cantidad = $kc->cantidad_esperada;
-                $producto = \App\Models\Producto::find($compId);
+            return $piezaExtraida;
+        });
+    }
 
-                MovimientoStock::registrar(
-                    $producto,
-                    'entrada',
-                    $cantidad,
-                    null,
-                    Auth::id(),
-                    "Apertura kit #{$kitItem->id} — {$cantidad}x {$producto->nombre}",
-                    $sedeId
+    /**
+     * Rearmar un kit abierto: recibir pieza de repuesto y devolverla al kit.
+     * El kit vuelve a estar completo.
+     */
+    public function rearmarKit(
+        ItemSerializado $kitItem,
+        int $piezaRepuestoId,
+        int $sedeId,
+        ?string $observaciones = null
+    ): bool {
+        return DB::transaction(function () use ($kitItem, $piezaRepuestoId, $sedeId, $observaciones) {
+            if ($kitItem->estado !== 'abierto') {
+                throw new \Exception('Solo se pueden rearmar kits en estado abierto.');
+            }
+
+            // 1. Verificar que la pieza de repuesto es del tipo correcto
+            $piezaRepuesto = ItemSerializado::where('id', $piezaRepuestoId)
+                ->where('estado', 'en_stock')
+                ->where('sede_id', $sedeId)
+                ->lockForUpdate()
+                ->first();
+
+            if (!$piezaRepuesto) {
+                throw new \Exception('La pieza de repuesto seleccionada no está disponible.');
+            }
+
+            // 2. Verificar que es un componente del kit
+            $kitProducto = $kitItem->producto;
+            $esComponente = $kitProducto->componentes
+                ->contains('producto_componente_id', $piezaRepuesto->producto_id);
+
+            if (!$esComponente) {
+                throw new \Exception(
+                    "La pieza '{$piezaRepuesto->producto->nombre}' no es componente del kit '{$kitProducto->nombre}'."
                 );
             }
 
-            return $nuevaPieza;
+            // 3. Verificar que esta pieza fue extraída previamente
+            $extraccion = KitPiezaExtraida::where('item_serializado_id', $kitItem->id)
+                ->where('producto_componente_id', $piezaRepuesto->producto_id)
+                ->exists();
+
+            if (!$extraccion) {
+                throw new \Exception(
+                    "Esta pieza no fue extraída de este kit, no se puede rearmar."
+                );
+            }
+
+            // 4. Eliminar la extracción
+            KitPiezaExtraida::where('item_serializado_id', $kitItem->id)
+                ->where('producto_componente_id', $piezaRepuesto->producto_id)
+                ->delete();
+
+            // 5. Eliminar la pieza de repuesto (vuelve a ser parte del kit)
+            $piezaRepuesto->delete();
+
+            // 6. Verificar si el kit está completo
+            $extraccionesRestantes = KitPiezaExtraida::where('item_serializado_id', $kitItem->id)
+                ->count();
+
+            if ($extraccionesRestantes === 0) {
+                // Kit completo — vende a en_stock
+                $kitItem->update([
+                    'estado' => 'en_stock',
+                    'atributos' => array_merge($kitItem->atributos ?? [], [
+                        'rearmado_por' => Auth::id(),
+                        'rearmado_en' => now()->toDateTimeString(),
+                    ]),
+                ]);
+            }
+
+            // 7. Movimiento: entrada del componente al kit
+            MovimientoStock::registrar(
+                $kitItem->producto,
+                'entrada',
+                1,
+                null,
+                Auth::id(),
+                "Rearme kit #{$kitItem->id} — pieza devuelta",
+                $sedeId
+            );
+
+            return true;
         });
+    }
+
+    /**
+     * Obtener las piezas que faltan en un kit (las que fueron extraídas).
+     */
+    public function piezasFaltantesEnKit(ItemSerializado $kitItem): \Illuminate\Support\Collection
+    {
+        $extracciones = KitPiezaExtraida::where('item_serializado_id', $kitItem->id)
+            ->get();
+
+        $extraidas = $extracciones->pluck('producto_componente_id')->toArray();
+
+        return $kitItem->producto->componentes
+            ->filter(fn ($kc) => in_array($kc->producto_componente_id, $extraidas))
+            ->map(fn ($kc) => [
+                'producto_id' => $kc->producto_componente_id,
+                'nombre' => $kc->componente->nombre ?? 'Desconocido',
+                'cantidad_extraida' => $extracciones
+                    ->where('producto_componente_id', $kc->producto_componente_id)
+                    ->sum('cantidad_extraida'),
+            ]);
+    }
+
+    /**
+     * Verificar si un kit está completo (sin piezas extraídas).
+     */
+    public function kitEstaCompleto(ItemSerializado $kitItem): bool
+    {
+        return KitPiezaExtraida::where('item_serializado_id', $kitItem->id)->count() === 0;
     }
 
     /**

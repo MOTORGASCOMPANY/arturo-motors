@@ -3,6 +3,7 @@
 namespace App\Livewire\Almacen\Traslados;
 
 use App\Models\ItemSerializado;
+use App\Models\KitComponente;
 use App\Models\MovimientoStock;
 use App\Models\Producto;
 use App\Models\Sede;
@@ -14,35 +15,30 @@ use Livewire\Component;
 
 class Crear extends Component
 {
-    // Paso 1: Configuración
+    // ── Step 1: Config ──
     public ?int $sedeDestinoId = null;
     public string $observaciones = '';
 
-    // Paso 2: Tipo de kit
-    public ?string $tipoKit = null; // '3RA' o '5TA'
+    // ── Step 2: Selection ──
+    public array $itemsSeleccionados = [];  // [item_serializado_id => true]
+    public array $cantidadSeleccionados = []; // [producto_id => qty]
 
-    // Paso 3: Modo de envío
-    public ?string $modoEnvio = null; // 'completo', 'incompleto', 'cantidad'
-    public string $buscarItem = '';
+    // ── Search ──
+    public string $buscar = '';
 
-    // Piezas por cantidad
+    // ── Quantity form ──
     public ?int $productoCantidadId = null;
     public int $cantidadPieza = 1;
-    public array $cantidadSeleccionados = [];
 
-    // Carrito
-    public array $itemsSeleccionados = [];
+    // ── Kit inspection ──
+    public ?int $kitInspeccionId = null;
 
-    // Checklist
+    // ── Checklist modal ──
     public bool $mostrarChecklist = false;
-    public array $checklistComponentes = [];
-    public bool $esKitCompleto = false;
+    public array $checklistData = [];
 
-    // Mapa kit producto_id => generacion
-    protected array $mapaKits = [
-        1 => '3RA',
-        2 => '5TA',
-    ];
+    // ── Tab ──
+    public string $tabSeleccion = 'kits'; // 'kits' | 'piezas' | 'cantidad'
 
     protected function sedeOrigenId(): int
     {
@@ -51,41 +47,111 @@ class Crear extends Component
 
     public function getSedesProperty()
     {
-        return Sede::activas()->where('id', '!=', $this->sedeOrigenId())->orderBy('nombre')->get();
+        return Sede::activas()
+            ->where('id', '!=', $this->sedeOrigenId())
+            ->orderBy('nombre')
+            ->get();
     }
 
-    public function seleccionarTipo(string $tipo)
+    // ══════════════════════════════════════
+    //  COMPUTED: Kits
+    // ══════════════════════════════════════
+
+    public function getKitsDisponiblesProperty()
     {
-        $this->tipoKit = $tipo;
-        $this->modoEnvio = null;
-        $this->itemsSeleccionados = [];
-        $this->buscarItem = '';
-        $this->cantidadSeleccionados = [];
-        $this->productoCantidadId = null;
-        $this->cantidadPieza = 1;
+        $sedeId = $this->sedeOrigenId();
+
+        $kits = ItemSerializado::with(['producto.categoria', 'sede'])
+            ->whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true))
+            ->where('estado', 'en_stock')
+            ->where('sede_id', $sedeId)
+            ->whereNull('kit_padre_id')
+            ->when(
+                $this->buscar,
+                fn ($q) => $q->whereHas(
+                    'producto',
+                    fn ($p) => $p->where('nombre', 'like', "%{$this->buscar}%")
+                )
+            )
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        foreach ($kits as $kit) {
+            // Receta desde KitComponente (dinámico)
+            $receta = KitComponente::with('componente')
+                ->where('producto_kit_id', $kit->producto_id)
+                ->get();
+
+            $kit->receta = $receta;
+            $kit->totalEsperado = $receta->sum('cantidad_esperada');
+
+            // Hijos presentes (piezas que siguen dentro del kit)
+            $hijos = ItemSerializado::where('kit_padre_id', $kit->id)
+                ->where('estado', 'en_stock')
+                ->get();
+
+            $kit->hijosCount = $hijos->count();
+            $kit->hijos = $hijos;
+            $kit->es_sellado = $kit->hijosCount >= $kit->totalEsperado;
+
+            // Conteo por producto de hijos
+            $hijosPorProducto = $hijos->pluck('producto_id')->countBy()->toArray();
+            $kit->hijosPorProducto = $hijosPorProducto;
+
+            // Cuántos componentes están completos
+            $componentesCompletos = 0;
+            foreach ($receta as $r) {
+                if (($hijosPorProducto[$r->producto_componente_id] ?? 0) >= $r->cantidad_esperada) {
+                    $componentesCompletos++;
+                }
+            }
+            $kit->componentesCompletos = $componentesCompletos;
+            $kit->totalComponentes = $receta->count();
+        }
+
+        return $kits;
     }
 
-    public function seleccionarModo(string $modo)
+    // ══════════════════════════════════════
+    //  COMPUTED: Piezas sueltas
+    // ══════════════════════════════════════
+
+    public function getPiezasSueltasProperty()
     {
-        $this->modoEnvio = $modo;
-        $this->itemsSeleccionados = [];
-        $this->buscarItem = '';
-        $this->cantidadSeleccionados = [];
-        $this->productoCantidadId = null;
-        $this->cantidadPieza = 1;
+        $sedeId = $this->sedeOrigenId();
+
+        return ItemSerializado::with(['producto.categoria', 'sede'])
+            ->where('estado', 'en_stock')
+            ->where('sede_id', $sedeId)
+            ->whereNull('kit_padre_id')
+            ->whereHas('producto.categoria', fn ($q) => $q->where('es_kit', false)->where('es_serializado', true))
+            ->when(
+                $this->buscar,
+                fn ($q) => $q->whereHas(
+                    'producto',
+                    fn ($p) => $p->where('nombre', 'like', "%{$this->buscar}%")
+                )
+            )
+            ->orderBy('created_at', 'desc')
+            ->get();
     }
 
-    // ── Piezas por cantidad ──
+    // ══════════════════════════════════════
+    //  COMPUTED: Piezas por cantidad
+    // ══════════════════════════════════════
 
     public function getProductosCantidadProperty()
     {
+        $sedeId = $this->sedeOrigenId();
+
         return Producto::where('activo', true)
-            ->whereHas('items', function ($q) {
-                $q->where('estado', 'en_stock')->where('sede_id', $this->sedeOrigenId());
-            })
+            ->whereHas('categoria', fn ($q) => $q->where('es_kit', false))
+            ->whereHas(
+                'stockPorSede',
+                fn ($q) => $q->where('sede_id', $sedeId)->where('cantidad', '>', 0)
+            )
             ->get()
-            ->filter(fn ($p) => !$p->categoria?->es_kit)
-            ->values();
+            ->map(fn ($p) => tap($p, fn ($p) => $p->disponible = $p->stockEnSede($sedeId)));
     }
 
     public function agregarPiezaCantidad()
@@ -97,11 +163,10 @@ class Crear extends Component
 
         $producto = Producto::find($this->productoCantidadId);
         $disponible = $producto->stockEnSede($this->sedeOrigenId());
-
         $yaTiene = $this->cantidadSeleccionados[$this->productoCantidadId] ?? 0;
 
         if (($yaTiene + $this->cantidadPieza) > $disponible) {
-            $this->addError('cantidadPieza', "Solo hay {$disponible} disponibles en la sede de origen.");
+            $this->addError('cantidadPieza', "Solo hay {$disponible} disponibles.");
             return;
         }
 
@@ -117,115 +182,67 @@ class Crear extends Component
 
     public function getPiezasCantidadCarritoProperty()
     {
-        if (empty($this->cantidadSeleccionados)) return collect();
+        if (empty($this->cantidadSeleccionados)) {
+            return collect();
+        }
 
         return Producto::whereIn('id', array_keys($this->cantidadSeleccionados))->get()
-            ->map(function ($p) {
-                $p->cantidad_solicitada = $this->cantidadSeleccionados[$p->id];
-                return $p;
-            });
+            ->map(fn ($p) => tap($p, fn ($p) => $p->cantidad_solicitada = $this->cantidadSeleccionados[$p->id]));
     }
 
-    // ── Kits completos (sellados) ──
+    // ══════════════════════════════════════
+    //  ACTIONS: Toggle selection
+    // ══════════════════════════════════════
 
-    public function getKitsCompletosProperty()
+    /**
+     * Toggle a kit: adds/removes the kit item AND all its children.
+     */
+    public function toggleKit(int $kitId)
     {
-        if (!$this->tipoKit) return collect();
-
-        $productoKitId = $this->tipoKit === '3RA' ? 1 : 2;
-
-        return ItemSerializado::with('producto')
-            ->where('producto_id', $productoKitId)
-            ->where('estado', 'en_stock')
-            ->where('sede_id', $this->sedeOrigenId())
-            ->whereNull('kit_padre_id')
-            ->when($this->buscarItem, function ($q) {
-                $termino = $this->buscarItem;
-                $q->where('serie', 'like', "%{$termino}%");
-            })
-            ->orderBy('id', 'desc')
-            ->get();
-    }
-
-    // ── Piezas sueltas (de kits abiertos de este tipo) ──
-
-    public function getPiezasSueltasProperty()
-    {
-        if (!$this->tipoKit) return collect();
-
-        $productoKitId = $this->tipoKit === '3RA' ? 1 : 2;
-
-        return ItemSerializado::with('producto', 'kitPadre.producto')
-            ->where('estado', 'en_stock')
-            ->where('sede_id', $this->sedeOrigenId())
-            ->whereNotNull('kit_padre_id')
-            ->whereHas('kitPadre', function ($q) use ($productoKitId) {
-                $q->where('producto_id', $productoKitId);
-            })
-            ->when($this->buscarItem, function ($q) {
-                $termino = $this->buscarItem;
-                $q->where('serie', 'like', "%{$termino}%")
-                    ->orWhereHas('producto', function ($p) use ($termino) {
-                        $p->where('nombre', 'like', "%{$termino}%");
-                    });
-            })
-            ->orderBy('id', 'desc')
-            ->get();
-    }
-
-    // ── Repuestos por cantidad ──
-
-    public function getProductosRepuestoProperty()
-    {
-        return Producto::where('activo', true)
-            ->where('categoria_id', '!=', null)
-            ->whereHas('items', function ($q) {
-                $q->where('estado', 'en_stock')->where('sede_id', $this->sedeOrigenId());
-            })
-            ->get()
-            ->filter(fn ($p) => !$p->categoria?->es_kit)
-            ->values();
-    }
-
-    public function agregarRepuesto()
-    {
-        $this->validate([
-            'productoRepuestoId' => 'required|exists:productos,id',
-            'cantidadRepuesto' => 'required|integer|min:1',
-        ]);
-
-        $producto = Producto::find($this->productoRepuestoId);
-        $disponible = $producto->stockEnSede($this->sedeOrigenId());
-
-        if ($this->cantidadRepuesto > $disponible) {
-            $this->addError('cantidadRepuesto', "Solo hay {$disponible} disponibles en la sede de origen.");
+        $item = ItemSerializado::find($kitId);
+        if (! $item) {
             return;
         }
 
-        $this->repuestosSeleccionados[$this->productoRepuestoId] = $this->cantidadRepuesto;
-        $this->reset(['productoRepuestoId', 'cantidadRepuesto']);
-        $this->cantidadRepuesto = 1;
+        $isCurrentlySelected = isset($this->itemsSeleccionados[$kitId]);
+
+        if ($isCurrentlySelected) {
+            // Deselect: remove kit + all children
+            unset($this->itemsSeleccionados[$kitId]);
+            $childrenIds = ItemSerializado::where('kit_padre_id', $kitId)
+                ->where('estado', 'en_stock')
+                ->pluck('id');
+            foreach ($childrenIds as $childId) {
+                unset($this->itemsSeleccionados[$childId]);
+            }
+        } else {
+            // Select: add kit + all children
+            $this->itemsSeleccionados[$kitId] = true;
+            $childrenIds = ItemSerializado::where('kit_padre_id', $kitId)
+                ->where('estado', 'en_stock')
+                ->pluck('id');
+            foreach ($childrenIds as $childId) {
+                $this->itemsSeleccionados[$childId] = true;
+            }
+        }
     }
 
-    public function quitarRepuesto(int $productoId)
+    /**
+     * Toggle a single child inside a kit (for incomplete kits).
+     */
+    public function toggleHijoKit(int $hijoId)
     {
-        unset($this->repuestosSeleccionados[$productoId]);
+        if (isset($this->itemsSeleccionados[$hijoId])) {
+            unset($this->itemsSeleccionados[$hijoId]);
+        } else {
+            $this->itemsSeleccionados[$hijoId] = true;
+        }
     }
 
-    public function getRepuestosCarritoProperty()
-    {
-        if (empty($this->repuestosSeleccionados)) return collect();
-
-        return Producto::whereIn('id', array_keys($this->repuestosSeleccionados))->get()
-            ->map(function ($p) {
-                $p->cantidad_solicitada = $this->repuestosSeleccionados[$p->id];
-                return $p;
-            });
-    }
-
-    // ── Toggle items ──
-
-    public function toggleItem(int $itemId)
+    /**
+     * Toggle a single loose piece.
+     */
+    public function togglePieza(int $itemId)
     {
         if (isset($this->itemsSeleccionados[$itemId])) {
             unset($this->itemsSeleccionados[$itemId]);
@@ -234,23 +251,82 @@ class Crear extends Component
         }
     }
 
-    // ── Carrito ──
-
-    public function getItemsCarritoProperty()
+    /**
+     * Expand/collapse kit component inspection.
+     */
+    public function toggleInspeccion(int $kitId)
     {
-        if (empty($this->itemsSeleccionados)) return collect();
-
-        return ItemSerializado::with('producto')
-            ->whereIn('id', array_keys($this->itemsSeleccionados))
-            ->get();
+        $this->kitInspeccionId = $this->kitInspeccionId === $kitId ? null : $kitId;
     }
+
+    public function getKitInspeccionProperty()
+    {
+        if (! $this->kitInspeccionId) {
+            return null;
+        }
+
+        $kit = ItemSerializado::with('producto')->find($this->kitInspeccionId);
+        if (! $kit) {
+            return null;
+        }
+
+        $receta = KitComponente::with('componente')
+            ->where('producto_kit_id', $kit->producto_id)
+            ->get();
+
+        $hijos = ItemSerializado::where('kit_padre_id', $kit->id)
+            ->where('estado', 'en_stock')
+            ->get();
+
+        // Group by product and track individual selection
+        $hijosPorProducto = $hijos->pluck('producto_id')->countBy()->toArray();
+        $hijosSeleccionados = $hijos->filter(fn($h) => isset($this->itemsSeleccionados[$h->id]));
+
+        return [
+            'kit' => $kit,
+            'receta' => $receta,
+            'hijos' => $hijosPorProducto,
+            'hijosItems' => $hijos,
+            'hijosSeleccionadosCount' => $hijosSeleccionados->count(),
+            'totalEsperado' => $receta->sum('cantidad_esperada'),
+            'totalPresente' => array_sum($hijosPorProducto),
+        ];
+    }
+
+    // ══════════════════════════════════════
+    //  COMPUTED: Resumen
+    // ══════════════════════════════════════
 
     public function getResumenVacioProperty(): bool
     {
         return empty($this->itemsSeleccionados) && empty($this->cantidadSeleccionados);
     }
 
-    // ── Confirmar ──
+    public function getSeleccionCountProperty(): int
+    {
+        // Count only top-level: kits (not their children) + loose pieces + quantity items
+        $kitsSeleccionados = 0;
+        $sueltosSeleccionados = 0;
+
+        foreach (array_keys($this->itemsSeleccionados) as $itemId) {
+            $item = ItemSerializado::find($itemId);
+            if (! $item) {
+                continue;
+            }
+            if (is_null($item->kit_padre_id) && $item->producto?->categoria?->es_kit) {
+                $kitsSeleccionados++;
+            } elseif (is_null($item->kit_padre_id)) {
+                $sueltosSeleccionados++;
+            }
+            // children are part of their parent kit, don't count separately
+        }
+
+        return $kitsSeleccionados + $sueltosSeleccionados + count($this->cantidadSeleccionados);
+    }
+
+    // ══════════════════════════════════════
+    //  CONFIRM: Checklist
+    // ══════════════════════════════════════
 
     public function confirmarTraslado()
     {
@@ -261,47 +337,90 @@ class Crear extends Component
             return;
         }
 
-        $this->generarChecklist();
+        $this->buildChecklist();
         $this->mostrarChecklist = true;
     }
 
-    public function generarChecklist()
+    protected function buildChecklist(): void
     {
-        $componentes = [];
+        $data = [];
+        $seleccionadosIds = array_keys($this->itemsSeleccionados);
 
-        // Items del carrito (kits completos + piezas sueltas)
-        foreach (array_keys($this->itemsSeleccionados) as $itemId) {
-            $item = ItemSerializado::with('producto.categoria')->find($itemId);
-            if (!$item) continue;
+        // Kits seleccionados (padres)
+        $kitsPadres = ItemSerializado::with('producto')
+            ->whereIn('id', $seleccionadosIds)
+            ->whereNull('kit_padre_id')
+            ->whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true))
+            ->get();
 
-            $componentes[] = [
-                'nombre' => $item->producto->nombre,
-                'tipo' => $item->kit_padre_id ? 'pieza_suelta' : 'kit_sellado',
-                'incluido' => true,
-                'detalle' => $item->kit_padre_id ? ($item->serie ?? 'Sin serie') : ('Caja #' . $item->id),
-                'kit' => $item->kit_padre_id
-                    ? ($item->kitPadre->producto->nombre ?? 'Kit abierto')
-                    : $item->producto->nombre,
+        foreach ($kitsPadres as $kitItem) {
+            $receta = KitComponente::with('componente')
+                ->where('producto_kit_id', $kitItem->producto_id)
+                ->get();
+
+            // Hijos que están en la selección
+            $hijosSeleccionados = ItemSerializado::whereIn('id', $seleccionadosIds)
+                ->where('kit_padre_id', $kitItem->id)
+                ->pluck('producto_id')
+                ->countBy()
+                ->toArray();
+
+            $componentes = $receta->map(fn ($r) => [
+                'nombre' => $r->componente?->nombre ?? '—',
+                'esperada' => $r->cantidad_esperada,
+                'presente' => $hijosSeleccionados[$r->producto_componente_id] ?? 0,
+                'completo' => ($hijosSeleccionados[$r->producto_componente_id] ?? 0) >= $r->cantidad_esperada,
+            ]);
+
+            $totalEsperado = $receta->sum('cantidad_esperada');
+            $totalPresente = array_sum($hijosSeleccionados);
+
+            $data[] = [
+                'nombre' => $kitItem->producto->nombre,
+                'tipo' => 'kit',
+                'es_completo' => $totalPresente >= $totalEsperado && $totalEsperado > 0,
+                'detalle' => "#{$kitItem->id}",
+                'totalEsperado' => $totalEsperado,
+                'totalPresente' => $totalPresente,
+                'componentes' => $componentes,
+            ];
+        }
+
+        // Piezas sueltas (padres sin kit, no kit)
+        $sueltos = ItemSerializado::with('producto')
+            ->whereIn('id', $seleccionadosIds)
+            ->whereNull('kit_padre_id')
+            ->whereDoesntHave('producto.categoria', fn ($q) => $q->where('es_kit', true))
+            ->get();
+
+        foreach ($sueltos as $pieza) {
+            $data[] = [
+                'nombre' => $pieza->producto->nombre,
+                'tipo' => 'pieza',
+                'detalle' => $pieza->serie ?? "Item #{$pieza->id}",
             ];
         }
 
         // Piezas por cantidad
         foreach ($this->cantidadSeleccionados as $productoId => $cantidad) {
             $producto = Producto::find($productoId);
-            if (!$producto) continue;
+            if (! $producto) {
+                continue;
+            }
 
-            $componentes[] = [
+            $data[] = [
                 'nombre' => $producto->nombre,
                 'tipo' => 'cantidad',
-                'incluido' => true,
-                'detalle' => "x{$cantidad}",
-                'kit' => 'Pieza suelta',
+                'detalle' => "×{$cantidad}",
             ];
         }
 
-        $this->checklistComponentes = $componentes;
-        $this->esKitCompleto = $this->modoEnvio === 'completo';
+        $this->checklistData = $data;
     }
+
+    // ══════════════════════════════════════
+    //  CONFIRM: Envío final
+    // ══════════════════════════════════════
 
     public function confirmarEnvio()
     {
@@ -314,11 +433,9 @@ class Crear extends Component
                     'sede_destino_id' => $this->sedeDestinoId,
                     'enviado_por' => Auth::id(),
                     'observaciones' => $this->observaciones ?: null,
-                    'es_kit_completo' => $this->modoEnvio === 'completo',
-                    'componentes_faltantes' => null,
                 ]);
 
-                // Items serializados (kits completos + piezas sueltas)
+                // Items serializados (kits + children + sueltos)
                 foreach (array_keys($this->itemsSeleccionados) as $itemId) {
                     $item = ItemSerializado::where('id', $itemId)
                         ->where('estado', 'en_stock')
@@ -326,18 +443,22 @@ class Crear extends Component
                         ->lockForUpdate()
                         ->first();
 
-                    if (!$item) {
-                        throw new \RuntimeException('Uno de los items seleccionados ya no está disponible.');
+                    if (! $item) {
+                        throw new \RuntimeException('Uno de los items ya no está disponible.');
                     }
-
-                    $producto = Producto::find($item->producto_id);
 
                     $item->update(['sede_id' => $this->sedeDestinoId]);
 
-                    // Registrar movimiento: salida de origen, entrada en destino
+                    $producto = Producto::find($item->producto_id);
                     if ($producto) {
-                        MovimientoStock::registrar($producto, 'salida', 1, null, Auth::id(), "Traslado #{$traslado->id}", $sedeOrigenId);
-                        MovimientoStock::registrar($producto, 'entrada', 1, null, Auth::id(), "Traslado #{$traslado->id}", $this->sedeDestinoId);
+                        MovimientoStock::registrar(
+                            $producto, 'salida', 1, null, Auth::id(),
+                            "Traslado #{$traslado->id}", $sedeOrigenId
+                        );
+                        MovimientoStock::registrar(
+                            $producto, 'entrada', 1, null, Auth::id(),
+                            "Traslado #{$traslado->id}", $this->sedeDestinoId
+                        );
                     }
 
                     TrasladoDetalle::create([
@@ -359,24 +480,28 @@ class Crear extends Component
 
                     if ($itemsPieza->count() < $cantidad) {
                         $nombre = Producto::find($productoId)?->nombre;
-                        throw new \RuntimeException("No hay stock suficiente de {$nombre} en la sede de origen.");
+                        throw new \RuntimeException("No hay stock suficiente de {$nombre}.");
                     }
 
                     foreach ($itemsPieza as $itemPieza) {
                         $itemPieza->update(['sede_id' => $this->sedeDestinoId]);
                     }
 
-                    // Registrar movimiento: salida de origen, entrada en destino
                     $producto = Producto::find($productoId);
                     if ($producto) {
-                        MovimientoStock::registrar($producto, 'salida', $cantidad, null, Auth::id(), "Traslado #{$traslado->id}", $sedeOrigenId);
-                        MovimientoStock::registrar($producto, 'entrada', $cantidad, null, Auth::id(), "Traslado #{$traslado->id}", $this->sedeDestinoId);
+                        MovimientoStock::registrar(
+                            $producto, 'salida', $cantidad, null, Auth::id(),
+                            "Traslado #{$traslado->id}", $sedeOrigenId
+                        );
+                        MovimientoStock::registrar(
+                            $producto, 'entrada', $cantidad, null, Auth::id(),
+                            "Traslado #{$traslado->id}", $this->sedeDestinoId
+                        );
                     }
 
                     TrasladoDetalle::create([
                         'traslado_id' => $traslado->id,
                         'producto_id' => $productoId,
-                        'item_serializado_id' => null,
                         'cantidad' => $cantidad,
                     ]);
                 }
@@ -386,11 +511,12 @@ class Crear extends Component
             return;
         } catch (\Throwable $e) {
             report($e);
-            $this->addError('general', 'Ocurrió un error al registrar el traslado. Intenta de nuevo.');
+            $this->addError('general', 'Ocurrió un error al registrar el traslado.');
             return;
         }
 
-        $this->dispatch('minAlert', titulo: '¡Listo!', mensaje: 'Traslado registrado correctamente.', icono: 'success');
+        $this->dispatch('minAlert', titulo: 'Listo!', mensaje: 'Traslado registrado correctamente.', icono: 'success');
+
         return $this->redirect(route('almacen.traslados.listado'), navigate: true);
     }
 

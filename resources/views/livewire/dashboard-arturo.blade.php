@@ -5,9 +5,10 @@
             <div>
                 <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight flex items-center gap-2">
                     ¡Hola, {{ Auth::user()->name }}! 👋
-                    @if(Auth::user()->getRoleNames()->isNotEmpty())
+                    @php $rolPrincipal = $rolPrincipal ?? Auth::user()->getRoleNames()->first() ?? null; @endphp
+                    @if($rolPrincipal)
                         <span class="text-xs font-semibold bg-white/20 text-white px-2 py-1 rounded-full uppercase tracking-wide">
-                            {{ Auth::user()->getRoleNames()->implode(', ') }}
+                            {{ $rolPrincipal }}
                         </span>
                     @endif
                 </h1>

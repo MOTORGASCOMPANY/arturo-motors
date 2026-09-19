@@ -94,7 +94,7 @@
         <table class="header-table w-100">
             <tr>
                 <td class="logo-cell">
-                    <img src="{{ public_path('images/icon.png') }}" class="logo">
+                    <img src="{{ public_path('images/LOGOFINAL.jpg') }}" class="logo">
                     <div class="company-title">ARTURO MOTORS</div>
                     <div class="company-subtitle">ASESOR AUTOMOTRIZ — CENTRO DE INSPECCIÓN TÉCNICA VEHICULAR</div>
                     <div class="company-info">

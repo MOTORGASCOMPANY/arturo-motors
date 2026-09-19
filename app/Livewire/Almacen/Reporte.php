@@ -6,6 +6,7 @@ use App\Models\Producto;
 use App\Models\Sede;
 use App\Models\ItemSerializado;
 use App\Models\KitComponente;
+use App\Models\MovimientoStock;
 use Livewire\Component;
 
 class Reporte extends Component
@@ -111,8 +112,8 @@ class Reporte extends Component
                 $generacion = $kit->producto->atributos['generacion'] ?? '';
                 $hijos = $kit->piezasEnKit;
 
-                // Items seriales instalados (no CANT-)
-                $seriales = $hijos->filter(fn ($h) => !str_starts_with($h->serie ?? '', 'CANT-') && !empty($h->serie))
+                // Items seriales instalados (no cantidad)
+                $seriales = $hijos->filter(fn ($h) => ($h->atributos['tipo'] ?? '') !== 'cantidad' && !empty($h->serie))
                     ->map(fn ($h) => [
                         'nombre' => $h->producto->nombre,
                         'serie' => $h->serie,
@@ -138,6 +139,27 @@ class Reporte extends Component
                 ];
             });
 
+        // Valorización total del inventario
+        $valorTotal = $distribucionFiltrada->sum(function ($row) {
+            $precio = (float) ($row['producto']->precio_referencial ?? 0);
+            return $row['total'] * $precio;
+        });
+
+        // Últimos 15 movimientos de stock
+        $movimientosRecientes = MovimientoStock::with(['producto', 'sede', 'usuario'])
+            ->latest()
+            ->take(15)
+            ->get()
+            ->map(fn ($m) => [
+                'producto' => $m->producto->nombre ?? 'N/A',
+                'sede' => $m->sede->nombre ?? 'N/A',
+                'tipo' => $m->tipo,
+                'cantidad' => $m->cantidad,
+                'motivo' => $m->motivo,
+                'usuario' => $m->usuario->name ?? 'N/A',
+                'fecha' => $m->created_at->format('d/m/Y H:i'),
+            ]);
+
         return view('livewire.almacen.reporte', [
             'sedes' => $sedes,
             'distribucion' => $distribucionFiltrada->values(),
@@ -151,6 +173,8 @@ class Reporte extends Component
             'labelsCategorias' => $stockPorCategoria->keys()->toArray(),
             'dataCategorias' => $stockPorCategoria->values()->toArray(),
             'kitsInstalados' => $kitsInstalados,
+            'valorTotal' => $valorTotal,
+            'movimientosRecientes' => $movimientosRecientes,
         ]);
     }
 }

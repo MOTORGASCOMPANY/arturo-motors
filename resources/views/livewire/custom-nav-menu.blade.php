@@ -44,8 +44,9 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
             </svg>
         </button>
 
-        <a href="{{ route('dashboard') }}" class="py-2 h-1/2">
-            <img src="{{ asset('images/arturo3.png') }}" width="150" />
+        <a href="{{ route('dashboard') }}" class="flex items-center gap-2 py-2">
+            <img src="{{ asset('images/LOGOFINAL.jpg') }}" class="h-9 w-auto rounded-lg object-contain" alt="Arturo Motors" />
+            <span class="hidden lg:inline text-white font-bold text-sm tracking-wide">ARTURO <span class="text-blue-200">MOTORS</span></span>
         </a>
 
         <div class="hidden  md:flex  md:items-center">
@@ -407,12 +408,7 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                                                     Recepción de Kits
                                                 </x-responsive-nav-link>
                                             </li>
-                                            <li class="transition-colors duration-150">
-                                                <x-responsive-nav-link class="text-sm" href="{{ route('almacen.stock.registrar-series') }}"
-                                                    :active="request()->routeIs('almacen.stock.registrar-series')">
-                                                    Registrar Series
-                                                </x-responsive-nav-link>
-                                            </li>
+
                                             <li class="transition-colors duration-150">
                                                 <x-responsive-nav-link class="text-sm" href="{{ route('almacen.reportes-piezas') }}"
                                                     :active="request()->routeIs('almacen.reportes-piezas')">
@@ -539,7 +535,7 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                                                 </x-responsive-nav-link>
                                             </li>
                                             <li class="transition-colors duration-150">
-                                                <x-responsive-nav-link class="text-sm !text-red-600 !border-red-400 hover:!text-red-800 hover:!bg-red-50 hover:!border-red-500" href="{{ route('almacen.reporte') }}"
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('almacen.reporte') }}"
                                                     :active="request()->routeIs('almacen.reporte')">
                                                     Reporte de Inventario
                                                 </x-responsive-nav-link>
@@ -548,6 +544,12 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                                                 <x-responsive-nav-link class="text-sm" href="{{ route('conversiones.reporte') }}"
                                                     :active="request()->routeIs('conversiones.reporte')">
                                                     Reporte de Conversiones
+                                                </x-responsive-nav-link>
+                                            </li>
+                                            <li class="transition-colors duration-150">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('fise.reporte') }}"
+                                                    :active="request()->routeIs('fise.reporte')">
+                                                    Reporte FISE
                                                 </x-responsive-nav-link>
                                             </li>
                                             

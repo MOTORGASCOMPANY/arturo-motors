@@ -183,6 +183,20 @@ class Reporte extends Component
             ->groupBy('metodo_pago')
             ->pluck('total', 'metodo_pago');
 
+        // Egresos por concepto
+        $egresosPorConcepto = MovimientoCaja::where('tipo', 'egreso')
+            ->whereBetween('created_at', [$desde, $hasta])
+            ->selectRaw('concepto, COUNT(*) as cantidad, SUM(monto) as total')
+            ->groupBy('concepto')
+            ->orderByDesc('total')
+            ->get();
+
+        // Ticket promedio por sesión
+        $sesionesCerradas = $sesiones->filter(fn ($s) => $s->estado === 'cerrada');
+        $ticketPromedio = $sesionesCerradas->count() > 0
+            ? $sesionesCerradas->avg(fn ($s) => (float) ($s->monto_cierre ?? 0))
+            : 0;
+
         // Dispatch chart data to JS (wire:ignore prevents morph from updating data-* attrs)
         $this->dispatch('chart-data-updated',
             labels: $labels,
@@ -204,6 +218,8 @@ class Reporte extends Component
             'chartData' => $chartData,
             'colores' => $colores,
             'metodos' => $metodos,
+            'egresosPorConcepto' => $egresosPorConcepto,
+            'ticketPromedio' => $ticketPromedio,
         ]);
     }
 }

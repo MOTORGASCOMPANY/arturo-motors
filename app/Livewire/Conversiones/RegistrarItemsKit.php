@@ -18,11 +18,7 @@ class RegistrarItemsKit extends Component
     public bool $sinKit = false;
 
     // Productos que necesitan registro de serie
-    const PRODUCTOS_SERIALIZABLES = [
-        'Vaporizador',
-        'Computadora',
-        'Tanque',
-    ];
+    // Se determina por la categoría (es_serializado), NO por nombre hardcodeado
 
     public function mount(int $ordenId)
     {
@@ -32,7 +28,8 @@ class RegistrarItemsKit extends Component
             'service',
         ])->findOrFail($ordenId);
 
-        abort_unless($this->orden->tecnico_id === Auth::id(), 403, 'Esta orden no está asignada a ti.');
+        $esAdminOJefe = Auth::user()->hasAnyRole(['Administrador del sistema', 'Jefe de Taller']);
+        abort_unless($esAdminOJefe || $this->orden->tecnico_id === Auth::id(), 403, 'Esta orden no está asignada a ti.');
         abort_unless($this->orden->estado === 'en_conversion', 403, 'Esta orden no está en etapa de conversión.');
 
         $this->cargarItems();
@@ -120,28 +117,30 @@ class RegistrarItemsKit extends Component
     }
 
     /**
-     * Verificar si un producto es serializable
+     * Verificar si un producto es serializable (por categoría en BD)
      */
-    private function esSerializable(string $nombre): bool
+    private function esSerializable($producto): bool
     {
-        foreach (self::PRODUCTOS_SERIALIZABLES as $patron) {
-            if (stripos($nombre, $patron) !== false) {
-                return true;
-            }
+        if (is_int($producto)) {
+            $producto = Producto::with('categoria')->find($producto);
         }
-        return false;
+        if (is_string($producto)) {
+            $producto = Producto::where('nombre', $producto)->first();
+        }
+        if (!$producto instanceof Producto) {
+            return false;
+        }
+        return $producto->categoria->es_serializado ?? false;
     }
 
     /**
-     * Obtener IDs de productos serializables
+     * Obtener IDs de productos serializables (por categoría en BD)
      */
     private function getIdsProductosSerializables(): array
     {
-        return Producto::where(function ($q) {
-            foreach (self::PRODUCTOS_SERIALIZABLES as $nombre) {
-                $q->orWhere('nombre', 'LIKE', "%{$nombre}%");
-            }
-        })->pluck('id')->toArray();
+        return Producto::whereHas('categoria', fn ($q) => $q->where('es_serializado', true))
+            ->pluck('id')
+            ->toArray();
     }
 
     /**

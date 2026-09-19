@@ -105,6 +105,11 @@ class ServiceOrder extends Model
         return $this->hasMany(Documento::class, 'service_order_id');
     }
 
+    public function reportesPendientes()
+    {
+        return $this->hasMany(ReportePiezaNoEncajada::class, 'service_order_id');
+    }
+
     // Scopes
     public function scopeTipoConversion($query)
     {

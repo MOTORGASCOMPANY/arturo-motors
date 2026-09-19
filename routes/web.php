@@ -21,7 +21,7 @@ use App\Livewire\Almacen\Categorias\Crear as CategoriasCrear;
 use App\Livewire\Almacen\Categorias\Listado as CategoriasListado;
 use App\Livewire\Almacen\Productos\Crear as ProductosCrear;
 use App\Livewire\Almacen\Productos\Listado as ProductosListado;
-use App\Livewire\Almacen\Productos\RegistrarEntrada;
+
 use App\Livewire\Almacen\Traslados\Listado as TrasladosListado;
 use App\Livewire\Caja\AbrirCaja;
 use App\Livewire\Caja\CerrarCaja;
@@ -45,7 +45,7 @@ use App\Livewire\Conversiones\Evaluar;
 use App\Livewire\Conversiones\MisAsignadas;
 use App\Livewire\Conversiones\Realizar;
 use App\Livewire\ExpedienteModal;
-use App\Livewire\GestorRepuestos;
+
 use App\Livewire\Inicio;
 use App\Livewire\ListaCitas;
 use App\Livewire\ListaClientes;
@@ -58,7 +58,7 @@ use App\Livewire\Reportes\ReporteCitas;
 use App\Livewire\RRHH\Contratos;
 use App\Http\Controllers\CmsController;
 use App\Livewire\Almacen\Kits\Pendientes;
-use App\Livewire\Almacen\Productos\DefinirComponentes;
+
 use App\Livewire\Cms\GestionarContacto;
 use App\Livewire\Cms\GestionarContenido;
 use App\Livewire\Cms\GestionarPasos;
@@ -161,15 +161,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::get('/almacen/recepciones', \App\Livewire\Almacen\Recepciones\Listado::class)->name('almacen.recepciones.listado');
     Route::get('/almacen/recepciones/crear', \App\Livewire\Almacen\Recepciones\Crear::class)->name('almacen.recepciones.crear');
 
-    // Completar kit
-    Route::get('/almacen/kits/{kitItemId}/completar', \App\Livewire\Almacen\Kits\Completar::class)->name('almacen.kits.completar');
 
-    // Stock
-    Route::get('/almacen/stock', \App\Livewire\Almacen\Stock\Ver::class)->name('almacen.stock');
-    Route::get('/almacen/stock/registrar-series', \App\Livewire\Almacen\Stock\RegistrarSeries::class)->name('almacen.stock.registrar-series');
-
-    // Solicitudes pendientes (piezas que no calzan) - legacy
-    Route::get('/almacen/pendientes', \App\Livewire\Almacen\Pendientes::class)->name('almacen.pendientes');
 
     // Monitoreo de conversiones activas (dashboard en tiempo real)
     Route::get('/almacen/reportes-piezas', \App\Livewire\Almacen\ReportesPendientes::class)->name('almacen.reportes-piezas');
@@ -183,6 +175,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::get('/servicios/reporte', ReporteServicios::class)->name('servicios.reporte');
     Route::get('/almacen/reporte', ReporteAlmacen::class)->name('almacen.reporte');
     Route::get('/conversiones/reporte', ReporteConversiones::class)->name('conversiones.reporte');
+    Route::get('/fise/reporte', \App\Livewire\Fise\Reporte::class)->name('fise.reporte');
 
     // Diagrama Gantt
     Route::get('/diagrama-gantt', \App\Http\Controllers\GanttController::class)->name('diagrama-gantt');
@@ -240,18 +233,20 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         Route::post('/upload-media', [CmsController::class, 'uploadMedia'])->name('upload-media');
     });
 
-    // API para componentes de kit
+    // API para componentes de kit — agrupado por kit individual
     Route::get('/api/kit-componentes/{productoId}', function (int $productoId) {
         $producto = \App\Models\Producto::find($productoId);
         if (!$producto || !$producto->categoria->es_kit) {
-            return response()->json([]);
+            return response()->json(['producto' => null, 'receta' => [], 'kits' => []]);
         }
 
-        $componentes = \Illuminate\Support\Facades\DB::table('kit_componentes')
+        // Receta del kit (qué debería tener)
+        $receta = \Illuminate\Support\Facades\DB::table('kit_componentes')
             ->join('productos', 'producto_componente_id', '=', 'productos.id')
             ->join('categorias_almacen', 'productos.categoria_id', '=', 'categorias_almacen.id')
             ->where('producto_kit_id', $productoId)
             ->select(
+                'productos.id as producto_id',
                 'productos.nombre',
                 'categorias_almacen.es_serializado',
                 'kit_componentes.cantidad_esperada as cantidad'
@@ -259,7 +254,54 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
             ->orderBy('productos.nombre')
             ->get();
 
-        return response()->json($componentes);
+        // Obtener items que SON kits (no componentes sueltos)
+        $kitsItems = \App\Models\ItemSerializado::with(['sede', 'serviceOrder.tecnico'])
+            ->where('producto_id', $productoId)
+            ->whereNull('kit_padre_id') // solo kits padre, no componentes
+            ->orderByDesc('created_at')
+            ->get();
+
+        // Para cada kit, traer sus piezas internas
+        $kitsData = $kitsItems->map(function ($kit) {
+            $piezas = \App\Models\ItemSerializado::with(['producto', 'producto.categoria'])
+                ->where('kit_padre_id', $kit->id)
+                ->get();
+
+            // Separar serializados de cantidad
+            $serializados = $piezas->filter(fn($p) => !str_starts_with($p->serie ?? '', 'CANT-'))
+                ->map(fn($p) => [
+                    'id' => $p->id,
+                    'nombre' => $p->producto?->nombre ?? '—',
+                    'serie' => $p->serie ?? '—',
+                    'estado' => $p->estado,
+                    'atributos' => $p->atributos ?? [],
+                ])->values();
+
+            $cantidad = $piezas->filter(fn($p) => str_starts_with($p->serie ?? '', 'CANT-'))
+                ->map(fn($p) => [
+                    'id' => $p->id,
+                    'nombre' => $p->producto?->nombre ?? '—',
+                    'serie' => $p->serie ?? '—',
+                    'cantidad' => $p->atributos['cantidad'] ?? 1,
+                ])->values();
+
+            return [
+                'id' => $kit->id,
+                'estado' => $kit->estado,
+                'sede' => $kit->sede?->nombre ?? '—',
+                'created_at' => $kit->created_at?->format('d/m/Y H:i'),
+                'service_order_id' => $kit->service_order_id,
+                'tecnico' => $kit->serviceOrder?->tecnico?->name ?? null,
+                'serializados' => $serializados,
+                'cantidad' => $cantidad,
+            ];
+        });
+
+        return response()->json([
+            'producto' => ['id' => $producto->id, 'nombre' => $producto->nombre],
+            'receta' => $receta,
+            'kits' => $kitsData,
+        ]);
     })->middleware('auth');
 
 });

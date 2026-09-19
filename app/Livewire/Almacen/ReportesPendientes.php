@@ -34,6 +34,10 @@ class ReportesPendientes extends Component
 
     public bool $modalPartesAbierto = false;
 
+    // Piezas sueltas disponibles para reemplazo
+    public array $piezasSueltas = [];
+    public ?int $piezaSueltaSeleccionadaId = null;
+
     protected CambioPiezaService $cambioPiezaService;
 
     public function boot(CambioPiezaService $cambioPiezaService): void
@@ -115,6 +119,8 @@ class ReportesPendientes extends Component
         $this->cantidadAdicional = '1';
         $this->observacion = '';
         $this->modalPartesAbierto = false;
+        $this->piezasSueltas = [];
+        $this->piezaSueltaSeleccionadaId = null;
     }
 
     // ═══════════════════════════════════════════════
@@ -223,14 +229,22 @@ class ReportesPendientes extends Component
             ]);
     }
 
-    private const PRODUCTOS_SERIALIZABLES = ['Vaporizador', 'Computadora', 'Tanque'];
-
-    private function esSerializable(string $nombre): bool
+    /**
+     * Verificar si un producto es serializado consultando su categoría en BD.
+     * Reemplaza el hardcoded anterior que solo matcheaba por nombre.
+     */
+    private function esSerializable($producto): bool
     {
-        foreach (self::PRODUCTOS_SERIALIZABLES as $p) {
-            if (stripos($nombre, $p) !== false) return true;
+        if (is_int($producto)) {
+            $producto = \App\Models\Producto::with('categoria')->find($producto);
         }
-        return false;
+        if (is_string($producto)) {
+            $producto = \App\Models\Producto::where('nombre', $producto)->first();
+        }
+        if (!$producto instanceof \App\Models\Producto) {
+            return false;
+        }
+        return $producto->categoria->es_serializado ?? false;
     }
 
     public function abrirPartesGenerales() { $this->modalPartesAbierto = true; }
@@ -274,20 +288,31 @@ class ReportesPendientes extends Component
         $sedeId = Sede::activas()->orderBy('id')->first()?->id ?? 1;
 
         if ($esSerial) {
-            // Buscar suelta
-            $suelta = ItemSerializado::where('producto_id', $item->producto_id)
-                ->where('estado', 'en_stock')->where('sede_id', $sedeId)->first();
+            // Buscar piezas sueltas con todas sus características
+            $sueltas = $this->cambioPiezaService->buscarPiezaSueltas($item->producto_id, $sedeId, $itemId);
 
-            if ($suelta) {
-                // Crear reporte + asignar de una
-                $reporte = $this->crearReporte($this->conversionSeleccionadaId, $itemId);
-                $this->cambioPiezaService->asignarPiezaDesdeAlmacen($reporte, $suelta->id, 'Pieza suelta', $suelta->serie);
-                $this->dispatch('minToast', titulo: 'Reemplazado', mensaje: "Serie {$suelta->serie} asignada.", icono: 'success');
-                $this->resetReemplazo();
-                return;
+            if ($sueltas->isNotEmpty()) {
+                // Filtrar: piezas serializadas DEBEN tener serie
+                $sueltas = $sueltas->filter(function ($s) {
+                    $esSerial = $s->producto->categoria->es_serializado ?? false;
+                    return !$esSerial || !empty($s->serie);
+                });
+
+                if ($sueltas->isNotEmpty()) {
+                    // Mostrar lista para que el usuario elija
+                    $this->piezaReemplazarId = $itemId;
+                    $this->metodoReemplazo = 'buscando_suelta';
+                    $this->piezasSueltas = $sueltas->map(fn($s) => [
+                        'id' => $s->id,
+                        'serie' => $s->serie,
+                        'producto' => $s->producto->nombre,
+                        'atributos' => $s->atributos ?? [],
+                    ])->toArray();
+                    return;
+                }
             }
 
-            // Buscar kits
+            // No hay sueltas — buscar kits
             $kits = $this->cambioPiezaService->buscarKitsConProducto($item->producto_id, $sedeId);
             if ($kits->isEmpty()) {
                 $this->dispatch('minToast', titulo: 'Sin stock', mensaje: 'No hay pieza suelta ni kit disponible.', icono: 'warning');
@@ -298,18 +323,63 @@ class ReportesPendientes extends Component
             // Guardar solo el ID, SIN crear reporte
             $this->piezaReemplazarId = $itemId;
             $this->metodoReemplazo = 'buscando_kit';
-            $this->kitsDisponibles = $kits->map(fn($k) => [
-                'id' => $k->id, 'producto' => $k->producto->nombre, 'serie' => $k->serie,
-                'componentes' => $k->producto->componentes->map(fn($c) => [
-                    'nombre' => $c->componente->nombre,
-                    'es_necesaria' => $c->producto_componente_id == $item->producto_id,
-                ])->toArray(),
-            ])->toArray();
+            $this->kitsDisponibles = $kits->map(function($k) use ($item) {
+                return [
+                    'id' => $k->id,
+                    'producto' => $k->producto->nombre,
+                    'serie' => $k->serie,
+                    'componentes' => $k->producto->componentes->map(function($c) use ($item) {
+                        $comp = $c->componente;
+                        $attrs = $comp->atributos ?? [];
+                        return [
+                            'nombre' => $comp->nombre,
+                            'es_necesaria' => $c->producto_componente_id == $item->producto_id,
+                            'marca' => $attrs['marca'] ?? null,
+                            'generacion' => $attrs['generacion'] ?? null,
+                            'capacidad' => $attrs['capacidad'] ?? null,
+                            'produce' => $attrs['produce'] ?? null,
+                        ];
+                    })->toArray(),
+                ];
+            })->toArray();
         } else {
             // Cantidad — sin crear reporte
             $this->piezaReemplazarId = $itemId;
             $this->metodoReemplazo = 'cantidad';
             $this->cantidadAdicional = '1';
+        }
+    }
+
+    // ═══════════════════════════════════════════════
+    // PIEZA SUELTA
+    // ═══════════════════════════════════════════════
+
+    public function seleccionarPiezaSuelta(int $piezaSueltaId)
+    {
+        $this->piezaSueltaSeleccionadaId = $piezaSueltaId;
+    }
+
+    public function confirmarPiezaSuelta()
+    {
+        if (!$this->piezaSueltaSeleccionadaId || !$this->piezaReemplazarId) {
+            $this->dispatch('minToast', titulo: 'Error', mensaje: 'Seleccioná una pieza.', icono: 'error');
+            return;
+        }
+
+        try {
+            $reporte = $this->crearReporte($this->conversionSeleccionadaId, $this->piezaReemplazarId, $this->observacion);
+            $this->cambioPiezaService->asignarPiezaDesdeAlmacen(
+                $reporte,
+                $this->piezaSueltaSeleccionadaId,
+                'Pieza suelta elegida por almacén'
+            );
+
+            $suelta = ItemSerializado::find($this->piezaSueltaSeleccionadaId);
+            $this->dispatch('minToast', titulo: 'Reemplazado', mensaje: "Serie {$suelta->serie} asignada.", icono: 'success');
+            $this->resetReemplazo();
+        } catch (\Throwable $e) {
+            report($e);
+            $this->dispatch('minToast', titulo: 'Error', mensaje: $e->getMessage(), icono: 'error');
         }
     }
 
@@ -382,7 +452,7 @@ class ReportesPendientes extends Component
 
             $nuevo = ItemSerializado::create([
                 'producto_id' => $item->producto_id,
-                'serie' => 'CANT-' . strtoupper(uniqid()),
+                'serie' => null,
                 'estado' => 'asignado',
                 'service_order_id' => $orden->id,
                 'sede_id' => $sedeId,

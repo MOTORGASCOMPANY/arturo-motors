@@ -61,7 +61,7 @@ class ConversionesExport implements FromCollection, WithHeadings, WithMapping, W
             $componentesInstalados = $instalados->map(fn ($i) => $i->producto->nombre)->implode(', ');
 
             // Piezas con cantidad
-            $piezasCantidad = $instalados->filter(fn ($i) => str_starts_with($i->serie ?? '', 'CANT-') || ($i->atributos['tipo'] ?? '') === 'cantidad')
+            $piezasCantidad = $instalados->filter(fn ($i) => ($i->atributos['tipo'] ?? '') === 'cantidad')
                 ->map(fn ($i) => $i->producto->nombre)
                 ->implode(', ');
 

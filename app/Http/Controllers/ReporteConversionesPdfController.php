@@ -73,7 +73,7 @@ class ReporteConversionesPdfController extends Controller
                 'total_componentes' => $hijos->count(),
                 'instalados' => $instalados->count(),
                 'items_serializados' => $instalados
-                    ->filter(fn ($i) => !str_starts_with($i->serie ?? '', 'CANT-') && !empty($i->serie))
+                    ->filter(fn ($i) => ($i->atributos['tipo'] ?? '') !== 'cantidad' && !empty($i->serie))
                     ->map(fn ($i) => [
                         'nombre' => $i->producto->nombre,
                         'serie' => $i->serie,

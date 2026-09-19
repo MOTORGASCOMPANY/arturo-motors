@@ -39,7 +39,7 @@
             <p class="text-gray-400 text-sm mt-1">{{ $soloFise ? 'No se encontraron movimientos FISE en el período seleccionado.' : 'No se encontraron ingresos, egresos ni sesiones en el período seleccionado.' }}</p>
         </div>
     @else
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
             <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-5 text-center">
                 <span class="text-xs font-bold text-gray-500 uppercase">{{ $soloFise ? 'FISE del día anterior' : 'Efectivo del día anterior' }}</span>
                 <p class="text-2xl font-bold text-amber-600 mt-1">S/ {{ number_format($efectivoAnterior ?? 0, 2) }}</p>
@@ -51,6 +51,10 @@
             <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-5 text-center">
                 <span class="text-xs font-bold text-gray-500 uppercase">{{ $soloFise ? 'Egresos FISE' : 'Egresos' }}</span>
                 <p class="text-2xl font-bold text-red-600 mt-1">S/ {{ number_format($totalEgresos, 2) }}</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm border {{ $neto >= 0 ? 'border-emerald-200' : 'border-red-200' }} p-5 text-center">
+                <span class="text-xs font-bold text-gray-500 uppercase">Flujo Neto</span>
+                <p class="text-2xl font-bold {{ $neto >= 0 ? 'text-emerald-600' : 'text-red-600' }} mt-1">S/ {{ number_format($neto, 2) }}</p>
             </div>
         </div>
     @endif
@@ -134,6 +138,43 @@
                 </table>
             </div>
         </div>
+    @endif
+
+    {{-- Egresos por concepto --}}
+    @if($egresosPorConcepto->count())
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6">
+        <h3 class="text-sm font-bold text-gray-500 uppercase mb-4"><i class="fas fa-receipt mr-1.5 text-gray-400"></i>Egresos por concepto</h3>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-gray-200">
+                        <th class="text-left py-2.5 px-3 font-semibold text-gray-600">Concepto</th>
+                        <th class="text-center py-2.5 px-3 font-semibold text-gray-600">Cant.</th>
+                        <th class="text-right py-2.5 px-3 font-semibold text-gray-600">Total</th>
+                        <th class="text-right py-2.5 px-3 font-semibold text-gray-600">% del total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($egresosPorConcepto as $eg)
+                    <tr class="border-b border-gray-100 hover:bg-gray-50">
+                        <td class="py-2.5 px-3 font-medium text-gray-700">{{ $eg->concepto ?: 'Sin concepto' }}</td>
+                        <td class="py-2.5 px-3 text-center text-gray-500">{{ $eg->cantidad }}</td>
+                        <td class="py-2.5 px-3 text-right font-semibold text-red-600">S/ {{ number_format($eg->total, 2) }}</td>
+                        <td class="py-2.5 px-3 text-right text-gray-500">{{ $totalEgresos > 0 ? round(($eg->total / $totalEgresos) * 100, 1) : 0 }}%</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+                <tfoot>
+                    <tr class="font-bold text-gray-700 border-t-2 border-gray-200">
+                        <td class="py-2.5 px-3">Total egresos</td>
+                        <td class="py-2.5 px-3 text-center">{{ $egresosPorConcepto->sum('cantidad') }}</td>
+                        <td class="py-2.5 px-3 text-right text-red-600">S/ {{ number_format($totalEgresos, 2) }}</td>
+                        <td class="py-2.5 px-3 text-right">100%</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
     @endif
 
     @script

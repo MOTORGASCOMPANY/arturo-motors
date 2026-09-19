@@ -12,10 +12,14 @@
             </div>
 
             @forelse ($traslados as $t)
-                <div class="bg-white rounded-lg border border-gray-200 p-4 mb-3">
-                    <div class="flex justify-between items-center mb-2">
+            <div class="bg-white rounded-xl border border-gray-200 p-5 mb-4 shadow-sm hover:shadow-md transition duration-200">
+                {{-- Cabecera de la tarjeta --}}
+                <div class="flex justify-between items-start mb-4 pb-4 border-b border-gray-100">
+                    <div class="space-y-1">
                         <div class="flex items-center gap-2">
-                            <span class="font-semibold text-sm">→ {{ $t->sedeDestino->nombre }}</span>
+                            <span class="font-bold text-gray-800 text-base">
+                                <i class="fas fa-map-marker-alt text-indigo-400 mr-1"></i> {{ $t->sedeDestino->nombre }}
+                            </span>
                             @if($t->es_kit_completo === true)
                                 <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">
                                     <i class="fas fa-check-circle mr-0.5"></i> COMPLETO
@@ -26,34 +30,70 @@
                                 </span>
                             @endif
                         </div>
-                        <div class="flex items-center gap-2">
-                            <span class="text-xs text-gray-500">{{ $t->created_at->format('d/m/Y H:i') }} — {{ $t->enviadoPor->name }}</span>
-                            <button wire:click="verDetalle({{ $t->id }})"
-                                class="w-7 h-7 flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition"
-                                title="Ver detalle">
-                                <i class="fas fa-eye text-xs"></i>
-                            </button>
-                        </div>
+                        <p class="text-xs text-gray-500">
+                            <i class="far fa-clock mr-1"></i>{{ $t->created_at->format('d/m/Y H:i') }} 
+                            <span class="mx-1">•</span> 
+                            <i class="far fa-user mr-1"></i>{{ $t->enviadoPor->name }}
+                        </p>
                     </div>
-                    <div class="text-xs text-gray-600 space-y-1">
-                        @foreach ($t->detalles as $d)
-                            <div>
-                                {{ $d->producto->nombre }}
+                    
+                    <button wire:click="verDetalle({{ $t->id }})"
+                        class="w-9 h-9 flex items-center justify-center text-indigo-600 bg-indigo-50 hover:bg-indigo-600 hover:text-white rounded-lg transition-colors"
+                        title="Ver detalle completo">
+                        <i class="fas fa-eye text-sm"></i>
+                    </button>
+                </div>
+        
+                {{-- Lista de items (Vista previa limitada) --}}
+                <div>
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3">
+                        Contenido del traslado ({{ $t->detalles->count() }} items)
+                    </p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        @php $detallesPreview = $t->detalles->take(4); @endphp
+                        @foreach ($detallesPreview as $d)
+                            <div class="flex items-center justify-between text-xs bg-gray-50 px-3 py-2 rounded-lg border border-gray-100">
+                                <div class="flex items-center gap-2 overflow-hidden">
+                                    <i class="fas {{ $d->item_serializado_id ? 'fa-barcode text-gray-400' : 'fa-box text-gray-400' }} text-[10px]"></i>
+                                    <span class="truncate font-medium text-gray-700">{{ $d->producto->nombre }}</span>
+                                </div>
                                 @if ($d->item_serializado_id)
-                                    (Serie: {{ $d->itemSerializado->serie ?? 'Sin serie' }})
+                                    <span class="text-gray-500 font-mono text-[10px] bg-gray-200/70 px-1.5 py-0.5 rounded border border-gray-200 whitespace-nowrap">
+                                        SN: {{ $d->itemSerializado->serie ?? 'N/A' }}
+                                    </span>
                                 @else
-                                    × {{ $d->cantidad }}
+                                    <span class="text-gray-600 font-bold bg-gray-200/70 px-1.5 py-0.5 rounded border border-gray-200">
+                                        x{{ $d->cantidad }}
+                                    </span>
                                 @endif
                             </div>
                         @endforeach
                     </div>
-                    @if ($t->observaciones)
-                        <p class="text-xs text-gray-400 mt-2 italic">{{ $t->observaciones }}</p>
+                    
+                    @if($t->detalles->count() > 4)
+                        <button wire:click="verDetalle({{ $t->id }})" class="w-full mt-2 py-1.5 text-xs text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50 rounded font-medium transition text-center">
+                            Ver los {{ $t->detalles->count() - 4 }} productos restantes <i class="fas fa-chevron-right text-[9px] ml-1"></i>
+                        </button>
                     @endif
                 </div>
-            @empty
-                <div class="px-6 py-4 text-center font-bold bg-indigo-200 rounded-md">No hay traslados registrados.</div>
-            @endforelse
+        
+                {{-- Observaciones --}}
+                @if ($t->observaciones)
+                    <div class="mt-4 bg-amber-50/50 border border-amber-100 p-2.5 rounded-lg text-xs text-amber-800 flex gap-2 items-start">
+                        <i class="fas fa-comment-alt mt-0.5 opacity-60"></i> 
+                        <span class="italic leading-relaxed">{{ $t->observaciones }}</span>
+                    </div>
+                @endif
+            </div>
+        @empty
+            <div class="flex flex-col items-center justify-center py-12 px-4 bg-white rounded-xl border border-dashed border-gray-300">
+                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                    <i class="fas fa-truck text-gray-400 text-2xl"></i>
+                </div>
+                <p class="text-gray-500 font-medium">No hay traslados registrados aún.</p>
+            </div>
+        @endforelse
 
             <div class="mt-4">{{ $traslados->links('pagination::tailwind') }}</div>
         </div>

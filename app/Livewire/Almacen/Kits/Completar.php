@@ -173,6 +173,22 @@ class Completar extends Component
                             );
                         }
                     } else {
+                        // Crear item por cantidad como hijo del kit
+                        for ($j = 0; $j < $faltante['cantidad']; $j++) {
+                            ItemSerializado::create([
+                                'producto_id' => $faltante['producto_id'],
+                                'kit_padre_id' => $this->kit->id,
+                                'serie' => null,
+                                'atributos' => [
+                                    'tipo' => 'cantidad',
+                                    'agregado_a_kit' => true,
+                                    'fecha' => now()->toDateString(),
+                                ],
+                                'estado' => 'en_stock',
+                                'sede_id' => $sedeId,
+                            ]);
+                        }
+
                         // Registrar movimiento de entrada
                         $producto = Producto::find($faltante['producto_id']);
                         if ($producto) {

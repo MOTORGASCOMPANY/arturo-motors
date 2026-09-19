@@ -155,7 +155,7 @@
 
     <!-- Marca de agua -->
     <table width="100%" height="100%" style="position: fixed; top: 0; left: 0; z-index: -1;">
-        <tr><td align="center" valign="middle"><img src="{{ public_path('images/icon.png') }}" style="width: 400px; opacity: 0.12;"></td></tr>
+        <tr><td align="center" valign="middle"><img src="{{ public_path('images/LOGOFINAL.jpg') }}" style="width: 400px; opacity: 0.12;"></td></tr>
     </table>
 
     <!-- CABECERA PRINCIPAL -->
@@ -163,7 +163,7 @@
         <tr>
             <!-- Columna Izquierda: Logo y Empresa -->
             <td style="width: 58%; padding-right: 10px;">
-                <img src="{{ public_path('images/arturo3.png') }}" class="logo">
+                <img src="{{ public_path('images/LOGOFINAL.jpg') }}" class="logo">
                 <div class="company-title uppercase">ARTURO MOTORS — ASESOR AUTOMOTRIZ</div>
                 <div class="company-title uppercase" style="color: #1e3a8a;">CENTRO DE INSPECCIÓN TÉCNICA VEHICULAR</div>
                 

@@ -47,10 +47,10 @@ class Realizar extends Component
 
     public function getKitPadreProperty(): ?ItemSerializado
     {
-        return $this->orden->items()
+        return ItemSerializado::where('service_order_id', $this->orden->id)
             ->whereNull('kit_padre_id')
             ->whereHas('piezasEnKit')
-            ->with('producto.categoria')
+            ->with(['producto.categoria', 'producto.componentes.componente.categoria'])
             ->first();
     }
 
@@ -67,13 +67,15 @@ class Realizar extends Component
         if (!$padre) return collect();
 
         $componenteIds = $padre->producto->componentes->pluck('producto_componente_id')->toArray();
+        if (empty($componenteIds)) return collect();
 
-        return $this->orden->items()
-            ->where('estado', 'asignado')
+        return ItemSerializado::where('service_order_id', $this->orden->id)
+            ->where('estado', '!=', 'consumido')
             ->whereNotNull('kit_padre_id')
             ->whereIn('producto_id', $componenteIds)
+            ->with('producto.categoria')
             ->get()
-            ->filter(fn($item) => $this->esSerializable($item->producto->nombre))
+            ->filter(fn($item) => $item->producto->categoria->es_serializado ?? false)
             ->values();
     }
 
@@ -94,14 +96,18 @@ class Realizar extends Component
             ]);
     }
 
-    private const PRODUCTOS_SERIALIZABLES = ['Vaporizador', 'Computadora', 'Tanque'];
-
-    private function esSerializable(string $nombre): bool
+    private function esSerializable($producto): bool
     {
-        foreach (self::PRODUCTOS_SERIALIZABLES as $patron) {
-            if (stripos($nombre, $patron) !== false) return true;
+        if (is_int($producto)) {
+            $producto = \App\Models\Producto::with('categoria')->find($producto);
         }
-        return false;
+        if (is_string($producto)) {
+            $producto = \App\Models\Producto::where('nombre', $producto)->first();
+        }
+        if (!$producto instanceof \App\Models\Producto) {
+            return false;
+        }
+        return $producto->categoria->es_serializado ?? false;
     }
 
     public function getItemsReportadosProperty(): array

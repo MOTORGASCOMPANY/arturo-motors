@@ -24,7 +24,8 @@ class Evaluar extends Component
     {
         $this->orden = ServiceOrder::with(['cliente', 'vehiculo', 'service'])->findOrFail($ordenId);
 
-        abort_unless($this->orden->tecnico_id === Auth::id(), 403, 'Esta orden no está asignada a ti.');
+        $esAdminOJefe = Auth::user()->hasAnyRole(['Administrador del sistema', 'Jefe de Taller']);
+        abort_unless($esAdminOJefe || $this->orden->tecnico_id === Auth::id(), 403, 'Esta orden no está asignada a ti.');
         abort_unless($this->orden->estado === 'en_evaluacion', 403, 'Esta orden no está en etapa de evaluación.');
 
         $this->gruposChecklist = ChecklistEvaluacion::grupos();

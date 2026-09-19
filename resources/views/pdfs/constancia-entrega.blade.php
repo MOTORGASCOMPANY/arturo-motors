@@ -54,13 +54,13 @@
 </head>
 <body>
     <table class="watermark">
-        <tr><td align="center" valign="middle"><img src="{{ public_path('images/icon.png') }}"></td></tr>
+        <tr><td align="center" valign="middle"><img src="{{ public_path('images/LOGOFINAL.jpg') }}"></td></tr>
     </table>
 
     <!-- ENCABEZADO -->
     <table class="header">
         <tr>
-            <td class="logo-cell"><img src="{{ public_path('images/icon.png') }}"></td>
+            <td class="logo-cell"><img src="{{ public_path('images/LOGOFINAL.jpg') }}"></td>
             <td class="brand-cell">
                 <p class="brand-title">ARTURO MOTORS</p>
                 <p class="brand-subtitle">Tecnolog&iacute;a Automotriz</p>
