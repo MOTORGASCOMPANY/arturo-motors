@@ -104,15 +104,25 @@ class RolesPermisosFullSeeder extends Seeder
             'opciones.servicios',
         ]);
 
-        // --- Jefe de Taller ---
+        // --- Jefe de Taller (todo excepto usuarios) ---
         $jefe = Role::firstOrCreate(['name' => 'Jefe de Taller', 'guard_name' => 'web']);
         $jefe->syncPermissions([
+            'opciones.citas',
             'opciones.expedientes',
             'opciones.conversiones',
             'opciones.servicios',
+            'opciones.almacen',
+            'opciones.rrhh',
+            'opciones.reportes',
+            'opciones.caja',
+            'opciones.fise',
+            'opciones.mantenimientotables',
+            'opciones.cms',
             'conversiones.asignar',
             'conversiones.mis-asignadas',
             'conversiones.entregas-pendientes',
+            'rrhh.contratos',
+            'rrhh.planillas',
         ]);
 
         // --- Tecnico ---
