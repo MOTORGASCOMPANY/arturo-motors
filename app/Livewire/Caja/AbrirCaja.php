@@ -18,45 +18,15 @@ class AbrirCaja extends Component
     }
 
     /**
-     * Calcula el efectivo que debería haber en caja usando la fórmula:
-     * apertura + ingresos_efectivo - egresos
-     *
-     * NO depende de monto_cierre (que puede estar mal ingresado).
+     * Carga el cierre de la última sesión como efectivo del día anterior.
+     * El usuario puede modificarlo si cuadra manualmente.
      */
     public function cargarEfectivoAnterior(): void
     {
-        $ultimaSesion = SesionCaja::where('estado', 'cerrada')
-            ->with(['movimientos' => function ($q) {
-                $q->with('serviceOrder.comprobante');
-            }])
-            ->orderByDesc('cerrada_en')
-            ->first();
-
-        if (!$ultimaSesion) {
-            $this->efectivoAnterior = null;
-            $this->montoApertura = 0;
-            return;
-        }
-
-        // Efectivo recibido (a través de la relación indirecta)
-        $efectivoIngresos = $ultimaSesion->movimientos
-            ->where('tipo', 'ingreso')
-            ->filter(function ($m) {
-                return $m->serviceOrder
-                    && $m->serviceOrder->comprobante
-                    && $m->serviceOrder->comprobante->metodo_pago === 'efectivo';
-            })
-            ->sum('monto');
-
-        $egresos = $ultimaSesion->movimientos->where('tipo', 'egreso')->sum('monto');
-
-        $this->efectivoAnterior = (float) $ultimaSesion->monto_apertura + $efectivoIngresos - $egresos;
-        $this->montoApertura = $this->efectivoAnterior;
+        $this->efectivoAnterior = SesionCaja::getLastCierre();
+        $this->montoApertura = $this->efectivoAnterior ?? 0;
     }
 
-    /**
-     * Al marcar/desmarcar checkbox: alternar entre editable y automático
-     */
     public function updatedCuadrar(bool $value): void
     {
         if (!$value && $this->efectivoAnterior !== null) {
@@ -68,11 +38,14 @@ class AbrirCaja extends Component
 
     public function abrir(): void
     {
-        if (SesionCaja::abierta()->exists()) {
+        // REGLA 1: Ya hay una caja abierta
+        $abierta = SesionCaja::abierta()->first();
+        if ($abierta) {
             $this->addError('general', 'Ya hay una caja abierta. Ciérrala antes de abrir una nueva.');
             return;
         }
 
+        // REGLA 2: Validar monto
         $this->validate(
             ['montoApertura' => 'required|numeric|min:0'],
             [
@@ -82,6 +55,27 @@ class AbrirCaja extends Component
             ]
         );
 
+        // REGLA 3: Si hay cierre anterior, alertar si la apertura difiere mucho
+        if ($this->efectivoAnterior !== null && $this->cuadrar === false) {
+            $diferencia = abs($this->montoApertura - $this->efectivoAnterior);
+            if ($diferencia > 10) {
+                $this->addError('general',
+                    'El monto de apertura S/ ' . number_format($this->montoApertura, 2) .
+                    ' difiere en S/ ' . number_format($diferencia, 2) .
+                    ' del cierre anterior (S/ ' . number_format($this->efectivoAnterior, 2) . '). ' .
+                    'Si cuadras manualmente, marca la casilla "Cuadrar caja".'
+                );
+                return;
+            }
+        }
+
+        // REGLA 4: Si cuadra manualmente, debe ser exactamente 0
+        if ($this->cuadrar && $this->montoApertura != 0) {
+            $this->addError('general', 'Al cuadrar caja, el monto debe ser S/ 0.00.');
+            return;
+        }
+
+        // Crear sesión (el modelo valida que solo haya una abierta)
         SesionCaja::create([
             'abierta_por' => Auth::id(),
             'monto_apertura' => $this->montoApertura,
@@ -89,7 +83,13 @@ class AbrirCaja extends Component
             'estado' => 'abierta',
         ]);
 
-        $this->dispatch('minToast', titulo: '¡Caja Abierta!', mensaje: 'La sesión de caja se inició con S/ ' . number_format($this->montoApertura, 2), icono: 'success');
+        $this->dispatch('minToast',
+            titulo: '¡Caja Abierta!',
+            mensaje: 'Sesión iniciada con S/ ' . number_format($this->montoApertura, 2),
+            icono: 'success'
+        );
+
+        $this->cargarEfectivoAnterior(); // Recargar para mostrar sesión activa
     }
 
     public function render()

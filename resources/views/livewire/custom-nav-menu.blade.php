@@ -44,8 +44,9 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
             </svg>
         </button>
 
-        <a href="{{ route('dashboard') }}" class="py-2 h-1/2">
-            <img src="{{ asset('images/arturo3.png') }}" width="150" />
+        <a href="{{ route('dashboard') }}" class="flex items-center gap-2 py-2">
+            <img src="{{ asset('images/LOGOFINAL.jpg') }}" class="h-9 w-auto rounded-lg object-contain" alt="Arturo Motors" />
+            <span class="hidden lg:inline text-white font-bold text-sm tracking-wide">ARTURO <span class="text-blue-200">MOTORS</span></span>
         </a>
 
         <div class="hidden  md:flex  md:items-center">
@@ -118,7 +119,7 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                         <ul class="text-sm font-medium">
                             <li>
                                 <a class="flex items-center rounded py-3 pl-3 pr-4  space-x-6 text-gray-50 hover:bg-gray-600"
-                                    href="{{ route('inicio') }}">
+                                    href="{{ route('dashboard') }}">
                                     <i class="fas fa-home -mt-1"></i>
                                     <span class="select-none">Inicio</span>
                                 </a>
@@ -203,6 +204,40 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                                                 <x-responsive-nav-link class="text-sm" href="{{ route('caja.historial') }}"
                                                     :active="request()->routeIs('caja.historial')">
                                                     Historial de caja
+                                                </x-responsive-nav-link>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </li>
+                            @endcan
+
+                            {{--             OPCIONES PARA FISE                    --}}
+                            @can('opciones.fise')
+                                <li class="text-gray-50 py-3 pl-3 pr-4 hover:bg-gray-600 focus:bg-gray-600 rounded"
+                                    x-data="{ Open: false }">
+                                    <div class="inline-flex  items-center justify-between w-full transition-colors duration-150 text-gray-500  cursor-pointer"
+                                        x-on:click="Open = !Open">
+                                        <span class="inline-flex items-center space-x-6  text-sm text-white ">
+                                            <i class="fa-solid fa-landmark"></i>
+                                            <span class="select-none">FISE</span>
+                                        </span>
+                                        <i class="fa-solid fa-caret-down ml-1  text-white w-4 h-4" x-show="!Open"></i>
+                                        <i class="fa-solid fa-caret-up ml-1  text-white w-4 h-4" x-show="Open"></i>
+                                    </div>
+                                    <div x-show.transition="Open" style="display:none;">
+                                        <ul x-transition:enter="transition-all ease-in-out duration-300"
+                                            x-transition:enter-start="opacity-25 max-h-0"
+                                            x-transition:enter-end="opacity-100 max-h-xl"
+                                            x-transition:leave="transition-all ease-in-out duration-300"
+                                            x-transition:leave-start="opacity-100 max-h-xl"
+                                            x-transition:leave-end="opacity-0 max-h-0"
+                                            class="mt-2 divide-y-2 divide-gray-600 overflow-hidden text-sm font-medium bg-gray-200 text-white shadow-inner rounded"
+                                            aria-label="submenu">
+
+                                            <li class="transition-colors duration-150">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('fise.control') }}"
+                                                    :active="request()->routeIs('fise.control')">
+                                                    Control FISE
                                                 </x-responsive-nav-link>
                                             </li>
                                         </ul>
@@ -364,25 +399,32 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                                             <li class="transition-colors duration-150">
                                                 <x-responsive-nav-link class="text-sm" href="{{ route('almacen.productos.listado') }}"
                                                     :active="request()->routeIs('almacen.productos.listado')">
-                                                    Productos
-                                                </x-responsive-nav-link>
-                                            </li>                                            
-                                            <li class="transition-colors duration-150">
-                                                <x-responsive-nav-link class="text-sm" href="{{ route('almacen.kits.pendientes') }}"
-                                                    :active="request()->routeIs('almacen.kits.pendientes')">
-                                                    Kits de Instlacion
+                                                    Productos / Inventario
                                                 </x-responsive-nav-link>
                                             </li>
                                             <li class="transition-colors duration-150">
-                                                <x-responsive-nav-link class="text-sm" href="{{ route('almacen.traslados.listado') }}"
-                                                    :active="request()->routeIs('almacen.traslados.listado')">
-                                                    Traslados
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('almacen.recepciones.crear') }}"
+                                                    :active="request()->routeIs('almacen.recepciones.crear')">
+                                                    Recepción de Kits
+                                                </x-responsive-nav-link>
+                                            </li>
+
+                                            <li class="transition-colors duration-150">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('almacen.reportes-piezas') }}"
+                                                    :active="request()->routeIs('almacen.reportes-piezas')">
+                                                    Reportes de Piezas
                                                 </x-responsive-nav-link>
                                             </li>
                                             <li class="transition-colors duration-150">
                                                 <x-responsive-nav-link class="text-sm" href="{{ route('conversiones.almacen-pendientes') }}"
                                                     :active="request()->routeIs('conversiones.almacen-pendientes')">
-                                                    Almacen pendientes
+                                                    Conversiones Pendientes
+                                                </x-responsive-nav-link>
+                                            </li>
+                                            <li class="transition-colors duration-150">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('almacen.traslados.listado') }}"
+                                                    :active="request()->routeIs('almacen.traslados.*')">
+                                                    Traslados entre Sedes
                                                 </x-responsive-nav-link>
                                             </li>
                                             {{-- 
@@ -495,7 +537,19 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                                             <li class="transition-colors duration-150">
                                                 <x-responsive-nav-link class="text-sm" href="{{ route('almacen.reporte') }}"
                                                     :active="request()->routeIs('almacen.reporte')">
-                                                    Reporte de Almacen
+                                                    Reporte de Inventario
+                                                </x-responsive-nav-link>
+                                            </li>
+                                            <li class="transition-colors duration-150">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('conversiones.reporte') }}"
+                                                    :active="request()->routeIs('conversiones.reporte')">
+                                                    Reporte de Conversiones
+                                                </x-responsive-nav-link>
+                                            </li>
+                                            <li class="transition-colors duration-150">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('fise.reporte') }}"
+                                                    :active="request()->routeIs('fise.reporte')">
+                                                    Reporte FISE
                                                 </x-responsive-nav-link>
                                             </li>
                                             

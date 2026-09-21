@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\ReportePiezaNoEncajada;
 
 class ItemSerializado extends Model
 {
@@ -56,6 +57,11 @@ class ItemSerializado extends Model
     public function piezasEnKit()
     {
         return $this->hasMany(ItemSerializado::class, 'kit_padre_id');
+    }
+
+    public function reportesPendientes()
+    {
+        return $this->hasMany(ReportePiezaNoEncajada::class, 'item_no_encajado_id');
     }
 
     // Scopes

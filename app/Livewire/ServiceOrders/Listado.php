@@ -17,10 +17,11 @@ class Listado extends Component
     public ?string $desde = null;
     public ?string $hasta = null;
     public string $tipo = 'todos';
+    public string $estado = 'todos';
 
     public function limpiarFiltros(): void
     {
-        $this->reset(['buscar', 'desde', 'hasta', 'tipo']);
+        $this->reset(['buscar', 'desde', 'hasta', 'tipo', 'estado']);
         $this->resetPage();
     }
 
@@ -40,6 +41,11 @@ class Listado extends Component
     }
 
     public function updatedTipo(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedEstado(): void
     {
         $this->resetPage();
     }
@@ -105,6 +111,7 @@ class Listado extends Component
                     $q->whereHas('service', fn ($sq) => $sq->where('tipo', 'simple'));
                 }
             })
+            ->when($this->estado !== 'todos', fn ($q) => $q->where('estado', $this->estado))
             ->latest()
             ->paginate(15);
 

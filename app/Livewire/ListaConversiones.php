@@ -25,6 +25,10 @@ class ListaConversiones extends Component
 
     public $es;
 
+    public string $filterTecnico = '';
+    public string $filterFechaDesde = '';
+    public string $filterFechaHasta = '';
+
     // Propiedades para el modal de edición
     public $open = false;
 
@@ -116,11 +120,28 @@ class ListaConversiones extends Component
         return redirect()->route('SolicitudRepuestos', ['conversionId' => $conversionId]);
     }
 
+    public function updatedFilterTecnico(): void { $this->resetPage(); }
+    public function updatedFilterFechaDesde(): void { $this->resetPage(); }
+    public function updatedFilterFechaHasta(): void { $this->resetPage(); }
+
+    public function limpiarFiltros(): void
+    {
+        $this->search = '';
+        $this->es = '';
+        $this->filterTecnico = '';
+        $this->filterFechaDesde = '';
+        $this->filterFechaHasta = '';
+        $this->resetPage();
+    }
+
     public function render()
     {
         $conversiones = Conversion::with(['expediente.vehiculo', 'tecnico'])
             ->buscar($this->search)
             ->estado($this->es)
+            ->when($this->filterTecnico !== '', fn ($q) => $q->where('tecnico_id', $this->filterTecnico))
+            ->when($this->filterFechaDesde !== '', fn ($q) => $q->where('fecha_inicio', '>=', $this->filterFechaDesde))
+            ->when($this->filterFechaHasta !== '', fn ($q) => $q->where('fecha_inicio', '<=', $this->filterFechaHasta))
             ->when($this->user->hasRole('Tecnico'), function ($q) {
                 $q->where('tecnico_id', $this->user->id);
             })

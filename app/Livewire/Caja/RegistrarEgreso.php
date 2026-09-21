@@ -45,14 +45,8 @@ class RegistrarEgreso extends Component
         ]);
 
         $this->reset(['monto', 'concepto']);
-        //session()->flash('mensaje', 'Egreso registrado correctamente.');
         $this->dispatch('minToast', titulo: '¡EGRESO!', mensaje: 'Egreso registrado correctamente.', icono: 'success');
     }
-
-    /*public function render()
-    {
-        return view('livewire.caja.registrar-egreso');
-    }*/
 
     public function render()
     {

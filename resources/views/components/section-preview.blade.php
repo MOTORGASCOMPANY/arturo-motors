@@ -38,7 +38,7 @@
             src="{{ $iframeUrl }}"
             class="border-0 preview-iframe"
             style="width: 200%; height: 200%; transform: scale(0.5); transform-origin: top left; pointer-events: none;"
-            loading="lazy"
+            loading="eager"
             tabindex="-1"
             sandbox="allow-scripts allow-same-origin"
             title="Preview de {{ $section['title'] }}"

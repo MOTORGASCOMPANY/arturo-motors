@@ -30,6 +30,13 @@ class GestorRepuestos extends Component
 
     public $direction = 'asc';
 
+    // Propiedades de filtros
+    public $filtro_estado = '';
+
+    public $precio_min = '';
+
+    public $precio_max = '';
+
     // Propiedades de estado de la interfaz de usuario
     public $open_form = false;
 

@@ -9,98 +9,39 @@ class GestionarPorQue extends Component
 {
     public $cards = [];
 
-    public $editingId = null;
-
-    public $title = '';
-
-    public $description = '';
-
-    public $icon = '';
-
-    public $active = true;
-
-    public $showForm = false;
-
-    public $successMessage = '';
-
     public function mount()
     {
         $this->loadCards();
     }
 
-    public function loadCards()
+    public function loadCards(): void
     {
-        $this->cards = WhyCard::orderBy('sort_order')->get()->toArray();
+        $this->cards = WhyCard::orderBy('sort_order')->get();
     }
 
-    public function create()
+    public function delete(int $id): void
     {
-        $this->resetForm();
-        $this->showForm = true;
-    }
-
-    public function edit($id)
-    {
-        $card = WhyCard::findOrFail($id);
-        $this->editingId = $id;
-        $this->title = $card->title;
-        $this->description = $card->description;
-        $this->icon = $card->icon;
-        $this->active = $card->is_active;
-        $this->showForm = true;
-    }
-
-    public function save()
-    {
-        $this->validate([
-            'title' => 'required|string|max:255',
-        ], [
-            'title.required' => 'El campo Título es obligatorio',
-            'title.max' => 'El campo Título no debe exceder 255 caracteres',
-        ]);
-
-        $data = [
-            'title' => $this->title,
-            'description' => $this->description,
-            'icon' => $this->icon,
-            'is_active' => $this->active,
-        ];
-
-        if ($this->editingId) {
-            WhyCard::findOrFail($this->editingId)->update($data);
-            $this->successMessage = 'Tarjeta actualizada correctamente';
-        } else {
-            $data['sort_order'] = WhyCard::max('sort_order') + 1;
-            WhyCard::create($data);
-            $this->successMessage = 'Tarjeta creada correctamente';
+        try {
+            WhyCard::findOrFail($id)->delete();
+            $this->loadCards();
+            $this->dispatch('minToast', titulo: '¡Eliminado!', mensaje: 'Tarjeta eliminada correctamente.', icono: 'success');
+        } catch (\Throwable $e) {
+            report($e);
+            $this->dispatch('minAlert', titulo: 'Error', mensaje: 'No se pudo eliminar la tarjeta.', icono: 'error');
         }
-
-        $this->resetForm();
-        $this->loadCards();
     }
 
-    public function delete($id)
+    public function toggleActive(int $id): void
     {
-        WhyCard::findOrFail($id)->delete();
-        $this->loadCards();
-        $this->successMessage = 'Tarjeta eliminada';
-    }
-
-    public function toggleActive($id)
-    {
-        $card = WhyCard::findOrFail($id);
-        $card->update(['is_active' => ! $card->is_active]);
-        $this->loadCards();
-    }
-
-    public function resetForm()
-    {
-        $this->reset(['editingId', 'title', 'description', 'icon', 'active', 'showForm']);
-    }
-
-    public function clearSuccessMessage()
-    {
-        $this->successMessage = '';
+        try {
+            $card = WhyCard::findOrFail($id);
+            $card->update(['is_active' => !$card->is_active]);
+            $this->loadCards();
+            $this->dispatch('minToast', titulo: '¡Actualizado!', mensaje: 'Estado de la tarjeta actualizado.', icono: 'success');
+        } catch (\Throwable $e) {
+            report($e);
+            $this->dispatch('minAlert', titulo: 'Error', mensaje: 'No se pudo actualizar el estado.', icono: 'error');
+        }
     }
 
     public function render()

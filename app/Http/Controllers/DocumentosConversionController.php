@@ -43,7 +43,7 @@ class DocumentosConversionController extends Controller
         $orden = ServiceOrder::with(['cliente', 'vehiculo', 'service', 'items.producto.categoria'])
             ->findOrFail($ordenId);
 
-        abort_unless(in_array($orden->estado, ['entregado', 'entregada']), 404,
+        abort_unless($orden->estado === 'entregado', 404,
             'La garantía solo puede emitirse una vez entregado el vehículo.');
 
         $pdf = Pdf::loadView('pdfs.garantia', ['orden' => $orden]);
@@ -133,6 +133,7 @@ class DocumentosConversionController extends Controller
         ];
 
         $pdf = Pdf::loadView('pdfs.hoja-recepcion', [
+            'orden'           => $orden,
             'fecha_ingreso'   => $orden->created_at ? $orden->created_at->format('d/m/Y') : '---',
             'fecha_salida'    => $orden->fecha_fin_conversion ? $orden->fecha_fin_conversion->format('d/m/Y') : 'Pendiente',
             'nombre_dueno'    => $cliente->nombre_completo ?? ($cliente->nombre . ' ' . $cliente->apellido),

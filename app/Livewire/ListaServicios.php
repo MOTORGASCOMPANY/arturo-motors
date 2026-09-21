@@ -18,6 +18,10 @@ class ListaServicios extends Component
 
     public $search = '';
 
+    public string $filterTipo = '';
+
+    public string $filterActivo = 'todos';
+
     // Modal
     public $open = false;
 
@@ -57,6 +61,10 @@ class ListaServicios extends Component
     {
         $this->resetPage();
     }
+
+    public function updatedFilterTipo(): void { $this->resetPage(); }
+
+    public function updatedFilterActivo(): void { $this->resetPage(); }
 
     public function order($sort)
     {
@@ -136,6 +144,9 @@ class ListaServicios extends Component
                 $q->where('nombre', 'like', "%{$this->search}%")
                     ->orWhere('tipo', 'like', "%{$this->search}%");
             })
+            ->when($this->filterTipo !== '', fn ($q) => $q->where('tipo', $this->filterTipo))
+            ->when($this->filterActivo === 'si', fn ($q) => $q->where('activo', true))
+            ->when($this->filterActivo === 'no', fn ($q) => $q->where('activo', false))
             ->orderBy($this->sort, $this->direction)
             ->paginate($this->cant);
 

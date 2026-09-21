@@ -25,3 +25,10 @@ Thumbs.db
 /storage/framework/views/*
 !/storage/framework/views/.gitignore
 !/storage/framework/views/cache
+
+# Temporary debug/migration scripts (root-level PHP files)
+/*.php
+*.txt
+!artisan.php
+!phpunit.php
+!.env.example

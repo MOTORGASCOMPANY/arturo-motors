@@ -22,19 +22,19 @@
         .accessories-table td, .accessories-table th { border: 1px solid #eee; padding: 2px 4px; text-align: left; vertical-align: top; }
         .accessories-table th { background-color: #e0e0e0; text-align: center; font-weight: bold; color: #333; }
         .accessories-table td.center-text { text-align: center; }
-        .carro-esquema { padding: 0; background-repeat: no-repeat; background-position: center; background-size: 80% 100%; height: 240px; }
+        .carro-esquema { padding: 0; background-repeat: no-repeat; background-position: center; background-size: 80% 100%; height: 140px; }
         .check-icon { height: 12px; width: auto; }
         .footer-note { margin-top: 15px; text-align: center; font-size: 8px; color: #aaa; }
     </style>
 </head>
 <body>
     <table width="100%" height="100%" style="position: fixed; top: 0; left: 0; z-index: -1;">
-        <tr><td align="center" valign="middle"><img src="{{ public_path('images/icon.png') }}" style="width: 400px; opacity: 0.12;"></td></tr>
+        <tr><td align="center" valign="middle"><img src="{{ public_path('images/LOGOFINAL.jpg') }}" style="width: 400px; opacity: 0.12;"></td></tr>
     </table>
 
     <table class="header">
         <tr>
-            <td style="width: 15%;"><img src="{{ public_path('images/icon.png') }}" style="width: 55px; height: 55px;"></td>
+            <td style="width: 15%;"><img src="{{ public_path('images/LOGOFINAL.jpg') }}" style="width: 55px; height: 55px;"></td>
             <td style="width: 55%;"><p class="brand-title">ARTURO MOTORS</p><p class="brand-subtitle">TECNOLOG&Iacute;A AUTOMOTRIZ</p></td>
             <td class="ruc-cell" style="width: 30%;"><div class="ruc-label">R.U.C.</div><div class="ruc-value">{{ $ruc ?? '20610295321' }}</div><div class="rd-value">R.D. N&deg; {{ $rd_numero ?? '0413-2023-MTC/17.03' }}</div></td>
         </tr>

@@ -23,6 +23,7 @@ class RoleSeeder extends Seeder
             'Jefe de Taller',
             'Tecnico',
             'Almacen',
+            'Cajero',
         ];
 
         foreach ($roles as $roleName) {

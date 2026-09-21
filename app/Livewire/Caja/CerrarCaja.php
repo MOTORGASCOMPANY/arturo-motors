@@ -8,7 +8,7 @@ use Livewire\Component;
 
 class CerrarCaja extends Component
 {
-    public $montoCierre = 0;
+    public $montoCierre = '0.00';
     public ?SesionCaja $sesion = null;
 
     public function mount()
@@ -19,101 +19,97 @@ class CerrarCaja extends Component
     public function cargarSesion()
     {
         $this->sesion = SesionCaja::abierta()->orderByDesc('abierta_en')->first();
+
+        // Pre-llenar con el monto esperado en efectivo (lo que debería haber en caja)
+        if ($this->sesion) {
+            $this->montoCierre = number_format($this->montoEsperado, 2, '.', '');
+        }
     }
 
-    /**
-     * Total de todos los ingresos (todos los métodos)
-     */
     public function getTotalIngresosProperty()
     {
         return $this->sesion ? $this->sesion->movimientos()->where('tipo', 'ingreso')->sum('monto') : 0;
     }
 
-    /**
-     * Ingresos SOLO en efectivo (a través de la relación indirecta)
-     */
-    public function getEfectivoIngresosProperty()
+    private function ingresosPorMetodo(string $metodo): float
     {
         if (!$this->sesion) return 0;
 
         return $this->sesion->movimientos()
             ->where('tipo', 'ingreso')
-            ->whereHas('serviceOrder.comprobante', function ($q) {
-                $q->where('metodo_pago', 'efectivo');
-            })
+            ->where('metodo_pago', $metodo)
             ->sum('monto');
     }
 
-    /**
-     * Ingresos por tarjeta
-     */
-    public function getTarjetaIngresosProperty()
-    {
-        if (!$this->sesion) return 0;
-
-        return $this->sesion->movimientos()
-            ->where('tipo', 'ingreso')
-            ->whereHas('serviceOrder.comprobante', function ($q) {
-                $q->where('metodo_pago', 'tarjeta');
-            })
-            ->sum('monto');
-    }
-
-    /**
-     * Ingresos por transferencia
-     */
-    public function getTransferenciaIngresosProperty()
-    {
-        if (!$this->sesion) return 0;
-
-        return $this->sesion->movimientos()
-            ->where('tipo', 'ingreso')
-            ->whereHas('serviceOrder.comprobante', function ($q) {
-                $q->where('metodo_pago', 'transferencia');
-            })
-            ->sum('monto');
-    }
-
-    /**
-     * Ingresos por otro método
-     */
-    public function getOtroIngresosProperty()
-    {
-        if (!$this->sesion) return 0;
-
-        return $this->sesion->movimientos()
-            ->where('tipo', 'ingreso')
-            ->whereHas('serviceOrder.comprobante', function ($q) {
-                $q->where('metodo_pago', 'otro');
-            })
-            ->sum('monto');
-    }
+    public function getEfectivoIngresosProperty(): float  { return $this->ingresosPorMetodo('efectivo'); }
+    public function getTarjetaIngresosProperty(): float   { return $this->ingresosPorMetodo('tarjeta'); }
+    public function getTransferenciaIngresosProperty(): float { return $this->ingresosPorMetodo('transferencia'); }
+    public function getOtroIngresosProperty(): float      { return $this->ingresosPorMetodo('otro'); }
+    public function getFiseIngresosProperty(): float      { return $this->ingresosPorMetodo('fise'); }
 
     public function getTotalEgresosProperty()
     {
         return $this->sesion ? $this->sesion->movimientos()->where('tipo', 'egreso')->sum('monto') : 0;
     }
 
-    /**
-     * Monto esperado SOLO en efectivo:
-     * apertura + ingresos_efectivo - egresos
-     * (Los egresos siempre salen de la caja física)
-     */
     public function getMontoEsperadoProperty()
     {
         if (!$this->sesion) return 0;
-        return $this->sesion->monto_apertura + $this->efectivoIngresos - $this->totalEgresos;
+        return round($this->sesion->monto_apertura + $this->efectivoIngresos - $this->totalEgresos, 2);
+    }
+
+    public function getMontoCierreNumericoProperty(): float
+    {
+        $valor = trim((string) $this->montoCierre);
+        $valor = preg_replace('/[^\d.,\-]/', '', $valor);
+
+        if (empty($valor)) return 0;
+
+        // Handle negative
+        $negativo = str_starts_with($valor, '-');
+        if ($negativo) $valor = substr($valor, 1);
+
+        // Determine format based on last separator position
+        $lastDot = strrpos($valor, '.');
+        $lastComma = strrpos($valor, ',');
+
+        if ($lastDot !== false && $lastComma !== false) {
+            // Both present: last one is decimal separator
+            if ($lastComma > $lastDot) {
+                // European format: 1.910,00 → remove dots, replace comma with dot
+                $valor = str_replace('.', '', $valor);
+                $valor = str_replace(',', '.', $valor);
+            } else {
+                // US format: 1,910.00 → remove commas
+                $valor = str_replace(',', '', $valor);
+            }
+        } elseif ($lastComma !== false) {
+            // Only comma: check if it's a decimal separator (followed by 1-2 digits at end)
+            $afterComma = substr($valor, $lastComma + 1);
+            if (strlen($afterComma) <= 2) {
+                // Decimal separator: 1910,50 → replace with dot
+                $valor = str_replace(',', '.', $valor);
+            } else {
+                // Thousands separator: 1,910 or 1,910,000 → remove commas
+                $valor = str_replace(',', '', $valor);
+            }
+        }
+        // If only dot or no separator: no transformation needed (PHP handles dot as decimal)
+
+        $resultado = (float) $valor;
+        return $negativo ? -$resultado : $resultado;
+    }
+
+    public function getDiferenciaProperty()
+    {
+        return round($this->montoCierreNumerico - $this->montoEsperado, 2);
     }
 
     /**
-     * Monto esperado total (todos los métodos) — para referencia
+     * Called from the form submit via Livewire.
+     * Validates and closes directly. The SweetAlert confirmation
+     * is handled entirely in the blade (Alpine + SweetAlert2).
      */
-    public function getMontoEsperadoTotalProperty()
-    {
-        if (!$this->sesion) return 0;
-        return $this->sesion->monto_apertura + $this->totalIngresos - $this->totalEgresos;
-    }
-
     public function cerrar()
     {
         if (!$this->sesion) {
@@ -122,20 +118,33 @@ class CerrarCaja extends Component
         }
 
         $this->validate(
-            ['montoCierre' => 'required|numeric|min:0'],
+            ['montoCierre' => 'required|regex:/^\d[\d.,]*$/'],
             [
                 'montoCierre.required' => 'El monto real en caja es obligatorio.',
-                'montoCierre.numeric' => 'Debe ingresar un valor numérico válido.',
-                'montoCierre.min' => 'El monto no puede ser un valor negativo.',
+                'montoCierre.regex' => 'Debe ingresar un valor numérico válido.',
             ]
         );
 
-        $this->sesion->cerrar((float) $this->montoCierre, Auth::id());
+        $montoCierreNumerico = $this->montoCierreNumerico;
 
-        $this->dispatch('minToast', titulo: '¡Caja Cerrada!', mensaje: 'Sesión cerrada con S/ ' . number_format($this->montoCierre, 2), icono: 'success');
+        if ($montoCierreNumerico < 0) {
+            $this->addError('montoCierre', 'El monto no puede ser un valor negativo.');
+            return;
+        }
+
+        $diferencia = round($montoCierreNumerico - $this->montoEsperado, 2);
+
+        $this->sesion->cerrar($montoCierreNumerico, Auth::id());
+
+        $this->dispatch('minToast',
+            titulo: '¡Caja Cerrada!',
+            mensaje: 'Sesión cerrada con S/ ' . number_format($montoCierreNumerico, 2) .
+                ($diferencia != 0 ? ' | Diferencia: S/ ' . number_format($diferencia, 2) : ' | Cuadrada ✓'),
+            icono: 'success'
+        );
 
         $this->sesion = null;
-        $this->montoCierre = 0;
+        $this->montoCierre = '0.00';
     }
 
     public function render()

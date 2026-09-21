@@ -4,6 +4,10 @@ namespace App\Livewire\Almacen\Productos;
 
 use App\Models\Producto;
 use App\Models\CategoriaAlmacen;
+use App\Models\ItemSerializado;
+use App\Models\ProductoStockSede;
+use App\Models\Sede;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -12,32 +16,484 @@ class Listado extends Component
 {
     use WithPagination;
 
-    public string $categoriaId = 'todas';
+    public string $vistaActual = 'inventario';
+
     public string $buscar = '';
+    public string $filterStock = 'todos';
+    public string $filterProveedor = '';
+
+    public ?int $filtroSedeId = 1;
+    public ?string $filtroEstado = null;
+    public string $busquedaInventario = '';
+
+    public ?int $detalleProductoId = null;
+    public ?string $tipoDetalle = null;
+
+    public bool $modalCompletarKitAbierto = false;
+    public int $completarKitItemId = 0;
+    public int $completarKitSedeId = 0;
+    public string $completarKitNombre = '';
+    public array $completarKitComponentes = [];
+    public array $completarKitSeleccion = []; // [producto_id => item_id]
+
+    // Modal editar item (sin serie / atributos incompletos)
+    public bool $modalEditarItemAbierto = false;
+    public ?int $editarItemId = null;
+    public array $editarItemData = [];
+
+    public function mount()
+    {
+        $this->filtroSedeId = Sede::activas()->orderBy('id')->first()?->id ?? 1;
+    }
 
     public function updating($property)
     {
-        if (in_array($property, ['categoriaId', 'buscar'])) $this->resetPage();
+        if (in_array($property, ['buscar', 'filterStock', 'filterProveedor'])) {
+            $this->resetPage();
+        }
+    }
+
+    public function updatedFilterStock(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedFilterProveedor(): void
+    {
+        $this->resetPage();
+    }
+
+    public function resetFilters(): void
+    {
+        $this->buscar = '';
+        $this->filterStock = 'todos';
+        $this->filterProveedor = '';
+        $this->resetPage();
     }
 
     #[On('producto-creado')]
     #[On('entrada-registrada')]
     public function refrescar()
     {
-        // Vacío a propósito: escuchar el evento ya fuerza el re-render.
+    }
+
+    public function verDetalle(int $productoId, string $tipo = 'sellado'): void
+    {
+        $this->detalleProductoId = $this->detalleProductoId === $productoId ? null : $productoId;
+        $this->tipoDetalle = $this->detalleProductoId ? $tipo : null;
+    }
+
+    public function abrirCompletarKit(int $kitItemId): void
+    {
+        $kit = ItemSerializado::with('producto')->find($kitItemId);
+
+        if (!$kit) {
+            return;
+        }
+
+        $this->completarKitItemId = $kitItemId;
+        $this->completarKitSedeId = $kit->sede_id;
+        $this->completarKitNombre = $kit->producto->nombre . ' #' . $kit->id;
+        $this->completarKitSeleccion = [];
+
+        $sedeId = $kit->sede_id;
+
+        $receta = \Illuminate\Support\Facades\DB::table('kit_componentes')
+            ->join('productos', 'producto_componente_id', '=', 'productos.id')
+            ->join('categorias_almacen', 'productos.categoria_id', '=', 'categorias_almacen.id')
+            ->where('producto_kit_id', $kit->producto_id)
+            ->select(
+                'productos.id as producto_id',
+                'productos.nombre',
+                'categorias_almacen.es_serializado',
+                'kit_componentes.cantidad_esperada as cantidad'
+            )
+            ->get();
+
+        foreach ($receta as $comp) {
+            $this->completarKitSeleccion[$comp->producto_id] = [];
+        }
+
+        $piezasActuales = ItemSerializado::where('kit_padre_id', $kitItemId)
+            ->pluck('producto_id')
+            ->countBy()
+            ->toArray();
+
+        $this->completarKitComponentes = $receta->map(function ($comp) use ($piezasActuales, $sedeId) {
+            $faltan = max(0, $comp->cantidad - ($piezasActuales[$comp->producto_id] ?? 0));
+
+            $disponibles = collect();
+            if ($faltan > 0) {
+                if ($comp->es_serializado) {
+                    $disponibles = ItemSerializado::with('producto')
+                        ->where('producto_id', $comp->producto_id)
+                        ->where('estado', 'en_stock')
+                        ->where('sede_id', $sedeId)
+                        ->whereNull('kit_padre_id')
+                        ->whereNotNull('serie')
+                        ->where('serie', '!=', '')
+                        ->orderBy('id')
+                        ->get();
+                } else {
+                    $stock = ProductoStockSede::where('producto_id', $comp->producto_id)
+                        ->where('sede_id', $sedeId)
+                        ->where('cantidad', '>', 0)
+                        ->sum('cantidad');
+                    $disponibles = $stock > 0 ? ['stock' => $stock] : collect();
+                }
+            }
+
+            return [
+                'producto_id' => $comp->producto_id,
+                'nombre' => $comp->nombre,
+                'es_serializado' => (bool) $comp->es_serializado,
+                'cantidad_esperada' => $comp->cantidad,
+                'faltan' => $faltan,
+                'disponibles' => $disponibles,
+            ];
+        })->toArray();
+
+        $this->modalCompletarKitAbierto = true;
+    }
+
+    public function cerrarCompletarKit(): void
+    {
+        $this->modalCompletarKitAbierto = false;
+        $this->completarKitItemId = 0;
+        $this->completarKitNombre = '';
+        $this->completarKitComponentes = [];
+        $this->completarKitSeleccion = [];
+    }
+
+    public function completarKit(): void
+    {
+        $tieneSeleccion = false;
+        foreach ($this->completarKitComponentes as $comp) {
+            if ($comp['faltan'] > 0) {
+                $ids = $this->completarKitSeleccion[$comp['producto_id']] ?? [];
+                if (count($ids) !== $comp['faltan']) {
+                    $this->addError('general', "Para {$comp['nombre']} debés seleccionar exactamente {$comp['faltan']} item(s) (seleccionaste " . count($ids) . ").");
+                    return;
+                }
+                $tieneSeleccion = true;
+            }
+        }
+
+        if (!$tieneSeleccion) {
+            $this->addError('general', 'Debés seleccionar los items exactos para cada componente faltante.');
+            return;
+        }
+
+        $sedeId = $this->completarKitSedeId;
+
+        try {
+            DB::transaction(function () use ($sedeId) {
+                $kit = ItemSerializado::where('id', $this->completarKitItemId)
+                    ->where('estado', 'abierto')
+                    ->where('sede_id', $sedeId)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$kit) {
+                    throw new \RuntimeException('El kit ya no está disponible.');
+                }
+
+                $kit->update(['estado' => 'abierto']);
+
+                foreach ($this->completarKitSeleccion as $productoId => $itemIds) {
+                    if (empty($itemIds)) continue;
+
+                    foreach ($itemIds as $itemId) {
+                        $item = ItemSerializado::where('id', $itemId)
+                            ->where('estado', 'en_stock')
+                            ->where('sede_id', $sedeId)
+                            ->lockForUpdate()
+                            ->first();
+
+                        if (!$item) {
+                            throw new \RuntimeException('Uno de los items seleccionados ya no está disponible.');
+                        }
+
+                        $item->update([
+                            'kit_padre_id' => $kit->id,
+                            'estado' => 'reemplazado',
+                        ]);
+                    }
+                }
+
+                $kit->update(['estado' => 'completado']);
+            });
+        } catch (\RuntimeException $e) {
+            $this->addError('general', $e->getMessage());
+            return;
+        } catch (\Throwable $e) {
+            report($e);
+            $this->addError('general', 'Ocurrió un error al completar el kit.');
+            return;
+        }
+
+        $this->modalCompletarKitAbierto = false;
+        $this->completarKitItemId = 0;
+        $this->completarKitSedeId = 0;
+        $this->completarKitNombre = '';
+        $this->completarKitComponentes = [];
+        $this->completarKitSeleccion = [];
+
+        $this->dispatch('swal', tipo: 'success', titulo: '¡Kit completado!', mensaje: 'El kit se completó y movió a completados.');
+    }
+
+    public function getResumenInventarioProperty()
+    {
+        $sedeId = $this->filtroSedeId;
+        $estado = $this->filtroEstado;
+
+        $kitsQuery = ItemSerializado::with('producto.categoria', 'sede')
+            ->whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true))
+            ->when($sedeId, fn ($q) => $q->where('sede_id', $sedeId))
+            ->when(
+                $this->busquedaInventario,
+                fn ($q) => $q->whereHas(
+                    'producto',
+                    fn ($p) => $p->where('nombre', 'like', "%{$this->busquedaInventario}%")
+                )
+            )
+            ->orderByDesc('created_at');
+
+        if ($estado) {
+            $kitsQuery->where('estado', $estado);
+        }
+
+        $kitsAll = $kitsQuery->get();
+
+        $kitsSellados = $kitsAll->where('estado', 'en_stock')->groupBy('producto_id');
+        $kitsIncompletos = $kitsAll->where('estado', 'abierto')->groupBy('producto_id');
+        $kitsConsumidos = $kitsAll->where('estado', 'consumido')->groupBy('producto_id');
+        $kitsCompletados = $kitsAll->where('estado', 'completado')->groupBy('producto_id');
+
+        $sueltosSerializados = ItemSerializado::with('producto.categoria', 'sede')
+            ->whereHas(
+                'producto.categoria',
+                fn ($q) => $q->where('es_kit', false)->where('es_serializado', true)
+            )
+            ->whereNull('kit_padre_id')
+            ->when($sedeId, fn ($q) => $q->where('sede_id', $sedeId))
+            ->when(
+                $this->busquedaInventario,
+                fn ($q) => $q->whereHas(
+                    'producto',
+                    fn ($p) => $p->where('nombre', 'like', "%{$this->busquedaInventario}%")
+                )
+            )
+            ->orderByDesc('created_at')
+            ->get()
+            ->groupBy('producto_id');
+
+        $sueltosCantidad = ProductoStockSede::with('producto.categoria', 'sede')
+            ->whereHas(
+                'producto.categoria',
+                fn ($q) => $q->where('es_serializado', false)->where('es_kit', false)
+            )
+            ->when($sedeId, fn ($q) => $q->where('sede_id', $sedeId))
+            ->when(
+                $this->busquedaInventario,
+                fn ($q) => $q->whereHas(
+                    'producto',
+                    fn ($p) => $p->where('nombre', 'like', "%{$this->busquedaInventario}%")
+                )
+            )
+            ->where('cantidad', '>', 0)
+            ->get();
+
+        $instaladosCount = ItemSerializado::whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true))
+            ->where('estado', 'consumido')
+            ->when($sedeId, fn ($q) => $q->where('sede_id', $sedeId))
+            ->count();
+
+        $completadosCount = ItemSerializado::whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true))
+            ->where('estado', 'completado')
+            ->when($sedeId, fn ($q) => $q->where('sede_id', $sedeId))
+            ->count();
+
+        return [
+            'kitsSellados' => $kitsSellados,
+            'kitsIncompletos' => $kitsIncompletos,
+            'kitsConsumidos' => $kitsConsumidos,
+            'kitsCompletados' => $kitsCompletados,
+            'sueltosSerializados' => $sueltosSerializados,
+            'sueltosCantidad' => $sueltosCantidad,
+            'conteos' => [
+                'sellados' => $kitsSellados->flatten()->count(),
+                'incompletos' => $kitsIncompletos->flatten()->count(),
+                'consumidos' => $kitsConsumidos->flatten()->count(),
+                'completados' => $kitsCompletados->flatten()->count(),
+                'instalados' => $instaladosCount,
+                'sueltosSerializados' => $sueltosSerializados->flatten()->count(),
+                'sueltosCantidadTipos' => $sueltosCantidad->count(),
+                'sueltosCantidadTotal' => $sueltosCantidad->sum('cantidad'),
+            ],
+        ];
+    }
+
+    public function getDetallesInventarioProperty()
+    {
+        if (!$this->detalleProductoId) {
+            return collect();
+        }
+
+        $query = ItemSerializado::with([
+            'producto',
+            'sede',
+            'serviceOrder.cliente',
+            'serviceOrder.vehiculo',
+            'serviceOrder.tecnico',
+            'vehiculoInstalado',
+            'piezasEnKit.producto',
+            'piezasEnKit.serviceOrder.cliente',
+            'piezasEnKit.vehiculoInstalado',
+        ])
+            ->where('producto_id', $this->detalleProductoId)
+            ->when(
+                $this->filtroSedeId,
+                fn ($q) => $q->where('sede_id', $this->filtroSedeId)
+            )
+            ->orderByDesc('created_at');
+
+        match ($this->tipoDetalle) {
+            'sellado' => $query->where('estado', 'en_stock'),
+            'incompleto' => $query->where('estado', 'abierto'),
+            'consumido' => $query->where('estado', 'consumido'),
+            'sueltosSerializados' => $query->where('estado', 'en_stock')->whereNull('kit_padre_id'),
+            default => null,
+        };
+
+        return $query->get();
+    }
+
+    public function getSueltosCantidadDetalleProperty()
+    {
+        if ($this->tipoDetalle !== 'sueltosCantidad' || !$this->detalleProductoId) {
+            return collect();
+        }
+
+        return ProductoStockSede::with(['producto', 'sede'])
+            ->where('producto_id', $this->detalleProductoId)
+            ->when($this->filtroSedeId, fn ($q) => $q->where('sede_id', $this->filtroSedeId))
+            ->where('cantidad', '>', 0)
+            ->get();
+    }
+
+    public function getKitsProperty()
+    {
+        $sedeId = $this->filtroSedeId;
+
+        $kits = ItemSerializado::with('producto.categoria', 'sede')
+            ->whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true))
+            ->when($sedeId, fn ($q) => $q->where('sede_id', $sedeId))
+            ->when(
+                $this->busquedaInventario,
+                fn ($q) => $q->whereHas(
+                    'producto',
+                    fn ($p) => $p->where('nombre', 'like', "%{$this->busquedaInventario}%")
+                )
+            )
+            ->orderByDesc('created_at')
+            ->get();
+
+        return [
+            'sellados' => $kits->where('estado', 'en_stock')->groupBy('producto_id'),
+            'incompletos' => $kits->where('estado', 'abierto')->groupBy('producto_id'),
+            'consumidos' => $kits->where('estado', 'consumido')->groupBy('producto_id'),
+        ];
+    }
+
+    public function abrirEditarItem(int $itemId): void
+    {
+        $item = ItemSerializado::with('producto.categoria')->find($itemId);
+        if (!$item) return;
+
+        $this->editarItemId = $itemId;
+        $this->editarItemData = [];
+
+        $esquema = $item->producto->categoria->esquema_atributos ?? ['serie'];
+        $campos = is_string($esquema) ? json_decode($esquema, true) : $esquema;
+        $attrs = $item->atributos ?? [];
+
+        foreach ($campos as $campo) {
+            $this->editarItemData[$campo] = $attrs[$campo] ?? '';
+        }
+
+        $this->modalEditarItemAbierto = true;
+    }
+
+    public function guardarEditarItem(): void
+    {
+        $item = ItemSerializado::find($this->editarItemId);
+        if (!$item) return;
+
+        $attrs = $item->atributos ?? [];
+        foreach ($this->editarItemData as $campo => $valor) {
+            if ($valor !== '' && $valor !== null) {
+                $attrs[$campo] = $valor;
+            }
+        }
+
+        if ($this->editarItemData['serie'] ?? null) {
+            $item->serie = $this->editarItemData['serie'];
+        }
+
+        $item->atributos = $attrs;
+        $item->save();
+
+        $this->modalEditarItemAbierto = false;
+        $this->editarItemId = null;
+        $this->editarItemData = [];
+
+        $this->dispatch('minAlert', titulo: 'Listo!', mensaje: 'Item actualizado correctamente.', icono: 'success');
+    }
+
+    public function cerrarEditarItem(): void
+    {
+        $this->modalEditarItemAbierto = false;
+        $this->editarItemId = null;
+        $this->editarItemData = [];
     }
 
     public function render()
     {
-        $productos = Producto::with('categoria')
-            ->when($this->categoriaId !== 'todas', fn ($q) => $q->where('categoria_id', $this->categoriaId))
-            ->when($this->buscar, fn ($q) => $q->buscar($this->buscar))
+        $query = Producto::with('categoria')
+            ->when(
+                $this->buscar,
+                fn ($q) => $q->buscar($this->buscar)
+            )
+            ->when($this->filterStock === 'bajo', function ($q) {
+                $sedeId = Sede::activas()->orderBy('id')->first()?->id ?? 1;
+
+                $q->whereRaw(
+                    '(SELECT COUNT(*) FROM items_serializados WHERE items_serializados.producto_id = productos.id AND items_serializados.estado = ? AND items_serializados.sede_id = ?) <= productos.stock_minimo',
+                    ['en_stock', $sedeId]
+                );
+            })
+            ->when(
+                $this->filterStock === 'sin',
+                fn ($q) => $q->whereDoesntHave(
+                    'items',
+                    fn ($iq) => $iq->where('estado', 'en_stock')
+                )
+            )
+            ->when(
+                $this->filterProveedor !== '',
+                fn ($q) => $q->where('proveedor', 'like', "%{$this->filterProveedor}%")
+            )
             ->orderBy('nombre')
             ->paginate(15);
 
         return view('livewire.almacen.productos.listado', [
-            'productos' => $productos,
+            'productos' => $query,
             'categorias' => CategoriaAlmacen::orderBy('nombre')->get(),
+            'sedes' => Sede::activas()->get(),
+            'resumenInventario' => $this->resumenInventario,
+            'detallesInventario' => $this->detallesInventario,
+            'kits' => $this->kits,
         ]);
     }
 }

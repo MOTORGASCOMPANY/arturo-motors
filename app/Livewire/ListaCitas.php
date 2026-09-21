@@ -23,6 +23,10 @@ class ListaCitas extends Component
 
     public $sort = 'created_at', $order, $cant = 10, $search = '', $direction = 'desc';
 
+    public string $filterEstado = 'todos';
+    public string $filterFechaDesde = '';
+    public string $filterFechaHasta = '';
+
     // Datos para dialog modal , crear cita, cliente y vehicul0
     public $open = false;
 
@@ -42,7 +46,7 @@ class ListaCitas extends Component
     public $color;
     public $combustible;
 
-    public $sede_id = 1; // ID predeterminado (Arturo Motors "Callao")
+    public $sede_id = 1;
     public $fecha_cita;
     public $motivo;
 
@@ -88,6 +92,19 @@ class ListaCitas extends Component
 
     public function updatingSearch()
     {
+        $this->resetPage();
+    }
+
+    public function updatedFilterEstado(): void { $this->resetPage(); }
+    public function updatedFilterFechaDesde(): void { $this->resetPage(); }
+    public function updatedFilterFechaHasta(): void { $this->resetPage(); }
+
+    public function resetFiltros(): void
+    {
+        $this->filterEstado = 'todos';
+        $this->filterFechaDesde = '';
+        $this->filterFechaHasta = '';
+        $this->search = '';
         $this->resetPage();
     }
 
@@ -228,13 +245,18 @@ class ListaCitas extends Component
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
+        // Determinar si mostrar columna "Vendedor" (Admin o Jefe de Taller ven todas las citas)
+        $mostrarColumnaVendedor = $user->hasAnyRole(['Administrador del sistema', 'Jefe de Taller']);
+
         $citas = Cita::with(['cliente', 'vehiculo', 'asesor', 'asesorExterno', 'sede'])
-            // Si el usuario tiene el rol de Vendedor y no es Administrador ni Jefe de Taller,
-            // filtramos solo sus citas asociadas.
-            ->when($user->hasRole('Vendedor') && !$user->hasAnyRole(['Administrador del sistema', 'Cliente', 'Tecnico', 'Jefe de Taller', 'Almacen']), function ($query) use ($user) {
+            // Vendedor solo ve sus citas; Admin y Jefe de Taller ven todas
+            ->when($user->hasRole('Vendedor') && !$mostrarColumnaVendedor, function ($query) use ($user) {
                 $query->where('asesor_id', $user->id);
             })
             ->buscar($this->search)
+            ->when($this->filterEstado !== 'todos', fn ($q) => $q->where('estado', $this->filterEstado))
+            ->when($this->filterFechaDesde !== '', fn ($q) => $q->where('fecha_cita', '>=', $this->filterFechaDesde))
+            ->when($this->filterFechaHasta !== '', fn ($q) => $q->where('fecha_cita', '<=', $this->filterFechaHasta))
             ->ordenar($this->sort, $this->direction)
             ->paginate($this->cant);
 
@@ -243,9 +265,8 @@ class ListaCitas extends Component
         // Se obtienen los asesores externos para el selector
         $asesoresExternos = AsesorExterno::orderBy('nombre', 'asc')->get();
         $servicios = Service::activos()->where('tipo', 'conversion')->get();
-        //'servicios' => Service::activos()->where('tipo', 'conversion')->get(),
 
-        return view('livewire.lista-citas', compact('citas', 'sedes', 'asesoresExternos', 'servicios'));
+        return view('livewire.lista-citas', compact('citas', 'sedes', 'asesoresExternos', 'servicios', 'mostrarColumnaVendedor'));
     }
 
     public function crearCita()
@@ -357,7 +378,7 @@ class ListaCitas extends Component
             'placa', 'marca', 'modelo', 'anio', 'serie', 'color', 'combustible',
             'fecha_cita', 'motivo', 'is_externo', 'asesor_externo_id'
         ]);
-        $this->sede_id = 1;
+        $this->sede_id = Sede::activas()->orderBy('id')->first()?->id;
         $this->resetValidation();
     }
 }

@@ -86,7 +86,7 @@
                         @if (strlen(trim($buscarCliente)) >= 3 && count($clientesEncontrados) === 0 && !$clienteId)
                             <div class="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-xl text-sm flex items-center justify-between">
                                 <p class="text-amber-800">No se encontró ningún cliente con ese nombre o documento.</p>
-                                <button wire:click="abrirModalNuevoCliente" type="button" class="text-blue-600 font-semibold text-xs">+ Registrar cliente</button>
+                                <button wire:click="abrirModalNuevoCliente" type="button" class="text-blue-600 hover:text-blue-800 transition-colors font-semibold text-xs">+ Registrar cliente</button>
                             </div>
                         @endif
 
@@ -108,7 +108,7 @@
                             </div>
                             
                             <button wire:click="abrirModalNuevoVehiculo" type="button"
-                                    class="inline-flex items-center text-xs font-semibold text-blue-600 hover:text-blue-800 transition">
+                                    class="inline-flex items-center text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors">
                                 <i class="fas fa-plus-circle mr-1"></i>
                                 Agregar un nuevo vehículo a este cliente
                             </button>

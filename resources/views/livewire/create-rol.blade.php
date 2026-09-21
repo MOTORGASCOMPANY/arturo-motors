@@ -1,6 +1,6 @@
 <div>
     <button wire:click="$set('open',true)"
-        class="bg-slate-600 px-6 py-4 rounded-md text-white font-semibold tracking-wide cursor-pointer">
+        class="bg-slate-600 px-6 py-4 rounded-lg text-white font-semibold tracking-wide cursor-pointer">
         Nuevo rol &nbsp;<i class="fas fa-plus"></i>
     </button>
 

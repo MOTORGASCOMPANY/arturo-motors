@@ -5,6 +5,7 @@ namespace App\Livewire\Almacen\Productos;
 use App\Models\Producto;
 use App\Models\ItemSerializado;
 use App\Models\MovimientoStock;
+use App\Models\Sede;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\On;
 use Illuminate\Support\Facades\Auth;
@@ -23,10 +24,17 @@ class RegistrarEntrada extends Component
     // Para no serializados: cantidad directa
     public int $cantidadEntrada = 1;
 
-    /*public function mount(int $productoId)
+    protected function sedePrincipalId(): int
     {
-        $this->producto = Producto::with('categoria')->findOrFail($productoId);
-    }*/
+        return Sede::activas()->orderBy('id')->first()?->id ?? 1;
+    }
+
+    public function mount(?int $productoId = null)
+    {
+        if ($productoId) {
+            $this->producto = Producto::with('categoria')->findOrFail($productoId);
+        }
+    }
 
     #[On('abrir-modal-entrada')]
     public function abrir(int $productoId)
@@ -71,14 +79,16 @@ class RegistrarEntrada extends Component
             return;
         }
 
+        $sedeId = $this->sedePrincipalId();
+
         try {
-            DB::transaction(function () {
+            DB::transaction(function () use ($sedeId) {
                 foreach ($this->seriesPendientes as $serie) {
                     ItemSerializado::create([
                         'producto_id' => $this->producto->id,
                         'serie' => $serie,
                         'estado' => 'en_stock',
-                        'sede_id' => 1,
+                        'sede_id' => $sedeId,
                     ]);
                 }
             });
@@ -94,8 +104,6 @@ class RegistrarEntrada extends Component
         $this->dispatch('entrada-registrada');
         $this->dispatch('minToast', titulo: '¡Listo!', mensaje: "{$cantidad} unidad(es) agregadas a stock.", icono: 'success');
 
-        //session()->flash('mensaje', count($this->seriesPendientes) . ' unidad(es) agregadas a stock.');
-        //$this->redirect(route('almacen.productos.listado'), navigate: true);
     }
 
     public function guardarCantidad()
@@ -103,7 +111,7 @@ class RegistrarEntrada extends Component
         $this->validate(['cantidadEntrada' => 'required|integer|min:1']);
 
         MovimientoStock::registrar(
-            $this->producto, 'entrada', $this->cantidadEntrada, null, Auth::id(), 'Compra / reposición', 1
+            $this->producto, 'entrada', $this->cantidadEntrada, null, Auth::id(), 'Compra / reposición', $this->sedePrincipalId()
         );
 
         $cantidad = $this->cantidadEntrada;
@@ -112,8 +120,6 @@ class RegistrarEntrada extends Component
         $this->dispatch('entrada-registrada');
         $this->dispatch('minToast', titulo: '¡Listo!', mensaje: "Se agregaron {$cantidad} unidades al stock.", icono: 'success');
 
-        //session()->flash('mensaje', "Se agregaron {$this->cantidadEntrada} unidades al stock.");
-        //$this->redirect(route('almacen.productos.listado'), navigate: true);
     }
 
     public function render()

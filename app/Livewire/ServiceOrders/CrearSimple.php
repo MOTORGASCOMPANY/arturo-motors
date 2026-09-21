@@ -191,14 +191,7 @@ class CrearSimple extends Component
             'serviceId.required' => 'Debes seleccionar un servicio.',
         ]);
 
-        // DEBUG temporal — quitar después
-        logger('irAPaso3 DEBUG', [
-            'precioLista' => $this->precioLista,
-            'precioFinal' => $this->precioFinal,
-            'descuentoMotivo' => $this->descuentoMotivo,
-        ]);
-
-        if (bccomp($this->precioFinal, $this->precioLista, 2) !== 0 && empty($this->descuentoMotivo)) {
+        if (bccomp((string)$this->precioFinal, (string)$this->precioLista, 2) !== 0 && empty($this->descuentoMotivo)) {
             $this->addError('descuentoMotivo', 'Indica el motivo del ajuste de precio.');
 
             return;
@@ -222,22 +215,16 @@ class CrearSimple extends Component
             'clienteId' => 'required|exists:clientes,id',
             'vehiculoId' => 'required|exists:vehiculos,id',
             'serviceId' => 'required|exists:services,id',
-            'precioFinal' => 'required|numeric|min:0',
+            'precioFinal' => 'required|numeric|min:0.01',
         ]);
 
         try {
             DB::transaction(function () use ($sesion) {
-                // DEBUG temporal — quitar después
-                logger('procesarCobro DEBUG', [
-                    'precio_lista_save' => $this->precioLista,
-                    'precio_final_save' => $this->precioFinal,
-                ]);
-
                 $orden = ServiceOrder::create([
                     'cliente_id' => $this->clienteId,
                     'vehiculo_id' => $this->vehiculoId,
                     'service_id' => $this->serviceId,
-                    'estado' => 'entregada',
+                    'estado' => 'entregado',
                     'precio_lista' => $this->precioLista,
                     'precio_final' => $this->precioFinal,
                     'descuento_motivo' => bccomp((string)$this->precioFinal, (string)$this->precioLista, 2) !== 0 ? $this->descuentoMotivo : null,
@@ -251,6 +238,7 @@ class CrearSimple extends Component
                     'concepto' => 'Cobro orden #' . $orden->id . ' - ' . $orden->service->nombre,
                     'service_order_id' => $orden->id,
                     'usuario_id' => Auth::id(),
+                    'metodo_pago' => $this->metodoPago,
                 ]);
 
                 $comprobante = Comprobante::create([

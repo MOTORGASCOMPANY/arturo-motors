@@ -26,7 +26,7 @@ class AlmacenPendientes extends Component
                     $q->whereHas('cliente', function ($qCliente) {
                         $qCliente->where('nombre', 'like', '%' . $this->search . '%')
                             ->orWhere('apellido', 'like', '%' . $this->search . '%')
-                            ->orWhere('num_doc', 'like', '%' . $this->search . '%');
+                            ->orWhere('documento', 'like', '%' . $this->search . '%');
                     })->orWhereHas('vehiculo', function ($qVehiculo) {
                         $qVehiculo->where('placa', 'like', '%' . $this->search . '%');
                     });

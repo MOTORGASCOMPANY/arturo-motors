@@ -54,26 +54,32 @@ class Producto extends Model
         return $this->hasMany(KitComponente::class, 'producto_kit_id');
     }
 
-    // Accesor: stock real, ya sea contado o serializado
+    protected static function sedePrincipalId(): int
+    {
+        return \App\Models\Sede::activas()->orderBy('id')->first()?->id ?? 1;
+    }
+
     public function getStockDisponibleAttribute()
     {
-        /*if ($this->categoria->es_serializado) {
-            return $this->items()->where('estado', 'en_stock')->count();
-        }
-        return $this->stock;*/
-        return $this->stockEnSede(1); // 1 = Arturo Motors (Callao)
-
+        return $this->stockEnSede(self::sedePrincipalId());
     }
+
     public function stockEnSede(int $sedeId): int
     {
-        if ($this->categoria->es_serializado) {
-            return $this->items()
-                ->where('estado', 'en_stock')
-                ->where('sede_id', $sedeId)
-                ->count();
-        }
+        return $this->items()
+            ->where('estado', 'en_stock')
+            ->where('sede_id', $sedeId)
+            ->count();
+    }
 
-        return $this->stockPorSede()->where('sede_id', $sedeId)->value('cantidad') ?? 0;
+    public function stockTotal(): int
+    {
+        return $this->items()->where('estado', 'en_stock')->count();
+    }
+
+    public function stockAllStates(): int
+    {
+        return $this->items()->count();
     }
 
     public function getStockBajoAttribute()

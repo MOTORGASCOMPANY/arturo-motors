@@ -5,6 +5,8 @@ namespace App\Livewire;
 use App\Models\ServiceOrder;
 use App\Models\SesionCaja;
 use App\Models\MovimientoCaja;
+use App\Models\FisePago;
+use App\Models\User;
 use Illuminate\Support\Carbon;
 use Livewire\Component;
 
@@ -24,6 +26,37 @@ class DashboardArturo extends Component
         }
 
         return [$labels, $data];
+    }
+
+    /**
+     * Retorna el rol de mayor jerarquía (más permisos) del usuario.
+     * Orden de prioridad: Administrador del sistema > Jefe de Taller > Vendedor > Tecnico > Almacen > Cajero > Cliente
+     */
+    protected function getRolPrincipal(User $user): ?string
+    {
+        $jerarquia = [
+            'Administrador del sistema' => 7,
+            'Jefe de Taller' => 6,
+            'Vendedor' => 5,
+            'Tecnico' => 4,
+            'Almacen' => 3,
+            'Cajero' => 2,
+            'Cliente' => 1,
+        ];
+
+        $rolesUsuario = $user->getRoleNames()->toArray();
+        $rolPrincipal = null;
+        $maxPrioridad = 0;
+
+        foreach ($rolesUsuario as $rol) {
+            $prioridad = $jerarquia[$rol] ?? 0;
+            if ($prioridad > $maxPrioridad) {
+                $maxPrioridad = $prioridad;
+                $rolPrincipal = $rol;
+            }
+        }
+
+        return $rolPrincipal;
     }
 
     public function render()
@@ -90,7 +123,14 @@ class DashboardArturo extends Component
             $data['pendientesAlmacen'] = ServiceOrder::where('estado', 'aprobado_conversion')->count();
         }
 
+        // FISE pendientes
+        if ($user->hasAnyRole(['Administrador del sistema', 'Jefe de Taller'])) {
+            $data['fisePendientes'] = FisePago::where('estado', 'pendiente')->count();
+        }
+
         $data['ordenesHoy'] = ServiceOrder::whereDate('created_at', today())->count();
+
+        $data['rolPrincipal'] = $this->getRolPrincipal($user);
 
         return view('livewire.dashboard-arturo', $data);
     }

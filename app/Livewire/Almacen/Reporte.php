@@ -4,19 +4,42 @@ namespace App\Livewire\Almacen;
 
 use App\Models\Producto;
 use App\Models\Sede;
+use App\Models\ItemSerializado;
+use App\Models\KitComponente;
+use App\Models\MovimientoStock;
 use Livewire\Component;
 
 class Reporte extends Component
 {
+    // Filtros
+    public ?int $filtroSede = null;
+    public string $filtroStock = 'todos'; // todos, con_stock, sin_stock, stock_bajo
+
+    public function exportPdfUrl(): string
+    {
+        return route('ReporteAlmacen.Pdf', [
+            'sede_id' => $this->filtroSede,
+            'stock' => $this->filtroStock,
+        ]);
+    }
+
+    public function exportExcelUrl(): string
+    {
+        return route('ReporteAlmacen.Excel', [
+            'sede_id' => $this->filtroSede,
+            'stock' => $this->filtroStock,
+        ]);
+    }
+
     public function render()
     {
         $sedes = Sede::activas()->orderBy('id')->get();
         $productos = Producto::with('categoria')->where('activo', true)->get();
 
-        // Stock bajo evalua solo contra Arturo Motors, porque es sede principa se compra/reabastece
+        // Stock bajo (Callao)
         $stockBajo = $productos->filter(fn ($p) => $p->stock_bajo);
 
-        // Matriz producto × sede, solo productos con algo de stock en cualquier lado
+        // Matriz producto × sede
         $distribucion = $productos->map(function ($p) use ($sedes) {
             $porSede = [];
             foreach ($sedes as $s) {
@@ -29,58 +52,129 @@ class Reporte extends Component
             ];
         })->filter(fn ($row) => $row['total'] > 0)->values();
 
-        // Valor total del inventario, sumando todas las sedes
-        $valorTotal = $productos->sum(function ($p) use ($sedes) {
-            $totalUnidades = $sedes->sum(fn ($s) => $p->stockEnSede($s->id));
-            return ($p->precio_referencial ?? 0) * $totalUnidades;
+        // Aplicar filtros
+        $distribucionFiltrada = $distribucion;
+
+        // Filtro por sede
+        if ($this->filtroSede) {
+            $distribucionFiltrada = $distribucionFiltrada->filter(
+                fn ($row) => $row['por_sede'][$this->filtroSede] > 0
+            );
+        }
+
+        // Filtro por nivel de stock
+        $distribucionFiltrada = match ($this->filtroStock) {
+            'con_stock' => $distribucionFiltrada->filter(fn ($row) => $row['total'] > 0),
+            'sin_stock' => $productos->map(function ($p) use ($sedes) {
+                $porSede = [];
+                foreach ($sedes as $s) {
+                    $porSede[$s->id] = $p->stockEnSede($s->id);
+                }
+                return [
+                    'producto' => $p,
+                    'por_sede' => $porSede,
+                    'total' => array_sum($porSede),
+                ];
+            })->filter(fn ($row) => $row['total'] === 0),
+            'stock_bajo' => $distribucion->filter(fn ($row) => $row['producto']->stock_bajo),
+            default => $distribucionFiltrada,
+        };
+
+        // Datos para gráfico de barras (stock por sede)
+        $stockPorSede = $sedes->mapWithKeys(function ($s) use ($productos) {
+            $total = $productos->sum(fn ($p) => $p->stockEnSede($s->id));
+            return [$s->nombre => $total];
         });
 
-        // Valor desglosado por sede, para el gráfico
-        $valorPorSede = $sedes->mapWithKeys(function ($s) use ($productos) {
-            $valor = $productos->sum(fn ($p) => ($p->precio_referencial ?? 0) * $p->stockEnSede($s->id));
-            return [$s->nombre => $valor];
+        // Datos para gráfico de pastel (stock por categoría)
+        $stockPorCategoria = $distribucionFiltrada
+            ->groupBy(fn ($row) => $row['producto']->categoria->nombre)
+            ->map(fn ($grupo) => $grupo->sum('total'))
+            ->sortByDesc(fn ($v) => $v);
+
+        // KPIs
+        $totalItems = $distribucionFiltrada->sum('total');
+        $productosConStock = $distribucionFiltrada->filter(fn ($row) => $row['total'] > 0)->count();
+
+        // ─── Kits instalados (historial de conversiones) ───
+        $kitsInstalados = ItemSerializado::whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true))
+            ->whereIn('estado', ['consumido', 'instalado'])
+            ->with([
+                'producto.categoria',
+                'serviceOrder.cliente',
+                'serviceOrder.vehiculo',
+                'serviceOrder.tecnico',
+                'piezasEnKit.producto',
+            ])
+            ->orderByDesc('updated_at')
+            ->get()
+            ->map(function ($kit) {
+                $generacion = $kit->producto->atributos['generacion'] ?? '';
+                $hijos = $kit->piezasEnKit;
+
+                // Items seriales instalados (no cantidad)
+                $seriales = $hijos->filter(fn ($h) => ($h->atributos['tipo'] ?? '') !== 'cantidad' && !empty($h->serie))
+                    ->map(fn ($h) => [
+                        'nombre' => $h->producto->nombre,
+                        'serie' => $h->serie,
+                    ])->values();
+
+                return [
+                    'kit' => $kit,
+                    'cliente' => $kit->serviceOrder->cliente
+                        ? trim($kit->serviceOrder->cliente->nombre . ' ' . $kit->serviceOrder->cliente->apellido)
+                        : 'N/A',
+                    'placa' => $kit->serviceOrder->vehiculo->placa ?? 'N/A',
+                    'vehiculo' => trim(
+                        ($kit->serviceOrder->vehiculo->marca ?? '') . ' ' .
+                        ($kit->serviceOrder->vehiculo->modelo ?? '') . ' ' .
+                        ($kit->serviceOrder->vehiculo->anio ?? '')
+                    ),
+                    'tecnico' => $kit->serviceOrder->tecnico->name ?? 'N/A',
+                    'generacion' => $generacion,
+                    'seriales' => $seriales,
+                    'total_hijos' => $hijos->count(),
+                    'fecha' => $kit->updated_at?->format('d/m/Y H:i'),
+                    'orden_id' => $kit->serviceOrder->id ?? '—',
+                ];
+            });
+
+        // Valorización total del inventario
+        $valorTotal = $distribucionFiltrada->sum(function ($row) {
+            $precio = (float) ($row['producto']->precio_referencial ?? 0);
+            return $row['total'] * $precio;
         });
 
-        $sinPrecio = $productos->filter(function ($p) use ($sedes) {
-            $totalUnidades = $sedes->sum(fn ($s) => $p->stockEnSede($s->id));
-            return is_null($p->precio_referencial) && $totalUnidades > 0;
-        });
+        // Últimos 15 movimientos de stock
+        $movimientosRecientes = MovimientoStock::with(['producto', 'sede', 'usuario'])
+            ->latest()
+            ->take(15)
+            ->get()
+            ->map(fn ($m) => [
+                'producto' => $m->producto->nombre ?? 'N/A',
+                'sede' => $m->sede->nombre ?? 'N/A',
+                'tipo' => $m->tipo,
+                'cantidad' => $m->cantidad,
+                'motivo' => $m->motivo,
+                'usuario' => $m->usuario->name ?? 'N/A',
+                'fecha' => $m->created_at->format('d/m/Y H:i'),
+            ]);
 
         return view('livewire.almacen.reporte', [
             'sedes' => $sedes,
-            'distribucion' => $distribucion,
+            'distribucion' => $distribucionFiltrada->values(),
             'stockBajo' => $stockBajo,
+            'totalItems' => $totalItems,
+            'productosConStock' => $productosConStock,
+            'stockPorSede' => $stockPorSede,
+            'stockPorCategoria' => $stockPorCategoria,
+            'labelsSedes' => $stockPorSede->keys()->toArray(),
+            'dataSedes' => $stockPorSede->values()->toArray(),
+            'labelsCategorias' => $stockPorCategoria->keys()->toArray(),
+            'dataCategorias' => $stockPorCategoria->values()->toArray(),
+            'kitsInstalados' => $kitsInstalados,
             'valorTotal' => $valorTotal,
-            'sinPrecio' => $sinPrecio,
-            'labels' => $valorPorSede->keys()->toArray(),
-            'data' => $valorPorSede->values()->toArray(),
+            'movimientosRecientes' => $movimientosRecientes,
         ]);
     }
 }
-
-/*public function render()
-    {
-        $productos = Producto::with('categoria')->where('activo', true)->get();
-
-        $stockBajo = $productos->filter(fn ($p) => $p->stock_bajo);
-
-        $valorTotal = $productos->sum(fn ($p) => ($p->precio_referencial ?? 0) * $p->stock_disponible);
-
-        $valorPorCategoria = $productos
-            ->groupBy(fn ($p) => $p->categoria->nombre)
-            ->map(fn ($grupo) => $grupo->sum(fn ($p) => ($p->precio_referencial ?? 0) * $p->stock_disponible))
-            ->sortByDesc(fn ($v) => $v);
-
-        $sinPrecio = $productos->filter(fn ($p) => is_null($p->precio_referencial) && $p->stock_disponible > 0);
-
-        return view('livewire.almacen.reporte', [
-            'productos' => $productos,
-            'stockBajo' => $stockBajo,
-            'valorTotal' => $valorTotal,
-            'valorPorCategoria' => $valorPorCategoria,
-            'sinPrecio' => $sinPrecio,
-            'labels' => $valorPorCategoria->keys()->toArray(),
-            'data' => $valorPorCategoria->values()->toArray(),
-        ]);
-    }
-*/

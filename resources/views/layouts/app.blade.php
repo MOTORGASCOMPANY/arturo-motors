@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
-        <link rel="icon" type="image/png" href="{{ asset('images/icon.png') }}" />
+        <link rel="icon" type="image/jpg" href="{{ asset('images/LOGOFINAL.jpg') }}" />
         <title>ARTURO MOTORS</title>
 
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -13,7 +13,7 @@
 
         @livewireStyles
         @vite(['resources/css/app.css', 'resources/js/app.js'])
-        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+        <!--<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>-->
     </head>
 
     <body class="font-sans antialiased bg-gray-50">

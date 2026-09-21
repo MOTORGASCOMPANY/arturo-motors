@@ -22,6 +22,8 @@ class ListaClientes extends Component
 
     public $direction;
 
+    public string $tieneVehiculo = 'todos';
+
     // Propiedades para el modal y el formulario de edición
     public $open = false;
 
@@ -243,10 +245,17 @@ class ListaClientes extends Component
         $this->reset(['createNombre', 'createApellido', 'createDocumento', 'createTelefono', 'createEmail', 'createDireccion']);
     }
 
+    public function updatedTieneVehiculo(): void
+    {
+        $this->resetPage();
+    }
+
     public function render()
     {
         $clientes = Cliente::with(['vehiculos'])
             ->buscar($this->search)
+            ->when($this->tieneVehiculo === 'si', fn ($q) => $q->has('vehiculos'))
+            ->when($this->tieneVehiculo === 'no', fn ($q) => $q->doesntHave('vehiculos'))
             ->ordenar($this->sort, $this->direction)
             ->paginate($this->cant);
 

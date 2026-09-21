@@ -17,10 +17,24 @@ class Contratos extends Component
 
     public $cant = '10';
 
+    public string $filterStatus = 'todos';
+
+    public string $filterTipo = '';
+
     public $user;
 
     // Propiedad para resetear página en búsquedas
     public function updatingSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedFilterStatus(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedFilterTipo(): void
     {
         $this->resetPage();
     }
@@ -53,6 +67,18 @@ class Contratos extends Component
                     ->orWhere('cargo', 'like', '%'.$this->search.'%');
             });
         }
+
+        $query->when($this->filterStatus !== 'todos', function ($q) {
+            $hoy = now()->format('Y-m-d');
+            if ($this->filterStatus === 'Activo') {
+                $q->where('status', 'Activo');
+            } elseif ($this->filterStatus === 'Vencido') {
+                $q->where('status', 'Vencido');
+            } elseif ($this->filterStatus === 'Finalizado') {
+                $q->where('status', 'Finalizado');
+            }
+        })
+            ->when($this->filterTipo !== '', fn ($q) => $q->where('tipo_contrato', $this->filterTipo));
 
         $contratos = $query->orderBy('id', 'desc')->paginate($this->cant);
 

@@ -78,7 +78,7 @@
                 </div>
 
                 <div class="p-4 border-t border-gray-200/60">
-                    {{ $ordenes->links() }}
+                    {{ $ordenes->links('pagination::tailwind') }}
                 </div>
             @else
                 <div class="px-6 py-8 text-center font-semibold bg-indigo-50 text-indigo-700 rounded-lg border border-indigo-100 shadow-sm">

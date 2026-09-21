@@ -20,7 +20,7 @@
 </head>
 <body background="{{ str_replace('\\', '/', public_path('images/hoja_membretada_small.png')) }}">
     <table width="100%" height="100%" style="position: fixed; top: 0; left: 0; z-index: -1;">
-        <tr><td align="center" valign="middle"><img src="{{ public_path('images/icon.png') }}" style="width: 400px; opacity: 0.12;"></td></tr>
+        <tr><td align="center" valign="middle"><img src="{{ public_path('images/LOGOFINAL.jpg') }}" style="width: 400px; opacity: 0.12;"></td></tr>
     </table>
 
     <main class="contenido">

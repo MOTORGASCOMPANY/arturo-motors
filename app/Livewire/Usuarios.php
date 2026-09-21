@@ -15,6 +15,9 @@ class Usuarios extends Component
     use WithFileUploads;
     use WithPagination;
 
+    // Filtros
+    public string $filterRol = '';
+
     // Listado
     public $sort = 'id';
 
@@ -96,6 +99,11 @@ class Usuarios extends Component
         $this->resetPage();
     }
 
+    public function updatedFilterRol(): void
+    {
+        $this->resetPage();
+    }
+
     public function order($sort)
     {
         if ($this->sort === $sort) {
@@ -114,10 +122,11 @@ class Usuarios extends Component
                 $query->where('name', 'like', '%'.$this->search.'%')
                     ->orWhere('email', 'like', '%'.$this->search.'%');
             })
+            ->when($this->filterRol !== '', fn ($q) => $q->whereHas('roles', fn ($r) => $r->where('name', $this->filterRol)))
             ->orderBy('id', 'desc')
             ->paginate($this->cant);
 
-        $roles = Role::all();
+        $roles = Role::orderBy('name')->get();
 
         return view('livewire.usuarios', compact('usuarios', 'roles'));
     }

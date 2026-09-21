@@ -30,6 +30,7 @@ class ServiceOrder extends Model
         'fecha_inicio_conversion',
         'fecha_fin_conversion',
         'creado_por',
+        'ficha_dano',
     ];
 
     protected $casts = [
@@ -40,6 +41,7 @@ class ServiceOrder extends Model
         'evaluado_en' => 'datetime',
         'fecha_inicio_conversion' => 'datetime',
         'fecha_fin_conversion' => 'datetime',
+        'ficha_dano' => 'string',
     ];
 
     // Relaciones
@@ -101,6 +103,11 @@ class ServiceOrder extends Model
     public function documentos()
     {
         return $this->hasMany(Documento::class, 'service_order_id');
+    }
+
+    public function reportesPendientes()
+    {
+        return $this->hasMany(ReportePiezaNoEncajada::class, 'service_order_id');
     }
 
     // Scopes

@@ -54,8 +54,10 @@ class MovimientoStock extends Model
     }
 
     // Registrar movimiento y actualizar el stock del producto en un solo paso
-    public static function registrar(Producto $producto, string $tipo, int $cantidad, ?int $serviceOrderId, int $usuarioId, ?string $motivo = null, int $sedeId = 1): self
+    public static function registrar(Producto $producto, string $tipo, int $cantidad, ?int $serviceOrderId, int $usuarioId, ?string $motivo = null, ?int $sedeId = null): self
     {
+        $sedeId = $sedeId ?? Sede::activas()->orderBy('id')->first()?->id ?? 1;
+
         $movimiento = static::create([
             'producto_id' => $producto->id,
             'sede_id' => $sedeId,
