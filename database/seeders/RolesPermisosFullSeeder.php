@@ -96,28 +96,20 @@ class RolesPermisosFullSeeder extends Seeder
         // --- Cliente (sin permisos) ---
         Role::firstOrCreate(['name' => 'Cliente', 'guard_name' => 'web']);
 
-        // --- Vendedor ---
-        $vendedor = Role::firstOrCreate(['name' => 'Vendedor', 'guard_name' => 'web']);
-        $vendedor->syncPermissions([
-            'opciones.citas',
-            'opciones.expedientes',
-            'opciones.servicios',
-        ]);
-
         // --- Jefe de Taller (todo excepto usuarios) ---
         $jefe = Role::firstOrCreate(['name' => 'Jefe de Taller', 'guard_name' => 'web']);
         $jefe->syncPermissions([
             'opciones.citas',
             'opciones.expedientes',
-            'opciones.conversiones',
-            'opciones.servicios',
-            'opciones.almacen',
-            'opciones.rrhh',
-            'opciones.reportes',
-            'opciones.caja',
-            'opciones.fise',
             'opciones.mantenimientotables',
+            'opciones.conversiones',
+            'opciones.almacen',
+            'opciones.reportes',
+            'opciones.rrhh',
+            'opciones.caja',
+            'opciones.servicios',
             'opciones.cms',
+            'opciones.fise',
             'conversiones.asignar',
             'conversiones.mis-asignadas',
             'conversiones.entregas-pendientes',
@@ -125,7 +117,15 @@ class RolesPermisosFullSeeder extends Seeder
             'rrhh.planillas',
         ]);
 
-        // --- Tecnico ---
+        // --- Vendedor: citas + servicios ---
+        $vendedor = Role::firstOrCreate(['name' => 'Vendedor', 'guard_name' => 'web']);
+        $vendedor->syncPermissions([
+            'opciones.citas',
+            'opciones.expedientes',
+            'opciones.servicios',
+        ]);
+
+        // --- Tecnico: conversiones ---
         $tecnico = Role::firstOrCreate(['name' => 'Tecnico', 'guard_name' => 'web']);
         $tecnico->syncPermissions([
             'opciones.conversiones',
@@ -133,14 +133,21 @@ class RolesPermisosFullSeeder extends Seeder
             'conversiones.entregas-pendientes',
         ]);
 
-        // --- Almacen ---
+        // --- Almacen: solo almacen ---
         $almacen = Role::firstOrCreate(['name' => 'Almacen', 'guard_name' => 'web']);
         $almacen->syncPermissions([
             'opciones.almacen',
         ]);
 
-        // --- Cajero (sin permisos) ---
-        Role::firstOrCreate(['name' => 'Cajero', 'guard_name' => 'web']);
+        // --- Cajero: caja + fise ---
+        $cajero = Role::firstOrCreate(['name' => 'Cajero', 'guard_name' => 'web']);
+        $cajero->syncPermissions([
+            'opciones.caja',
+            'opciones.fise',
+        ]);
+
+        // --- Cliente: sin permisos de sidebar ---
+        Role::firstOrCreate(['name' => 'Cliente', 'guard_name' => 'web']);
 
         // ========================================
         // 3. ASIGNACIONES USUARIO-ROL (de la BD real)
