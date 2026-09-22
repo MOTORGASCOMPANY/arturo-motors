@@ -226,17 +226,32 @@ class Listado extends Component
         $tieneSeleccion = false;
         foreach ($this->completarKitComponentes as $comp) {
             if ($comp['faltan'] > 0) {
-                $ids = $this->completarKitSeleccion[$comp['producto_id']] ?? [];
-                if (count($ids) !== $comp['faltan']) {
-                    $this->addError('general', "Para {$comp['nombre']} debés seleccionar exactamente {$comp['faltan']} item(s) (seleccionaste " . count($ids) . ").");
-                    return;
+                if ($comp['es_serializado']) {
+                    // Serializados: deben seleccionar exactamente los items
+                    $ids = $this->completarKitSeleccion[$comp['producto_id']] ?? [];
+                    if (count($ids) !== $comp['faltan']) {
+                        $this->addError('general', "Para {$comp['nombre']} debés seleccionar exactamente {$comp['faltan']} item(s) (seleccionaste " . count($ids) . ").");
+                        return;
+                    }
+                    $tieneSeleccion = true;
+                } else {
+                    // Cantidad (no serializado): solo verificar stock disponible >= faltan
+                    $disponibles = $comp['disponibles'] ?? [];
+                    $stockDisponible = is_array($disponibles) && isset($disponibles['stock'])
+                        ? $disponibles['stock']
+                        : ($disponibles instanceof \Illuminate\Support\Collection ? $disponibles->count() : 0);
+                    if ($stockDisponible < $comp['faltan']) {
+                        $this->addError('general', "Stock insuficiente para {$comp['nombre']}: necesitás {$comp['faltan']}, hay {$stockDisponible}.");
+                        return;
+                    }
+                    // No requiere selección de items, pero cuenta como "tiene selección" para pasar la validación
+                    $tieneSeleccion = true;
                 }
-                $tieneSeleccion = true;
             }
         }
 
         if (!$tieneSeleccion) {
-            $this->addError('general', 'Debés seleccionar los items exactos para cada componente faltante.');
+            $this->addError('general', 'No hay componentes faltantes para completar.');
             return;
         }
 
@@ -256,24 +271,44 @@ class Listado extends Component
 
                 $kit->update(['estado' => 'abierto']);
 
-                foreach ($this->completarKitSeleccion as $productoId => $itemIds) {
-                    if (empty($itemIds)) continue;
+                foreach ($this->completarKitComponentes as $comp) {
+                    $faltan = $comp['faltan'] ?? 0;
+                    if ($faltan <= 0) continue;
 
-                    foreach ($itemIds as $itemId) {
-                        $item = ItemSerializado::where('id', $itemId)
-                            ->where('estado', 'en_stock')
+                    $productoId = $comp['producto_id'];
+                    $esSerializado = $comp['es_serializado'] ?? false;
+
+                    if ($esSerializado) {
+                        // Serializados: vincular items seleccionados
+                        $itemIds = $this->completarKitSeleccion[$productoId] ?? [];
+                        foreach ($itemIds as $itemId) {
+                            $item = ItemSerializado::where('id', $itemId)
+                                ->where('estado', 'en_stock')
+                                ->where('sede_id', $sedeId)
+                                ->lockForUpdate()
+                                ->first();
+
+                            if (!$item) {
+                                throw new \RuntimeException('Uno de los items seleccionados ya no está disponible. Refrescá la lista e intentá de nuevo.');
+                            }
+
+                            $item->update([
+                                'kit_padre_id' => $kit->id,
+                                'estado' => 'reemplazado',
+                            ]);
+                        }
+                    } else {
+                        // Cantidad: decrementar stock en ProductoStockSede
+                        $stock = ProductoStockSede::where('producto_id', $productoId)
                             ->where('sede_id', $sedeId)
                             ->lockForUpdate()
                             ->first();
 
-                        if (!$item) {
-                            throw new \RuntimeException('Uno de los items seleccionados ya no está disponible. Refrescá la lista e intentá de nuevo.');
+                        if (!$stock || $stock->cantidad < $faltan) {
+                            throw new \RuntimeException("Stock insuficiente para {$comp['nombre']} al confirmar.");
                         }
 
-                        $item->update([
-                            'kit_padre_id' => $kit->id,
-                            'estado' => 'reemplazado',
-                        ]);
+                        $stock->decrement('cantidad', $faltan);
                     }
                 }
 
