@@ -640,16 +640,23 @@
 
                 <section class="bg-white rounded-xl border border-gray-200 overflow-hidden">
                     <x-almacen.section-header icon="fa-check-circle" color="gray" title="Completados" :count="$kitsComp->flatten()->count()" />
-                    <div class="bg-gray-50 p-2 space-y-2 max-h-[65vh] overflow-y-auto" x-data>
+                    <div class="bg-gray-50 p-2 space-y-2 max-h-[65vh] overflow-y-auto">
                         @forelse ($kitsComp as $productoId => $items)
                             @php $prod = $items->first()?->producto; @endphp
                             @foreach ($items as $kitItem)
-                                <button type="button"
-                                    @click="$dispatch('ver-componentes-kit', { productoId: {{ $productoId }} })"
-                                    class="w-full text-left bg-white border border-gray-200 rounded-lg px-3 py-2.5 hover:border-purple-400 hover:shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
-                                    <p class="text-sm font-bold text-gray-800 truncate">{{ $prod?->nombre ?? 'Producto' }}</p>
-                                    <p class="text-xs text-gray-500">{{ $kitItem->sede?->nombre ?? '—' }} <span class="text-gray-300">|</span> #{{ $kitItem->id }}</p>
-                                </button>
+                                <div class="bg-white border border-gray-200 rounded-lg p-3">
+                                    <div class="flex items-center gap-3">
+                                        <div class="min-w-0 flex-1">
+                                            <p class="text-sm font-bold text-gray-800 truncate">{{ $prod?->nombre ?? 'Producto' }}</p>
+                                            <p class="text-xs text-gray-500">{{ $kitItem->sede?->nombre ?? '—' }} <span class="text-gray-300">|</span> #{{ $kitItem->id }}</p>
+                                        </div>
+                                        <button type="button"
+                                            wire:click="verDetalleKit({{ $kitItem->id }})"
+                                            class="px-3 py-1.5 bg-indigo-100 text-indigo-700 text-xs font-bold rounded-lg hover:bg-indigo-200 transition whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
+                                            <i class="fas fa-eye mr-1"></i> Ver
+                                        </button>
+                                    </div>
+                                </div>
                             @endforeach
                         @empty
                             <x-almacen.empty-state icon="fa-check-circle" message="Sin kits completados" />
@@ -659,24 +666,31 @@
 
                 <section class="bg-white rounded-xl border border-gray-200 overflow-hidden">
                     <x-almacen.section-header icon="fa-fire" color="gray" title="Consumidos" :count="$kitsCons->flatten()->count()" />
-                    <div class="bg-gray-50 p-2 space-y-2 max-h-[65vh] overflow-y-auto" x-data>
+                    <div class="bg-gray-50 p-2 space-y-2 max-h-[65vh] overflow-y-auto">
                         @forelse ($kitsCons as $productoId => $items)
                             @php $prod = $items->first()?->producto; @endphp
                             @foreach ($items as $kitItem)
-                                <button type="button"
-                                    @click="$dispatch('ver-componentes-kit', { productoId: {{ $productoId }} })"
-                                    class="w-full text-left bg-white border border-gray-200 rounded-lg px-3 py-2.5 hover:border-red-400 hover:shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
-                                    <p class="text-sm font-bold text-gray-800 truncate">{{ $prod?->nombre ?? 'Producto' }}</p>
-                                    <p class="text-xs text-gray-500">{{ $kitItem->sede?->nombre ?? '—' }} <span class="text-gray-300">|</span> #{{ $kitItem->id }}</p>
-                                    @if ($kitItem->serviceOrder)
-                                        <p class="text-xs text-gray-500 mt-1">
-                                            <i class="fas fa-file-alt text-gray-400 mr-1"></i>
-                                            Orden #{{ $kitItem->service_order_id }}
-                                            <span class="text-gray-300">|</span>
-                                            {{ $kitItem->serviceOrder->tecnico?->name ?? '—' }}
-                                        </p>
-                                    @endif
-                                </button>
+                                <div class="bg-white border border-gray-200 rounded-lg p-3">
+                                    <div class="flex items-center gap-3">
+                                        <div class="min-w-0 flex-1">
+                                            <p class="text-sm font-bold text-gray-800 truncate">{{ $prod?->nombre ?? 'Producto' }}</p>
+                                            <p class="text-xs text-gray-500">{{ $kitItem->sede?->nombre ?? '—' }} <span class="text-gray-300">|</span> #{{ $kitItem->id }}</p>
+                                            @if ($kitItem->serviceOrder)
+                                                <p class="text-xs text-gray-500 mt-1">
+                                                    <i class="fas fa-file-alt text-gray-400 mr-1"></i>
+                                                    Orden #{{ $kitItem->service_order_id }}
+                                                    <span class="text-gray-300">|</span>
+                                                    {{ $kitItem->serviceOrder->tecnico?->name ?? '—' }}
+                                                </p>
+                                            @endif
+                                        </div>
+                                        <button type="button"
+                                            wire:click="verDetalleKit({{ $kitItem->id }})"
+                                            class="px-3 py-1.5 bg-indigo-100 text-indigo-700 text-xs font-bold rounded-lg hover:bg-indigo-200 transition whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
+                                            <i class="fas fa-eye mr-1"></i> Ver
+                                        </button>
+                                    </div>
+                                </div>
                             @endforeach
                         @empty
                             <x-almacen.empty-state icon="fa-fire" message="Sin kits consumidos" />
@@ -718,13 +732,6 @@
                                     <p class="text-xs text-gray-400 mt-1">disponible</p>
                                 </div>
                                 <div class="col-span-12 md:col-span-4 flex flex-wrap items-center justify-end gap-1.5">
-                                    @if ($p->categoria->es_kit)
-                                        <button type="button"
-                                            wire:click="$dispatch('ver-componentes-kit', { productoId: {{ $p->id }} })"
-                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">
-                                            <i class="fa-solid fa-puzzle-piece"></i> Componentes
-                                        </button>
-                                    @endif
                                     <button type="button"
                                         wire:click="$dispatch('abrir-modal-entrada', { productoId: {{ $p->id }} })"
                                         class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500">
