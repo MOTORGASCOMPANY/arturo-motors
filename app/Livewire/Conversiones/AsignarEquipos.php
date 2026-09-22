@@ -181,17 +181,33 @@ class AsignarEquipos extends Component
 
     // ═══════════════════════════════════════════════
     // REPUESTOS VARIOS (solo items POR CANTIDAD - es_serializado=false)
+    // EXCLUYE los que son componentes de CUALQUIER kit (consistente con almacén)
     // ═══════════════════════════════════════════════
 
     public function getProductosRepuestoProperty()
     {
         $sedeId = $this->sedePrincipalId();
 
+        // IDs de productos que son componentes de CUALQUIER kit (para excluirlos)
+        // Consistente con Almacen\Productos\Listado::getListadoInventarioProperty()
+        $componentesDeCualquierKit = DB::table('kit_componentes')
+            ->join('productos', 'producto_componente_id', '=', 'productos.id')
+            ->join('categorias_almacen', 'productos.categoria_id', '=', 'categorias_almacen.id')
+            ->where('categorias_almacen.es_serializado', false) // solo los de cantidad
+            ->pluck('producto_componente_id')
+            ->toArray();
+
         // SOLO items POR CANTIDAD (es_serializado=false, no kits)
-        return Producto::whereHas('categoria', fn ($q) => $q->where('es_serializado', false)->where('es_kit', false))
+        // Y que NO sean componentes de NINGÚN kit
+        $query = Producto::whereHas('categoria', fn ($q) => $q->where('es_serializado', false)->where('es_kit', false))
             ->whereHas('stockPorSede', fn ($q) => $q->where('sede_id', $sedeId)->where('cantidad', '>', 0))
-            ->with(['stockPorSede' => fn ($q) => $q->where('sede_id', $sedeId)->where('cantidad', '>', 0)])
-            ->get()
+            ->with(['stockPorSede' => fn ($q) => $q->where('sede_id', $sedeId)->where('cantidad', '>', 0)]);
+
+        if (!empty($componentesDeCualquierKit)) {
+            $query->whereNotIn('id', $componentesDeCualquierKit);
+        }
+
+        return $query->get()
             ->map(function ($p) use ($sedeId) {
                 $stock = $p->stockPorSede->where('sede_id', $sedeId)->sum('cantidad');
                 return (object) [
