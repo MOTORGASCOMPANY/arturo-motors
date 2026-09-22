@@ -57,11 +57,7 @@
                                     <i class="fas {{ $d->item_serializado_id ? 'fa-barcode text-gray-400' : 'fa-box text-gray-400' }} text-[10px]"></i>
                                     <span class="truncate font-medium text-gray-700">{{ $d->producto->nombre }}</span>
                                 </div>
-                                @if ($d->item_serializado_id)
-                                    <span class="text-gray-500 font-mono text-[10px] bg-gray-200/70 px-1.5 py-0.5 rounded border border-gray-200 whitespace-nowrap">
-                                        SN: {{ $d->itemSerializado->serie ?? 'N/A' }}
-                                    </span>
-                                @else
+                                @if ($d->cantidad)
                                     <span class="text-gray-600 font-bold bg-gray-200/70 px-1.5 py-0.5 rounded border border-gray-200">
                                         x{{ $d->cantidad }}
                                     </span>
@@ -139,7 +135,9 @@
                                     </div>
                                     <div class="min-w-0 flex-1">
                                         <p class="text-sm font-bold text-gray-800 truncate">{{ $d->producto->nombre }}</p>
-                                        <p class="text-xs text-gray-500 mt-0.5">Serie: <span class="font-mono font-semibold">{{ $d->itemSerializado->serie ?? 'Sin serie' }}</span></p>
+                                        @if($d->itemSerializado?->serie)
+                                            <p class="text-xs text-gray-500 mt-0.5">Serie: <span class="font-mono font-semibold">{{ $d->itemSerializado->serie }}</span></p>
+                                        @endif
                                     </div>
                                 @else
                                     <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
@@ -147,7 +145,9 @@
                                     </div>
                                     <div class="min-w-0 flex-1">
                                         <p class="text-sm font-bold text-gray-800 truncate">{{ $d->producto->nombre }}</p>
-                                        <p class="text-xs text-gray-500 mt-0.5">Cantidad: <span class="font-bold">{{ $d->cantidad }}</span></p>
+                                        @if($d->cantidad)
+                                            <p class="text-xs text-gray-500 mt-0.5">Cantidad: <span class="font-bold">{{ $d->cantidad }}</span></p>
+                                        @endif
                                     </div>
                                 @endif
                             </div>

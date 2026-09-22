@@ -419,12 +419,19 @@ class Crear extends Component
         $this->mostrarChecklist = false;
         $sedeOrigenId = $this->sedeOrigenId();
 
+        $this->buildChecklist();
+        $kitsEnChecklist = collect($this->checklistData)->where('tipo', 'kit');
+        $esKitCompleto = $kitsEnChecklist->isNotEmpty()
+            ? $kitsEnChecklist->every('es_completo', true)
+            : null;
+
         try {
-            DB::transaction(function () use ($sedeOrigenId) {
+            DB::transaction(function () use ($sedeOrigenId, $esKitCompleto) {
                 $traslado = Traslado::create([
                     'sede_destino_id' => $this->sedeDestinoId,
                     'enviado_por' => Auth::id(),
                     'observaciones' => $this->observaciones ?: null,
+                    'es_kit_completo' => $esKitCompleto,
                 ]);
 
                 
