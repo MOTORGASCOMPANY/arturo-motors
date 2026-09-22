@@ -257,8 +257,8 @@
                     $totalItem = 0;
                     $esCompletable = false;
                 @endphp
-                <div class="fixed inset-0 z-[60] flex items-end sm:items-center justify-center sm:p-4" role="dialog" aria-modal="true">
-                    <div class="absolute inset-0 bg-gray-900/60" wire:click="cerrarDetalle"></div>
+                <div class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center sm:p-4" role="dialog" aria-modal="true">
+                    <div class="fixed inset-0 bg-gray-900/60" wire:click="cerrarDetalle"></div>
                     <div class="relative flex w-full max-w-xl max-h-[92vh] flex-col overflow-hidden rounded-t-2xl sm:rounded-xl bg-white shadow-2xl border border-gray-200"
                          wire:click.away="cerrarDetalle">
                         <header class="flex items-center gap-3 px-5 py-4 border-b border-gray-200">
@@ -311,7 +311,7 @@
                                                         <i class="fas fa-edit"></i>
                                                     </button>
                                                 @endif
-                                                @if ($item->estado === 'en_stock')
+                                                @if ($item->estado === 'en_stock' && $item->producto->categoria->es_kit)
                                                     <button type="button"
                                                         wire:click="abrirCompletarKit({{ $item->id }})"
                                                         class="px-3 py-1.5 bg-indigo-600 text-white text-xs font-bold rounded-lg hover:bg-indigo-700 transition whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1">
@@ -521,8 +521,8 @@
             $pctElegidos = $totalFaltan > 0 ? round($totalElegidos / $totalFaltan * 100) : 100;
         @endphp
 
-        <div class="fixed inset-0 z-[60] flex items-end sm:items-center justify-center sm:p-4" role="dialog" aria-modal="true">
-            <div class="absolute inset-0 bg-gray-900/60" wire:click="cerrarCompletarKit"></div>
+        <div class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center sm:p-4" role="dialog" aria-modal="true">
+            <div class="fixed inset-0 bg-gray-900/60" wire:click="cerrarCompletarKit"></div>
             <div class="relative flex w-full max-w-xl max-h-[92vh] flex-col overflow-hidden rounded-t-2xl sm:rounded-xl bg-white shadow-2xl border border-gray-200"
                  wire:click.away="cerrarCompletarKit">
 
@@ -658,12 +658,12 @@
         x-on:keydown.escape.window="abierto = false"
         x-show="abierto"
         x-cloak
-        class="fixed inset-0 z-[60]"
+        class="fixed inset-0 z-[100]"
         style="display: none;"
         role="dialog"
         aria-modal="true">
 
-        <div class="absolute inset-0 bg-black/50"
+        <div class="fixed inset-0 bg-black/50"
              x-show="abierto"
              x-transition.opacity
              x-on:click="abierto = false"></div>
@@ -823,8 +823,8 @@
             $campos = is_string($esquema) ? json_decode($esquema, true) : $esquema;
         @endphp
 
-        <div class="fixed inset-0 z-[60] flex items-center justify-center p-4" role="dialog" aria-modal="true">
-            <div class="absolute inset-0 bg-black/60" wire:click="cerrarEditarItem"></div>
+        <div class="fixed inset-0 z-[100] flex items-center justify-center p-4" role="dialog" aria-modal="true">
+            <div class="fixed inset-0 bg-black/60" wire:click="cerrarEditarItem"></div>
             <div class="relative flex w-full max-w-md max-h-[85vh] flex-col overflow-hidden rounded-xl bg-white shadow-2xl border border-gray-200">
                 <header class="flex items-center gap-3 px-5 py-4 border-b border-gray-200">
                     <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
