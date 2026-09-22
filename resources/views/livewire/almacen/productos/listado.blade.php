@@ -500,9 +500,24 @@
                                         @if ($k->atributos)
                                             @foreach ($k->atributos as $key => $val)
                                                 @if ($val)
+                                                    @php
+                                                        $displayKey = ucfirst(str_replace('_', ' ', $key));
+                                                        $displayVal = $val;
+                                                        // Formatear campos especiales
+                                                        if ($key === 'abierto_por' && is_numeric($val)) {
+                                                            $user = \App\Models\User::find($val);
+                                                            $displayVal = $user?->name ?? "Usuario #{$val}";
+                                                        } elseif (in_array($key, ['abierto_en', 'recepcion_fecha', 'fecha_recepcion']) && $val) {
+                                                            try {
+                                                                $displayVal = \Carbon\Carbon::parse($val)->format('d/m/Y H:i');
+                                                            } catch (\Throwable) {}
+                                                        } elseif ($key === 'motivo_apertura') {
+                                                            $displayKey = 'Motivo apertura';
+                                                        }
+                                                    @endphp
                                                     <div>
-                                                        <span class="text-gray-400">{{ ucfirst(str_replace('_', ' ', $key)) }}</span>
-                                                        <p class="font-medium text-gray-700">{{ $val }}</p>
+                                                        <span class="text-gray-400">{{ $displayKey }}</span>
+                                                        <p class="font-medium text-gray-700">{{ $displayVal }}</p>
                                                     </div>
                                                 @endif
                                             @endforeach
