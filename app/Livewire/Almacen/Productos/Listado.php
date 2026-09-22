@@ -327,7 +327,7 @@ class Listado extends Component
                 'consumidos' => $kitsConsumidos->flatten()->count(),
                 'completados' => $kitsCompletados->flatten()->count(),
                 'instalados' => $instaladosCount,
-                'sueltosSerializados' => $sueltosSerializados->flatten()->count(),
+                'sueltosSerializados' => $sueltosSerializados->count(),
                 'sueltosCantidadTipos' => $sueltosCantidad->count(),
                 'sueltosCantidadTotal' => $sueltosCantidad->sum('cantidad'),
             ],
