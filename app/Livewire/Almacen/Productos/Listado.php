@@ -413,6 +413,17 @@ class Listado extends Component
         }
 
         if ($tipo === 'sueltosCantidad') {
+            $sedeId = $this->filtroSedeId;
+
+            // Stock suelto REAL = ProductoStockSede - items DENTRO de kits (no consumidos)
+            $itemsEnKits = ItemSerializado::whereHas('producto.categoria', fn ($q) => $q->where('es_serializado', false)->where('es_kit', false))
+                ->whereNotNull('kit_padre_id')
+                ->whereIn('estado', ['en_stock', 'abierto', 'completado', 'asignado'])
+                ->when($sedeId, fn ($q) => $q->where('sede_id', $sedeId))
+                ->get()
+                ->groupBy('producto_id')
+                ->map->count();
+
             return ProductoStockSede::with(['producto.categoria', 'sede'])
                 ->whereHas('producto.categoria', fn ($q) => $q->where('es_serializado', false)->where('es_kit', false))
                 ->when($sedeId, fn ($q) => $q->where('sede_id', $sedeId))
@@ -421,7 +432,14 @@ class Listado extends Component
                     fn ($q) => $q->whereHas('producto', fn ($p) => $p->where('nombre', 'like', "%{$this->busquedaInventario}%"))
                 )
                 ->where('cantidad', '>', 0)
-                ->get();
+                ->get()
+                ->map(function ($stock) use ($itemsEnKits) {
+                    $enKits = $itemsEnKits[$stock->producto_id] ?? 0;
+                    $stock->cantidad_suelta_real = max(0, $stock->cantidad - $enKits);
+                    return $stock;
+                })
+                ->filter(fn ($s) => $s->cantidad_suelta_real > 0)
+                ->values();
         }
 
         return collect();
@@ -612,7 +630,18 @@ class Listado extends Component
                 )
             )
             ->where('cantidad', '>', 0)
-            ->get();
+            ->get()
+            ->map(function ($stock) use ($sedeId) {
+                // Restar items que están DENTRO de kits (no consumidos)
+                $enKits = ItemSerializado::where('producto_id', $stock->producto_id)
+                    ->whereNotNull('kit_padre_id')
+                    ->whereIn('estado', ['en_stock', 'abierto', 'completado', 'asignado'])
+                    ->when($sedeId, fn ($q) => $q->where('sede_id', $sedeId))
+                    ->count();
+                $stock->cantidad_suelta_real = max(0, $stock->cantidad - $enKits);
+                return $stock;
+            })
+            ->filter(fn ($s) => $s->cantidad_suelta_real > 0);
 
         $instaladosCount = ItemSerializado::whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true))
             ->where('estado', 'consumido')
@@ -639,7 +668,7 @@ class Listado extends Component
                 'instalados' => $instaladosCount,
                 'sueltosSerializados' => $sueltosSerializados->count(),
                 'sueltosCantidadTipos' => $sueltosCantidad->count(),
-                'sueltosCantidadTotal' => $sueltosCantidad->sum('cantidad'),
+                'sueltosCantidadTotal' => $sueltosCantidad->sum('cantidad_suelta_real'),
             ],
         ];
     }

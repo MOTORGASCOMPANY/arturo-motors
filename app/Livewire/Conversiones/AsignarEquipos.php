@@ -223,10 +223,14 @@ class AsignarEquipos extends Component
 
         $sedeId = $this->sedePrincipalId();
 
-        // Para productos por CANTIDAD (es_serializado=false), validar contra ProductoStockSede
-        $disponible = $producto->stockPorSede()
+        // Para productos por CANTIDAD (es_serializado=false), validar contra stock suelto REAL
+        $stockSede = $producto->stockPorSede()->where('sede_id', $sedeId)->first();
+        $enKits = ItemSerializado::where('producto_id', $producto->id)
+            ->whereNotNull('kit_padre_id')
+            ->whereIn('estado', ['en_stock', 'abierto', 'completado', 'asignado'])
             ->where('sede_id', $sedeId)
-            ->sum('cantidad');
+            ->count();
+        $disponible = ($stockSede->cantidad ?? 0) - $enKits;
 
         if ($this->cantidadRepuesto > $disponible) {
             $this->addError('cantidadRepuesto', "Solo hay {$disponible} sueltos en stock.");
@@ -426,7 +430,7 @@ class AsignarEquipos extends Component
                     }
                 }
 
-                // 2. Repuestos varios (solo cantidad)
+                // 2. Repuestos varios (solo cantidad) - descuenta de ProductoStockSede
                 foreach ($this->repuestosSeleccionados as $key => $repuesto) {
                     $producto = Producto::find($repuesto->producto_id);
                     if (!$producto) continue;
@@ -435,10 +439,22 @@ class AsignarEquipos extends Component
 
                     // Cantidad
                     $cantidad = $repuesto->cantidad_solicitada;
-                    $disponible = $producto->stockEnSede($sedeId);
+
+                    // Stock suelto REAL (ProductoStockSede - items en kits)
+                    $stockSede = ProductoStockSede::where('producto_id', $producto->id)
+                        ->where('sede_id', $sedeId)
+                        ->first();
+
+                    $enKits = ItemSerializado::where('producto_id', $producto->id)
+                        ->whereNotNull('kit_padre_id')
+                        ->whereIn('estado', ['en_stock', 'abierto', 'completado', 'asignado'])
+                        ->where('sede_id', $sedeId)
+                        ->count();
+
+                    $disponible = ($stockSede->cantidad ?? 0) - $enKits;
 
                     if ($disponible < $cantidad) {
-                        throw new \RuntimeException("No hay stock suficiente de {$producto->nombre}.");
+                        throw new \RuntimeException("No hay stock suelto suficiente de {$producto->nombre}. Disponible: {$disponible}.");
                     }
 
                     MovimientoStock::registrar(

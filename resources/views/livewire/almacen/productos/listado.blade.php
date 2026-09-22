@@ -242,7 +242,7 @@
                                                 <p class="text-sm font-bold text-gray-800 truncate">{{ $stock->producto?->nombre ?? 'Producto' }}</p>
                                                 <p class="text-xs text-gray-500">{{ $stock->sede?->nombre ?? '—' }}</p>
                                             </div>
-                                            <span class="px-2 py-0.5 bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full tabular-nums">{{ $stock->cantidad }}</span>
+                                            <span class="px-2 py-0.5 bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full tabular-nums">{{ $stock->cantidad_suelta_real ?? $stock->cantidad }}</span>
                                         </li>
                                     @endforeach
                                 </ul>
@@ -335,9 +335,9 @@
                                         @if ($filtroTipoInventario === 'sueltosSerializados' && $item->serie)
                                             <span class="font-mono text-xs text-gray-600 bg-gray-100 px-2 py-0.5 rounded">{{ $item->serie }}</span>
                                         @endif
-                                        @if ($filtroTipoInventario === 'sueltosCantidad')
-                                            <span class="text-xs font-bold text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded tabular-nums">×{{ $item->cantidad }}</span>
-                                        @endif
+@if ($filtroTipoInventario === 'sueltosCantidad')
+                                             <span class="text-xs font-bold text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded tabular-nums">×{{ $item->cantidad_suelta_real ?? $item->cantidad }}</span>
+                                         @endif
                                     </div>
                                 @endif
                             @empty
