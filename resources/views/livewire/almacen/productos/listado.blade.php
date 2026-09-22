@@ -257,7 +257,7 @@
                     $totalItem = 0;
                     $esCompletable = false;
                 @endphp
-                <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4" role="dialog" aria-modal="true">
+                <div class="fixed inset-0 z-[60] flex items-end sm:items-center justify-center sm:p-4" role="dialog" aria-modal="true">
                     <div class="absolute inset-0 bg-gray-900/60" wire:click="cerrarDetalle"></div>
                     <div class="relative flex w-full max-w-xl max-h-[92vh] flex-col overflow-hidden rounded-t-2xl sm:rounded-xl bg-white shadow-2xl border border-gray-200"
                          wire:click.away="cerrarDetalle">
@@ -521,7 +521,7 @@
             $pctElegidos = $totalFaltan > 0 ? round($totalElegidos / $totalFaltan * 100) : 100;
         @endphp
 
-        <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 z-[60] flex items-end sm:items-center justify-center sm:p-4" role="dialog" aria-modal="true">
             <div class="absolute inset-0 bg-gray-900/60" wire:click="cerrarCompletarKit"></div>
             <div class="relative flex w-full max-w-xl max-h-[92vh] flex-col overflow-hidden rounded-t-2xl sm:rounded-xl bg-white shadow-2xl border border-gray-200"
                  wire:click.away="cerrarCompletarKit">
@@ -658,7 +658,7 @@
         x-on:keydown.escape.window="abierto = false"
         x-show="abierto"
         x-cloak
-        class="fixed inset-0 z-50"
+        class="fixed inset-0 z-[60]"
         style="display: none;"
         role="dialog"
         aria-modal="true">
@@ -823,7 +823,7 @@
             $campos = is_string($esquema) ? json_decode($esquema, true) : $esquema;
         @endphp
 
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 z-[60] flex items-center justify-center p-4" role="dialog" aria-modal="true">
             <div class="absolute inset-0 bg-black/60" wire:click="cerrarEditarItem"></div>
             <div class="relative flex w-full max-w-md max-h-[85vh] flex-col overflow-hidden rounded-xl bg-white shadow-2xl border border-gray-200">
                 <header class="flex items-center gap-3 px-5 py-4 border-b border-gray-200">

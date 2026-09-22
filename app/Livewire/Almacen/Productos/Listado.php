@@ -83,6 +83,12 @@ class Listado extends Component
         $this->tipoDetalle = $this->detalleProductoId ? $tipo : null;
     }
 
+    public function cerrarDetalle(): void
+    {
+        $this->detalleProductoId = null;
+        $this->tipoDetalle = null;
+    }
+
     public function abrirCompletarKit(int $kitItemId): void
     {
         $kit = ItemSerializado::with('producto')->find($kitItemId);
@@ -165,8 +171,41 @@ class Listado extends Component
         $this->completarKitSeleccion = [];
     }
 
+    public function toggleSeleccion(int $productoId, int $itemId): void
+    {
+        $current = $this->completarKitSeleccion[$productoId] ?? [];
+        $idx = array_search($itemId, $current);
+
+        if ($idx !== false) {
+            unset($current[$idx]);
+            $this->completarKitSeleccion[$productoId] = array_values($current);
+            return;
+        }
+
+        $comp = null;
+        foreach ($this->completarKitComponentes as $c) {
+            if ($c['producto_id'] === $productoId) { $comp = $c; break; }
+        }
+        if (!$comp) return;
+
+        $disponibles = $comp['disponibles'] instanceof \Illuminate\Support\Collection
+            ? $comp['disponibles']
+            : collect($comp['disponibles']);
+
+        $item = $disponibles->firstWhere('id', $itemId);
+        if (!$item) {
+            $this->dispatch('swal', tipo: 'error', titulo: 'No disponible', mensaje: 'Ese item ya no está en stock.');
+            return;
+        }
+
+        $current[] = $itemId;
+        $this->completarKitSeleccion[$productoId] = $current;
+    }
+
     public function completarKit(): void
     {
+        $this->refreshStockCompletarKit();
+
         $tieneSeleccion = false;
         foreach ($this->completarKitComponentes as $comp) {
             if ($comp['faltan'] > 0) {
@@ -211,7 +250,7 @@ class Listado extends Component
                             ->first();
 
                         if (!$item) {
-                            throw new \RuntimeException('Uno de los items seleccionados ya no está disponible.');
+                            throw new \RuntimeException('Uno de los items seleccionados ya no está disponible. Refrescá la lista e intentá de nuevo.');
                         }
 
                         $item->update([
@@ -240,6 +279,43 @@ class Listado extends Component
         $this->completarKitSeleccion = [];
 
         $this->dispatch('swal', tipo: 'success', titulo: '¡Kit completado!', mensaje: 'El kit se completó y movió a completados.');
+    }
+
+    private function refreshStockCompletarKit(): void
+    {
+        $sedeId = $this->completarKitSedeId;
+
+        foreach ($this->completarKitComponentes as &$comp) {
+            if ($comp['faltan'] <= 0) continue;
+
+            if ($comp['es_serializado']) {
+                $comp['disponibles'] = ItemSerializado::with('producto')
+                    ->where('producto_id', $comp['producto_id'])
+                    ->where('estado', 'en_stock')
+                    ->where('sede_id', $sedeId)
+                    ->whereNull('kit_padre_id')
+                    ->whereNotNull('serie')
+                    ->where('serie', '!=', '')
+                    ->orderBy('id')
+                    ->get()
+                    ->toArray();
+            } else {
+                $stock = ProductoStockSede::where('producto_id', $comp['producto_id'])
+                    ->where('sede_id', $sedeId)
+                    ->where('cantidad', '>', 0)
+                    ->sum('cantidad');
+                $comp['disponibles'] = $stock > 0 ? ['stock' => $stock] : collect();
+            }
+
+            $currentIds = $this->completarKitSeleccion[$comp['producto_id']] ?? [];
+            if ($comp['es_serializado'] && !empty($currentIds)) {
+                $availableIds = array_column($comp['disponibles'], 'id');
+                $this->completarKitSeleccion[$comp['producto_id']] = array_values(
+                    array_intersect($currentIds, $availableIds)
+                );
+            }
+        }
+        unset($comp);
     }
 
     public function getResumenInventarioProperty()
