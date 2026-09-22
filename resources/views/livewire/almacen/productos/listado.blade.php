@@ -577,19 +577,17 @@
                         @forelse ($kitsSell as $productoId => $items)
                             @php $prod = $items->first()?->producto; @endphp
                             @foreach ($items as $kitItem)
-                                <div class="bg-white border border-gray-200 rounded-lg p-3">
+                                <button type="button"
+                                    wire:click="verDetalleKit({{ $kitItem->id }})"
+                                    class="w-full bg-white border border-gray-200 rounded-lg p-3 hover:border-indigo-400 hover:shadow-sm hover:bg-indigo-50 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 text-left">
                                     <div class="flex items-center gap-3">
                                         <div class="min-w-0 flex-1">
                                             <p class="text-sm font-bold text-gray-800 truncate">{{ $prod?->nombre ?? 'Producto' }}</p>
                                             <p class="text-xs text-gray-500">{{ $kitItem->sede?->nombre ?? '—' }} <span class="text-gray-300">|</span> #{{ $kitItem->id }}</p>
                                         </div>
-                                        <button type="button"
-                                            wire:click="verDetalleKit({{ $kitItem->id }})"
-                                            class="px-3 py-1.5 bg-indigo-100 text-indigo-700 text-xs font-bold rounded-lg hover:bg-indigo-200 transition whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
-                                            <i class="fas fa-eye mr-1"></i> Ver
-                                        </button>
+                                        <i class="fas fa-chevron-right text-gray-300 text-xs shrink-0"></i>
                                     </div>
-                                </div>
+                                </button>
                             @endforeach
                         @empty
                             <x-almacen.empty-state icon="fa-box" message="Sin kits sellados" />
@@ -646,19 +644,17 @@
                         @forelse ($kitsComp as $productoId => $items)
                             @php $prod = $items->first()?->producto; @endphp
                             @foreach ($items as $kitItem)
-                                <div class="bg-white border border-gray-200 rounded-lg p-3">
+                                <button type="button"
+                                    wire:click="verDetalleKit({{ $kitItem->id }})"
+                                    class="w-full bg-white border border-gray-200 rounded-lg p-3 hover:border-purple-400 hover:shadow-sm hover:bg-purple-50 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 text-left">
                                     <div class="flex items-center gap-3">
                                         <div class="min-w-0 flex-1">
                                             <p class="text-sm font-bold text-gray-800 truncate">{{ $prod?->nombre ?? 'Producto' }}</p>
                                             <p class="text-xs text-gray-500">{{ $kitItem->sede?->nombre ?? '—' }} <span class="text-gray-300">|</span> #{{ $kitItem->id }}</p>
                                         </div>
-                                        <button type="button"
-                                            wire:click="verDetalleKit({{ $kitItem->id }})"
-                                            class="px-3 py-1.5 bg-indigo-100 text-indigo-700 text-xs font-bold rounded-lg hover:bg-indigo-200 transition whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
-                                            <i class="fas fa-eye mr-1"></i> Ver
-                                        </button>
+                                        <i class="fas fa-chevron-right text-gray-300 text-xs shrink-0"></i>
                                     </div>
-                                </div>
+                                </button>
                             @endforeach
                         @empty
                             <x-almacen.empty-state icon="fa-check-circle" message="Sin kits completados" />
@@ -672,7 +668,9 @@
                         @forelse ($kitsCons as $productoId => $items)
                             @php $prod = $items->first()?->producto; @endphp
                             @foreach ($items as $kitItem)
-                                <div class="bg-white border border-gray-200 rounded-lg p-3">
+                                <button type="button"
+                                    wire:click="verDetalleKit({{ $kitItem->id }})"
+                                    class="w-full bg-white border border-gray-200 rounded-lg p-3 hover:border-red-400 hover:shadow-sm hover:bg-red-50 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 text-left">
                                     <div class="flex items-center gap-3">
                                         <div class="min-w-0 flex-1">
                                             <p class="text-sm font-bold text-gray-800 truncate">{{ $prod?->nombre ?? 'Producto' }}</p>
@@ -686,13 +684,9 @@
                                                 </p>
                                             @endif
                                         </div>
-                                        <button type="button"
-                                            wire:click="verDetalleKit({{ $kitItem->id }})"
-                                            class="px-3 py-1.5 bg-indigo-100 text-indigo-700 text-xs font-bold rounded-lg hover:bg-indigo-200 transition whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
-                                            <i class="fas fa-eye mr-1"></i> Ver
-                                        </button>
+                                        <i class="fas fa-chevron-right text-gray-300 text-xs shrink-0"></i>
                                     </div>
-                                </div>
+                                </button>
                             @endforeach
                         @empty
                             <x-almacen.empty-state icon="fa-fire" message="Sin kits consumidos" />
