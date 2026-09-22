@@ -360,123 +360,16 @@
         }
     </style>
 
+    {{-- Data injection for charts --}}
     <script>
-        function renderCharts() {
-            const sedeColors = ['#4f46e5', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
-            const categoriaColors = ['#4f46e5', '#0ea5e9', '#10b981', '#f59e0b', '#ec4899', '#64748b'];
-
-            // Gráfico de barras: Stock por sede
-            const ctxSedes = document.getElementById('chartStockSedes');
-            const dataSedes = @json($dataSedes);
-            const emptySedes = document.getElementById('emptySedes');
-            if (ctxSedes) {
-                if (window.chartSedes) window.chartSedes.destroy();
-                const hasData = dataSedes.some(v => v > 0);
-                emptySedes.classList.toggle('hidden', hasData);
-                ctxSedes.classList.toggle('hidden', !hasData);
-                if (hasData) {
-                    window.chartSedes = new Chart(ctxSedes, {
-                        type: 'bar',
-                        data: {
-                            labels: @json($labelsSedes),
-                            datasets: [{
-                                label: 'Items',
-                                data: dataSedes,
-                                backgroundColor: sedeColors,
-                                borderRadius: 6,
-                                maxBarThickness: 48
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { display: false },
-                                tooltip: {
-                                    callbacks: {
-                                        label: (ctx) => `${ctx.formattedValue} unidades`
-                                    }
-                                }
-                            },
-                            scales: {
-                                y: { beginAtZero: true, grid: { color: '#f1f5f9', drawBorder: false } },
-                                x: { grid: { display: false } }
-                            }
-                        }
-                    });
-                }
-            }
-
-            // Gráfico de dona: Stock por categoría
-            const ctxCategorias = document.getElementById('chartStockCategorias');
-            const dataCategorias = @json($dataCategorias);
-            const emptyCategorias = document.getElementById('emptyCategorias');
-            if (ctxCategorias) {
-                if (window.chartCategorias) window.chartCategorias.destroy();
-                const hasData = dataCategorias.some(v => v > 0);
-                emptyCategorias.classList.toggle('hidden', hasData);
-                ctxCategorias.classList.toggle('hidden', !hasData);
-                if (hasData) {
-                    window.chartCategorias = new Chart(ctxCategorias, {
-                        type: 'doughnut',
-                        data: {
-                            labels: @json($labelsCategorias),
-                            datasets: [{
-                                data: dataCategorias,
-                                backgroundColor: categoriaColors,
-                                borderWidth: 2,
-                                borderColor: '#ffffff'
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            cutout: '65%',
-                            plugins: {
-                                legend: {
-                                    position: 'bottom',
-                                    labels: { boxWidth: 10, padding: 12, font: { size: 11, family: "'Inter', sans-serif" } }
-                                }
-                            }
-                        }
-                    });
-                }
-            }
-        }
-
-        document.addEventListener('livewire:navigated', renderCharts);
-        document.addEventListener('livewire:updated', renderCharts);
-    </script>
-
-    <script>
-        window.exportarPDF = function () {
-            Swal.fire({
-                title: 'Exportando PDF',
-                text: 'Generando el reporte...',
-                icon: 'info',
-                allowOutsideClick: false,
-                showConfirmButton: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                    window.location.href = '{{ $this->exportPdfUrl() }}';
-                    setTimeout(() => { Swal.close(); }, 3000);
-                }
-            });
-        };
-
-        window.exportarExcel = function () {
-            Swal.fire({
-                title: 'Exportando Excel',
-                text: 'Generando el reporte...',
-                icon: 'info',
-                allowOutsideClick: false,
-                showConfirmButton: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                    window.location.href = '{{ $this->exportExcelUrl() }}';
-                    setTimeout(() => { Swal.close(); }, 3000);
-                }
-            });
+        window.reporteData = {
+            dataSedes: @json($dataSedes),
+            labelsSedes: @json($labelsSedes),
+            dataCategorias: @json($dataCategorias),
+            labelsCategorias: @json($labelsCategorias),
+            exportPdfUrl: '{{ $this->exportPdfUrl() }}',
+            exportExcelUrl: '{{ $this->exportExcelUrl() }}',
         };
     </script>
+    <script src="{{ asset('js/components/reporte-charts.js') }}"></script>
 </div>

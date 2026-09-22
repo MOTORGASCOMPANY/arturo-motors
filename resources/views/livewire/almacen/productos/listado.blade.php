@@ -863,19 +863,7 @@
          ALPINE — kitComponentsModal + Livewire events
     ═══════════════════════════════════════════════════════════════ --}}
     <script src="{{ asset('js/components/kit-components-modal.js') }}"></script>
-
-    <script wire:script>
-        document.addEventListener('livewire:init', () => {
-            Livewire.on('swal', (data) => {
-                Swal.fire({
-                    icon: data.tipo || 'info',
-                    title: data.titulo || '',
-                    text: data.mensaje || '',
-                    confirmButtonColor: '#4F46E5',
-                });
-            });
-        });
-    </script>
+    <script src="{{ asset('js/components/livewire-swal-listener.js') }}"></script>
 
 
     {{-- ═══════════════════════════════════════════════════════════════
