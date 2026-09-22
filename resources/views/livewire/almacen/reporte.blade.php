@@ -37,52 +37,34 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
 
-            <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-slate-200/80 border-l-4 border-l-blue-500 p-5 flex items-center gap-4">
-                <div class="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
-                    <i class="fas fa-boxes-stacked text-blue-600"></i>
-                </div>
-                <div class="min-w-0">
-                    <p class="text-2xl font-extrabold text-slate-800 leading-none">{{ number_format($totalItems) }}</p>
-                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total de items</span>
-                </div>
-            </div>
+            <x-almacen.reporte-kpi
+                :value="number_format($totalItems)"
+                label="Total de items"
+                icon="fa-boxes-stacked"
+                color="blue"
+            />
 
-            <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-slate-200/80 border-l-4 border-l-emerald-500 p-5 flex items-center gap-4">
-                <div class="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
-                    <i class="fas fa-circle-check text-emerald-600"></i>
-                </div>
-                <div class="min-w-0">
-                    <p class="text-2xl font-extrabold text-slate-800 leading-none">{{ number_format($productosConStock) }}</p>
-                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                        Productos con stock
-                        @if ($totalItems > 0)
-                            · {{ round(($productosConStock / $totalItems) * 100) }}%
-                        @endif
-                    </span>
-                </div>
-            </div>
+            <x-almacen.reporte-kpi
+                :value="number_format($productosConStock)"
+                :label="'Productos con stock' . ($totalItems > 0 ? ' · ' . round(($productosConStock / $totalItems) * 100) . '%' : '')"
+                icon="fa-circle-check"
+                color="emerald"
+            />
 
-            <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-slate-200/80 border-l-4 {{ $stockBajo->count() > 0 ? 'border-l-red-500' : 'border-l-slate-300' }} p-5 flex items-center gap-4">
-                <div class="w-11 h-11 rounded-xl {{ $stockBajo->count() > 0 ? 'bg-red-50' : 'bg-slate-50' }} flex items-center justify-center shrink-0">
-                    <i class="fas fa-triangle-exclamation {{ $stockBajo->count() > 0 ? 'text-red-600' : 'text-slate-400' }}"></i>
-                </div>
-                <div class="min-w-0">
-                    <p class="text-2xl font-extrabold {{ $stockBajo->count() > 0 ? 'text-red-600' : 'text-slate-800' }} leading-none">
-                        {{ $stockBajo->count() }}
-                    </p>
-                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Productos en stock bajo</span>
-                </div>
-            </div>
+            <x-almacen.reporte-kpi
+                :value="$stockBajo->count()"
+                label="Productos en stock bajo"
+                icon="fa-triangle-exclamation"
+                :color="$stockBajo->count() > 0 ? 'red' : 'slate'"
+            />
 
-            <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-slate-200/80 border-l-4 border-l-indigo-500 p-5 flex items-center gap-4">
-                <div class="w-11 h-11 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
-                    <i class="fas fa-sack-dollar text-indigo-600"></i>
-                </div>
-                <div class="min-w-0">
-                    <p class="text-2xl font-extrabold text-indigo-600 leading-none">S/ {{ number_format($valorTotal, 0, ',', '.') }}</p>
-                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Valor del inventario</span>
-                </div>
-            </div>
+            <x-almacen.reporte-kpi
+                :value="number_format($valorTotal, 0, ',', '.')"
+                label="Valor del inventario"
+                icon="fa-sack-dollar"
+                color="indigo"
+                prefix="S/ "
+            />
 
         </div>
     </div>

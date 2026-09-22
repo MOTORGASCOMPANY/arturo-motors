@@ -367,15 +367,9 @@
                  ═══════════════════════════════════════════════════════ --}}
             @elseif ($seccion === 'kits')
                 <div>
-                    <div class="flex items-center justify-between mb-5 p-3 bg-indigo-50 rounded-lg border border-indigo-100">
-                        <p class="text-sm text-indigo-900">
-                            <i class="fas fa-box mr-1.5"></i>
-                            Registrando <strong>Kits</strong> — Proveedor: <strong>{{ $proveedorId }}</strong>
-                        </p>
-                        <button type="button" wire:click="volverAEleccion" class="text-xs font-semibold text-indigo-600 hover:underline whitespace-nowrap">
-                            <i class="fas fa-arrow-left mr-1"></i> Cambiar
-                        </button>
-                    </div>
+                    <x-almacen.info-banner icon="fa-box" color="indigo"
+                        :title="'Registrando <strong>Kits</strong> — Proveedor: <strong>' . $proveedorId . '</strong>'"
+                        action-label="Cambiar" action-method="volverAEleccion" />
 
                     <div class="mb-6">
                         <label class="block text-sm font-bold text-gray-700 mb-3">Kits a recibir</label>
@@ -409,13 +403,7 @@
                                                 class="w-8 h-8 rounded-lg bg-red-100 hover:bg-red-200 flex items-center justify-center text-red-600 transition" title="Desactivar kit">
                                                 <i class="fas fa-trash text-xs"></i>
                                             </button>
-                                            <button type="button" wire:click="$set('cantidades.{{ $kit->id }}', Math.max(0, {{ $cantidades[$kit->id] ?? 0 }} - 1))"
-                                                class="w-9 h-9 rounded-lg bg-gray-200 hover:bg-gray-300 flex items-center justify-center text-gray-600 font-bold transition-colors">−</button>
-                                            <input type="number" min="0" max="99"
-                                                wire:model.live="cantidades.{{ $kit->id }}"
-                                                class="w-20 text-center text-lg font-bold border border-gray-300 rounded-lg py-1.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                                            <button type="button" wire:click="$set('cantidades.{{ $kit->id }}', {{ $cantidades[$kit->id] ?? 0 }} + 1)"
-                                                class="w-9 h-9 rounded-lg bg-indigo-100 hover:bg-indigo-200 flex items-center justify-center text-indigo-700 font-bold transition-colors">+</button>
+                                            <x-almacen.quantity-stepper :model="'cantidades.' . $kit->id" color="indigo" />
                                         </div>
                                     </div>
                                 </div>
@@ -507,15 +495,9 @@
                 {{-- Intermedio: elegir tipo --}}
                 @if ($subSeccionProductos === '')
                     <div>
-                        <div class="flex items-center justify-between mb-5 p-3 bg-indigo-50 rounded-lg border border-indigo-100">
-                            <p class="text-sm text-indigo-900">
-                                <i class="fas fa-microchip mr-1.5"></i>
-                                Registrando <strong>Productos</strong> — Proveedor: <strong>{{ $proveedorId }}</strong>
-                            </p>
-                            <button type="button" wire:click="volverAEleccion" class="text-xs font-semibold text-indigo-600 hover:underline whitespace-nowrap">
-                                <i class="fas fa-arrow-left mr-1"></i> Cambiar
-                            </button>
-                        </div>
+                        <x-almacen.info-banner icon="fa-microchip" color="indigo"
+                            :title="'Registrando <strong>Productos</strong> — Proveedor: <strong>' . $proveedorId . '</strong>'"
+                            action-label="Cambiar" action-method="volverAEleccion" />
 
                         <label class="block text-sm font-bold text-gray-700 mb-3">¿Qué tipo de producto vas a recibir?</label>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -545,15 +527,9 @@
                 {{-- Serializados --}}
                 @elseif ($subSeccionProductos === 'serializados')
                     <div>
-                        <div class="flex items-center justify-between mb-5 p-3 bg-indigo-50 rounded-lg border border-indigo-100">
-                            <p class="text-sm text-indigo-900">
-                                <i class="fas fa-barcode mr-1.5"></i>
-                                Registrando <strong>Productos serializados</strong> — Proveedor: <strong>{{ $proveedorId }}</strong>
-                            </p>
-                            <button type="button" wire:click="volverAProductos" class="text-xs font-semibold text-indigo-600 hover:underline whitespace-nowrap">
-                                <i class="fas fa-arrow-left mr-1"></i> Volver
-                            </button>
-                        </div>
+                        <x-almacen.info-banner icon="fa-barcode" color="indigo"
+                            :title="'Registrando <strong>Productos serializados</strong> — Proveedor: <strong>' . $proveedorId . '</strong>'"
+                            action-label="Volver" action-method="volverAProductos" />
 
                         <div id="zona-series" class="space-y-5">
                             @foreach ($this->productosPorCategoria as $categoria => $productos)
@@ -581,13 +557,7 @@
                                                         <span class="text-[10px] px-1.5 py-0.5 bg-indigo-100 text-indigo-700 rounded font-semibold">Serializado</span>
                                                     </div>
                                                     <div class="flex items-center gap-2 shrink-0">
-                                                        <button type="button" wire:click="$set('cantidades.{{ $producto->id }}', Math.max(0, {{ $cantProducto }} - 1))"
-                                                            class="w-9 h-9 rounded-lg bg-gray-200 hover:bg-gray-300 flex items-center justify-center text-gray-600 font-bold transition-colors">−</button>
-                                                        <input type="number" min="0" max="99"
-                                                            wire:model.live="cantidades.{{ $producto->id }}"
-                                                            class="w-20 text-center text-lg font-bold border border-gray-300 rounded-lg py-1.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                                                        <button type="button" wire:click="$set('cantidades.{{ $producto->id }}', {{ $cantProducto }} + 1)"
-                                                            class="w-9 h-9 rounded-lg bg-indigo-100 hover:bg-indigo-200 flex items-center justify-center text-indigo-700 font-bold transition-colors">+</button>
+                                                        <x-almacen.quantity-stepper :model="'cantidades.' . $producto->id" color="indigo" />
                                                     </div>
                                                 </div>
 
@@ -683,15 +653,9 @@
                 {{-- Por cantidad --}}
                 @elseif ($subSeccionProductos === 'cantidad')
                     <div>
-                        <div class="flex items-center justify-between mb-5 p-3 bg-amber-50 rounded-lg border border-amber-100">
-                            <p class="text-sm text-amber-900">
-                                <i class="fas fa-cubes mr-1.5"></i>
-                                Registrando <strong>Productos por cantidad</strong> — Proveedor: <strong>{{ $proveedorId }}</strong>
-                            </p>
-                            <button type="button" wire:click="volverAProductos" class="text-xs font-semibold text-amber-600 hover:underline whitespace-nowrap">
-                                <i class="fas fa-arrow-left mr-1"></i> Volver
-                            </button>
-                        </div>
+                        <x-almacen.info-banner icon="fa-cubes" color="amber"
+                            :title="'Registrando <strong>Productos por cantidad</strong> — Proveedor: <strong>' . $proveedorId . '</strong>'"
+                            action-label="Volver" action-method="volverAProductos" />
 
                         <div class="flex items-center justify-between mb-4">
                             <div class="flex items-center bg-gray-50 rounded-lg px-3 py-2 flex-1 min-w-[200px] max-w-sm">
@@ -754,13 +718,7 @@
                                         <p class="text-[10px] text-gray-400">{{ $producto->categoria->nombre ?? '—' }}</p>
                                     </div>
                                     <div class="flex items-center gap-2 shrink-0">
-                                        <button type="button" wire:click="$set('cantidadesCantidad.{{ $producto->id }}', Math.max(0, {{ $cantidadesCantidad[$producto->id] ?? 0 }} - 1))"
-                                            class="w-9 h-9 rounded-lg bg-gray-200 hover:bg-gray-300 flex items-center justify-center text-gray-600 font-bold transition-colors">−</button>
-                                        <input type="number" min="0" max="999"
-                                            wire:model.live="cantidadesCantidad.{{ $producto->id }}"
-                                            class="w-20 text-center text-lg font-bold border border-gray-300 rounded-lg py-1.5 focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
-                                        <button type="button" wire:click="$set('cantidadesCantidad.{{ $producto->id }}', {{ $cantidadesCantidad[$producto->id] ?? 0 }} + 1)"
-                                            class="w-9 h-9 rounded-lg bg-amber-100 hover:bg-amber-200 flex items-center justify-center text-amber-700 font-bold transition-colors">+</button>
+                                        <x-almacen.quantity-stepper :model="'cantidadesCantidad.' . $producto->id" color="amber" />
                                     </div>
                                 </div>
                             @empty
