@@ -271,7 +271,7 @@
 
                 <div class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center sm:p-4" role="dialog" aria-modal="true">
                     <div class="fixed inset-0 bg-gray-900/60" wire:click="volverDashboard"></div>
-                    <div class="relative flex w-full max-w-xl max-h-[92vh] flex-col overflow-hidden rounded-t-2xl sm:rounded-xl bg-white shadow-2xl border border-gray-200"
+                    <div class="relative flex w-full max-w-xl max-h-[92vh] flex-col overflow-hidden rounded-t-2xl sm:rounded-xl bg-white shadow-2xl border border-gray-200 z-10"
                          wire:click.away="volverDashboard">
 
                         <header class="flex items-center gap-3 px-5 py-4 border-b border-gray-200">
@@ -369,7 +369,7 @@
 
                 <div class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center sm:p-4" role="dialog" aria-modal="true">
                     <div class="fixed inset-0 bg-gray-900/60" wire:click="volverListado"></div>
-                    <div class="relative flex w-full max-w-xl max-h-[92vh] flex-col overflow-hidden rounded-t-2xl sm:rounded-xl bg-white shadow-2xl border border-gray-200"
+                    <div class="relative flex w-full max-w-xl max-h-[92vh] flex-col overflow-hidden rounded-t-2xl sm:rounded-xl bg-white shadow-2xl border border-gray-200 z-10"
                          wire:click.away="volverListado">
 
                         <header class="flex items-center gap-3 px-5 py-4 border-b border-gray-200">
@@ -749,7 +749,7 @@
 
         <div class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center sm:p-4" role="dialog" aria-modal="true">
             <div class="fixed inset-0 bg-gray-900/60" wire:click="cerrarCompletarKit"></div>
-            <div class="relative flex w-full max-w-xl max-h-[92vh] flex-col overflow-hidden rounded-t-2xl sm:rounded-xl bg-white shadow-2xl border border-gray-200"
+            <div class="relative flex w-full max-w-xl max-h-[92vh] flex-col overflow-hidden rounded-t-2xl sm:rounded-xl bg-white shadow-2xl border border-gray-200 z-10"
                  wire:click.away="cerrarCompletarKit">
 
                 <header class="px-5 pt-4 pb-3 border-b border-gray-200">
