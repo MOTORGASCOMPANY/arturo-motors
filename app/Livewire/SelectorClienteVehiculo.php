@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Cliente;
 use App\Models\Vehiculo;
+use App\Rules\PlacaPeruana;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
@@ -178,7 +179,7 @@ class SelectorClienteVehiculo extends Component
     {
         // Reglas de validación para el vehículo
         $rules = [
-            'nuevaPlaca' => 'required|string|unique:vehiculos,placa',
+            'nuevaPlaca' => ['required', 'string', 'unique:vehiculos,placa', new PlacaPeruana()],
             'nuevaMarca' => 'required|string|max:50',
             'nuevoModelo' => 'required|string|max:50',
             'nuevoAnio' => 'nullable|integer|between:1900,' . (date('Y') + 1),

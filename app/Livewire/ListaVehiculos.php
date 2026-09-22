@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Cliente;
 use App\Models\Vehiculo;
+use App\Rules\PlacaPeruana;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -104,7 +105,7 @@ class ListaVehiculos extends Component
     public function updateVehiculo()
     {
         $this->validate([
-            'placa' => 'required|max:20',
+            'placa' => ['required', new PlacaPeruana()],
             'marca' => 'required|max:50',
             'modelo' => 'required|max:50',
             'anio' => 'required|integer|min:1900|max:2099',
@@ -139,7 +140,7 @@ class ListaVehiculos extends Component
     {
         $this->validate([
             'cliente_id' => 'required|exists:clientes,id',
-            'createPlaca' => 'required|max:20|unique:vehiculos,placa',
+            'createPlaca' => ['required', 'unique:vehiculos,placa', new PlacaPeruana()],
             'createMarca' => 'required|max:50',
             'createModelo' => 'required|max:50',
             'createAnio' => 'required|integer|min:1900|max:2099',

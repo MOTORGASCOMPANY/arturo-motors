@@ -6,6 +6,7 @@ use App\Models\AsesorExterno;
 use App\Models\Cita;
 use App\Models\Cliente;
 use App\Models\Vehiculo;
+use App\Rules\PlacaPeruana;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -67,7 +68,7 @@ class CrearCitas extends Component
         'marca' => 'required|string|max:50',
         'modelo' => 'required|string|max:50',
         'anio' => 'required|integer|min:1900|max:2100',
-        'placa' => 'required|string|size:6',
+        'placa' => ['required', 'string', new PlacaPeruana()],
         'combustible' => 'required|string|max:20',
         'serie' => 'nullable|string|max:50',
         'color' => 'nullable|string|max:50',

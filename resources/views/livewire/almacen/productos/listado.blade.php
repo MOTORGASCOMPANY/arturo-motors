@@ -27,7 +27,6 @@
                 <nav class="flex gap-1 bg-gray-100 rounded-lg p-1" x-data aria-label="Vistas del almacén">
                     @foreach ([
                         'inventario' => ['icon' => 'fa-boxes-stacked', 'label' => 'Inventario'],
-                        'kits'       => ['icon' => 'fa-box',          'label' => 'Kits'],
                         'catalogo'   => ['icon' => 'fa-list',         'label' => 'Catálogo'],
                     ] as $key => $tab)
                         <button type="button" wire:click="$set('vistaActual', '{{ $key }}')"
@@ -570,16 +569,14 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 items-start">
 
-                {{-- Sellados: items individuales (consistente con otras columnas) --}}
+                {{-- Sellados: items individuales (solo visualización) --}}
                 <section class="bg-white rounded-xl border border-amber-200 overflow-hidden">
                     <x-almacen.section-header icon="fa-box" color="amber" title="Sellados" :count="$kitsSell->flatten()->count()" />
                     <div class="bg-gray-50 p-2 space-y-2 max-h-[65vh] overflow-y-auto">
                         @forelse ($kitsSell as $productoId => $items)
                             @php $prod = $items->first()?->producto; @endphp
                             @foreach ($items as $kitItem)
-                                <button type="button"
-                                    wire:click="verDetalleKit({{ $kitItem->id }})"
-                                    class="w-full bg-white border border-gray-200 rounded-lg p-3 hover:border-indigo-400 hover:shadow-sm hover:bg-indigo-50 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 text-left">
+                                <div class="w-full bg-white border border-gray-200 rounded-lg p-3 text-left">
                                     <div class="flex items-center gap-3">
                                         <div class="min-w-0 flex-1">
                                             <p class="text-sm font-bold text-gray-800 truncate">{{ $prod?->nombre ?? 'Producto' }}</p>
@@ -587,7 +584,7 @@
                                         </div>
                                         <i class="fas fa-chevron-right text-gray-300 text-xs shrink-0"></i>
                                     </div>
-                                </button>
+                                </div>
                             @endforeach
                         @empty
                             <x-almacen.empty-state icon="fa-box" message="Sin kits sellados" />
@@ -613,11 +610,9 @@
                                             <p class="text-sm font-bold text-gray-800 truncate">{{ $prod?->nombre ?? 'Producto' }}</p>
                                             <p class="text-xs text-gray-500">{{ $kitItem->sede?->nombre ?? '—' }} <span class="text-gray-300">|</span> #{{ $kitItem->id }}</p>
                                         </div>
-                                        <button type="button"
-                                            wire:click="abrirCompletarKit({{ $kitItem->id }})"
-                                            class="px-3 py-1.5 bg-indigo-600 text-white text-xs font-bold rounded-lg hover:bg-indigo-700 transition whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1">
-                                            <i class="fas fa-plus mr-1"></i> Completar
-                                        </button>
+                                        <span class="px-3 py-1.5 bg-gray-100 text-gray-500 text-xs font-medium rounded-lg whitespace-nowrap">
+                                            <i class="fas fa-lock mr-1"></i> Solo lectura
+                                        </span>
                                     </div>
                                     @if ($faltanComps->isNotEmpty())
                                         <ul class="mt-2.5 flex flex-wrap gap-1.5" aria-label="Componentes que faltan">
@@ -644,9 +639,7 @@
                         @forelse ($kitsComp as $productoId => $items)
                             @php $prod = $items->first()?->producto; @endphp
                             @foreach ($items as $kitItem)
-                                <button type="button"
-                                    wire:click="verDetalleKit({{ $kitItem->id }})"
-                                    class="w-full bg-white border border-gray-200 rounded-lg p-3 hover:border-purple-400 hover:shadow-sm hover:bg-purple-50 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 text-left">
+                                <div class="w-full bg-white border border-gray-200 rounded-lg p-3 text-left">
                                     <div class="flex items-center gap-3">
                                         <div class="min-w-0 flex-1">
                                             <p class="text-sm font-bold text-gray-800 truncate">{{ $prod?->nombre ?? 'Producto' }}</p>
@@ -654,7 +647,7 @@
                                         </div>
                                         <i class="fas fa-chevron-right text-gray-300 text-xs shrink-0"></i>
                                     </div>
-                                </button>
+                                </div>
                             @endforeach
                         @empty
                             <x-almacen.empty-state icon="fa-check-circle" message="Sin kits completados" />
@@ -668,9 +661,7 @@
                         @forelse ($kitsCons as $productoId => $items)
                             @php $prod = $items->first()?->producto; @endphp
                             @foreach ($items as $kitItem)
-                                <button type="button"
-                                    wire:click="verDetalleKit({{ $kitItem->id }})"
-                                    class="w-full bg-white border border-gray-200 rounded-lg p-3 hover:border-red-400 hover:shadow-sm hover:bg-red-50 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 text-left">
+                                <div class="w-full bg-white border border-gray-200 rounded-lg p-3 text-left">
                                     <div class="flex items-center gap-3">
                                         <div class="min-w-0 flex-1">
                                             <p class="text-sm font-bold text-gray-800 truncate">{{ $prod?->nombre ?? 'Producto' }}</p>
@@ -686,7 +677,7 @@
                                         </div>
                                         <i class="fas fa-chevron-right text-gray-300 text-xs shrink-0"></i>
                                     </div>
-                                </button>
+                                </div>
                             @endforeach
                         @empty
                             <x-almacen.empty-state icon="fa-fire" message="Sin kits consumidos" />
