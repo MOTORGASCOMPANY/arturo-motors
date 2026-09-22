@@ -45,30 +45,39 @@
                 </div>
 
                 <div>
+                    @php
+                        $agrupados = $t->detalles->map(fn($d) => [
+                            'nombre' => $d->producto->nombre ?? 'Producto',
+                            'es_serializado' => (bool) $d->item_serializado_id,
+                            'cantidad' => $d->item_serializado_id ? 1 : ($d->cantidad ?? 0),
+                        ])->groupBy('nombre')->map(fn($items, $nombre) => [
+                            'nombre' => $nombre,
+                            'es_serializado' => $items->first()['es_serializado'],
+                            'cantidad' => $items->sum('cantidad'),
+                        ])->values()->take(4);
+                        $totalProductos = $t->detalles->groupBy(fn($d) => $d->producto->nombre ?? 'x')->count();
+                    @endphp
                     <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3">
-                        Contenido del traslado ({{ $t->detalles->count() }} items)
+                        Contenido del traslado ({{ $totalProductos }} producto{{ $totalProductos !== 1 ? 's' : '' }})
                     </p>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        @php $detallesPreview = $t->detalles->take(4); @endphp
-                        @foreach ($detallesPreview as $d)
+                        @foreach ($agrupados as $g)
                             <div class="flex items-center justify-between text-xs bg-gray-50 px-3 py-2 rounded-lg border border-gray-100">
                                 <div class="flex items-center gap-2 overflow-hidden">
-                                    <i class="fas {{ $d->item_serializado_id ? 'fa-barcode text-gray-400' : 'fa-box text-gray-400' }} text-[10px]"></i>
-                                    <span class="truncate font-medium text-gray-700">{{ $d->producto->nombre }}</span>
+                                    <i class="fas {{ $g['es_serializado'] ? 'fa-barcode text-gray-400' : 'fa-box text-gray-400' }} text-[10px]"></i>
+                                    <span class="truncate font-medium text-gray-700">{{ $g['nombre'] }}</span>
                                 </div>
-                                @if ($d->cantidad)
-                                    <span class="text-gray-600 font-bold bg-gray-200/70 px-1.5 py-0.5 rounded border border-gray-200">
-                                        x{{ $d->cantidad }}
-                                    </span>
-                                @endif
+                                <span class="text-gray-600 font-bold bg-gray-200/70 px-1.5 py-0.5 rounded border border-gray-200 tabular-nums">
+                                    ×{{ $g['cantidad'] }}
+                                </span>
                             </div>
                         @endforeach
                     </div>
 
-                    @if($t->detalles->count() > 4)
+                    @if($totalProductos > 4)
                         <button wire:click="verDetalle({{ $t->id }})" class="w-full mt-2 py-1.5 text-xs text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50 rounded font-medium transition text-center">
-                            Ver los {{ $t->detalles->count() - 4 }} productos restantes <i class="fas fa-chevron-right text-[9px] ml-1"></i>
+                            Ver los {{ $totalProductos - 4 }} productos restantes <i class="fas fa-chevron-right text-[9px] ml-1"></i>
                         </button>
                     @endif
                 </div>
@@ -124,32 +133,38 @@
                 </header>
 
                 <div class="flex-1 overflow-y-auto px-5 py-4 space-y-3">
-                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Items enviados ({{ $trasladoSeleccionado->detalles->count() }})</p>
+                    @php
+                        $modalAgrupados = $trasladoSeleccionado->detalles->map(fn($d) => [
+                            'nombre' => $d->producto->nombre ?? 'Producto',
+                            'es_serializado' => (bool) $d->item_serializado_id,
+                            'cantidad' => $d->item_serializado_id ? 1 : ($d->cantidad ?? 0),
+                        ])->groupBy('nombre')->map(fn($items, $nombre) => [
+                            'nombre' => $nombre,
+                            'es_serializado' => $items->first()['es_serializado'],
+                            'cantidad' => $items->sum('cantidad'),
+                        ])->values();
+                        $totalModal = $trasladoSeleccionado->detalles->groupBy(fn($d) => $d->producto->nombre ?? 'x')->count();
+                    @endphp
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Items enviados ({{ $totalModal }} producto{{ $totalModal !== 1 ? 's' : '' }})</p>
 
-                    @forelse($trasladoSeleccionado->detalles as $d)
+                    @forelse($modalAgrupados as $g)
                         <div class="bg-white border border-gray-200 rounded-lg p-3">
                             <div class="flex items-center gap-3">
-                                @if($d->item_serializado_id)
+                                @if($g['es_serializado'])
                                     <div class="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center shrink-0">
                                         <i class="fas fa-barcode text-green-500 text-xs"></i>
-                                    </div>
-                                    <div class="min-w-0 flex-1">
-                                        <p class="text-sm font-bold text-gray-800 truncate">{{ $d->producto->nombre }}</p>
-                                        @if($d->itemSerializado?->serie)
-                                            <p class="text-xs text-gray-500 mt-0.5">Serie: <span class="font-mono font-semibold">{{ $d->itemSerializado->serie }}</span></p>
-                                        @endif
                                     </div>
                                 @else
                                     <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
                                         <i class="fas fa-cubes text-indigo-500 text-xs"></i>
                                     </div>
-                                    <div class="min-w-0 flex-1">
-                                        <p class="text-sm font-bold text-gray-800 truncate">{{ $d->producto->nombre }}</p>
-                                        @if($d->cantidad)
-                                            <p class="text-xs text-gray-500 mt-0.5">Cantidad: <span class="font-bold">{{ $d->cantidad }}</span></p>
-                                        @endif
-                                    </div>
                                 @endif
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-sm font-bold text-gray-800 truncate">{{ $g['nombre'] }}</p>
+                                </div>
+                                <span class="shrink-0 px-2 py-0.5 bg-gray-100 text-gray-700 text-xs font-bold rounded-full tabular-nums">
+                                    ×{{ $g['cantidad'] }}
+                                </span>
                             </div>
                         </div>
                     @empty
