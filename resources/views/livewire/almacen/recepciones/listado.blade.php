@@ -9,7 +9,7 @@
                     </a>
                     <div>
                         <h1 class="text-2xl font-bold text-gray-800">Historial de Recepciones</h1>
-                        <p class="text-sm text-gray-500 mt-1">Kits recibidos del proveedor</p>
+                        <p class="text-sm text-gray-500 mt-1">Kits recibidos</p>
                     </div>
                 </div>
                 <a href="{{ route('almacen.recepciones.crear') }}" 
@@ -21,16 +21,8 @@
             <div class="flex gap-4 mb-6">
                 <input type="text" 
                        wire:model.live="search" 
-                       placeholder="Buscar por proveedor..."
+                       placeholder="Buscar por nombre de kit..."
                        class="flex-1 rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                
-                <select wire:model.live="filtroProveedor" 
-                        class="rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                    <option value="">Todos los proveedores</option>
-                    @foreach($proveedores as $prov)
-                        <option value="{{ $prov }}">{{ $prov }}</option>
-                    @endforeach
-                </select>
             </div>
 
             <div class="overflow-x-auto">
@@ -39,7 +31,6 @@
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kit</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Proveedor</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
                         </tr>
@@ -52,9 +43,6 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                     {{ $recepcion->producto->nombre }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ $recepcion->atributos['proveedor'] ?? '—' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @if($recepcion->estado === 'en_stock')

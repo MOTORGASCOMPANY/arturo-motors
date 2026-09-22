@@ -13,20 +13,12 @@ use Livewire\Component;
 
 class Crear extends Component
 {
-    public ?string $proveedorId = null;
     public ?int $sedeId = null;
     public string $notas = '';
     public array $cantidades = [];
 
     public array $series = []; // [producto_id => [{serie, marca, ...}, ...]]
     public array $produces = []; // [producto_id => produce] — shared across all units of same product
-
-    public array $proveedores = [
-        'MOCAVIN',
-        'AUTO TOP',
-        'UNIGAS',
-        "D'WILLIAMS",
-    ];
 
     public string $seccion = 'elegir';
 
@@ -59,10 +51,6 @@ class Crear extends Component
     public string $editarKitNombre = '';
     public string $editarKitGeneracion = '';
 
-    // Modal nuevo proveedor
-    public bool $modalProveedorAbierto = false;
-    public string $nuevoProveedorNombre = '';
-
     // Productos por cantidad
     public string $subSeccionProductos = '';
     public array $cantidadesCantidad = [];
@@ -90,79 +78,12 @@ class Crear extends Component
 
     public function elegirSeccion(string $seccion): void
     {
-        if (empty($this->proveedorId)) {
-            $this->dispatch('swal-init', tipo: 'warning', titulo: 'Atención', mensaje: 'Seleccioná un proveedor antes de continuar.');
-            return;
-        }
         $this->seccion = $seccion;
     }
 
     public function volverAEleccion(): void
     {
         $this->seccion = 'elegir';
-    }
-
-    // ── Modal nuevo proveedor ──────────────────────────────────
-
-    public function abrirModalProveedor(): void
-    {
-        $this->modalProveedorAbierto = true;
-        $this->nuevoProveedorNombre = '';
-    }
-
-    public function cerrarModalProveedor(): void
-    {
-        $this->modalProveedorAbierto = false;
-        $this->nuevoProveedorNombre = '';
-    }
-
-    public function agregarProveedor(string $nombre): void
-    {
-        $nombre = strtoupper(trim($nombre));
-
-        if ($nombre === '') {
-            $this->dispatch('swal-init', tipo: 'error', titulo: 'Error', mensaje: 'El nombre es obligatorio.');
-            return;
-        }
-
-        if (in_array($nombre, $this->proveedores, true)) {
-            $this->dispatch('swal-init', tipo: 'warning', titulo: 'Duplicado', mensaje: 'Ese proveedor ya existe.');
-            return;
-        }
-
-        $this->proveedores[] = $nombre;
-        $this->proveedorId = $nombre;
-
-        $this->dispatch('swal-init', tipo: 'success', titulo: '¡Listo!', mensaje: "Proveedor \"{$nombre}\" agregado.");
-    }
-
-    public function guardarProveedor(): void
-    {
-        $nombre = strtoupper(trim($this->nuevoProveedorNombre));
-
-        if ($nombre === '') {
-            $this->dispatch('swal-init', tipo: 'error', titulo: 'Error', mensaje: 'El nombre es obligatorio.');
-            return; // modal se mantiene abierto
-        }
-
-        if (in_array($nombre, $this->proveedores, true)) {
-            $this->dispatch('swal-init', tipo: 'warning', titulo: 'Duplicado', mensaje: 'Ese proveedor ya existe.');
-            return; // modal se mantiene abierto
-        }
-
-        try {
-            $this->proveedores[] = $nombre;
-            $this->proveedorId = $nombre;
-
-            // Solo cerramos el modal cuando TODO salió bien
-            $this->modalProveedorAbierto = false;
-            $this->nuevoProveedorNombre = '';
-
-            $this->dispatch('swal-init', tipo: 'success', titulo: '¡Listo!', mensaje: "Proveedor \"{$nombre}\" agregado.");
-        } catch (\Throwable $e) {
-            // Si algo falla, el modal NO se cierra (no tocamos modalProveedorAbierto)
-            $this->avisarError($e, 'swal-init', 'No se pudo agregar el proveedor.');
-        }
     }
 
     // ── Productos por cantidad ─────────────────────────────────
@@ -270,11 +191,6 @@ class Crear extends Component
 
     public function guardarCantidad(): void
     {
-        if (empty($this->proveedorId)) {
-            $this->dispatch('swal-init', tipo: 'warning', titulo: 'Atención', mensaje: 'Seleccioná un proveedor.');
-            return;
-        }
-
         $conCantidad = collect($this->cantidadesCantidad)->filter(fn ($c) => $c > 0)->toArray();
 
         if (empty($conCantidad)) {
@@ -284,16 +200,15 @@ class Crear extends Component
 
         $usuarioId = Auth::id();
         $sedeId = $this->sedeId;
-        $proveedor = $this->proveedorId;
         $totalRegistrado = 0;
 
         try {
-            DB::transaction(function () use ($conCantidad, $usuarioId, $sedeId, $proveedor, &$totalRegistrado) {
+            DB::transaction(function () use ($conCantidad, $usuarioId, $sedeId, &$totalRegistrado) {
                 foreach ($conCantidad as $productoId => $cantidad) {
                     $producto = Producto::find($productoId);
                     if (!$producto) continue;
 
-                    MovimientoStock::registrar($producto, 'entrada', $cantidad, null, $usuarioId, "Recepción de proveedor: {$proveedor}", $sedeId);
+                    MovimientoStock::registrar($producto, 'entrada', $cantidad, null, $usuarioId, 'Entrada por recepción', $sedeId);
                     $totalRegistrado += $cantidad;
                 }
             });
@@ -810,11 +725,6 @@ class Crear extends Component
 
     public function guardar(): void
     {
-        if (empty($this->proveedorId)) {
-            $this->dispatch('swal-kit', tipo: 'warning', titulo: 'Atención', mensaje: 'Seleccioná un proveedor.');
-            return;
-        }
-
         $kitsARecibir = collect($this->cantidades)->filter(fn ($c) => $c > 0)->toArray();
 
         if (empty($kitsARecibir)) {
@@ -937,7 +847,6 @@ class Crear extends Component
     private function crearKitsConComponentes(): void
     {
         $sedeId = $this->sedeId;
-        $proveedorNombre = $this->proveedorId;
         $usuarioId = Auth::id();
         $kitProduce = trim($this->kitProduce);
 
@@ -948,7 +857,7 @@ class Crear extends Component
             $kitItem = ItemSerializado::create([
                 'producto_id' => $kit->id,
                 'serie' => null,
-                'atributos' => ['proveedor' => $proveedorNombre, 'recepcion_fecha' => now()->toDateString()],
+                'atributos' => ['recepcion_fecha' => now()->toDateString()],
                 'estado' => 'en_stock',
                 'sede_id' => $sedeId,
             ]);
@@ -968,7 +877,6 @@ class Crear extends Component
                         'fecha' => now()->toDateString(),
                         'serie_registrada_por' => $usuarioId,
                         'serie_registrada_en' => now()->toDateTimeString(),
-                        'proveedor' => $proveedorNombre,
                         'recepcion_fecha' => now()->toDateString(),
                     ];
 
@@ -1014,18 +922,13 @@ class Crear extends Component
             }
         }
 
-        MovimientoStock::registrar($kit, 'entrada', $this->modalKitCantidad, null, $usuarioId, "Recepción de proveedor: {$proveedorNombre}", $sedeId);
+        MovimientoStock::registrar($kit, 'entrada', $this->modalKitCantidad, null, $usuarioId, 'Entrada por recepción', $sedeId);
     }
 
     // ── Guardar productos individuales (serializados) ──────────
 
     public function guardarProductos(): void
     {
-        if (empty($this->proveedorId)) {
-            $this->dispatch('swal-init', tipo: 'warning', titulo: 'Atención', mensaje: 'Seleccioná un proveedor.');
-            return;
-        }
-
         $conCantidad = collect($this->cantidades)->filter(fn ($c) => $c > 0)->toArray();
 
         if (empty($conCantidad)) {
@@ -1066,11 +969,10 @@ class Crear extends Component
 
         $usuarioId = Auth::id();
         $sedeId = $this->sedeId;
-        $proveedor = $this->proveedorId;
         $totalRegistrado = 0;
 
         try {
-            DB::transaction(function () use ($conCantidad, $usuarioId, $sedeId, $proveedor, &$totalRegistrado) {
+            DB::transaction(function () use ($conCantidad, $usuarioId, $sedeId, &$totalRegistrado) {
                 foreach ($conCantidad as $productoId => $cantidad) {
                     $producto = Producto::find($productoId);
                     if (!$producto) continue;
@@ -1086,7 +988,6 @@ class Crear extends Component
                         $data = $seriesProducto[$i] ?? [];
 
                         $atributos = [
-                            'proveedor' => $proveedor,
                             'recepcion_fecha' => now()->toDateString(),
                             'registrado_por' => $usuarioId,
                         ];
@@ -1115,7 +1016,7 @@ class Crear extends Component
                         ]);
                     }
 
-                    MovimientoStock::registrar($producto, 'entrada', $cantidad, null, $usuarioId, "Recepción de proveedor: {$proveedor}", $sedeId);
+                    MovimientoStock::registrar($producto, 'entrada', $cantidad, null, $usuarioId, 'Entrada por recepción', $sedeId);
                     $totalRegistrado += $cantidad;
                 }
             });

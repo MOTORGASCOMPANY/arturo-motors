@@ -124,25 +124,7 @@ window.recepcionSwal = window.recepcionSwal || (function () {
     };
 
     const elegir = async ($wire, destino) => {
-        if (!$wire.proveedorId) {
-            return alerta({ tipo: 'warning', titulo: 'Falta el proveedor', mensaje: 'Selecciona un proveedor para continuar. Si no aparece, agrégalo con el botón +.' });
-        }
         await $wire.elegirSeccion(destino);
-    };
-
-    const nuevoProveedor = async ($wire) => {
-        const r = await Swal.fire({
-            ...base,
-            title: 'Nuevo proveedor',
-            text: 'Se agregará a la lista de proveedores.',
-            input: 'text',
-            inputPlaceholder: 'Nombre del proveedor',
-            inputAttributes: { maxlength: 100, autocomplete: 'off' },
-            showCancelButton: true,
-            confirmButtonText: 'Agregar',
-            inputValidator: (v) => (!v || !v.trim() ? 'Escribe el nombre del proveedor' : undefined),
-        });
-        if (r.isConfirmed) await $wire.agregarProveedor(r.value.trim());
     };
 
     const editarKit = async ($wire, ds) => {
@@ -212,6 +194,6 @@ window.recepcionSwal = window.recepcionSwal || (function () {
 
     return {
         alerta, confirmar, desdeServidor, accionConfirmada, validarYLlamar, registrarComponenteNuevo,
-        elegir, nuevoProveedor, editarKit, eliminarKit, quitarComponente, cancelarComponentes,
+        elegir, editarKit, eliminarKit, quitarComponente, cancelarComponentes,
     };
 })();

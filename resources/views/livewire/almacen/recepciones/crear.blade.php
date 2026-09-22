@@ -303,34 +303,17 @@
                 </div>
 
             {{-- ═══════════════════════════════════════════════════════
-                 PASO 1 — ELEGIR proveedor, sede y qué registrar
+                 PASO 1 — ELEGIR sede y qué registrar
                  ═══════════════════════════════════════════════════════ --}}
             @elseif ($seccion === 'elegir')
                 <div class="space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Proveedor *</label>
-                            <div class="flex gap-2">
-                                <select wire:model="proveedorId" class="flex-1 rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                    <option value="">Seleccionar proveedor...</option>
-                                    @foreach ($this->proveedores as $proveedor)
-                                        <option value="{{ $proveedor }}">{{ $proveedor }}</option>
-                                    @endforeach
-                                </select>
-                                <button type="button" x-on:click="recepcionSwal.nuevoProveedor($wire)"
-                                    class="shrink-0 w-10 h-10 rounded-lg bg-indigo-100 hover:bg-indigo-200 text-indigo-600 flex items-center justify-center transition font-bold text-lg" title="Agregar proveedor">
-                                    +
-                                </button>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Sede destino</label>
-                            <select wire:model="sedeId" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                @foreach (\App\Models\Sede::activas()->get() as $sede)
-                                    <option value="{{ $sede->id }}">{{ $sede->nombre }}</option>
-                                @endforeach
-                            </select>
-                        </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Sede destino</label>
+                        <select wire:model="sedeId" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            @foreach (\App\Models\Sede::activas()->get() as $sede)
+                                <option value="{{ $sede->id }}">{{ $sede->nombre }}</option>
+                            @endforeach
+                        </select>
                     </div>
 
                     <div>
@@ -368,7 +351,7 @@
             @elseif ($seccion === 'kits')
                 <div>
                     <x-almacen.info-banner icon="fa-box" color="indigo"
-                        :title="'Registrando <strong>Kits</strong> — Proveedor: <strong>' . $proveedorId . '</strong>'"
+                        :title="'Registrando <strong>Kits</strong>'"
                         action-label="Cambiar" action-method="volverAEleccion" />
 
                     <div class="mb-6">
@@ -475,7 +458,7 @@
                             data-metodo="guardar"
                             data-total="{{ $this->totalKits }}"
                             data-titulo="¿Continuar con {{ $this->totalKits }} kit(s)?"
-                            data-texto="Proveedor: {{ $proveedorId }}. Después registrarás los componentes y series de cada kit."
+                            data-texto="Después registrarás los componentes y series de cada kit."
                             data-aviso="Selecciona la cantidad de al menos un kit para continuar."
                             x-on:click="recepcionSwal.accionConfirmada($wire, $el.dataset)"
                             class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
@@ -496,7 +479,7 @@
                 @if ($subSeccionProductos === '')
                     <div>
                         <x-almacen.info-banner icon="fa-microchip" color="indigo"
-                            :title="'Registrando <strong>Productos</strong> — Proveedor: <strong>' . $proveedorId . '</strong>'"
+                            :title="'Registrando <strong>Productos</strong>'"
                             action-label="Cambiar" action-method="volverAEleccion" />
 
                         <label class="block text-sm font-bold text-gray-700 mb-3">¿Qué tipo de producto vas a recibir?</label>
@@ -528,7 +511,7 @@
                 @elseif ($subSeccionProductos === 'serializados')
                     <div>
                         <x-almacen.info-banner icon="fa-barcode" color="indigo"
-                            :title="'Registrando <strong>Productos serializados</strong> — Proveedor: <strong>' . $proveedorId . '</strong>'"
+                            :title="'Registrando <strong>Productos serializados</strong>'"
                             action-label="Volver" action-method="volverAProductos" />
 
                         <div id="zona-series" class="space-y-5">
@@ -638,7 +621,7 @@
                                 data-total="{{ $this->totalProductos }}"
                                 data-contenedor="zona-series"
                                 data-titulo="¿Recibir {{ $this->totalProductos }} producto(s)?"
-                                data-texto="Proveedor: {{ $proveedorId }}. Se registrarán con las series capturadas."
+                                data-texto="Se registrarán con las series capturadas."
                                 data-aviso="Indica la cantidad de al menos un producto para continuar."
                                 x-on:click="recepcionSwal.accionConfirmada($wire, $el.dataset)"
                                 class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
@@ -654,7 +637,7 @@
                 @elseif ($subSeccionProductos === 'cantidad')
                     <div>
                         <x-almacen.info-banner icon="fa-cubes" color="amber"
-                            :title="'Registrando <strong>Productos por cantidad</strong> — Proveedor: <strong>' . $proveedorId . '</strong>'"
+                            :title="'Registrando <strong>Productos por cantidad</strong>'"
                             action-label="Volver" action-method="volverAProductos" />
 
                         <div class="flex items-center justify-between mb-4">
@@ -750,7 +733,7 @@
                                 data-metodo="guardarCantidad"
                                 data-total="{{ $this->totalCantidad }}"
                                 data-titulo="¿Recibir {{ $this->totalCantidad }} unidad(es)?"
-                                data-texto="Proveedor: {{ $proveedorId }}. Se sumarán al stock de la sede."
+                                data-texto="Se sumarán al stock de la sede."
                                 data-aviso="Indica la cantidad de al menos un producto para continuar."
                                 x-on:click="recepcionSwal.accionConfirmada($wire, $el.dataset)"
                                 class="px-6 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition disabled:opacity-50 disabled:cursor-not-allowed">

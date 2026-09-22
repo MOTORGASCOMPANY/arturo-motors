@@ -11,14 +11,6 @@ class Listado extends Component
     use WithPagination;
 
     public string $search = '';
-    public string $filtroProveedor = '';
-
-    public array $proveedores = [
-        'MOCAVIN',
-        'AUTO TOP',
-        'UNIGAS',
-        "D'WILLIAMS",
-    ];
 
     public function updatingSearch()
     {
@@ -30,10 +22,7 @@ class Listado extends Component
         return ItemSerializado::with('producto.categoria')
             ->whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true))
             ->when($this->search, function ($q) {
-                $q->whereJsonContains('atributos->proveedor', $this->search);
-            })
-            ->when($this->filtroProveedor, function ($q) {
-                $q->whereJsonContains('atributos->proveedor', $this->filtroProveedor);
+                $q->whereHas('producto', fn ($p) => $p->where('nombre', 'like', "%{$this->search}%"));
             })
             ->orderByDesc('created_at')
             ->paginate(15);
