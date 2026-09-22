@@ -181,40 +181,27 @@ class AsignarEquipos extends Component
 
     // ═══════════════════════════════════════════════
     // REPUESTOS VARIOS (solo items POR CANTIDAD - es_serializado=false)
-    // EXCLUYE los que son componentes de CUALQUIER kit (consistente con almacén)
+    // MUESTRA stock suelto real de ProductoStockSede (incluye componentes de kits sueltos)
     // ═══════════════════════════════════════════════
 
     public function getProductosRepuestoProperty()
     {
         $sedeId = $this->sedePrincipalId();
 
-        // IDs de productos que son componentes de CUALQUIER kit (para excluirlos)
-        // Consistente con Almacen\Productos\Listado::getListadoInventarioProperty()
-        $componentesDeCualquierKit = DB::table('kit_componentes')
-            ->join('productos', 'producto_componente_id', '=', 'productos.id')
-            ->join('categorias_almacen', 'productos.categoria_id', '=', 'categorias_almacen.id')
-            ->where('categorias_almacen.es_serializado', false) // solo los de cantidad
-            ->pluck('producto_componente_id')
-            ->toArray();
-
         // SOLO items POR CANTIDAD (es_serializado=false, no kits)
-        // Y que NO sean componentes de NINGÚN kit
-        $query = Producto::whereHas('categoria', fn ($q) => $q->where('es_serializado', false)->where('es_kit', false))
+        // CON stock en ProductoStockSede (stock suelto real, no asignado a kits)
+        return Producto::whereHas('categoria', fn ($q) => $q->where('es_serializado', false)->where('es_kit', false))
             ->whereHas('stockPorSede', fn ($q) => $q->where('sede_id', $sedeId)->where('cantidad', '>', 0))
-            ->with(['stockPorSede' => fn ($q) => $q->where('sede_id', $sedeId)->where('cantidad', '>', 0)]);
-
-        if (!empty($componentesDeCualquierKit)) {
-            $query->whereNotIn('id', $componentesDeCualquierKit);
-        }
-
-        return $query->get()
+            ->with(['stockPorSede' => fn ($q) => $q->where('sede_id', $sedeId)->where('cantidad', '>', 0)])
+            ->get()
             ->map(function ($p) use ($sedeId) {
-                $stock = $p->stockPorSede->where('sede_id', $sedeId)->sum('cantidad');
+                // Stock suelto REAL (de ProductoStockSede, no de ItemSerializado)
+                $stockSuelto = $p->stockPorSede->where('sede_id', $sedeId)->sum('cantidad');
                 return (object) [
                     'producto_id' => $p->id,
                     'producto' => $p,
                     'tipo' => 'cantidad',
-                    'cantidad_disponible' => $stock,
+                    'cantidad_disponible' => $stockSuelto,
                 ];
             })
             ->filter(fn ($p) => $p->cantidad_disponible > 0)
@@ -235,10 +222,14 @@ class AsignarEquipos extends Component
         }
 
         $sedeId = $this->sedePrincipalId();
-        $disponible = $producto->stockEnSede($sedeId);
+
+        // Para productos por CANTIDAD (es_serializado=false), validar contra ProductoStockSede
+        $disponible = $producto->stockPorSede()
+            ->where('sede_id', $sedeId)
+            ->sum('cantidad');
 
         if ($this->cantidadRepuesto > $disponible) {
-            $this->addError('cantidadRepuesto', "Solo hay {$disponible} en stock.");
+            $this->addError('cantidadRepuesto', "Solo hay {$disponible} sueltos en stock.");
             return;
         }
 

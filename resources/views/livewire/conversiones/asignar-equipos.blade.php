@@ -204,11 +204,11 @@
         </div>
         </div>
 
-        <div class="pt-2">
+        <div class="pt-2 flex justify-center">
             <x-button wire:click="confirmarEntrega"
                       wire:loading.attr="disabled"
                       wire:target="confirmarEntrega"
-                      class="w-full justify-center py-3 text-sm font-semibold">
+                      class="w-auto max-w-md justify-center py-3 text-sm font-semibold">
                 <span wire:loading.remove wire:target="confirmarEntrega">
                     <i class="fas fa-check-circle mr-2"></i>Confirmar asignación
                 </span>
