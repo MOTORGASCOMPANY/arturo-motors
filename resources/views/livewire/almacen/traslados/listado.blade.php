@@ -98,75 +98,78 @@
     </div>
 
     @if($mostrarDetalle && $trasladoSeleccionado)
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4" x-data>
-            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" wire:click="cerrarDetalle"></div>
+        <div class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center sm:p-4" role="dialog" aria-modal="true" x-data>
+            <div class="fixed inset-0 bg-gray-900/60" wire:click="cerrarDetalle"></div>
 
-            <div class="relative bg-white rounded-2xl shadow-2xl border border-gray-200 w-full max-w-md overflow-hidden">
+            <div class="relative flex w-full max-w-xl max-h-[92vh] flex-col overflow-hidden rounded-t-2xl sm:rounded-xl bg-white shadow-2xl border border-gray-200"
+                 wire:click.away="cerrarDetalle">
 
-                <div class="px-6 py-5 bg-gray-900 text-white">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-lg font-bold">→ {{ $trasladoSeleccionado->sedeDestino->nombre }}</p>
-                            <p class="text-xs text-gray-300 mt-0.5">{{ $trasladoSeleccionado->created_at->format('d/m/Y H:i') }} — {{ $trasladoSeleccionado->enviadoPor->name }}</p>
-                        </div>
-                        <button wire:click="cerrarDetalle" class="text-gray-400 hover:text-white transition">
-                            <i class="fas fa-times text-lg"></i>
-                        </button>
+                <header class="flex items-center gap-3 px-5 py-4 border-b border-gray-200">
+                    <div class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0">
+                        <i class="fas fa-truck text-indigo-600"></i>
                     </div>
-                </div>
-
-                <div class="px-6 py-3 border-b border-gray-100">
+                    <div class="min-w-0 flex-1">
+                        <h3 class="text-base font-bold text-gray-800 truncate">→ {{ $trasladoSeleccionado->sedeDestino->nombre }}</h3>
+                        <p class="text-sm text-gray-500 mt-0.5">{{ $trasladoSeleccionado->created_at->format('d/m/Y H:i') }} — {{ $trasladoSeleccionado->enviadoPor->name }}</p>
+                    </div>
                     @if($trasladoSeleccionado->es_kit_completo)
-                        <span class="inline-flex items-center gap-1 px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full">
-                            <i class="fas fa-check-circle"></i> Kit completo
+                        <span class="shrink-0 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full">
+                            <i class="fas fa-check-circle mr-0.5"></i> Completo
                         </span>
                     @else
-                        <span class="inline-flex items-center gap-1 px-3 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded-full">
-                            <i class="fas fa-exclamation-triangle"></i> Kit incompleto
+                        <span class="shrink-0 px-2 py-0.5 bg-amber-100 text-amber-700 text-xs font-bold rounded-full">
+                            <i class="fas fa-exclamation-triangle mr-0.5"></i> Incompleto
                         </span>
                     @endif
-                </div>
+                    <button type="button" wire:click="cerrarDetalle" aria-label="Cerrar"
+                        class="w-9 h-9 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </header>
 
-                <div class="px-6 py-4 max-h-64 overflow-y-auto">
-                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Items enviados</p>
-                    <div class="space-y-2">
-                        @foreach($trasladoSeleccionado->detalles as $d)
-                            <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
+                <div class="flex-1 overflow-y-auto px-5 py-4 space-y-3">
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Items enviados ({{ $trasladoSeleccionado->detalles->count() }})</p>
+
+                    @forelse($trasladoSeleccionado->detalles as $d)
+                        <div class="bg-white border border-gray-200 rounded-lg p-3">
+                            <div class="flex items-center gap-3">
                                 @if($d->item_serializado_id)
-                                    <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
-                                        <i class="fas fa-box text-emerald-600 text-xs"></i>
+                                    <div class="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center shrink-0">
+                                        <i class="fas fa-barcode text-green-500 text-xs"></i>
                                     </div>
-                                    <div class="flex-1 min-w-0">
-                                        <p class="text-sm font-semibold text-gray-800">{{ $d->producto->nombre }}</p>
-                                        <p class="text-xs text-gray-500">Serie: {{ $d->itemSerializado->serie ?? 'Sin serie' }}</p>
+                                    <div class="min-w-0 flex-1">
+                                        <p class="text-sm font-bold text-gray-800 truncate">{{ $d->producto->nombre }}</p>
+                                        <p class="text-xs text-gray-500 mt-0.5">Serie: <span class="font-mono font-semibold">{{ $d->itemSerializado->serie ?? 'Sin serie' }}</span></p>
                                     </div>
                                 @else
-                                    <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                                        <i class="fas fa-cubes text-blue-600 text-xs"></i>
+                                    <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
+                                        <i class="fas fa-cubes text-indigo-500 text-xs"></i>
                                     </div>
-                                    <div class="flex-1 min-w-0">
-                                        <p class="text-sm font-semibold text-gray-800">{{ $d->producto->nombre }}</p>
-                                        <p class="text-xs text-gray-500">Cantidad: {{ $d->cantidad }}</p>
+                                    <div class="min-w-0 flex-1">
+                                        <p class="text-sm font-bold text-gray-800 truncate">{{ $d->producto->nombre }}</p>
+                                        <p class="text-xs text-gray-500 mt-0.5">Cantidad: <span class="font-bold">{{ $d->cantidad }}</span></p>
                                     </div>
                                 @endif
                             </div>
-                        @endforeach
-                    </div>
+                        </div>
+                    @empty
+                        <x-almacen.empty-state icon="fa-truck" message="Sin items en este traslado" />
+                    @endforelse
+
+                    @if($trasladoSeleccionado->observaciones)
+                        <div class="mt-2 bg-amber-50/50 border border-amber-100 p-2.5 rounded-lg text-xs text-amber-800 flex gap-2 items-start">
+                            <i class="fas fa-comment-alt mt-0.5 opacity-60"></i>
+                            <span class="italic leading-relaxed">{{ $trasladoSeleccionado->observaciones }}</span>
+                        </div>
+                    @endif
                 </div>
 
-                @if($trasladoSeleccionado->observaciones)
-                    <div class="px-6 py-3 border-t border-gray-100 bg-gray-50">
-                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Observaciones</p>
-                        <p class="text-xs text-gray-600 italic">{{ $trasladoSeleccionado->observaciones }}</p>
-                    </div>
-                @endif
-
-                <div class="px-6 py-4 border-t border-gray-100">
-                    <button wire:click="cerrarDetalle" type="button"
-                        class="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition font-medium text-sm">
+                <footer class="flex items-center gap-3 px-5 py-3 border-t border-gray-200 bg-gray-50">
+                    <button type="button" wire:click="cerrarDetalle"
+                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
                         Cerrar
                     </button>
-                </div>
+                </footer>
             </div>
         </div>
     @endif
