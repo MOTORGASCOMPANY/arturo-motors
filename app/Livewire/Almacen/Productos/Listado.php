@@ -26,8 +26,11 @@ class Listado extends Component
     public ?string $filtroEstado = null;
     public string $busquedaInventario = '';
 
-    public ?int $detalleProductoId = null;
-    public ?string $tipoDetalle = null;
+
+
+    public string $nivelInventario = 'dashboard';
+    public ?string $filtroTipoInventario = null;
+    public ?int $kitSeleccionadoId = null;
 
     public bool $modalCompletarKitAbierto = false;
     public int $completarKitItemId = 0;
@@ -77,16 +80,30 @@ class Listado extends Component
     {
     }
 
-    public function verDetalle(int $productoId, string $tipo = 'sellado'): void
+    public function verListadoInventario(string $tipo): void
     {
-        $this->detalleProductoId = $this->detalleProductoId === $productoId ? null : $productoId;
-        $this->tipoDetalle = $this->detalleProductoId ? $tipo : null;
+        $this->nivelInventario = 'listado';
+        $this->filtroTipoInventario = $tipo;
+        $this->kitSeleccionadoId = null;
     }
 
-    public function cerrarDetalle(): void
+    public function verDetalleKit(int $kitId): void
     {
-        $this->detalleProductoId = null;
-        $this->tipoDetalle = null;
+        $this->nivelInventario = 'detalle';
+        $this->kitSeleccionadoId = $kitId;
+    }
+
+    public function volverListado(): void
+    {
+        $this->nivelInventario = 'listado';
+        $this->kitSeleccionadoId = null;
+    }
+
+    public function volverDashboard(): void
+    {
+        $this->nivelInventario = 'dashboard';
+        $this->filtroTipoInventario = null;
+        $this->kitSeleccionadoId = null;
     }
 
     public function abrirCompletarKit(int $kitItemId): void
@@ -318,6 +335,151 @@ class Listado extends Component
         unset($comp);
     }
 
+    public function getListadoInventarioProperty()
+    {
+        $sedeId = $this->filtroSedeId;
+        $tipo = $this->filtroTipoInventario;
+
+        if (!$tipo) return collect();
+
+        $estadoMap = [
+            'sellado' => 'en_stock',
+            'incompleto' => 'abierto',
+            'completado' => 'completado',
+            'consumido' => 'consumido',
+        ];
+
+        if (isset($estadoMap[$tipo])) {
+            return ItemSerializado::with(['producto.categoria', 'sede', 'serviceOrder.cliente', 'serviceOrder.tecnico', 'piezasEnKit.producto'])
+                ->whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true))
+                ->where('estado', $estadoMap[$tipo])
+                ->when($sedeId, fn ($q) => $q->where('sede_id', $sedeId))
+                ->when(
+                    $this->busquedaInventario,
+                    fn ($q) => $q->whereHas('producto', fn ($p) => $p->where('nombre', 'like', "%{$this->busquedaInventario}%"))
+                )
+                ->orderByDesc('created_at')
+                ->get();
+        }
+
+        if ($tipo === 'sueltosSerializados') {
+            return ItemSerializado::with(['producto.categoria', 'sede'])
+                ->whereHas('producto.categoria', fn ($q) => $q->where('es_kit', false)->where('es_serializado', true))
+                ->whereNull('kit_padre_id')
+                ->where('estado', 'en_stock')
+                ->when($sedeId, fn ($q) => $q->where('sede_id', $sedeId))
+                ->when(
+                    $this->busquedaInventario,
+                    fn ($q) => $q->whereHas('producto', fn ($p) => $p->where('nombre', 'like', "%{$this->busquedaInventario}%"))
+                )
+                ->orderByDesc('created_at')
+                ->get();
+        }
+
+        if ($tipo === 'sueltosCantidad') {
+            return ProductoStockSede::with(['producto.categoria', 'sede'])
+                ->whereHas('producto.categoria', fn ($q) => $q->where('es_serializado', false)->where('es_kit', false))
+                ->whereNotIn('producto_id', DB::table('kit_componentes')->select('producto_componente_id'))
+                ->when($sedeId, fn ($q) => $q->where('sede_id', $sedeId))
+                ->when(
+                    $this->busquedaInventario,
+                    fn ($q) => $q->whereHas('producto', fn ($p) => $p->where('nombre', 'like', "%{$this->busquedaInventario}%"))
+                )
+                ->where('cantidad', '>', 0)
+                ->get();
+        }
+
+        return collect();
+    }
+
+    public function getListadoInventarioTituloProperty(): string
+    {
+        return match($this->filtroTipoInventario) {
+            'sellado' => 'Kits sellados',
+            'incompleto' => 'Kits incompletos',
+            'completado' => 'Kits completados',
+            'consumido' => 'Kits consumidos',
+            'sueltosSerializados' => 'Piezas sueltas con serie',
+            'sueltosCantidad' => 'Piezas sueltas por cantidad',
+            default => 'Inventario',
+        };
+    }
+
+    public function getListadoInventarioIconoProperty(): string
+    {
+        return match($this->filtroTipoInventario) {
+            'sellado' => 'fa-box',
+            'incompleto' => 'fa-box-open',
+            'completado' => 'fa-check-circle',
+            'consumido' => 'fa-fire',
+            'sueltosSerializados' => 'fa-barcode',
+            'sueltosCantidad' => 'fa-cubes',
+            default => 'fa-boxes-stacked',
+        };
+    }
+
+    public function getListadoInventarioColorProperty(): string
+    {
+        return match($this->filtroTipoInventario) {
+            'sellado' => 'amber',
+            'incompleto' => 'orange',
+            'completado' => 'purple',
+            'consumido' => 'red',
+            'sueltosSerializados' => 'green',
+            'sueltosCantidad' => 'indigo',
+            default => 'gray',
+        };
+    }
+
+    public function getKitDetalleProperty()
+    {
+        if (!$this->kitSeleccionadoId) return null;
+
+        $kit = ItemSerializado::with([
+            'producto.categoria',
+            'sede',
+            'serviceOrder.cliente',
+            'serviceOrder.vehiculo',
+            'serviceOrder.tecnico',
+            'vehiculoInstalado',
+            'piezasEnKit.producto.categoria',
+            'piezasEnKit.sede',
+        ])->find($this->kitSeleccionadoId);
+
+        if (!$kit) return null;
+
+        $receta = DB::table('kit_componentes')
+            ->join('productos', 'producto_componente_id', '=', 'productos.id')
+            ->join('categorias_almacen', 'productos.categoria_id', '=', 'categorias_almacen.id')
+            ->where('producto_kit_id', $kit->producto_id)
+            ->select(
+                'productos.id as producto_id',
+                'productos.nombre',
+                'categorias_almacen.es_serializado',
+                'kit_componentes.cantidad_esperada as cantidad'
+            )
+            ->get();
+
+        $piezasActuales = $kit->piezasEnKit->pluck('producto_id')->countBy()->toArray();
+
+        $componentes = $receta->map(function ($r) use ($piezasActuales) {
+            $presente = $piezasActuales[$r->producto_id] ?? 0;
+            return [
+                'nombre' => $r->nombre,
+                'es_serializado' => (bool) $r->es_serializado,
+                'cantidad_esperada' => $r->cantidad,
+                'presente' => $presente,
+                'completo' => $presente >= $r->cantidad,
+            ];
+        });
+
+        $kit->recetaDetalles = $componentes;
+        $kit->totalEsperado = $receta->sum('cantidad');
+        $kit->totalPresente = $kit->piezasEnKit->count();
+
+        return $kit;
+    }
+
     public function getResumenInventarioProperty()
     {
         $sedeId = $this->filtroSedeId;
@@ -411,54 +573,6 @@ class Listado extends Component
         ];
     }
 
-    public function getDetallesInventarioProperty()
-    {
-        if (!$this->detalleProductoId) {
-            return collect();
-        }
-
-        $query = ItemSerializado::with([
-            'producto',
-            'sede',
-            'serviceOrder.cliente',
-            'serviceOrder.vehiculo',
-            'serviceOrder.tecnico',
-            'vehiculoInstalado',
-            'piezasEnKit.producto',
-            'piezasEnKit.serviceOrder.cliente',
-            'piezasEnKit.vehiculoInstalado',
-        ])
-            ->where('producto_id', $this->detalleProductoId)
-            ->when(
-                $this->filtroSedeId,
-                fn ($q) => $q->where('sede_id', $this->filtroSedeId)
-            )
-            ->orderByDesc('created_at');
-
-        match ($this->tipoDetalle) {
-            'sellado' => $query->where('estado', 'en_stock'),
-            'incompleto' => $query->where('estado', 'abierto'),
-            'consumido' => $query->where('estado', 'consumido'),
-            'sueltosSerializados' => $query->where('estado', 'en_stock')->whereNull('kit_padre_id'),
-            default => null,
-        };
-
-        return $query->get();
-    }
-
-    public function getSueltosCantidadDetalleProperty()
-    {
-        if ($this->tipoDetalle !== 'sueltosCantidad' || !$this->detalleProductoId) {
-            return collect();
-        }
-
-        return ProductoStockSede::with(['producto', 'sede'])
-            ->where('producto_id', $this->detalleProductoId)
-            ->when($this->filtroSedeId, fn ($q) => $q->where('sede_id', $this->filtroSedeId))
-            ->where('cantidad', '>', 0)
-            ->get();
-    }
-
     public function getKitsProperty()
     {
         $sedeId = $this->filtroSedeId;
@@ -479,6 +593,7 @@ class Listado extends Component
         return [
             'sellados' => $kits->where('estado', 'en_stock')->groupBy('producto_id'),
             'incompletos' => $kits->where('estado', 'abierto')->groupBy('producto_id'),
+            'completados' => $kits->where('estado', 'completado')->groupBy('producto_id'),
             'consumidos' => $kits->where('estado', 'consumido')->groupBy('producto_id'),
         ];
     }
@@ -569,8 +684,12 @@ class Listado extends Component
             'categorias' => CategoriaAlmacen::orderBy('nombre')->get(),
             'sedes' => Sede::activas()->get(),
             'resumenInventario' => $this->resumenInventario,
-            'detallesInventario' => $this->detallesInventario,
             'kits' => $this->kits,
+            'listadoInventario' => $this->listadoInventario,
+            'listadoInventarioTitulo' => $this->listadoInventarioTitulo,
+            'listadoInventarioIcono' => $this->listadoInventarioIcono,
+            'listadoInventarioColor' => $this->listadoInventarioColor,
+            'kitDetalle' => $this->kitDetalle,
         ]);
     }
 }

@@ -82,250 +82,453 @@
         </div>
 
         @if ($vistaActual === 'inventario')
-            @php
-                $inv  = $resumenInventario ?? [];
-                $c    = $inv['conteos'] ?? [];
-                $sellados     = $inv['kitsSellados']       ?? collect();
-                $incompletos  = $inv['kitsIncompletos']    ?? collect();
-                $completados  = $inv['kitsCompletados']    ?? collect();
-                $consumidos   = $inv['kitsConsumidos']     ?? collect();
-                $sueltosS     = $inv['sueltosSerializados']?? collect();
-                $sueltosC     = $inv['sueltosCantidad']    ?? collect();
+            {{-- ═══ NIVEL 0: DASHBOARD ═══ --}}
+            @if ($nivelInventario === 'dashboard')
+                @php
+                    $inv  = $resumenInventario ?? [];
+                    $c    = $inv['conteos'] ?? [];
+                    $sellados     = $inv['kitsSellados']       ?? collect();
+                    $incompletos  = $inv['kitsIncompletos']    ?? collect();
+                    $completados  = $inv['kitsCompletados']    ?? collect();
+                    $consumidos   = $inv['kitsConsumidos']     ?? collect();
+                    $sueltosS     = $inv['sueltosSerializados']?? collect();
+                    $sueltosC     = $inv['sueltosCantidad']    ?? collect();
 
-                $stats = [
-                    ['tipo' => 'sellado',              'label' => 'Sellados',             'hint' => 'En stock',         'valor' => $c['sellados'] ?? 0,             'icono' => 'fa-box',          'color' => 'text-amber-600',  'icono_color' => 'text-amber-500',  'hover' => 'hover:bg-amber-50'],
-                    ['tipo' => 'incompleto',           'label' => 'Incompletos',          'hint' => 'Abiertos',         'valor' => $c['incompletos'] ?? 0,          'icono' => 'fa-box-open',     'color' => 'text-orange-600', 'icono_color' => 'text-orange-500', 'hover' => 'hover:bg-orange-50'],
-                    ['tipo' => 'completado',           'label' => 'Completados',          'hint' => 'Kits completados', 'valor' => $c['completados'] ?? 0,          'icono' => 'fa-check-circle', 'color' => 'text-purple-600', 'icono_color' => 'text-purple-500', 'hover' => 'hover:bg-purple-50'],
-                    ['tipo' => 'consumido',            'label' => 'Consumidos',           'hint' => 'En órdenes',       'valor' => $c['consumidos'] ?? 0,           'icono' => 'fa-fire',         'color' => 'text-red-600',    'icono_color' => 'text-red-500',    'hover' => 'hover:bg-red-50'],
-                    ['tipo' => 'sueltosSerializados',  'label' => 'Sueltos con serie',    'hint' => 'Tipos de producto','valor' => $c['sueltosSerializados'] ?? 0,  'icono' => 'fa-barcode',      'color' => 'text-green-600',  'icono_color' => 'text-green-500',  'hover' => 'hover:bg-green-50'],
-                    ['tipo' => 'sueltosCantidad',      'label' => 'Sueltos por cantidad', 'hint' => 'Tipos de producto','valor' => $c['sueltosCantidadTipos'] ?? 0, 'icono' => 'fa-cubes',        'color' => 'text-indigo-600', 'icono_color' => 'text-indigo-500', 'hover' => 'hover:bg-indigo-50'],
-                ];
+                    $stats = [
+                        ['tipo' => 'sellado',              'label' => 'Sellados',             'hint' => 'En stock',         'valor' => $c['sellados'] ?? 0,             'icono' => 'fa-box',          'color' => 'text-amber-600',  'icono_color' => 'text-amber-500',  'hover' => 'hover:bg-amber-50'],
+                        ['tipo' => 'incompleto',           'label' => 'Incompletos',          'hint' => 'Abiertos',         'valor' => $c['incompletos'] ?? 0,          'icono' => 'fa-box-open',     'color' => 'text-orange-600', 'icono_color' => 'text-orange-500', 'hover' => 'hover:bg-orange-50'],
+                        ['tipo' => 'completado',           'label' => 'Completados',          'hint' => 'Kits completados', 'valor' => $c['completados'] ?? 0,          'icono' => 'fa-check-circle', 'color' => 'text-purple-600', 'icono_color' => 'text-purple-500', 'hover' => 'hover:bg-purple-50'],
+                        ['tipo' => 'consumido',            'label' => 'Consumidos',           'hint' => 'En órdenes',       'valor' => $c['consumidos'] ?? 0,           'icono' => 'fa-fire',         'color' => 'text-red-600',    'icono_color' => 'text-red-500',    'hover' => 'hover:bg-red-50'],
+                        ['tipo' => 'sueltosSerializados',  'label' => 'Sueltos con serie',    'hint' => 'Tipos de producto','valor' => $c['sueltosSerializados'] ?? 0,  'icono' => 'fa-barcode',      'color' => 'text-green-600',  'icono_color' => 'text-green-500',  'hover' => 'hover:bg-green-50'],
+                        ['tipo' => 'sueltosCantidad',      'label' => 'Sueltos por cantidad', 'hint' => 'Tipos de producto','valor' => $c['sueltosCantidadTipos'] ?? 0, 'icono' => 'fa-cubes',        'color' => 'text-indigo-600', 'icono_color' => 'text-indigo-500', 'hover' => 'hover:bg-indigo-50'],
+                    ];
+                @endphp
 
-                $paneles = [
-                    ['titulo' => 'Kits sellados',    'icono' => 'fa-box',          'texto' => 'text-amber-500',  'caja' => 'bg-amber-50',  'badge' => 'bg-amber-100 text-amber-700',   'hover' => 'hover:bg-amber-50',  'items' => $sellados],
-                    ['titulo' => 'Kits completados', 'icono' => 'fa-check-circle', 'texto' => 'text-purple-500', 'caja' => 'bg-purple-50', 'badge' => 'bg-purple-100 text-purple-700', 'hover' => 'hover:bg-purple-50', 'items' => $completados],
-                    ['titulo' => 'Kits consumidos',  'icono' => 'fa-fire',         'texto' => 'text-red-500',    'caja' => 'bg-red-50',    'badge' => 'bg-red-100 text-red-700',       'hover' => 'hover:bg-red-50',    'items' => $consumidos],
-                ];
-            @endphp
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-px bg-gray-200 rounded-xl border border-gray-200 overflow-hidden">
+                    @foreach ($stats as $st)
+                        <button type="button" wire:click="verListadoInventario('{{ $st['tipo'] }}')"
+                            class="bg-white p-3.5 text-left transition-colors {{ $st['hover'] }} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500">
+                            <span class="flex items-center gap-2 text-sm font-medium text-gray-600">
+                                <i class="fas {{ $st['icono'] }} {{ $st['icono_color'] }}"></i>
+                                {{ $st['label'] }}
+                            </span>
+                            <p class="text-3xl font-black {{ $st['color'] }} mt-1 leading-none tabular-nums">{{ $st['valor'] }}</p>
+                            <span class="text-xs text-gray-400 mt-1 block">{{ $st['hint'] }}</span>
+                        </button>
+                    @endforeach
+                </div>
 
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-px bg-gray-200 rounded-xl border border-gray-200 overflow-hidden">
-                @foreach ($stats as $st)
-                    <button type="button" wire:click="verDetalle(0, '{{ $st['tipo'] }}')"
-                        class="bg-white p-3.5 text-left transition-colors {{ $st['hover'] }} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500">
-                        <span class="flex items-center gap-2 text-sm font-medium text-gray-600">
-                            <i class="fas {{ $st['icono'] }} {{ $st['icono_color'] }}"></i>
-                            {{ $st['label'] }}
-                        </span>
-                        <p class="text-3xl font-black {{ $st['color'] }} mt-1 leading-none tabular-nums">{{ $st['valor'] }}</p>
-                        <span class="text-xs text-gray-400 mt-1 block">{{ $st['hint'] }}</span>
-                    </button>
-                @endforeach
-            </div>
-
-            @if ($incompletos->isNotEmpty())
-                <section class="bg-white rounded-xl border border-orange-200 overflow-hidden">
-                    <x-almacen.section-header
-                        icon="fa-box-open"
-                        color="orange"
-                        title="Kits incompletos"
-                        :count="$incompletos->flatten()->count()"
-                        hint="Necesitan piezas para quedar completos"
-                    />
-                    <ul class="grid grid-cols-1 md:grid-cols-2 gap-px bg-gray-100 max-h-80 overflow-y-auto">
-                        @foreach ($incompletos as $productoId => $items)
-                            @php $prod = $items->first()?->producto; @endphp
-                            @foreach ($items as $kitItem)
-                                <x-almacen.kit-item
-                                    :nombre="$prod?->nombre ?? 'Producto'"
-                                    :sede="$kitItem->sede?->nombre ?? '—'"
-                                    :id="$kitItem->id"
-                                    icon="fa-box-open"
-                                    icon-bg="bg-orange-50"
-                                    icon-color="text-orange-500"
-                                    action-route="abrirCompletarKit"
-                                    :action-id="$kitItem->id"
-                                    action-label="Completar"
-                                />
+                @if ($incompletos->isNotEmpty())
+                    <section class="bg-white rounded-xl border border-orange-200 overflow-hidden">
+                        <x-almacen.section-header icon="fa-box-open" color="orange" title="Kits incompletos" :count="$incompletos->flatten()->count()" hint="Necesitan piezas para quedar completos" />
+                        <ul class="grid grid-cols-1 md:grid-cols-2 gap-px bg-gray-100 max-h-80 overflow-y-auto">
+                            @foreach ($incompletos as $productoId => $items)
+                                @php $prod = $items->first()?->producto; @endphp
+                                @foreach ($items as $kitItem)
+                                    <x-almacen.kit-item
+                                        :nombre="$prod?->nombre ?? 'Producto'"
+                                        :sede="$kitItem->sede?->nombre ?? '—'"
+                                        :id="$kitItem->id"
+                                        icon="fa-box-open"
+                                        icon-bg="bg-orange-50"
+                                        icon-color="text-orange-500"
+                                        action-route="abrirCompletarKit"
+                                        :action-id="$kitItem->id"
+                                        action-label="Completar"
+                                    />
+                                @endforeach
                             @endforeach
-                        @endforeach
-                    </ul>
-                </section>
-            @endif
+                        </ul>
+                    </section>
+                @endif
 
-            @if ($sellados->isNotEmpty() || $completados->isNotEmpty() || $consumidos->isNotEmpty())
-                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-start">
-                    @foreach ($paneles as $panel)
-                        @if ($panel['items']->isNotEmpty())
-                            <section class="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                                <x-almacen.section-header
-                                    :icon="$panel['icono']"
-                                    color="gray"
-                                    :title="$panel['titulo']"
-                                    :count="$panel['items']->flatten()->count()"
-                                />
-                                <ul class="divide-y divide-gray-100 max-h-72 overflow-y-auto" x-data>
-                                    @foreach ($panel['items'] as $productoId => $items)
+                @if ($sellados->isNotEmpty())
+                    <section class="bg-white rounded-xl border border-amber-200 overflow-hidden">
+                        <x-almacen.section-header icon="fa-box" color="amber" title="Kits sellados" :count="$sellados->flatten()->count()" />
+                        <ul class="divide-y divide-gray-100 max-h-72 overflow-y-auto">
+                            @foreach ($sellados as $productoId => $items)
+                                @php $prod = $items->first()?->producto; @endphp
+                                <li>
+                                    <button type="button" wire:click="verListadoInventario('sellado')"
+                                        class="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-amber-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500">
+                                        <div class="w-9 h-9 rounded-lg bg-amber-50 flex items-center justify-center shrink-0"><i class="fas fa-box text-amber-500 text-sm"></i></div>
+                                        <div class="min-w-0 flex-1">
+                                            <p class="text-sm font-bold text-gray-800 truncate">{{ $prod?->nombre ?? 'Producto' }}</p>
+                                            <p class="text-xs text-gray-500">{{ $items->first()?->sede?->nombre ?? '—' }}</p>
+                                        </div>
+                                        <span class="px-2 py-0.5 bg-amber-100 text-amber-700 text-xs font-bold rounded-full tabular-nums">{{ $items->count() }}</span>
+                                    </button>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </section>
+                @endif
+
+                @if ($completados->isNotEmpty())
+                    <section class="bg-white rounded-xl border border-purple-200 overflow-hidden">
+                        <x-almacen.section-header icon="fa-check-circle" color="purple" title="Kits completados" :count="$completados->flatten()->count()" />
+                        <ul class="divide-y divide-gray-100 max-h-72 overflow-y-auto">
+                            @foreach ($completados as $productoId => $items)
+                                @php $prod = $items->first()?->producto; @endphp
+                                <li>
+                                    <button type="button" wire:click="verListadoInventario('completado')"
+                                        class="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-purple-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500">
+                                        <div class="w-9 h-9 rounded-lg bg-purple-50 flex items-center justify-center shrink-0"><i class="fas fa-check-circle text-purple-500 text-sm"></i></div>
+                                        <div class="min-w-0 flex-1">
+                                            <p class="text-sm font-bold text-gray-800 truncate">{{ $prod?->nombre ?? 'Producto' }}</p>
+                                            <p class="text-xs text-gray-500">{{ $items->first()?->sede?->nombre ?? '—' }}</p>
+                                        </div>
+                                        <span class="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs font-bold rounded-full tabular-nums">{{ $items->count() }}</span>
+                                    </button>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </section>
+                @endif
+
+                @if ($consumidos->isNotEmpty())
+                    <section class="bg-white rounded-xl border border-red-200 overflow-hidden">
+                        <x-almacen.section-header icon="fa-fire" color="red" title="Kits consumidos" :count="$consumidos->flatten()->count()" />
+                        <ul class="divide-y divide-gray-100 max-h-72 overflow-y-auto">
+                            @foreach ($consumidos as $productoId => $items)
+                                @php $prod = $items->first()?->producto; @endphp
+                                <li>
+                                    <button type="button" wire:click="verListadoInventario('consumido')"
+                                        class="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500">
+                                        <div class="w-9 h-9 rounded-lg bg-red-50 flex items-center justify-center shrink-0"><i class="fas fa-fire text-red-500 text-sm"></i></div>
+                                        <div class="min-w-0 flex-1">
+                                            <p class="text-sm font-bold text-gray-800 truncate">{{ $prod?->nombre ?? 'Producto' }}</p>
+                                            <p class="text-xs text-gray-500">{{ $items->first()?->sede?->nombre ?? '—' }}</p>
+                                        </div>
+                                        <span class="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-bold rounded-full tabular-nums">{{ $items->count() }}</span>
+                                    </button>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </section>
+                @endif
+
+                @if ($sueltosS->isNotEmpty() || $sueltosC->isNotEmpty())
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+                        @if ($sueltosS->isNotEmpty())
+                            <section class="bg-white rounded-xl border border-green-200 overflow-hidden">
+                                <x-almacen.section-header icon="fa-barcode" color="green" title="Piezas sueltas con serie" :count="$sueltosS->flatten()->count()" />
+                                <ul class="divide-y divide-gray-100 max-h-72 overflow-y-auto">
+                                    @foreach ($sueltosS as $productoId => $items)
                                         @php $prod = $items->first()?->producto; @endphp
                                         <li>
-                                            <button type="button"
-                                                @click="$dispatch('ver-componentes-kit', { productoId: {{ $productoId }} })"
-                                                class="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors {{ $panel['hover'] }} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500">
-                                                <div class="w-9 h-9 rounded-lg {{ $panel['caja'] }} flex items-center justify-center shrink-0">
-                                                    <i class="fas {{ $panel['icono'] }} {{ $panel['texto'] }} text-sm"></i>
-                                                </div>
+                                            <button type="button" wire:click="verListadoInventario('sueltosSerializados')"
+                                                class="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-green-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500">
+                                                <div class="w-9 h-9 rounded-lg bg-green-50 flex items-center justify-center shrink-0"><i class="fas fa-barcode text-green-500 text-sm"></i></div>
                                                 <div class="min-w-0 flex-1">
                                                     <p class="text-sm font-bold text-gray-800 truncate">{{ $prod?->nombre ?? 'Producto' }}</p>
                                                     <p class="text-xs text-gray-500">{{ $items->first()?->sede?->nombre ?? '—' }}</p>
                                                 </div>
-                                                <span class="px-2 py-0.5 {{ $panel['badge'] }} text-xs font-bold rounded-full tabular-nums">
-                                                    {{ $items->count() }}
-                                                </span>
+                                                <span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-bold rounded-full tabular-nums">{{ $items->count() }}</span>
                                             </button>
                                         </li>
                                     @endforeach
                                 </ul>
                             </section>
                         @endif
-                    @endforeach
-                </div>
-            @endif
 
-            @if ($sueltosS->isNotEmpty() || $sueltosC->isNotEmpty())
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
-                    @if ($sueltosS->isNotEmpty())
-                        <section class="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                            <x-almacen.section-header icon="fa-barcode" color="green" title="Piezas sueltas con serie" :count="$sueltosS->flatten()->count()" />
-                            <ul class="divide-y divide-gray-100 max-h-72 overflow-y-auto">
-                                @foreach ($sueltosS as $productoId => $items)
-                                    @php $prod = $items->first()?->producto; @endphp
-                                    <li>
-                                        <button type="button"
-                                            wire:click="verDetalle({{ $productoId }}, 'sueltosSerializados')"
-                                            class="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-green-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500">
-                                            <div class="w-9 h-9 rounded-lg bg-green-50 flex items-center justify-center shrink-0">
-                                                <i class="fas fa-barcode text-green-500 text-sm"></i>
-                                            </div>
+                        @if ($sueltosC->isNotEmpty())
+                            <section class="bg-white rounded-xl border border-indigo-200 overflow-hidden">
+                                <x-almacen.section-header icon="fa-cubes" color="indigo" title="Piezas sueltas por cantidad" :count="$sueltosC->count()" />
+                                <ul class="divide-y divide-gray-100 max-h-72 overflow-y-auto">
+                                    @foreach ($sueltosC as $stock)
+                                        <li class="flex items-center gap-3 px-4 py-2.5">
+                                            <div class="w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0"><i class="fas fa-cubes text-indigo-500 text-sm"></i></div>
                                             <div class="min-w-0 flex-1">
-                                                <p class="text-sm font-bold text-gray-800 truncate">{{ $prod?->nombre ?? 'Producto' }}</p>
-                                                <p class="text-xs text-gray-500">{{ $items->first()?->sede?->nombre ?? '—' }}</p>
+                                                <p class="text-sm font-bold text-gray-800 truncate">{{ $stock->producto?->nombre ?? 'Producto' }}</p>
+                                                <p class="text-xs text-gray-500">{{ $stock->sede?->nombre ?? '—' }}</p>
                                             </div>
-                                            <span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-bold rounded-full tabular-nums">{{ $items->count() }}</span>
-                                        </button>
-                                    </li>
-                                @endforeach
-                            </ul>
-                        </section>
-                    @endif
+                                            <span class="px-2 py-0.5 bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full tabular-nums">{{ $stock->cantidad }}</span>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </section>
+                        @endif
+                    </div>
+                @endif
 
-                    @if ($sueltosC->isNotEmpty())
-                        <section class="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                            <x-almacen.section-header icon="fa-cubes" color="indigo" title="Piezas sueltas por cantidad" :count="$sueltosC->count()" />
-                            <ul class="divide-y divide-gray-100 max-h-72 overflow-y-auto">
-                                @foreach ($sueltosC as $stock)
-                                    <li class="flex items-center gap-3 px-4 py-2.5">
-                                        <div class="w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
-                                            <i class="fas fa-cubes text-indigo-500 text-sm"></i>
-                                        </div>
-                                        <div class="min-w-0 flex-1">
-                                            <p class="text-sm font-bold text-gray-800 truncate">{{ $stock->producto?->nombre ?? 'Producto' }}</p>
-                                            <p class="text-xs text-gray-500">{{ $stock->sede?->nombre ?? '—' }}</p>
-                                        </div>
-                                        <span class="px-2 py-0.5 bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full tabular-nums">{{ $stock->cantidad }}</span>
-                                    </li>
-                                @endforeach
-                            </ul>
-                        </section>
-                    @endif
-                </div>
+                @if ($sellados->isEmpty() && $incompletos->isEmpty() && $completados->isEmpty() && $consumidos->isEmpty() && $sueltosS->isEmpty() && $sueltosC->isEmpty())
+                    <x-almacen.empty-state icon="fa-boxes-stacked" message="No hay inventario para mostrar" />
+                @endif
             @endif
 
-            @if ($sellados->isEmpty() && $incompletos->isEmpty() && $completados->isEmpty() && $consumidos->isEmpty() && $sueltosS->isEmpty() && $sueltosC->isEmpty())
-                <x-almacen.empty-state icon="fa-boxes-stacked" message="No hay inventario para mostrar" />
-            @endif
+            @php
+                $colorMap = ['sellado' => 'amber', 'incompleto' => 'orange', 'completado' => 'purple', 'consumido' => 'red', 'sueltosSerializados' => 'green', 'sueltosCantidad' => 'indigo'];
+                $tipoColor = $colorMap[$filtroTipoInventario] ?? 'gray';
+            @endphp
 
-            @if ($detalleProductoId)
+            {{-- ═══ NIVEL 1: LISTADO POR TIPO (MODAL) ═══ --}}
+            @if ($nivelInventario === 'listado')
                 @php
-                    $itemsDetalle = match($tipoDetalle) {
-                        'sellado'              => ($inv['kitsSellados'] ?? collect())->get($detalleProductoId),
-                        'incompleto'           => ($inv['kitsIncompletos'] ?? collect())->get($detalleProductoId),
-                        'consumido'            => ($inv['kitsConsumidos'] ?? collect())->get($detalleProductoId),
-                        'sueltosSerializados'  => ($inv['sueltosSerializados'] ?? collect())->get($detalleProductoId),
-                        default => null,
-                    };
-                    $prodDetalle = $itemsDetalle?->first()?->producto;
-                    $faltan = 0;
-                    $totalItem = 0;
-                    $esCompletable = false;
+                    $listaItems = $listadoInventario ?? collect();
+                    $esKits = !in_array($filtroTipoInventario, ['sueltosSerializados', 'sueltosCantidad']);
                 @endphp
+
                 <div class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center sm:p-4" role="dialog" aria-modal="true">
-                    <div class="fixed inset-0 bg-gray-900/60" wire:click="cerrarDetalle"></div>
+                    <div class="fixed inset-0 bg-gray-900/60" wire:click="volverDashboard"></div>
                     <div class="relative flex w-full max-w-xl max-h-[92vh] flex-col overflow-hidden rounded-t-2xl sm:rounded-xl bg-white shadow-2xl border border-gray-200"
-                         wire:click.away="cerrarDetalle">
+                         wire:click.away="volverDashboard">
+
                         <header class="flex items-center gap-3 px-5 py-4 border-b border-gray-200">
-                            <div class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0">
-                                <i class="fas fa-box text-indigo-600"></i>
+                            <button type="button" wire:click="volverDashboard"
+                                class="w-9 h-9 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
+                                <i class="fas fa-arrow-left"></i>
+                            </button>
+                            <div class="w-10 h-10 rounded-lg bg-{{ $tipoColor }}-100 flex items-center justify-center shrink-0">
+                                <i class="fas {{ $listadoInventarioIcono }} text-{{ $tipoColor }}-600"></i>
                             </div>
                             <div class="min-w-0 flex-1">
-                                <h3 class="text-base font-bold text-gray-800 truncate">{{ $prodDetalle?->nombre ?? 'Detalle' }}</h3>
-                                <p class="text-sm text-gray-500 mt-0.5">{{ $itemsDetalle?->count() ?? 0 }} items</p>
+                                <h3 class="text-base font-bold text-gray-800">{{ $listadoInventarioTitulo }}</h3>
+                                <p class="text-sm text-gray-500 mt-0.5">{{ $listaItems->count() }} item{{ $listaItems->count() !== 1 ? 's' : '' }}</p>
                             </div>
-                            <button type="button" wire:click="cerrarDetalle" aria-label="Cerrar"
+                            <button type="button" wire:click="volverDashboard" aria-label="Cerrar"
                                 class="w-9 h-9 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
                                 <i class="fas fa-times"></i>
                             </button>
                         </header>
-                        <div class="flex-1 overflow-y-auto px-5 py-4 space-y-3">
-                            @if ($itemsDetalle)
-                                @foreach ($itemsDetalle as $item)
-                                    @php
-                                        $estadoMeta = match($item->estado) {
-                                            'en_stock'   => ['label' => 'Sellado',    'chip' => 'bg-green-100 text-green-700',   'icon' => 'fa-box text-green-600'],
-                                            'abierto'    => ['label' => 'Abierto',    'chip' => 'bg-orange-100 text-orange-700', 'icon' => 'fa-folder-open text-orange-600'],
-                                            'completado' => ['label' => 'Completado', 'chip' => 'bg-purple-100 text-purple-700', 'icon' => 'fa-check-circle text-purple-600'],
-                                            'asignado'   => ['label' => 'Asignado',   'chip' => 'bg-yellow-100 text-yellow-700', 'icon' => 'fa-user-check text-yellow-600'],
-                                            'instalado'  => ['label' => 'Instalado',  'chip' => 'bg-blue-100 text-blue-700',     'icon' => 'fa-wrench text-blue-600'],
-                                            'consumido'  => ['label' => 'Consumido',  'chip' => 'bg-red-100 text-red-700',       'icon' => 'fa-fire text-red-600'],
-                                            default      => ['label' => $item->estado, 'chip' => 'bg-gray-100 text-gray-600',     'icon' => 'fa-circle text-gray-500'],
-                                        };
-                                    @endphp
-                                    <div class="bg-white border border-gray-200 rounded-lg p-3">
-                                        <div class="flex items-center gap-3">
-                                            <div class="min-w-0 flex-1">
-                                                <div class="flex flex-wrap items-center gap-1.5">
-                                                    <span class="px-2 py-0.5 {{ $estadoMeta['chip'] }} text-xs font-bold rounded-full">{{ $estadoMeta['label'] }}</span>
-                                                    @if ($item->serie)
-                                                        <span class="font-mono text-sm font-bold text-gray-800">#{{ $item->serie }}</span>
+
+                        <div class="flex-1 overflow-y-auto px-1 py-1">
+                            @forelse ($listaItems as $item)
+                                @php
+                                    $estadoMeta = match($item->estado ?? null) {
+                                        'en_stock'   => ['label' => 'Sellado',    'chip' => 'bg-green-100 text-green-700'],
+                                        'abierto'    => ['label' => 'Abierto',    'chip' => 'bg-orange-100 text-orange-700'],
+                                        'completado' => ['label' => 'Completado', 'chip' => 'bg-purple-100 text-purple-700'],
+                                        'asignado'   => ['label' => 'Asignado',   'chip' => 'bg-yellow-100 text-yellow-700'],
+                                        'consumido'  => ['label' => 'Consumido',  'chip' => 'bg-red-100 text-red-700'],
+                                        default      => ['label' => $item->estado ?? '—', 'chip' => 'bg-gray-100 text-gray-600'],
+                                    };
+                                @endphp
+                                @if ($esKits)
+                                    <button type="button" wire:click="verDetalleKit({{ $item->id }})"
+                                        class="w-full flex items-center gap-3 px-5 py-3 text-left border-b border-gray-100 transition-colors hover:bg-{{ $tipoColor }}-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500">
+                                        <div class="min-w-0 flex-1">
+                                            <div class="flex flex-wrap items-center gap-1.5">
+                                                <span class="text-sm font-bold text-gray-800">{{ $item->producto?->nombre ?? 'Kit' }}</span>
+                                                <span class="px-2 py-0.5 {{ $estadoMeta['chip'] }} text-[10px] font-bold rounded-full">{{ $estadoMeta['label'] }}</span>
+                                            </div>
+                                            <p class="text-xs text-gray-500 mt-0.5">
+                                                {{ $item->sede?->nombre ?? '—' }}
+                                                <span class="text-gray-300 mx-1">|</span> #{{ $item->id }}
+                                                @if ($item->serie)
+                                                    <span class="text-gray-300 mx-1">|</span>
+                                                    <span class="font-mono">{{ $item->serie }}</span>
+                                                @endif
+                                                @if ($item->serviceOrder)
+                                                    <span class="text-gray-300 mx-1">|</span>
+                                                    <i class="fas fa-file-alt text-gray-400 mr-0.5"></i>Orden #{{ $item->service_order_id }}
+                                                @endif
+                                            </p>
+                                        </div>
+                                        <i class="fas fa-chevron-right text-gray-300 text-xs shrink-0"></i>
+                                    </button>
+                                @else
+                                    <div class="flex items-center gap-3 px-5 py-3 border-b border-gray-100">
+                                        <div class="min-w-0 flex-1">
+                                            <p class="text-sm font-bold text-gray-800">{{ $item->producto?->nombre ?? 'Producto' }}</p>
+                                            <p class="text-xs text-gray-500 mt-0.5">{{ $item->sede?->nombre ?? '—' }}</p>
+                                        </div>
+                                        @if ($filtroTipoInventario === 'sueltosSerializados' && $item->serie)
+                                            <span class="font-mono text-xs text-gray-600 bg-gray-100 px-2 py-0.5 rounded">{{ $item->serie }}</span>
+                                        @endif
+                                        @if ($filtroTipoInventario === 'sueltosCantidad')
+                                            <span class="text-xs font-bold text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded tabular-nums">×{{ $item->cantidad }}</span>
+                                        @endif
+                                    </div>
+                                @endif
+                            @empty
+                                <div class="px-5 py-12 text-center">
+                                    <i class="fas {{ $listadoInventarioIcono }} text-3xl text-gray-300 mb-2"></i>
+                                    <p class="text-gray-400 text-sm">Sin items para mostrar</p>
+                                </div>
+                            @endforelse
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            {{-- ═══ NIVEL 2: DETALLE DEL KIT (MODAL) ═══ --}}
+            @if ($nivelInventario === 'detalle' && $kitDetalle)
+                @php
+                    $k = $kitDetalle;
+                    $estadoKit = match($k->estado) {
+                        'en_stock'   => ['label' => 'Sellado',    'chip' => 'bg-green-100 text-green-700',   'icon' => 'fa-box'],
+                        'abierto'    => ['label' => 'Abierto',    'chip' => 'bg-orange-100 text-orange-700', 'icon' => 'fa-folder-open'],
+                        'completado' => ['label' => 'Completado', 'chip' => 'bg-purple-100 text-purple-700', 'icon' => 'fa-check-circle'],
+                        'asignado'   => ['label' => 'Asignado',   'chip' => 'bg-yellow-100 text-yellow-700', 'icon' => 'fa-user-check'],
+                        'consumido'  => ['label' => 'Consumido',  'chip' => 'bg-red-100 text-red-700',       'icon' => 'fa-fire'],
+                        default      => ['label' => $k->estado,   'chip' => 'bg-gray-100 text-gray-600',     'icon' => 'fa-circle'],
+                    };
+                    $pctCompletado = $k->totalEsperado > 0 ? round($k->totalPresente / $k->totalEsperado * 100) : 0;
+                @endphp
+
+                <div class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center sm:p-4" role="dialog" aria-modal="true">
+                    <div class="fixed inset-0 bg-gray-900/60" wire:click="volverListado"></div>
+                    <div class="relative flex w-full max-w-xl max-h-[92vh] flex-col overflow-hidden rounded-t-2xl sm:rounded-xl bg-white shadow-2xl border border-gray-200"
+                         wire:click.away="volverListado">
+
+                        <header class="flex items-center gap-3 px-5 py-4 border-b border-gray-200">
+                            <button type="button" wire:click="volverListado"
+                                class="w-9 h-9 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
+                                <i class="fas fa-arrow-left"></i>
+                            </button>
+                            <div class="w-10 h-10 rounded-lg bg-{{ $tipoColor }}-100 flex items-center justify-center shrink-0">
+                                <i class="fas fa-box text-{{ $tipoColor }}-600"></i>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <h3 class="text-base font-bold text-gray-800 truncate">{{ $k->producto?->nombre ?? 'Kit' }}</h3>
+                                    <span class="px-2 py-0.5 {{ $estadoKit['chip'] }} text-[10px] font-bold rounded-full">{{ $estadoKit['label'] }}</span>
+                                </div>
+                                <p class="text-sm text-gray-500 mt-0.5">
+                                    {{ $k->sede?->nombre ?? '—' }}
+                                    <span class="text-gray-300 mx-1">|</span> #{{ $k->id }}
+                                    @if ($k->serie)
+                                        <span class="text-gray-300 mx-1">|</span>
+                                        <span class="font-mono">{{ $k->serie }}</span>
+                                    @endif
+                                </p>
+                            </div>
+                            <button type="button" wire:click="volverListado" aria-label="Cerrar"
+                                class="w-9 h-9 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </header>
+
+                        <div class="flex-1 overflow-y-auto px-5 py-4 space-y-5">
+
+                            {{-- Progreso --}}
+                            @if ($k->totalEsperado > 0)
+                                <div>
+                                    <div class="flex items-center justify-between text-xs mb-1.5">
+                                        <span class="font-semibold text-gray-600">Componentes</span>
+                                        <span class="font-bold tabular-nums {{ $pctCompletado >= 100 ? 'text-green-600' : 'text-gray-700' }}">{{ $k->totalPresente }}/{{ $k->totalEsperado }}</span>
+                                    </div>
+                                    <div class="h-2 rounded-full bg-gray-100 overflow-hidden">
+                                        <div class="h-full rounded-full transition-all {{ $pctCompletado >= 100 ? 'bg-green-500' : 'bg-indigo-500' }}" style="width: {{ $pctCompletado }}%"></div>
+                                    </div>
+                                </div>
+                            @endif
+
+                            {{-- Receta --}}
+                            @if ($k->recetaDetalles && $k->recetaDetalles->isNotEmpty())
+                                <div>
+                                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Receta del kit</p>
+                                    <div class="space-y-1.5">
+                                        @foreach ($k->recetaDetalles as $r)
+                                            <div class="flex items-center gap-2.5 px-3 py-2 rounded-lg {{ $r['completo'] ? 'bg-green-50 border border-green-200' : 'bg-orange-50 border border-orange-200' }}">
+                                                <i class="fas {{ $r['es_serializado'] ? 'fa-microchip text-indigo-500' : 'fa-cubes text-amber-500' }} text-xs"></i>
+                                                <span class="flex-1 text-sm font-medium text-gray-700">{{ $r['nombre'] }}</span>
+                                                <span class="text-xs font-bold tabular-nums {{ $r['completo'] ? 'text-green-700' : 'text-orange-700' }}">{{ $r['presente'] }}/{{ $r['cantidad_esperada'] }}</span>
+                                                @if ($r['completo'])
+                                                    <i class="fas fa-check text-green-500 text-xs"></i>
+                                                @else
+                                                    <i class="fas fa-exclamation text-orange-500 text-xs"></i>
+                                                @endif
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+
+                            {{-- Piezas asignadas --}}
+                            @if ($k->piezasEnKit && $k->piezasEnKit->isNotEmpty())
+                                <div>
+                                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Piezas asignadas ({{ $k->piezasEnKit->count() }})</p>
+                                    <div class="space-y-1.5">
+                                        @foreach ($k->piezasEnKit as $pieza)
+                                            @php
+                                                $pEstado = match($pieza->estado) {
+                                                    'en_stock' => ['label' => 'En stock', 'chip' => 'bg-green-100 text-green-700'],
+                                                    'reemplazado' => ['label' => 'Asignado', 'chip' => 'bg-blue-100 text-blue-700'],
+                                                    default => ['label' => $pieza->estado, 'chip' => 'bg-gray-100 text-gray-600'],
+                                                };
+                                            @endphp
+                                            <div class="flex items-center gap-2.5 px-3 py-2 bg-gray-50 rounded-lg border border-gray-100">
+                                                <div class="min-w-0 flex-1">
+                                                    <p class="text-sm font-medium text-gray-700">{{ $pieza->producto?->nombre ?? '—' }}</p>
+                                                    @if ($pieza->serie)
+                                                        <p class="text-xs text-gray-500 mt-0.5 font-mono">#{{ $pieza->serie }}</p>
                                                     @endif
                                                 </div>
-                                                @if ($item->serviceOrder)
-                                                    <p class="text-xs text-gray-500 mt-1">
-                                                        <i class="fas fa-file-alt text-gray-400 mr-1"></i>Orden #{{ $item->service_order_id }}
-                                                    </p>
-                                                @endif
+                                                <span class="px-2 py-0.5 {{ $pEstado['chip'] }} text-[10px] font-bold rounded-full">{{ $pEstado['label'] }}</span>
                                             </div>
-                                            <div class="flex items-center gap-1.5 shrink-0">
-                                                @if (in_array($item->estado, ['en_stock', 'abierto']))
-                                                    <button type="button"
-                                                        wire:click="abrirEditarItem({{ $item->id }})"
-                                                        class="px-3 py-1.5 bg-amber-50 text-amber-700 text-xs font-semibold rounded-lg hover:bg-amber-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button>
-                                                @endif
-                                                @if ($item->estado === 'en_stock' && $item->producto->categoria->es_kit)
-                                                    <button type="button"
-                                                        wire:click="abrirCompletarKit({{ $item->id }})"
-                                                        class="px-3 py-1.5 bg-indigo-600 text-white text-xs font-bold rounded-lg hover:bg-indigo-700 transition whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1">
-                                                        <i class="fas fa-plus mr-1"></i> Completar
-                                                    </button>
-                                                @endif
-                                            </div>
-                                        </div>
+                                        @endforeach
                                     </div>
-                                @endforeach
-                            @else
-                                <x-almacen.empty-state icon="fa-box-open" message="Sin items para mostrar" />
+                                </div>
                             @endif
+
+                            {{-- Orden de servicio --}}
+                            @if ($k->serviceOrder)
+                                <div>
+                                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Orden de servicio</p>
+                                    <div class="bg-gray-50 rounded-lg border border-gray-100 px-3 py-2.5 space-y-1">
+                                        <p class="text-sm font-bold text-gray-800">
+                                            <i class="fas fa-file-alt text-gray-400 mr-1"></i>Orden #{{ $k->service_order_id }}
+                                        </p>
+                                        @if ($k->serviceOrder->cliente)
+                                            <p class="text-xs text-gray-500"><i class="fas fa-user text-gray-400 mr-1"></i>{{ $k->serviceOrder->cliente->name }}</p>
+                                        @endif
+                                        @if ($k->serviceOrder->vehiculo)
+                                            <p class="text-xs text-gray-500"><i class="fas fa-car text-gray-400 mr-1"></i>{{ $k->serviceOrder->vehiculo->marca }} {{ $k->serviceOrder->vehiculo->modelo }} — {{ $k->serviceOrder->vehiculo->placa }}</p>
+                                        @endif
+                                        @if ($k->serviceOrder->tecnico)
+                                            <p class="text-xs text-gray-500"><i class="fas fa-wrench text-gray-400 mr-1"></i>{{ $k->serviceOrder->tecnico->name }}</p>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endif
+
+                            {{-- Datos del item --}}
+                            <div>
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Datos del item</p>
+                                <div class="bg-gray-50 rounded-lg border border-gray-100 px-3 py-2.5">
+                                    <div class="grid grid-cols-2 gap-2 text-xs">
+                                        <div>
+                                            <span class="text-gray-400">Creado</span>
+                                            <p class="font-medium text-gray-700">{{ $k->created_at->format('d/m/Y H:i') }}</p>
+                                        </div>
+                                        <div>
+                                            <span class="text-gray-400">Sede</span>
+                                            <p class="font-medium text-gray-700">{{ $k->sede?->nombre ?? '—' }}</p>
+                                        </div>
+                                        @if ($k->atributos)
+                                            @foreach ($k->atributos as $key => $val)
+                                                @if ($val)
+                                                    <div>
+                                                        <span class="text-gray-400">{{ ucfirst(str_replace('_', ' ', $key)) }}</span>
+                                                        <p class="font-medium text-gray-700">{{ $val }}</p>
+                                                    </div>
+                                                @endif
+                                            @endforeach
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
+
+                        <footer class="flex items-center gap-3 px-5 py-3 border-t border-gray-200 bg-gray-50">
+                            @if (in_array($k->estado, ['en_stock', 'abierto']))
+                                <button type="button" wire:click="abrirEditarItem({{ $k->id }})"
+                                    class="px-4 py-2 text-sm font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">
+                                    <i class="fas fa-edit mr-1"></i> Editar
+                                </button>
+                            @endif
+                            @if ($k->estado === 'abierto' && $k->producto->categoria->es_kit)
+                                <div class="ml-auto">
+                                    <button type="button" wire:click="abrirCompletarKit({{ $k->id }})"
+                                        class="px-5 py-2 text-sm font-bold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1">
+                                        <i class="fas fa-plus mr-1"></i> Completar kit
+                                    </button>
+                                </div>
+                            @endif
+                        </footer>
                     </div>
                 </div>
             @endif
