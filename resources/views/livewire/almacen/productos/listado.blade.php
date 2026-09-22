@@ -528,40 +528,6 @@
 
                         </div>
 
-                        @php
-                            // Verificar si hay componentes faltantes y si tienen stock
-                            $tieneFaltantes = $k->recetaDetalles && $k->recetaDetalles->contains(fn($r) => !$r['completo']);
-                            $todosConStock = true;
-                            if ($tieneFaltantes) {
-                                foreach ($k->recetaDetalles as $r) {
-                                    if (!$r['completo'] && $r['presente'] < $r['cantidad_esperada']) {
-                                        if ($r['es_serializado']) {
-                                            // Serializado: verificar items en stock en la misma sede
-                                            $disponibles = \App\Models\ItemSerializado::where('producto_id', \App\Models\Producto::where('nombre', $r['nombre'])->first()?->id ?? 0)
-                                                ->where('estado', 'en_stock')
-                                                ->where('sede_id', $k->sede_id)
-                                                ->whereNull('kit_padre_id')
-                                                ->count();
-                                            if ($disponibles < ($r['cantidad_esperada'] - $r['presente'])) {
-                                                $todosConStock = false;
-                                                break;
-                                            }
-                                        } else {
-                                            // Cantidad: verificar ProductoStockSede
-                                            $stock = \App\Models\ProductoStockSede::where('producto_id', \App\Models\Producto::where('nombre', $r['nombre'])->first()?->id ?? 0)
-                                                ->where('sede_id', $k->sede_id)
-                                                ->where('cantidad', '>', 0)
-                                                ->sum('cantidad');
-                                            if ($stock < ($r['cantidad_esperada'] - $r['presente'])) {
-                                                $todosConStock = false;
-                                                break;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        @endphp
-
                         <footer class="flex items-center gap-3 px-5 py-3 border-t border-gray-200 bg-gray-50">
                             @if (in_array($k->estado, ['en_stock', 'abierto']))
                                 <button type="button" wire:click="abrirEditarItem({{ $k->id }})"
@@ -571,7 +537,7 @@
                             @endif
                             @if ($k->estado === 'abierto' && $k->producto->categoria->es_kit)
                                 <div class="ml-auto">
-                                    @if ($tieneFaltantes && !$todosConStock)
+                                    @if ($k->tieneFaltantes && !$k->todosConStock)
                                         <button type="button" disabled
                                             class="px-5 py-2 text-sm font-bold text-white bg-gray-400 rounded-lg cursor-not-allowed"
                                             title="Faltan componentes y no hay stock disponible">

@@ -513,6 +513,43 @@ class Listado extends Component
         $kit->totalEsperado = $receta->sum('cantidad');
         $kit->totalPresente = $kit->piezasEnKit->count();
 
+        // Verificar si todos los componentes faltantes tienen stock disponible
+        $tieneFaltantes = $componentes->contains(fn($r) => !$r['completo']);
+        $todosConStock = true;
+        
+        if ($tieneFaltantes) {
+            foreach ($componentes as $r) {
+                if (!$r['completo'] && $r['presente'] < $r['cantidad_esperada']) {
+                    $faltan = $r['cantidad_esperada'] - $r['presente'];
+                    $productoId = \App\Models\Producto::where('nombre', $r['nombre'])->first()?->id ?? 0;
+                    
+                    if ($r['es_serializado']) {
+                        $disponibles = \App\Models\ItemSerializado::where('producto_id', $productoId)
+                            ->where('estado', 'en_stock')
+                            ->where('sede_id', $kit->sede_id)
+                            ->whereNull('kit_padre_id')
+                            ->count();
+                        if ($disponibles < $faltan) {
+                            $todosConStock = false;
+                            break;
+                        }
+                    } else {
+                        $stock = \App\Models\ProductoStockSede::where('producto_id', $productoId)
+                            ->where('sede_id', $kit->sede_id)
+                            ->where('cantidad', '>', 0)
+                            ->sum('cantidad');
+                        if ($stock < $faltan) {
+                            $todosConStock = false;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        
+        $kit->tieneFaltantes = $tieneFaltantes;
+        $kit->todosConStock = $todosConStock;
+
         return $kit;
     }
 
