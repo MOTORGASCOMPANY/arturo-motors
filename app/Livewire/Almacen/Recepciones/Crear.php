@@ -909,7 +909,11 @@ class Crear extends Component
                 return;
             }
 
-            $this->dispatch('swal-kit', tipo: 'success', titulo: '¡Recepción registrada!', mensaje: count($this->colaKits) . ' tipo(s) de kit(s) recibido(s).');
+            session()->flash('swal_exito', [
+                'tipo' => 'success',
+                'titulo' => '¡Recepción registrada!',
+                'mensaje' => count($this->colaKits) . ' tipo(s) de kit(s) recibido(s).',
+            ]);
             $this->redirect(route('almacen.recepciones.listado'));
 
         } catch (\Throwable $e) {
@@ -1120,7 +1124,11 @@ class Crear extends Component
                 }
             });
 
-            $this->dispatch('swal-init', tipo: 'success', titulo: '¡Recepción registrada!', mensaje: "{$totalRegistrado} producto(s) recibido(s).");
+            session()->flash('swal_exito', [
+                'tipo' => 'success',
+                'titulo' => '¡Recepción registrada!',
+                'mensaje' => "{$totalRegistrado} producto(s) recibido(s).",
+            ]);
             $this->redirect(route('almacen.recepciones.listado'));
 
         } catch (\Throwable $e) {
