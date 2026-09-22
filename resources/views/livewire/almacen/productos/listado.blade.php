@@ -568,13 +568,32 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 items-start">
 
-                <x-almacen.kit-column
-                    icon="fa-box"
-                    color="amber"
-                    title="Sellados"
-                    empty-message="Sin kits sellados"
-                    :items="$kitsSell"
-                />
+                {{-- Sellados: items individuales (consistente con otras columnas) --}}
+                <section class="bg-white rounded-xl border border-amber-200 overflow-hidden">
+                    <x-almacen.section-header icon="fa-box" color="amber" title="Sellados" :count="$kitsSell->flatten()->count()" />
+                    <div class="bg-gray-50 p-2 space-y-2 max-h-[65vh] overflow-y-auto">
+                        @forelse ($kitsSell as $productoId => $items)
+                            @php $prod = $items->first()?->producto; @endphp
+                            @foreach ($items as $kitItem)
+                                <div class="bg-white border border-gray-200 rounded-lg p-3">
+                                    <div class="flex items-center gap-3">
+                                        <div class="min-w-0 flex-1">
+                                            <p class="text-sm font-bold text-gray-800 truncate">{{ $prod?->nombre ?? 'Producto' }}</p>
+                                            <p class="text-xs text-gray-500">{{ $kitItem->sede?->nombre ?? '—' }} <span class="text-gray-300">|</span> #{{ $kitItem->id }}</p>
+                                        </div>
+                                        <button type="button"
+                                            wire:click="verDetalleKit({{ $kitItem->id }})"
+                                            class="px-3 py-1.5 bg-indigo-100 text-indigo-700 text-xs font-bold rounded-lg hover:bg-indigo-200 transition whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
+                                            <i class="fas fa-eye mr-1"></i> Ver
+                                        </button>
+                                    </div>
+                                </div>
+                            @endforeach
+                        @empty
+                            <x-almacen.empty-state icon="fa-box" message="Sin kits sellados" />
+                        @endforelse
+                    </div>
+                </section>
 
                 <section class="bg-white rounded-xl border border-orange-200 overflow-hidden">
                     <x-almacen.section-header icon="fa-box-open" color="orange" title="Incompletos" :count="$kitsIncomp->flatten()->count()" :highlight="true" />
@@ -876,170 +895,8 @@
                 </footer>
             </div>
         </div>
-    @endif
+@endif
 
-    <div
-        x-data="kitComponentsModal"
-        x-on:ver-componentes-kit.window="abrir(event.detail.productoId)"
-        x-on:keydown.escape.window="abierto = false"
-        x-show="abierto"
-        x-cloak
-        class="fixed inset-0 z-[100]"
-        style="display: none;"
-        role="dialog"
-        aria-modal="true">
-
-        <div class="fixed inset-0 bg-black/50"
-             x-show="abierto"
-             x-transition.opacity
-             x-on:click="abierto = false"></div>
-
-        <aside
-            x-show="abierto"
-            x-transition:enter="transition ease-out duration-200 transform"
-            x-transition:enter-start="translate-x-full"
-            x-transition:enter-end="translate-x-0"
-            x-transition:leave="transition ease-in duration-150 transform"
-            x-transition:leave-start="translate-x-0"
-            x-transition:leave-end="translate-x-full"
-            class="absolute inset-y-0 right-0 flex w-full max-w-xl flex-col bg-white shadow-2xl border-l border-gray-200">
-
-            <header class="flex items-center gap-3 px-5 py-4 border-b border-gray-200">
-                <div class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0">
-                    <i class="fas fa-puzzle-piece text-indigo-600"></i>
-                </div>
-                <div class="min-w-0 flex-1">
-                    <h3 class="text-base font-bold text-gray-800 truncate" x-text="producto?.nombre || 'Kit'"></h3>
-                    <p class="text-sm text-gray-500 mt-0.5" x-text="kits.length + ' kit(s) registrado(s)'"></p>
-                </div>
-                <button type="button" x-on:click="abierto = false" aria-label="Cerrar"
-                    class="w-9 h-9 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
-                    <i class="fas fa-times"></i>
-                </button>
-            </header>
-
-            <div class="flex-1 overflow-y-auto bg-gray-50 px-4 py-4">
-                <template x-if="cargando">
-                    <div class="text-center py-12">
-                        <div class="w-10 h-10 border-4 border-gray-200 border-t-indigo-600 rounded-full animate-spin mx-auto"></div>
-                        <p class="text-gray-500 mt-3 text-sm">Cargando...</p>
-                    </div>
-                </template>
-
-                <template x-if="!cargando">
-                    <div class="space-y-4">
-
-                        <div class="flex flex-wrap gap-1.5" x-show="kits.length > 0">
-                            <template x-for="e in Object.keys(meta)" :key="'res-' + e">
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
-                                      :class="meta[e].chip"
-                                      x-show="kits.filter(k => k.estado === e).length > 0">
-                                    <span class="font-bold tabular-nums" x-text="kits.filter(k => k.estado === e).length"></span>
-                                    <span x-text="meta[e].label"></span>
-                                </span>
-                            </template>
-                        </div>
-
-                        <div x-show="receta.length > 0" class="bg-white rounded-lg border border-gray-200 px-3.5 py-3">
-                            <p class="text-xs font-semibold text-gray-500 mb-2">El kit lleva</p>
-                            <div class="flex flex-wrap gap-1.5">
-                                <template x-for="(r, idx) in receta" :key="'rec-' + idx">
-                                    <span class="inline-flex items-center gap-1.5 text-xs bg-gray-50 px-2.5 py-1 rounded-md border border-gray-200">
-                                        <i class="fas text-[10px]"
-                                           :class="r.es_serializado ? 'fa-microchip text-indigo-500' : 'fa-cubes text-amber-500'"></i>
-                                        <span class="font-medium text-gray-700" x-text="r.nombre"></span>
-                                        <span class="font-bold text-gray-500" x-text="'×' + r.cantidad"></span>
-                                    </span>
-                                </template>
-                            </div>
-                        </div>
-
-                        <div x-show="kits.length > 0" class="space-y-2">
-                            <template x-for="(kit, kitIdx) in kits" :key="'kit-' + kit.id">
-                                <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
-                                    <button type="button"
-                                            x-on:click="kit._open = !kit._open"
-                                            :aria-expanded="kit._open ? 'true' : 'false'"
-                                            class="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500">
-                                        <span class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" :class="info(kit.estado).box">
-                                            <i class="fas text-xs" :class="info(kit.estado).icon"></i>
-                                        </span>
-                                        <span class="flex-1 min-w-0">
-                                            <span class="flex flex-wrap items-center gap-x-2 gap-y-1">
-                                                <span class="text-xs font-bold px-2 py-0.5 rounded-full"
-                                                      :class="info(kit.estado).chip"
-                                                      x-text="info(kit.estado).label"></span>
-                                                <span class="text-xs text-gray-600" x-text="kit.sede"></span>
-                                                <span class="text-xs text-gray-400" x-text="kit.created_at"></span>
-                                            </span>
-                                            <span class="block text-xs text-gray-500 mt-1" x-show="kit.tecnico"
-                                                  x-text="'Técnico: ' + kit.tecnico"></span>
-                                        </span>
-                                        <span class="hidden sm:inline shrink-0 text-xs text-gray-400"
-                                              x-text="[
-                                                  (kit.serializados || []).length ? (kit.serializados.length + ' con serie') : '',
-                                                  (kit.cantidad || []).length ? (kit.cantidad.length + ' generales') : ''
-                                              ].filter(Boolean).join(' · ')"></span>
-                                        <i class="fas text-xs text-gray-400 shrink-0"
-                                           :class="kit._open ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-                                    </button>
-
-                                    <div x-show="kit._open" x-transition class="px-4 py-3 bg-gray-50 border-t border-gray-100 space-y-3">
-
-                                        <div x-show="kit.serializados && kit.serializados.length > 0">
-                                            <p class="text-xs font-semibold text-gray-500 mb-1.5">
-                                                <i class="fas fa-microchip text-indigo-500 mr-1"></i>
-                                                Con serie
-                                                <span class="font-normal text-gray-400" x-text="'(' + (kit.serializados || []).length + ')'"></span>
-                                            </p>
-                                            <div class="space-y-1">
-                                                <template x-for="(s, sIdx) in (kit.serializados || [])" :key="'s-' + kit.id + '-' + sIdx">
-                                                    <div class="flex items-center gap-2 text-xs bg-white px-3 py-2 rounded-lg border border-gray-200">
-                                                        <span class="font-medium text-gray-700" x-text="s.nombre"></span>
-                                                        <span class="font-mono font-bold text-gray-900" x-text="s.serie"></span>
-                                                        <span class="ml-auto px-1.5 py-0.5 rounded font-semibold"
-                                                              :class="info(s.estado).chip"
-                                                              x-text="info(s.estado).label"></span>
-                                                    </div>
-                                                </template>
-                                            </div>
-                                        </div>
-
-                                        <div x-show="kit.cantidad && kit.cantidad.length > 0">
-                                            <p class="text-xs font-semibold text-gray-500 mb-1.5">
-                                                <i class="fas fa-cubes text-amber-500 mr-1"></i>
-                                                Generales
-                                                <span class="font-normal text-gray-400" x-text="'(' + (kit.cantidad || []).length + ')'"></span>
-                                            </p>
-                                            <div class="flex flex-wrap gap-1.5">
-                                                <template x-for="(c, cIdx) in (kit.cantidad || [])" :key="'c-' + kit.id + '-' + cIdx">
-                                                    <span class="inline-flex items-center gap-1.5 text-xs bg-amber-50 border border-amber-200 px-2 py-1 rounded-md">
-                                                        <span class="font-medium text-amber-900" x-text="c.nombre"></span>
-                                                        <span class="font-bold text-amber-700" x-text="'×' + c.cantidad"></span>
-                                                    </span>
-                                                </template>
-                                            </div>
-                                        </div>
-                                        <p class="text-xs text-gray-400 italic"
-                                           x-show="(!kit.serializados || kit.serializados.length === 0) && (!kit.cantidad || kit.cantidad.length === 0)">
-                                            Sin componentes registrados
-                                        </p>
-                                    </div>
-                                </div>
-                            </template>
-                        </div>
-
-                        <div x-show="kits.length === 0 && receta.length === 0" class="text-center py-12">
-                            <i class="fas fa-box-open text-3xl text-gray-300 mb-2"></i>
-                            <p class="text-gray-400 text-sm">Sin kits ni componentes registrados</p>
-                        </div>
-                    </div>
-                </template>
-            </div>
-        </aside>
-    </div>
-
-    <script src="{{ asset('js/components/kit-components-modal.js') }}"></script>
     <script src="{{ asset('js/components/livewire-swal-listener.js') }}"></script>
 
     @if ($modalEditarItemAbierto)
