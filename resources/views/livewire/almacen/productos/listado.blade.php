@@ -529,7 +529,7 @@
                         </div>
 
                         <footer class="flex items-center gap-3 px-5 py-3 border-t border-gray-200 bg-gray-50">
-                            @if (in_array($k->estado, ['en_stock', 'abierto']))
+                            @if ($k->estado === 'abierto')
                                 <button type="button" wire:click="abrirEditarItem({{ $k->id }})"
                                     class="px-4 py-2 text-sm font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">
                                     <i class="fas fa-edit mr-1"></i> Editar
