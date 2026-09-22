@@ -43,6 +43,7 @@ class Listado extends Component
     public bool $modalEditarItemAbierto = false;
     public ?int $editarItemId = null;
     public array $editarItemData = [];
+    public ?array $editarItemKitInfo = null;
 
     public function mount()
     {
@@ -635,7 +636,12 @@ class Listado extends Component
 
     public function abrirEditarItem(int $itemId): void
     {
-        $item = ItemSerializado::with('producto.categoria')->find($itemId);
+        $item = ItemSerializado::with([
+            'producto.categoria',
+            'kitPadre.producto.categoria',
+            'kitPadre.piezasEnKit.producto.categoria',
+        ])->find($itemId);
+        
         if (!$item) return;
 
         $this->editarItemId = $itemId;
@@ -647,6 +653,44 @@ class Listado extends Component
 
         foreach ($campos as $campo) {
             $this->editarItemData[$campo] = $attrs[$campo] ?? '';
+        }
+
+        // Determinar a qué componente de la receta del kit padre pertenece
+        $this->editarItemKitInfo = null;
+        if ($item->kit_padre_id) {
+            $kitPadre = $item->kitPadre;
+            if ($kitPadre) {
+                $receta = \Illuminate\Support\Facades\DB::table('kit_componentes')
+                    ->join('productos', 'producto_componente_id', '=', 'productos.id')
+                    ->join('categorias_almacen', 'productos.categoria_id', '=', 'categorias_almacen.id')
+                    ->where('producto_kit_id', $kitPadre->producto_id)
+                    ->select(
+                        'productos.id as producto_id',
+                        'productos.nombre',
+                        'kit_componentes.cantidad_esperada as cantidad'
+                    )
+                    ->get();
+
+                $piezasActuales = $kitPadre->piezasEnKit->pluck('producto_id')->countBy()->toArray();
+                
+                // Buscar qué componente corresponde a este item
+                foreach ($receta as $r) {
+                    $esperados = $r->cantidad;
+                    $presentes = $piezasActuales[$r->producto_id] ?? 0;
+                    // Si este item es de este producto y aún no se completó la cuota
+                    if ($r->producto_id === $item->producto_id && $presentes <= $esperados) {
+                        $this->editarItemKitInfo = [
+                            'kit_nombre' => $kitPadre->producto?->nombre ?? 'Kit',
+                            'kit_id' => $kitPadre->id,
+                            'kit_serie' => $kitPadre->serie,
+                            'componente_nombre' => $r->nombre,
+                            'componente_esperados' => $esperados,
+                            'componente_presentes' => $presentes,
+                        ];
+                        break;
+                    }
+                }
+            }
         }
 
         $this->modalEditarItemAbierto = true;
@@ -683,6 +727,7 @@ class Listado extends Component
         $this->modalEditarItemAbierto = false;
         $this->editarItemId = null;
         $this->editarItemData = [];
+        $this->editarItemKitInfo = null;
     }
 
     public function render()

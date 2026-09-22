@@ -1039,6 +1039,20 @@
                             {{ $item?->producto?->nombre ?? 'Item' }}
                             @if ($editarItemId) <span class="text-gray-400">#{{ $editarItemId }}</span> @endif
                         </p>
+                        @if ($editarItemKitInfo)
+                            <div class="mt-1.5 pt-1.5 border-t border-gray-100 text-xs">
+                                <p class="text-gray-600">
+                                    <i class="fas fa-puzzle-piece mr-1 text-indigo-500"></i>
+                                    Kit: <span class="font-medium text-gray-800">{{ $editarItemKitInfo['kit_nombre'] }}</span>
+                                    @if ($editarItemKitInfo['kit_serie']) <span class="text-gray-400">#{{ $editarItemKitInfo['kit_serie'] }}</span> @endif
+                                </p>
+                                <p class="text-gray-600 mt-0.5">
+                                    <i class="fas fa-cube mr-1 text-amber-500"></i>
+                                    Componente: <span class="font-medium text-gray-800">{{ $editarItemKitInfo['componente_nombre'] }}</span>
+                                    <span class="text-gray-400 ml-1">({{ $editarItemKitInfo['componente_presentes'] }}/{{ $editarItemKitInfo['componente_esperados'] }})</span>
+                                </p>
+                            </div>
+                        @endif
                     </div>
                     <button type="button" wire:click="cerrarEditarItem" aria-label="Cerrar"
                         class="w-9 h-9 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">
