@@ -415,7 +415,6 @@ class Listado extends Component
         if ($tipo === 'sueltosCantidad') {
             return ProductoStockSede::with(['producto.categoria', 'sede'])
                 ->whereHas('producto.categoria', fn ($q) => $q->where('es_serializado', false)->where('es_kit', false))
-                ->whereNotIn('producto_id', DB::table('kit_componentes')->select('producto_componente_id'))
                 ->when($sedeId, fn ($q) => $q->where('sede_id', $sedeId))
                 ->when(
                     $this->busquedaInventario,
@@ -604,7 +603,6 @@ class Listado extends Component
                 'producto.categoria',
                 fn ($q) => $q->where('es_serializado', false)->where('es_kit', false)
             )
-            ->whereNotIn('producto_id', DB::table('kit_componentes')->select('producto_componente_id'))
             ->when($sedeId, fn ($q) => $q->where('sede_id', $sedeId))
             ->when(
                 $this->busquedaInventario,
