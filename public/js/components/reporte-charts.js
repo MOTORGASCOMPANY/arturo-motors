@@ -1,11 +1,3 @@
-/**
- * reporte-charts — Chart.js rendering for the almacén reporte view.
- *
- * Depends on: Chart.js, SweetAlert2 (for exports)
- *
- * Data must be set before this script loads:
- *   window.reporteData = { sedes, labelsSedes, dataSedes, labelsCategorias, dataCategorias, exportPdfUrl, exportExcelUrl }
- */
 (function () {
     const sedeColors = ['#4f46e5', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
     const categoriaColors = ['#4f46e5', '#0ea5e9', '#10b981', '#f59e0b', '#ec4899', '#64748b'];
@@ -14,7 +6,6 @@
         const d = window.reporteData;
         if (!d) return;
 
-        // Bar chart: Stock por sede
         const ctxSedes = document.getElementById('chartStockSedes');
         const emptySedes = document.getElementById('emptySedes');
         if (ctxSedes) {
@@ -55,7 +46,6 @@
             }
         }
 
-        // Doughnut chart: Stock por categoría
         const ctxCategorias = document.getElementById('chartStockCategorias');
         const emptyCategorias = document.getElementById('emptyCategorias');
         if (ctxCategorias) {
@@ -91,7 +81,6 @@
         }
     }
 
-    // Export functions
     window.exportarPDF = function () {
         const url = window.reporteData?.exportPdfUrl;
         if (!url) return;
@@ -126,7 +115,6 @@
         });
     };
 
-    // Bind to Livewire lifecycle
     document.addEventListener('livewire:navigated', renderCharts);
     document.addEventListener('livewire:updated', renderCharts);
 })();

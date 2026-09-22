@@ -15,30 +15,30 @@ use Livewire\Component;
 
 class Crear extends Component
 {
-    // ── Step 1: Config ──
+    
     public ?int $sedeDestinoId = null;
     public string $observaciones = '';
 
-    // ── Step 2: Selection ──
-    public array $itemsSeleccionados = [];  // [item_serializado_id => true]
-    public array $cantidadSeleccionados = []; // [producto_id => qty]
+    
+    public array $itemsSeleccionados = [];  
+    public array $cantidadSeleccionados = []; 
 
-    // ── Search ──
+    
     public string $buscar = '';
 
-    // ── Quantity form ──
+    
     public ?int $productoCantidadId = null;
     public int $cantidadPieza = 1;
 
-    // ── Kit inspection ──
+    
     public ?int $kitInspeccionId = null;
 
-    // ── Checklist modal ──
+    
     public bool $mostrarChecklist = false;
     public array $checklistData = [];
 
-    // ── Tab ──
-    public string $tabSeleccion = 'kits'; // 'kits' | 'piezas' | 'cantidad'
+    
+    public string $tabSeleccion = 'kits'; 
 
     protected function sedeOrigenId(): int
     {
@@ -53,9 +53,9 @@ class Crear extends Component
             ->get();
     }
 
-    // ══════════════════════════════════════
-    //  COMPUTED: Kits
-    // ══════════════════════════════════════
+    
+    
+    
 
     public function getKitsDisponiblesProperty()
     {
@@ -77,7 +77,7 @@ class Crear extends Component
             ->get();
 
         foreach ($kits as $kit) {
-            // Receta desde KitComponente (dinámico)
+            
             $receta = KitComponente::with('componente')
                 ->where('producto_kit_id', $kit->producto_id)
                 ->get();
@@ -85,7 +85,7 @@ class Crear extends Component
             $kit->receta = $receta;
             $kit->totalEsperado = $receta->sum('cantidad_esperada');
 
-            // Hijos presentes (piezas que siguen dentro del kit)
+            
             $hijos = ItemSerializado::where('kit_padre_id', $kit->id)
                 ->where('estado', 'en_stock')
                 ->get();
@@ -94,11 +94,11 @@ class Crear extends Component
             $kit->hijos = $hijos;
             $kit->es_sellado = $kit->hijosCount >= $kit->totalEsperado;
 
-            // Conteo por producto de hijos
+            
             $hijosPorProducto = $hijos->pluck('producto_id')->countBy()->toArray();
             $kit->hijosPorProducto = $hijosPorProducto;
 
-            // Cuántos componentes están completos
+            
             $componentesCompletos = 0;
             foreach ($receta as $r) {
                 if (($hijosPorProducto[$r->producto_componente_id] ?? 0) >= $r->cantidad_esperada) {
@@ -112,9 +112,9 @@ class Crear extends Component
         return $kits;
     }
 
-    // ══════════════════════════════════════
-    //  COMPUTED: Piezas sueltas
-    // ══════════════════════════════════════
+    
+    
+    
 
     public function getPiezasSueltasProperty()
     {
@@ -136,9 +136,9 @@ class Crear extends Component
             ->get();
     }
 
-    // ══════════════════════════════════════
-    //  COMPUTED: Piezas por cantidad
-    // ══════════════════════════════════════
+    
+    
+    
 
     public function getProductosCantidadProperty()
     {
@@ -190,13 +190,11 @@ class Crear extends Component
             ->map(fn ($p) => tap($p, fn ($p) => $p->cantidad_solicitada = $this->cantidadSeleccionados[$p->id]));
     }
 
-    // ══════════════════════════════════════
-    //  ACTIONS: Toggle selection
-    // ══════════════════════════════════════
+    
+    
+    
 
-    /**
-     * Toggle a kit: adds/removes the kit item AND all its children.
-     */
+    
     public function toggleKit(int $kitId)
     {
         $item = ItemSerializado::find($kitId);
@@ -207,7 +205,7 @@ class Crear extends Component
         $isCurrentlySelected = isset($this->itemsSeleccionados[$kitId]);
 
         if ($isCurrentlySelected) {
-            // Deselect: remove kit + all children
+            
             unset($this->itemsSeleccionados[$kitId]);
             $childrenIds = ItemSerializado::where('kit_padre_id', $kitId)
                 ->where('estado', 'en_stock')
@@ -216,7 +214,7 @@ class Crear extends Component
                 unset($this->itemsSeleccionados[$childId]);
             }
         } else {
-            // Select: add kit + all children
+            
             $this->itemsSeleccionados[$kitId] = true;
             $childrenIds = ItemSerializado::where('kit_padre_id', $kitId)
                 ->where('estado', 'en_stock')
@@ -227,9 +225,7 @@ class Crear extends Component
         }
     }
 
-    /**
-     * Toggle a single child inside a kit (for incomplete kits).
-     */
+    
     public function toggleHijoKit(int $hijoId)
     {
         if (isset($this->itemsSeleccionados[$hijoId])) {
@@ -239,9 +235,7 @@ class Crear extends Component
         }
     }
 
-    /**
-     * Toggle a single loose piece.
-     */
+    
     public function togglePieza(int $itemId)
     {
         if (isset($this->itemsSeleccionados[$itemId])) {
@@ -251,9 +245,7 @@ class Crear extends Component
         }
     }
 
-    /**
-     * Expand/collapse kit component inspection.
-     */
+    
     public function toggleInspeccion(int $kitId)
     {
         $this->kitInspeccionId = $this->kitInspeccionId === $kitId ? null : $kitId;
@@ -278,7 +270,7 @@ class Crear extends Component
             ->where('estado', 'en_stock')
             ->get();
 
-        // Group by product and track individual selection
+        
         $hijosPorProducto = $hijos->pluck('producto_id')->countBy()->toArray();
         $hijosSeleccionados = $hijos->filter(fn($h) => isset($this->itemsSeleccionados[$h->id]));
 
@@ -293,9 +285,9 @@ class Crear extends Component
         ];
     }
 
-    // ══════════════════════════════════════
-    //  COMPUTED: Resumen
-    // ══════════════════════════════════════
+    
+    
+    
 
     public function getResumenVacioProperty(): bool
     {
@@ -304,7 +296,7 @@ class Crear extends Component
 
     public function getSeleccionCountProperty(): int
     {
-        // Count only top-level: kits (not their children) + loose pieces + quantity items
+        
         $kitsSeleccionados = 0;
         $sueltosSeleccionados = 0;
 
@@ -318,15 +310,15 @@ class Crear extends Component
             } elseif (is_null($item->kit_padre_id)) {
                 $sueltosSeleccionados++;
             }
-            // children are part of their parent kit, don't count separately
+            
         }
 
         return $kitsSeleccionados + $sueltosSeleccionados + count($this->cantidadSeleccionados);
     }
 
-    // ══════════════════════════════════════
-    //  CONFIRM: Checklist
-    // ══════════════════════════════════════
+    
+    
+    
 
     public function confirmarTraslado()
     {
@@ -346,7 +338,7 @@ class Crear extends Component
         $data = [];
         $seleccionadosIds = array_keys($this->itemsSeleccionados);
 
-        // Kits seleccionados (padres)
+        
         $kitsPadres = ItemSerializado::with('producto')
             ->whereIn('id', $seleccionadosIds)
             ->whereNull('kit_padre_id')
@@ -358,7 +350,7 @@ class Crear extends Component
                 ->where('producto_kit_id', $kitItem->producto_id)
                 ->get();
 
-            // Hijos que están en la selección
+            
             $hijosSeleccionados = ItemSerializado::whereIn('id', $seleccionadosIds)
                 ->where('kit_padre_id', $kitItem->id)
                 ->pluck('producto_id')
@@ -386,7 +378,7 @@ class Crear extends Component
             ];
         }
 
-        // Piezas sueltas (padres sin kit, no kit)
+        
         $sueltos = ItemSerializado::with('producto')
             ->whereIn('id', $seleccionadosIds)
             ->whereNull('kit_padre_id')
@@ -401,7 +393,7 @@ class Crear extends Component
             ];
         }
 
-        // Piezas por cantidad
+        
         foreach ($this->cantidadSeleccionados as $productoId => $cantidad) {
             $producto = Producto::find($productoId);
             if (! $producto) {
@@ -418,9 +410,9 @@ class Crear extends Component
         $this->checklistData = $data;
     }
 
-    // ══════════════════════════════════════
-    //  CONFIRM: Envío final
-    // ══════════════════════════════════════
+    
+    
+    
 
     public function confirmarEnvio()
     {
@@ -435,7 +427,7 @@ class Crear extends Component
                     'observaciones' => $this->observaciones ?: null,
                 ]);
 
-                // Items serializados (kits + children + sueltos)
+                
                 foreach (array_keys($this->itemsSeleccionados) as $itemId) {
                     $item = ItemSerializado::where('id', $itemId)
                         ->where('estado', 'en_stock')
@@ -469,7 +461,7 @@ class Crear extends Component
                     ]);
                 }
 
-                // Piezas por cantidad
+                
                 foreach ($this->cantidadSeleccionados as $productoId => $cantidad) {
                     $itemsPieza = ItemSerializado::where('producto_id', $productoId)
                         ->where('estado', 'en_stock')

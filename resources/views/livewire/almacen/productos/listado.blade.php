@@ -5,9 +5,6 @@
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @endPushOnce
 
-        {{-- ═══════════════════════════════════════════════════════════════
-             BARRA SUPERIOR FIJA: título + acción + pestañas + filtros
-        ═══════════════════════════════════════════════════════════════ --}}
         <div class="sticky top-0 z-20 bg-gray-50/95 backdrop-blur-sm -mx-4 px-4 py-2 space-y-2">
 
             <div class="flex items-center justify-between gap-3">
@@ -25,7 +22,6 @@
                 </a>
             </div>
 
-            {{-- Tabs + filtros --}}
             <div class="bg-white rounded-xl border border-gray-200 p-2 flex flex-wrap items-center gap-2">
 
                 <nav class="flex gap-1 bg-gray-100 rounded-lg p-1" x-data aria-label="Vistas del almacén">
@@ -42,7 +38,6 @@
                     @endforeach
                 </nav>
 
-                {{-- Filtros inventario/kits --}}
                 @if ($vistaActual === 'inventario' || $vistaActual === 'kits')
                     <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto sm:ml-auto">
                         <select wire:model.live="filtroSedeId" aria-label="Filtrar por sede"
@@ -60,7 +55,6 @@
                         </label>
                     </div>
 
-                {{-- Filtros catálogo --}}
                 @elseif ($vistaActual === 'catalogo')
                     <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto lg:ml-auto">
                         <label class="flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 w-full sm:w-64 focus-within:ring-2 focus-within:ring-indigo-500">
@@ -87,10 +81,6 @@
             </div>
         </div>
 
-
-        {{-- ═══════════════════════════════════════════════════════════════
-             VISTA: INVENTARIO
-        ═══════════════════════════════════════════════════════════════ --}}
         @if ($vistaActual === 'inventario')
             @php
                 $inv  = $resumenInventario ?? [];
@@ -118,7 +108,6 @@
                 ];
             @endphp
 
-            {{-- 1) KPI Cards --}}
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-px bg-gray-200 rounded-xl border border-gray-200 overflow-hidden">
                 @foreach ($stats as $st)
                     <button type="button" wire:click="verDetalle(0, '{{ $st['tipo'] }}')"
@@ -133,7 +122,6 @@
                 @endforeach
             </div>
 
-            {{-- 2) Kits incompletos --}}
             @if ($incompletos->isNotEmpty())
                 <section class="bg-white rounded-xl border border-orange-200 overflow-hidden">
                     <x-almacen.section-header
@@ -164,7 +152,6 @@
                 </section>
             @endif
 
-            {{-- 3) Kits por estado: sellados, completados, consumidos --}}
             @if ($sellados->isNotEmpty() || $completados->isNotEmpty() || $consumidos->isNotEmpty())
                 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-start">
                     @foreach ($paneles as $panel)
@@ -203,7 +190,6 @@
                 </div>
             @endif
 
-            {{-- 4) Piezas sueltas --}}
             @if ($sueltosS->isNotEmpty() || $sueltosC->isNotEmpty())
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
                     @if ($sueltosS->isNotEmpty())
@@ -253,14 +239,10 @@
                 </div>
             @endif
 
-            {{-- Empty state inventario --}}
             @if ($sellados->isEmpty() && $incompletos->isEmpty() && $completados->isEmpty() && $consumidos->isEmpty() && $sueltosS->isEmpty() && $sueltosC->isEmpty())
                 <x-almacen.empty-state icon="fa-boxes-stacked" message="No hay inventario para mostrar" />
             @endif
 
-            {{-- ═══════════════════════════════════════════════════════
-                 DETALLE: panel lateral / bottom sheet
-            ═══════════════════════════════════════════════════════ --}}
             @if ($detalleProductoId)
                 @php
                     $itemsDetalle = match($tipoDetalle) {
@@ -350,10 +332,6 @@
 
         @endif
 
-
-        {{-- ═══════════════════════════════════════════════════════════════
-             VISTA: KITS — tablero de 4 columnas
-        ═══════════════════════════════════════════════════════════════ --}}
         @if ($vistaActual === 'kits')
             @php
                 $kitsSell   = $kits['sellados']    ?? collect();
@@ -364,7 +342,6 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 items-start">
 
-                {{-- Sellados --}}
                 <x-almacen.kit-column
                     icon="fa-box"
                     color="amber"
@@ -373,7 +350,6 @@
                     :items="$kitsSell"
                 />
 
-                {{-- Incompletos: con botón completar + faltantes --}}
                 <section class="bg-white rounded-xl border border-orange-200 overflow-hidden">
                     <x-almacen.section-header icon="fa-box-open" color="orange" title="Incompletos" :count="$kitsIncomp->flatten()->count()" :highlight="true" />
                     <div class="bg-gray-50 p-2 space-y-2 max-h-[65vh] overflow-y-auto">
@@ -417,7 +393,6 @@
                     </div>
                 </section>
 
-                {{-- Completados --}}
                 <section class="bg-white rounded-xl border border-gray-200 overflow-hidden">
                     <x-almacen.section-header icon="fa-check-circle" color="gray" title="Completados" :count="$kitsComp->flatten()->count()" />
                     <div class="bg-gray-50 p-2 space-y-2 max-h-[65vh] overflow-y-auto" x-data>
@@ -437,7 +412,6 @@
                     </div>
                 </section>
 
-                {{-- Consumidos --}}
                 <section class="bg-white rounded-xl border border-gray-200 overflow-hidden">
                     <x-almacen.section-header icon="fa-fire" color="gray" title="Consumidos" :count="$kitsCons->flatten()->count()" />
                     <div class="bg-gray-50 p-2 space-y-2 max-h-[65vh] overflow-y-auto" x-data>
@@ -468,10 +442,6 @@
             </div>
         @endif
 
-
-        {{-- ═══════════════════════════════════════════════════════════════
-             VISTA: CATÁLOGO
-        ═══════════════════════════════════════════════════════════════ --}}
         @if ($vistaActual === 'catalogo')
             @if ($productos->count())
                 <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
@@ -533,15 +503,10 @@
 
     </div>
 
-    {{-- Sub-componentes Livewire --}}
     <livewire:almacen.productos.crear />
     <livewire:almacen.productos.registrar-entrada />
     <livewire:almacen.productos.editar />
 
-
-    {{-- ═══════════════════════════════════════════════════════════════
-         MODAL: Completar Kit
-    ═══════════════════════════════════════════════════════════════ --}}
     @if ($modalCompletarKitAbierto)
         @php
             $faltantes = collect($completarKitComponentes)->filter(fn($c) => $c['faltan'] > 0);
@@ -561,7 +526,6 @@
             <div class="relative flex w-full max-w-xl max-h-[92vh] flex-col overflow-hidden rounded-t-2xl sm:rounded-xl bg-white shadow-2xl border border-gray-200"
                  wire:click.away="cerrarCompletarKit">
 
-                {{-- Header + progress --}}
                 <header class="px-5 pt-4 pb-3 border-b border-gray-200">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0">
@@ -592,7 +556,6 @@
                     @endif
                 </header>
 
-                {{-- Content --}}
                 <div class="flex-1 overflow-y-auto px-5 py-4 space-y-4">
                     @error('general')
                         <div class="p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">
@@ -664,7 +627,6 @@
                     @endif
                 </div>
 
-                {{-- Footer --}}
                 <footer class="flex items-center gap-3 px-5 py-3 border-t border-gray-200 bg-gray-50">
                     <button type="button" wire:click="cerrarCompletarKit"
                         class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
@@ -690,10 +652,6 @@
         </div>
     @endif
 
-
-    {{-- ═══════════════════════════════════════════════════════════════
-         MODAL: Ver componentes del Kit (Alpine slide-over)
-    ═══════════════════════════════════════════════════════════════ --}}
     <div
         x-data="kitComponentsModal"
         x-on:ver-componentes-kit.window="abrir(event.detail.productoId)"
@@ -744,7 +702,7 @@
 
                 <template x-if="!cargando">
                     <div class="space-y-4">
-                        {{-- Estado badges --}}
+
                         <div class="flex flex-wrap gap-1.5" x-show="kits.length > 0">
                             <template x-for="e in Object.keys(meta)" :key="'res-' + e">
                                 <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
@@ -756,7 +714,6 @@
                             </template>
                         </div>
 
-                        {{-- Receta --}}
                         <div x-show="receta.length > 0" class="bg-white rounded-lg border border-gray-200 px-3.5 py-3">
                             <p class="text-xs font-semibold text-gray-500 mb-2">El kit lleva</p>
                             <div class="flex flex-wrap gap-1.5">
@@ -771,7 +728,6 @@
                             </div>
                         </div>
 
-                        {{-- Kits individuales --}}
                         <div x-show="kits.length > 0" class="space-y-2">
                             <template x-for="(kit, kitIdx) in kits" :key="'kit-' + kit.id">
                                 <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
@@ -803,7 +759,7 @@
                                     </button>
 
                                     <div x-show="kit._open" x-transition class="px-4 py-3 bg-gray-50 border-t border-gray-100 space-y-3">
-                                        {{-- Serializados --}}
+
                                         <div x-show="kit.serializados && kit.serializados.length > 0">
                                             <p class="text-xs font-semibold text-gray-500 mb-1.5">
                                                 <i class="fas fa-microchip text-indigo-500 mr-1"></i>
@@ -822,7 +778,7 @@
                                                 </template>
                                             </div>
                                         </div>
-                                        {{-- Generales --}}
+
                                         <div x-show="kit.cantidad && kit.cantidad.length > 0">
                                             <p class="text-xs font-semibold text-gray-500 mb-1.5">
                                                 <i class="fas fa-cubes text-amber-500 mr-1"></i>
@@ -847,7 +803,6 @@
                             </template>
                         </div>
 
-                        {{-- Vacío --}}
                         <div x-show="kits.length === 0 && receta.length === 0" class="text-center py-12">
                             <i class="fas fa-box-open text-3xl text-gray-300 mb-2"></i>
                             <p class="text-gray-400 text-sm">Sin kits ni componentes registrados</p>
@@ -858,17 +813,9 @@
         </aside>
     </div>
 
-
-    {{-- ═══════════════════════════════════════════════════════════════
-         ALPINE — kitComponentsModal + Livewire events
-    ═══════════════════════════════════════════════════════════════ --}}
     <script src="{{ asset('js/components/kit-components-modal.js') }}"></script>
     <script src="{{ asset('js/components/livewire-swal-listener.js') }}"></script>
 
-
-    {{-- ═══════════════════════════════════════════════════════════════
-         MODAL: Editar Item (completar datos)
-    ═══════════════════════════════════════════════════════════════ --}}
     @if ($modalEditarItemAbierto)
         @php
             $item = \App\Models\ItemSerializado::with('producto.categoria')->find($editarItemId);

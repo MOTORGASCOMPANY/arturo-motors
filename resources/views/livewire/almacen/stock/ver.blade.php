@@ -61,7 +61,7 @@
                             @php $sede = $items->first()->sede; @endphp
                             @php $estado = $items->first()->estado; @endphp
                             @php $hayDevueltos = $items->contains('devuelto_por_no_calza', true); @endphp
-                            
+
                             <div class="border rounded-xl p-4 hover:shadow-md transition cursor-pointer bg-white"
                                  wire:click="verDetalle({{ $producto->id }})">
                                 <div class="flex justify-between items-start mb-3">
@@ -119,7 +119,7 @@
                             @php $producto = $items->first()->producto; @endphp
                             @php $sede = $items->first()->sede; @endphp
                             @php $estado = $items->first()->estado; @endphp
-                            
+
                             <div class="border rounded-xl p-4 hover:shadow-md transition cursor-pointer bg-white"
                                  wire:click="verDetalle({{ $producto->id }})">
                                 <div class="flex justify-between items-start mb-3">

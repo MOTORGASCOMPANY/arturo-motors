@@ -34,9 +34,9 @@ class Listado extends Component
     public int $completarKitSedeId = 0;
     public string $completarKitNombre = '';
     public array $completarKitComponentes = [];
-    public array $completarKitSeleccion = []; // [producto_id => item_id]
+    public array $completarKitSeleccion = []; 
 
-    // Modal editar item (sin serie / atributos incompletos)
+    
     public bool $modalEditarItemAbierto = false;
     public ?int $editarItemId = null;
     public array $editarItemData = [];

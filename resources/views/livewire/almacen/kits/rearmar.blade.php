@@ -1,7 +1,7 @@
 <div>
     <div class="max-w-4xl mx-auto py-6 sm:px-6 lg:px-8">
         <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
-            {{-- Header --}}
+
             <div class="flex items-center justify-between mb-6">
                 <div>
                     <h1 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
@@ -13,7 +13,6 @@
                 <a href="{{ route('almacen.stock') }}" class="text-sm text-gray-500 hover:text-gray-700">← Volver al stock</a>
             </div>
 
-            {{-- Info del kit --}}
             @if ($kit)
                 <div class="bg-amber-50 border border-amber-200 rounded-xl p-5 mb-6">
                     <div class="flex items-center gap-4">
@@ -33,7 +32,6 @@
                     </div>
                 </div>
 
-                {{-- Piezas faltantes --}}
                 <div class="mb-6">
                     <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider mb-3 flex items-center gap-2">
                         <i class="fas fa-exclamation-triangle text-amber-500"></i>
@@ -65,7 +63,6 @@
                     @endif
                 </div>
 
-                {{-- Buscar pieza de repuesto --}}
                 @if (!empty($piezasFaltantes))
                     <div class="mb-6">
                         <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider mb-3 flex items-center gap-2">
@@ -79,7 +76,6 @@
                             <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                         </div>
 
-                        {{-- Resultados de búsqueda --}}
                         @if (!empty($piezasEncontradas))
                             <div class="mt-2 bg-white border border-gray-200 rounded-xl shadow-lg max-h-64 overflow-y-auto">
                                 @foreach($piezasEncontradas as $pieza)
@@ -99,7 +95,6 @@
                         @endif
                     </div>
 
-                    {{-- Pieza seleccionada --}}
                     @if ($piezaSeleccionadaId)
                         @php $seleccionada = \App\Models\ItemSerializado::with('producto')->find($piezaSeleccionadaId); @endphp
                         @if ($seleccionada)
@@ -123,7 +118,6 @@
                         @endif
                     @endif
 
-                    {{-- Botón rearmar --}}
                     <div class="flex justify-end gap-3 mt-6 pt-4 border-t">
                         <a href="{{ route('almacen.stock') }}"
                            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
@@ -144,6 +138,5 @@
         </div>
     </div>
 
-    {{-- SweetAlert2 listener --}}
     <script src="{{ asset('js/components/livewire-swal-listener.js') }}"></script>
 </div>

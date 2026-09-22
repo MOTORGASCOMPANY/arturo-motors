@@ -39,14 +39,14 @@ class Crear extends Component
         $categoria = CategoriaAlmacen::find($value);
         $this->atributos = [];
         $schema = $categoria?->esquema_atributos ?? [];
-        // Handle nested: {"generacion": ["3RA","5TA"]} → show as select
-        // Handle flat:   ["generacion"] → show as text input
+        
+        
         foreach ($schema as $campo => $valor) {
             if (is_int($campo)) {
-                // Flat: indexed array like ["generacion", "tamaño"]
+                
                 $this->atributos[$valor] = '';
             } else {
-                // Nested: keyed array like {"generacion": ["3RA","5TA"]}
+                
                 $this->atributos[$campo] = '';
             }
         }
@@ -78,7 +78,7 @@ class Crear extends Component
                 'stock_minimo' => $this->stockMinimo,
             ]);
 
-            // Registrar stock inicial si se indicó y el producto no es serializado
+            
             if ($this->stockInicial > 0 && !$producto->categoria->es_serializado) {
                 $sedeId = Auth::user()->sede_id ?? 1;
                 MovimientoStock::registrar(

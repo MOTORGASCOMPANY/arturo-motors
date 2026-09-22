@@ -2,7 +2,6 @@
     <div class="max-w-5xl mx-auto py-6 sm:px-6 lg:px-8">
         <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
 
-            {{-- Header --}}
             <div class="flex items-center justify-between mb-6">
                 <div>
                     <h1 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
@@ -17,7 +16,6 @@
                 </a>
             </div>
 
-            {{-- Filtros --}}
             <div class="flex flex-col sm:flex-row gap-3 mb-6">
                 <div class="flex-1">
                     <select wire:model.live="filtroSedeId" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
@@ -34,7 +32,6 @@
                 </div>
             </div>
 
-            {{-- Lista de kits pendientes --}}
             @if ($this->kitsPendientes->isEmpty())
                 <div class="text-center py-16 text-gray-400">
                     <i class="fas fa-check-circle text-5xl mb-3 text-green-300"></i>
@@ -74,7 +71,7 @@
                                             </span>
                                         @endif
                                     </div>
-                                    {{-- Barra de progreso --}}
+
                                     <div class="w-48 bg-gray-200 rounded-full h-1.5 mt-2">
                                         <div class="h-1.5 rounded-full transition-all duration-300 {{ $progreso == 100 ? 'bg-green-500' : 'bg-indigo-500' }}"
                                              style="width: {{ $progreso }}%"></div>
@@ -92,21 +89,16 @@
         </div>
     </div>
 
-    {{-- ═══════════════════════════════════════════════════════════ --}}
-    {{-- MODAL: Registrar series                                     --}}
-    {{-- ═══════════════════════════════════════════════════════════ --}}
     @if ($modalAbierto)
         <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-            {{-- Backdrop --}}
+
             <div class="fixed inset-0 bg-gray-500/75 transition-opacity" wire:click="cerrarModal"></div>
 
-            {{-- Panel --}}
             <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
                 <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
                     <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl"
                          wire:click.away="cerrarModal">
 
-                        {{-- Header --}}
                         <div class="bg-gradient-to-r from-indigo-600 to-blue-600 px-6 py-4">
                             <div class="flex items-center justify-between">
                                 <div>
@@ -122,14 +114,12 @@
                             </div>
                         </div>
 
-                        {{-- Body --}}
                         <div class="px-6 py-4 max-h-[55vh] overflow-y-auto">
                             @php
                                 $serializados = collect($itemsPendientes)->where('es_serializado', true);
                                 $porCantidad = collect($itemsPendientes)->where('es_serializado', false);
                             @endphp
 
-                            {{-- Serializados --}}
                             @if ($serializados->isNotEmpty())
                                 <div class="mb-5">
                                     <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
@@ -169,7 +159,6 @@
                                 </div>
                             @endif
 
-                            {{-- Por cantidad --}}
                             @if ($porCantidad->isNotEmpty())
                                 <div>
                                     <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
@@ -195,7 +184,6 @@
                             @endif
                         </div>
 
-                        {{-- Footer --}}
                         <div class="bg-gray-50 px-6 py-4 flex items-center justify-between border-t">
                             <button wire:click="cerrarModal"
                                     class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition">

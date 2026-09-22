@@ -1,10 +1,3 @@
-/**
- * Alpine.js component: kitComponentsModal
- * 
- * Reusable across any view that needs to display kit component details.
- * Usage: x-data="kitComponentsModal"
- * Events: x-on:ver-componentes-kit.window="abrir(event.detail.productoId, event.detail.filtroEstado)"
- */
 document.addEventListener('alpine:init', () => {
     Alpine.data('kitComponentsModal', () => ({
         abierto: false,
@@ -61,7 +54,6 @@ document.addEventListener('alpine:init', () => {
             } else {
                 this.kitsFiltrados = this.kits.filter(k => k.estado === this.filtroEstado);
             }
-            // Auto-expandir si solo hay 1 kit
             if (this.kitsFiltrados.length === 1) {
                 this.kitsFiltrados[0]._open = true;
             }

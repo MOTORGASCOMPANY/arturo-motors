@@ -12,33 +12,31 @@ class RegistrarSeries extends Component
     public ?int $filtroSedeId = null;
     public string $busqueda = '';
 
-    // Modal de registro
+    
     public bool $modalAbierto = false;
     public int $kitItemId = 0;
     public string $kitNombre = '';
     public array $itemsPendientes = [];
-    // Estructura: [
-    //     'item_id'        => int,
-    //     'producto_nombre'=> string,
-    //     'es_serializado' => bool,
-    //     'serie_actual'   => ?string,
-    //     'serie_nueva'    => string,
-    //     'cantidad'       => int (solo por cantidad)
-    // ]
+    
+    
+    
+    
+    
+    
+    
+    
 
     public function mount()
     {
         $this->filtroSedeId = Sede::activas()->orderBy('id')->first()?->id;
     }
 
-    /**
-     * Kits que tienen items sin serie registrada
-     */
+    
     public function getKitsPendientesProperty()
     {
         $sedeId = $this->filtroSedeId;
 
-        // Kits que tienen al menos 1 hijo con serie null
+        
         return ItemSerializado::with('producto.categoria', 'sede')
             ->whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true))
             ->whereHas('piezasEnKit', fn ($q) => $q->whereNull('serie'))
@@ -52,9 +50,7 @@ class RegistrarSeries extends Component
             ->get();
     }
 
-    /**
-     * Abrir modal para registrar series de un kit
-     */
+    
     public function abrirModal(int $kitItemId)
     {
         $kit = ItemSerializado::with('producto.categoria')->find($kitItemId);
@@ -63,7 +59,7 @@ class RegistrarSeries extends Component
         $this->kitItemId = $kitItemId;
         $this->kitNombre = $kit->producto->nombre . ' #' . $kit->id;
 
-        // Cargar componentes hijos del kit
+        
         $hijos = ItemSerializado::with('producto.categoria')
             ->where('kit_padre_id', $kitItemId)
             ->orderBy('producto_id')
@@ -86,9 +82,7 @@ class RegistrarSeries extends Component
         $this->modalAbierto = true;
     }
 
-    /**
-     * Cerrar modal
-     */
+    
     public function cerrarModal()
     {
         $this->modalAbierto = false;
@@ -97,9 +91,7 @@ class RegistrarSeries extends Component
         $this->kitNombre = '';
     }
 
-    /**
-     * Guardar series registradas
-     */
+    
     public function guardarSeries()
     {
         $itemsARegistrar = array_filter($this->itemsPendientes, function ($item) {
@@ -111,7 +103,7 @@ class RegistrarSeries extends Component
             return;
         }
 
-        // Validar duplicados
+        
         $seriesIngresadas = [];
         foreach ($itemsARegistrar as $item) {
             $serie = strtoupper(trim($item['serie_nueva']));
@@ -122,7 +114,7 @@ class RegistrarSeries extends Component
             $seriesIngresadas[] = $serie;
         }
 
-        // Validar que no existan en BD
+        
         foreach ($itemsARegistrar as $item) {
             $existe = ItemSerializado::where('id', '!=', $item['item_id'])
                 ->where('serie', trim($item['serie_nueva']))

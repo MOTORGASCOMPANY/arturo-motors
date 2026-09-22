@@ -1,6 +1,5 @@
 <div wire:poll.10s class="max-w-[1600px] mx-auto px-3 sm:px-4 py-4 sm:py-6">
 
-    {{-- Header --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
         <div>
             <h2 class="text-lg sm:text-xl font-bold text-gray-900">
@@ -21,7 +20,6 @@
         </div>
     </div>
 
-    {{-- LISTA --}}
     @if($this->conversiones->isEmpty())
         <div class="bg-white rounded-lg border border-gray-200 p-8 sm:p-10 text-center">
             <i class="fas fa-inbox text-gray-300 text-3xl mb-3"></i>
@@ -30,7 +28,6 @@
     @else
         <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
 
-            {{-- Tabla: visible desde md hacia arriba --}}
             <div class="hidden md:block overflow-x-auto">
                 <table class="w-full text-sm">
                     <thead class="sticky top-0 z-10">
@@ -70,7 +67,6 @@
                 </table>
             </div>
 
-            {{-- Tarjetas: visible solo en móvil/tablet chico --}}
             <div class="md:hidden divide-y divide-gray-100">
                 @foreach($this->conversiones as $orden)
                     @php $r = $this->resumenConversion($orden); @endphp
@@ -107,7 +103,6 @@
         </div>
     @endif
 
-    {{-- ═══ MODAL ═══ --}}
     @if($modalAbierto && $this->conversionSeleccionada)
         @php $orden = $this->conversionSeleccionada; @endphp
         <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
@@ -115,7 +110,6 @@
 
             <div class="relative bg-white sm:rounded-2xl shadow-2xl w-full h-[92vh] sm:h-auto sm:max-h-[90vh] sm:max-w-5xl overflow-hidden flex flex-col ring-1 ring-black/5 rounded-t-2xl">
 
-                {{-- Header --}}
                 <div class="px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-blue-600 to-blue-700 flex items-center justify-between gap-2 shrink-0">
                     <div class="flex items-center gap-3 min-w-0">
                         <div class="w-9 h-9 sm:w-11 sm:h-11 bg-white/15 rounded-xl flex items-center justify-center backdrop-blur-sm shrink-0">
@@ -143,10 +137,8 @@
                     </div>
                 </div>
 
-                {{-- Contenido: 1 columna en móvil, 2 columnas desde lg --}}
                 <div class="flex-1 min-h-0 flex flex-col lg:flex-row overflow-hidden">
 
-                    {{-- Columna izquierda: piezas --}}
                     <div class="flex-1 min-h-0 flex flex-col lg:border-r border-gray-100">
                         <div class="px-4 sm:px-5 pt-4 pb-2 flex items-center justify-between shrink-0">
                             <div class="flex items-center gap-2">
@@ -193,7 +185,6 @@
                                         @endphp
                                         <div class="border rounded-lg transition-all {{ $seleccionada ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-200' : ($item->reemplazado ? 'border-green-300 bg-green-50' : 'border-gray-200') }}">
 
-                                            {{-- Fila --}}
                                             <div wire:click="seleccionarPieza({{ $item->id }})"
                                                  class="w-full flex items-center gap-3 p-3 sm:p-2.5 cursor-pointer transition hover:opacity-80">
                                                 <div class="w-8 h-8 {{ $item->reemplazado ? 'bg-green-100' : 'bg-gray-100' }} rounded-lg flex items-center justify-center shrink-0">
@@ -214,7 +205,6 @@
                                                 @endif
                                             </div>
 
-                                            {{-- BUSCANDO SUELTA: elegir pieza suelta --}}
                                             @if($seleccionada && $metodoReemplazo === 'buscando_suelta')
                                                 <div class="px-3 sm:px-4 pb-3 pt-0 border-t border-blue-200">
                                                     <div class="sm:ml-11 mt-2 space-y-2">
@@ -267,7 +257,6 @@
                                                 </div>
                                             @endif
 
-                                            {{-- BUSCANDO KIT --}}
                                             @if($seleccionada && $metodoReemplazo === 'buscando_kit')
                                                 <div class="px-3 sm:px-4 pb-3 pt-0 border-t border-blue-200">
                                                     <div class="sm:ml-11 mt-2 space-y-2">
@@ -299,7 +288,6 @@
                                                 </div>
                                             @endif
 
-                                            {{-- KIT SELECCIONADO → PEDIR SERIE --}}
                                             @if($seleccionada && $metodoReemplazo === 'kit_seleccionado')
                                                 <div class="px-3 sm:px-4 pb-3 pt-0 border-t border-purple-200">
                                                     <div class="sm:ml-11 mt-2 space-y-2">
@@ -320,7 +308,6 @@
                                                 </div>
                                             @endif
 
-                                            {{-- CANTIDAD --}}
                                             @if($seleccionada && $metodoReemplazo === 'cantidad')
                                                 <div class="px-3 sm:px-4 pb-3 pt-0 border-t border-orange-200">
                                                     <div class="sm:ml-11 mt-2 space-y-2">
@@ -362,9 +349,8 @@
                         </div>
                     </div>
 
-                    {{-- Columna derecha: historial --}}
                     <div class="flex flex-col shrink-0 bg-gray-50/50 w-full lg:w-72 max-h-[45vh] lg:max-h-none border-t lg:border-t-0 border-gray-100 overflow-hidden">
-                        {{-- Despachados (ReportePiezaNoEncajada) --}}
+
                         <div class="px-4 pt-3 sm:pt-4 pb-2 flex items-center gap-2 shrink-0">
                             <i class="fas fa-check-double text-green-500 text-sm"></i>
                             <h3 class="text-sm font-bold text-gray-900">Despachados</h3>
@@ -395,7 +381,6 @@
                             @endif
                         </div>
 
-                        {{-- Timeline de la conversión (ServiceOrderStatusHistory) --}}
                         <div class="border-t border-gray-200/60 shrink-0 flex flex-col min-h-0 overflow-hidden">
                             <div class="px-4 pt-3 pb-2 flex items-center gap-2 shrink-0">
                                 <i class="fas fa-history text-purple-500 text-sm"></i>
@@ -437,7 +422,6 @@
         </div>
     @endif
 
-    {{-- MODAL COMPONENTES --}}
     @if($modalPartesAbierto)
         <div class="fixed inset-0 z-[60] flex items-end sm:items-center justify-center sm:p-4">
             <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" wire:click="cerrarPartesGenerales"></div>

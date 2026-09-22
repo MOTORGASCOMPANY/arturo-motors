@@ -14,7 +14,6 @@
     <div class="max-w-4xl mx-auto py-6 sm:px-6 lg:px-8">
         <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
 
-            {{-- ═══ CABECERA ═══ --}}
             <div class="flex items-center justify-between mb-6">
                 <div>
                     <h1 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
@@ -26,7 +25,6 @@
                 <a href="{{ route('almacen.recepciones.listado') }}" class="text-sm text-gray-500 hover:text-gray-700">← Volver al historial</a>
             </div>
 
-            {{-- ═══ INDICADOR DE PASOS ═══ --}}
             <ol class="flex items-center mb-8 text-xs font-semibold">
                 @foreach ($pasosFlujo as $i => $nombrePaso)
                     @php
@@ -52,9 +50,6 @@
                 @endforeach
             </ol>
 
-            {{-- ═══════════════════════════════════════════════════════
-                 PASO 3 — COMPONENTES DEL KIT (antes era un modal)
-                 ═══════════════════════════════════════════════════════ --}}
             @if ($enComponentes)
                 @php
                     $serializados = collect($modalComponentes)->filter(fn ($c) => $c['es_serializado']);
@@ -96,7 +91,7 @@
                                 <p class="text-sm">Este kit no tiene componentes definidos. Agrega uno abajo.</p>
                             </div>
                         @else
-                            {{-- Produce compartido --}}
+
                             @if ($serializados->isNotEmpty())
                                 <div class="mb-4 p-3 bg-indigo-50 border border-indigo-200 rounded-xl">
                                     <div class="flex items-center gap-2">
@@ -108,7 +103,6 @@
                                 </div>
                             @endif
 
-                            {{-- Serializados --}}
                             @if ($serializados->isNotEmpty())
                                 <div class="mb-5">
                                     <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
@@ -164,7 +158,6 @@
                                 </div>
                             @endif
 
-                            {{-- Por cantidad --}}
                             @if ($porCantidad->isNotEmpty())
                                 <div>
                                     <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
@@ -201,7 +194,6 @@
                         @endif
                     </div>
 
-                    {{-- Agregar existente --}}
                     @if ($disponibles->isNotEmpty())
                         <div class="border-t border-gray-200 pt-4 mt-5">
                             <div class="flex items-center gap-2">
@@ -221,7 +213,6 @@
                         </div>
                     @endif
 
-                    {{-- Registrar componente nuevo (formulario en línea) --}}
                     <div class="border-t border-dashed border-gray-300 pt-4 mt-4">
                         @if (! $mostrandoFormNuevo)
                             <button type="button" wire:click="toggleFormNuevo"
@@ -235,11 +226,6 @@
                                     <button type="button" wire:click="toggleFormNuevo" class="text-gray-500 hover:text-gray-700 text-sm"><i class="fas fa-times"></i> Cancelar</button>
                                 </div>
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-                                    <div class="sm:col-span-2">
-                                        <label class="block text-xs font-medium text-gray-600 mb-1">Nombre del producto</label>
-                                        <input type="text" wire:model.live="nuevoNombre" placeholder="Ej: Manómetro 150psi"
-                                               class="w-full text-sm border-gray-300 rounded-lg focus:border-indigo-500 focus:ring-indigo-500">
-                                    </div>
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 mb-1">Tipo</label>
                                         <select wire:model.live="nuevoTipo" class="w-full text-sm border-gray-300 rounded-lg focus:border-indigo-500 focus:ring-indigo-500">
@@ -264,6 +250,11 @@
                                         </div>
                                     @endif
                                     @if ($nuevoTipo === 'cantidad')
+                                        <div class="sm:col-span-2">
+                                            <label class="block text-xs font-medium text-gray-600 mb-1">Nombre del producto *</label>
+                                            <input type="text" wire:model.live="nuevoNombre" placeholder="Ej: Manómetro 150psi"
+                                                   class="w-full text-sm border-gray-300 rounded-lg focus:border-indigo-500 focus:ring-indigo-500">
+                                        </div>
                                         <div>
                                             <label class="block text-xs font-medium text-gray-600 mb-1">Cantidad</label>
                                             <input type="number" min="1" max="99" wire:model.live="nuevaCantidad"
@@ -281,7 +272,6 @@
                         @endif
                     </div>
 
-                    {{-- Pie del paso --}}
                     <div class="flex justify-between items-center gap-3 mt-6 pt-4 border-t">
                         <button type="button" x-on:click="recepcionSwal.cancelarComponentes($wire)"
                             class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Cancelar</button>
@@ -302,9 +292,6 @@
                     </div>
                 </div>
 
-            {{-- ═══════════════════════════════════════════════════════
-                 PASO 1 — ELEGIR sede y qué registrar
-                 ═══════════════════════════════════════════════════════ --}}
             @elseif ($seccion === 'elegir')
                 <div class="space-y-6">
                     <div>
@@ -345,9 +332,6 @@
                     </div>
                 </div>
 
-            {{-- ═══════════════════════════════════════════════════════
-                 PASO 2A — KITS
-                 ═══════════════════════════════════════════════════════ --}}
             @elseif ($seccion === 'kits')
                 <div>
                     <x-almacen.info-banner icon="fa-box" color="indigo"
@@ -386,7 +370,7 @@
                                                 class="w-8 h-8 rounded-lg bg-red-100 hover:bg-red-200 flex items-center justify-center text-red-600 transition" title="Desactivar kit">
                                                 <i class="fas fa-trash text-xs"></i>
                                             </button>
-                                            <x-almacen.quantity-stepper :model="'cantidades.' . $kit->id" color="indigo" />
+                                            <x-almacen.quantity-stepper :model="'cantidades.' . $kit->id" :productId="$kit->id" color="indigo" />
                                         </div>
                                     </div>
                                 </div>
@@ -396,7 +380,6 @@
                         </div>
                     </div>
 
-                    {{-- Registrar kit nuevo --}}
                     <div class="mb-6">
                         @if (! $mostrandoFormKit)
                             <button type="button" wire:click="toggleFormKit"
@@ -470,12 +453,8 @@
                     </div>
                 </div>
 
-            {{-- ═══════════════════════════════════════════════════════
-                 PASO 2B — PRODUCTOS
-                 ═══════════════════════════════════════════════════════ --}}
             @elseif ($seccion === 'productos')
 
-                {{-- Intermedio: elegir tipo --}}
                 @if ($subSeccionProductos === '')
                     <div>
                         <x-almacen.info-banner icon="fa-microchip" color="indigo"
@@ -507,7 +486,6 @@
                         </div>
                     </div>
 
-                {{-- Serializados --}}
                 @elseif ($subSeccionProductos === 'serializados')
                     <div>
                         <x-almacen.info-banner icon="fa-barcode" color="indigo"
@@ -540,11 +518,10 @@
                                                         <span class="text-[10px] px-1.5 py-0.5 bg-indigo-100 text-indigo-700 rounded font-semibold">Serializado</span>
                                                     </div>
                                                     <div class="flex items-center gap-2 shrink-0">
-                                                        <x-almacen.quantity-stepper :model="'cantidades.' . $producto->id" color="indigo" />
+                                                        <x-almacen.quantity-stepper :model="'cantidades.' . $producto->id" :productId="$producto->id" color="indigo" />
                                                     </div>
                                                 </div>
 
-                                                {{-- Campo compartido: Produce --}}
                                                 @if ($tieneProduce && $cantProducto > 0)
                                                     <div class="mt-2 ml-14 flex items-center gap-2">
                                                         <label class="flex items-center gap-1 text-xs text-gray-500">
@@ -560,7 +537,6 @@
                                                     </div>
                                                 @endif
 
-                                                {{-- Campos por unidad --}}
                                                 @if ($cantProducto > 0 && count($camposUnidad) > 0)
                                                     <div class="mt-2 ml-14 space-y-1 border-l-2 border-indigo-200 pl-3">
                                                         @for ($i = 1; $i <= $cantProducto; $i++)
@@ -633,7 +609,6 @@
                         </div>
                     </div>
 
-                {{-- Por cantidad --}}
                 @elseif ($subSeccionProductos === 'cantidad')
                     <div>
                         <x-almacen.info-banner icon="fa-cubes" color="amber"
@@ -701,7 +676,7 @@
                                         <p class="text-[10px] text-gray-400">{{ $producto->categoria->nombre ?? '—' }}</p>
                                     </div>
                                     <div class="flex items-center gap-2 shrink-0">
-                                        <x-almacen.quantity-stepper :model="'cantidadesCantidad.' . $producto->id" color="amber" />
+                                        <x-almacen.quantity-stepper :model="'cantidadesCantidad.' . $producto->id" :productId="$producto->id" variant="cantidad" color="amber" />
                                     </div>
                                 </div>
                             @empty
@@ -749,6 +724,5 @@
         </div>
     </div>
 
-    {{-- ═══ SweetAlert2: helpers del flujo ═══ --}}
     <script src="{{ asset('js/components/recepcion-swal.js') }}"></script>
 </div>

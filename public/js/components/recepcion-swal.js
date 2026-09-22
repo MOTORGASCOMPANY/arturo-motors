@@ -1,13 +1,3 @@
-/**
- * recepcionSwal — SweetAlert2 helpers for the recepción workflow.
- *
- * Usage: recepcionSwal.alerta({ tipo, titulo, mensaje })
- *        recepcionSwal.accionConfirmada($wire, dataset)
- *        recepcionSwal.validarYLlamar($wire, campos, metodo)
- *        etc.
- *
- * Depends on: SweetAlert2 (Swal), Livewire
- */
 window.recepcionSwal = window.recepcionSwal || (function () {
     const base = {
         confirmButtonColor: '#4F46E5',
@@ -118,8 +108,12 @@ window.recepcionSwal = window.recepcionSwal || (function () {
     };
 
     const registrarComponenteNuevo = async ($wire) => {
-        const campos = [['nuevoNombre', 'El nombre del producto']];
-        if ($wire.nuevoTipo === 'serializado') campos.push(['nuevoCategoriaId', 'La categoría']);
+        const campos = [];
+        if ($wire.nuevoTipo === 'serializado') {
+            campos.push(['nuevoCategoriaId', 'La categoría']);
+        } else {
+            campos.push(['nuevoNombre', 'El nombre del producto']);
+        }
         await validarYLlamar($wire, campos, 'registrarComponenteNuevo');
     };
 

@@ -24,7 +24,7 @@ class Ver extends Component
         $sedeId = $this->filtroSedeId;
         $estado = $this->filtroEstado;
 
-        // Kits en stock
+        
         $kits = ItemSerializado::with('producto.categoria', 'sede')
             ->whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true))
             ->when($sedeId, fn ($q) => $q->where('sede_id', $sedeId))
@@ -36,7 +36,7 @@ class Ver extends Component
             ->get()
             ->groupBy('producto_id');
 
-        // Items sueltos (Vaporizador, Computadora, Tanque)
+        
         $sueltos = ItemSerializado::with('producto.categoria', 'sede')
             ->whereHas('producto', function ($q) {
                 $q->where(function ($qx) {

@@ -11,9 +11,9 @@ use Livewire\Component;
 
 class Reporte extends Component
 {
-    // Filtros
+    
     public ?int $filtroSede = null;
-    public string $filtroStock = 'todos'; // todos, con_stock, sin_stock, stock_bajo
+    public string $filtroStock = 'todos'; 
 
     public function exportPdfUrl(): string
     {
@@ -36,10 +36,10 @@ class Reporte extends Component
         $sedes = Sede::activas()->orderBy('id')->get();
         $productos = Producto::with('categoria')->where('activo', true)->get();
 
-        // Stock bajo (Callao)
+        
         $stockBajo = $productos->filter(fn ($p) => $p->stock_bajo);
 
-        // Matriz producto × sede
+        
         $distribucion = $productos->map(function ($p) use ($sedes) {
             $porSede = [];
             foreach ($sedes as $s) {
@@ -52,17 +52,17 @@ class Reporte extends Component
             ];
         })->filter(fn ($row) => $row['total'] > 0)->values();
 
-        // Aplicar filtros
+        
         $distribucionFiltrada = $distribucion;
 
-        // Filtro por sede
+        
         if ($this->filtroSede) {
             $distribucionFiltrada = $distribucionFiltrada->filter(
                 fn ($row) => $row['por_sede'][$this->filtroSede] > 0
             );
         }
 
-        // Filtro por nivel de stock
+        
         $distribucionFiltrada = match ($this->filtroStock) {
             'con_stock' => $distribucionFiltrada->filter(fn ($row) => $row['total'] > 0),
             'sin_stock' => $productos->map(function ($p) use ($sedes) {
@@ -80,23 +80,23 @@ class Reporte extends Component
             default => $distribucionFiltrada,
         };
 
-        // Datos para gráfico de barras (stock por sede)
+        
         $stockPorSede = $sedes->mapWithKeys(function ($s) use ($productos) {
             $total = $productos->sum(fn ($p) => $p->stockEnSede($s->id));
             return [$s->nombre => $total];
         });
 
-        // Datos para gráfico de pastel (stock por categoría)
+        
         $stockPorCategoria = $distribucionFiltrada
             ->groupBy(fn ($row) => $row['producto']->categoria->nombre)
             ->map(fn ($grupo) => $grupo->sum('total'))
             ->sortByDesc(fn ($v) => $v);
 
-        // KPIs
+        
         $totalItems = $distribucionFiltrada->sum('total');
         $productosConStock = $distribucionFiltrada->filter(fn ($row) => $row['total'] > 0)->count();
 
-        // ─── Kits instalados (historial de conversiones) ───
+        
         $kitsInstalados = ItemSerializado::whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true))
             ->whereIn('estado', ['consumido', 'instalado'])
             ->with([
@@ -112,7 +112,7 @@ class Reporte extends Component
                 $generacion = $kit->producto->atributos['generacion'] ?? '';
                 $hijos = $kit->piezasEnKit;
 
-                // Items seriales instalados (no cantidad)
+                
                 $seriales = $hijos->filter(fn ($h) => ($h->atributos['tipo'] ?? '') !== 'cantidad' && !empty($h->serie))
                     ->map(fn ($h) => [
                         'nombre' => $h->producto->nombre,
@@ -139,13 +139,13 @@ class Reporte extends Component
                 ];
             });
 
-        // Valorización total del inventario
+        
         $valorTotal = $distribucionFiltrada->sum(function ($row) {
             $precio = (float) ($row['producto']->precio_referencial ?? 0);
             return $row['total'] * $precio;
         });
 
-        // Últimos 15 movimientos de stock
+        
         $movimientosRecientes = MovimientoStock::with(['producto', 'sede', 'usuario'])
             ->latest()
             ->take(15)

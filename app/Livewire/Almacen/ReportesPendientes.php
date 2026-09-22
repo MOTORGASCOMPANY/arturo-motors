@@ -34,7 +34,7 @@ class ReportesPendientes extends Component
 
     public bool $modalPartesAbierto = false;
 
-    // Piezas sueltas disponibles para reemplazo
+    
     public array $piezasSueltas = [];
     public ?int $piezaSueltaSeleccionadaId = null;
 
@@ -45,9 +45,9 @@ class ReportesPendientes extends Component
         $this->cambioPiezaService = $cambioPiezaService;
     }
 
-    // ═══════════════════════════════════════════════
-    // LISTA
-    // ═══════════════════════════════════════════════
+    
+    
+    
 
     public function getConversionesProperty()
     {
@@ -82,9 +82,9 @@ class ReportesPendientes extends Component
         return compact('pendientes', 'despachadas');
     }
 
-    // ═══════════════════════════════════════════════
-    // MODAL
-    // ═══════════════════════════════════════════════
+    
+    
+    
 
     public function abrirModal(int $ordenId)
     {
@@ -123,9 +123,9 @@ class ReportesPendientes extends Component
         $this->piezaSueltaSeleccionadaId = null;
     }
 
-    // ═══════════════════════════════════════════════
-    // PROPIEDADES
-    // ═══════════════════════════════════════════════
+    
+    
+    
 
     public function getConversionSeleccionadaProperty(): ?ServiceOrder
     {
@@ -229,10 +229,7 @@ class ReportesPendientes extends Component
             ]);
     }
 
-    /**
-     * Verificar si un producto es serializado consultando su categoría en BD.
-     * Reemplaza el hardcoded anterior que solo matcheaba por nombre.
-     */
+    
     private function esSerializable($producto): bool
     {
         if (is_int($producto)) {
@@ -250,9 +247,7 @@ class ReportesPendientes extends Component
     public function abrirPartesGenerales() { $this->modalPartesAbierto = true; }
     public function cerrarPartesGenerales() { $this->modalPartesAbierto = false; }
 
-    /**
-     * Helper: crear reporte solo cuando se va a confirmar
-     */
+    
     private function crearReporte(int $ordenId, int $itemId, string $observacion = ''): ?ReportePiezaNoEncajada
     {
         $orden = ServiceOrder::find($ordenId);
@@ -275,9 +270,9 @@ class ReportesPendientes extends Component
         ]);
     }
 
-    // ═══════════════════════════════════════════════
-    // SELECCIONAR PIEZA (sin crear reporte)
-    // ═══════════════════════════════════════════════
+    
+    
+    
 
     public function seleccionarPieza(int $itemId)
     {
@@ -288,18 +283,18 @@ class ReportesPendientes extends Component
         $sedeId = Sede::activas()->orderBy('id')->first()?->id ?? 1;
 
         if ($esSerial) {
-            // Buscar piezas sueltas con todas sus características
+            
             $sueltas = $this->cambioPiezaService->buscarPiezaSueltas($item->producto_id, $sedeId, $itemId);
 
             if ($sueltas->isNotEmpty()) {
-                // Filtrar: piezas serializadas DEBEN tener serie
+                
                 $sueltas = $sueltas->filter(function ($s) {
                     $esSerial = $s->producto->categoria->es_serializado ?? false;
                     return !$esSerial || !empty($s->serie);
                 });
 
                 if ($sueltas->isNotEmpty()) {
-                    // Mostrar lista para que el usuario elija
+                    
                     $this->piezaReemplazarId = $itemId;
                     $this->metodoReemplazo = 'buscando_suelta';
                     $this->piezasSueltas = $sueltas->map(fn($s) => [
@@ -312,7 +307,7 @@ class ReportesPendientes extends Component
                 }
             }
 
-            // No hay sueltas — buscar kits
+            
             $kits = $this->cambioPiezaService->buscarKitsConProducto($item->producto_id, $sedeId);
             if ($kits->isEmpty()) {
                 $this->dispatch('minToast', titulo: 'Sin stock', mensaje: 'No hay pieza suelta ni kit disponible.', icono: 'warning');
@@ -320,7 +315,7 @@ class ReportesPendientes extends Component
                 return;
             }
 
-            // Guardar solo el ID, SIN crear reporte
+            
             $this->piezaReemplazarId = $itemId;
             $this->metodoReemplazo = 'buscando_kit';
             $this->kitsDisponibles = $kits->map(function($k) use ($item) {
@@ -343,16 +338,16 @@ class ReportesPendientes extends Component
                 ];
             })->toArray();
         } else {
-            // Cantidad — sin crear reporte
+            
             $this->piezaReemplazarId = $itemId;
             $this->metodoReemplazo = 'cantidad';
             $this->cantidadAdicional = '1';
         }
     }
 
-    // ═══════════════════════════════════════════════
-    // PIEZA SUELTA
-    // ═══════════════════════════════════════════════
+    
+    
+    
 
     public function seleccionarPiezaSuelta(int $piezaSueltaId)
     {
@@ -383,9 +378,9 @@ class ReportesPendientes extends Component
         }
     }
 
-    // ═══════════════════════════════════════════════
-    // KIT
-    // ═══════════════════════════════════════════════
+    
+    
+    
 
     public function seleccionarKit(int $kitId)
     {
@@ -407,7 +402,7 @@ class ReportesPendientes extends Component
         }
 
         try {
-            // Crear reporte AHORA
+            
             $reporte = $this->crearReporte($this->conversionSeleccionadaId, $this->piezaReemplazarId, $this->observacion);
             $kitItem = ItemSerializado::find($this->kitSeleccionadoId);
 
@@ -425,9 +420,9 @@ class ReportesPendientes extends Component
         }
     }
 
-    // ═══════════════════════════════════════════════
-    // CANTIDAD
-    // ═══════════════════════════════════════════════
+    
+    
+    
 
     public function confirmarCantidadAdicional()
     {
@@ -444,7 +439,7 @@ class ReportesPendientes extends Component
 
             $sedeId = Sede::activas()->orderBy('id')->first()?->id ?? 1;
 
-            // Registrar entrada de stock
+            
             MovimientoStock::registrar(
                 $item->producto, 'entrada', $cantidad, null, Auth::id(),
                 "Cantidad adicional para orden #{$orden->id}", $sedeId

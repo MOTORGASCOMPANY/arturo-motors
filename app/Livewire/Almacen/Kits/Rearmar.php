@@ -16,7 +16,7 @@ class Rearmar extends Component
     public ?ItemSerializado $kit = null;
     public array $piezasFaltantes = [];
 
-    // Búsqueda de pieza de repuesto
+    
     public string $buscarPieza = '';
     public array $piezasEncontradas = [];
     public ?int $piezaSeleccionadaId = null;
@@ -114,12 +114,12 @@ class Rearmar extends Component
                 $this->dispatch('swal', tipo: 'success', titulo: '¡Kit rearmando!',
                     mensaje: 'La pieza fue devuelta al kit. Verificando si está completo...');
 
-                // Recargar datos
+                
                 $this->kit->refresh();
                 $this->cargarFaltantes();
                 $this->piezaSeleccionadaId = null;
 
-                // Si el kit está completo, redirigir
+                
                 if ($this->kit->estado === 'en_stock') {
                     $this->dispatch('swal', tipo: 'success', titulo: '¡Kit completo!',
                         mensaje: 'El kit fue rearmando exitosamente y está listo para usar.');

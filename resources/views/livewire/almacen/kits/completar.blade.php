@@ -22,7 +22,7 @@
 
             <div class="mb-6">
                 <h3 class="text-lg font-semibold text-gray-800 mb-3">Componentes Faltantes</h3>
-                
+
                 @if(empty($faltantes))
                     <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
                         ✅ El kit está completo. No faltan componentes.
@@ -66,7 +66,7 @@
                 <div class="border-t pt-4 mb-6">
                     <h3 class="text-lg font-semibold text-gray-800 mb-3">Buscar Pieza Disponible</h3>
                     <p class="text-sm text-gray-500 mb-3">Busca por serie o nombre para encontrar piezas en stock.</p>
-                    
+
                     <input type="text" 
                            wire:model.live="buscarPieza" 
                            placeholder="Buscar pieza..."

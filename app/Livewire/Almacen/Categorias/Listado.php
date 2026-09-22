@@ -11,8 +11,8 @@ class Listado extends Component
     #[On('categoria-creada')]
     public function refrescar()
     {
-        // Método vacío a propósito: el solo hecho de escuchar el evento
-        // le indica a Livewire que debe re-renderizar este componente.
+        
+        
     }
 
     public function render()

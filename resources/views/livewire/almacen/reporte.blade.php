@@ -1,6 +1,5 @@
 <div wire:loading.class="opacity-50 pointer-events-none transition-opacity duration-300" class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8 font-sans">
 
-    {{-- Header --}}
     <div class="bg-slate-900 p-6 sm:p-8 rounded-2xl w-full shadow-lg">
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div class="flex items-center gap-4">
@@ -28,7 +27,6 @@
         </div>
     </div>
 
-    {{-- KPIs --}}
     <div>
         <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4 px-1 flex items-center gap-2">
             <i class="fas fa-gauge-high text-slate-400"></i>
@@ -69,7 +67,6 @@
         </div>
     </div>
 
-    {{-- Filtros --}}
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5">
         <div class="flex items-center gap-2 mb-4">
             <i class="fas fa-sliders text-slate-400"></i>
@@ -111,7 +108,6 @@
         </div>
     </div>
 
-    {{-- Charts --}}
     <div class="grid grid-cols-1 lg:grid-cols-5 gap-5">
         <div class="lg:col-span-3 bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6" wire:ignore>
             <div class="flex items-center justify-between mb-5">
@@ -143,7 +139,6 @@
         </div>
     </div>
 
-    {{-- Distribución de stock por sede --}}
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
         <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white">
             <h3 class="font-bold text-slate-700 text-base flex items-center gap-2">
@@ -195,7 +190,6 @@
         </div>
     </div>
 
-    {{-- Movimientos recientes --}}
     @if ($movimientosRecientes->count())
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
             <div class="p-5 border-b border-slate-100 flex items-center justify-between gap-3">
@@ -244,7 +238,6 @@
         </div>
     @endif
 
-    {{-- Stock bajo --}}
     @if ($stockBajo->count())
         <div class="bg-white rounded-2xl shadow-sm border border-red-200 overflow-hidden">
             <div class="p-5 border-b border-red-100 bg-red-50/50 flex items-center gap-2">
@@ -276,9 +269,6 @@
         </div>
     @endif
 
-    {{-- ═══════════════════════════════════════════════════════════ --}}
-    {{-- KITS INSTALADOS — Historial de conversiones por vehículo --}}
-    {{-- ═══════════════════════════════════════════════════════════ --}}
     @if ($kitsInstalados->isNotEmpty())
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
             <div class="p-5 border-b border-slate-100 flex items-center justify-between gap-3">
@@ -360,7 +350,6 @@
         }
     </style>
 
-    {{-- Data injection for charts --}}
     <script>
         window.reporteData = {
             dataSedes: @json($dataSedes),

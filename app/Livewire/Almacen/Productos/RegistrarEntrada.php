@@ -17,11 +17,11 @@ class RegistrarEntrada extends Component
 
     public ?Producto $producto = null;
 
-    // Para serializados: se agregan series una por una a una lista antes de guardar
+    
     public string $nuevaSerie = '';
     public array $seriesPendientes = [];
 
-    // Para no serializados: cantidad directa
+    
     public int $cantidadEntrada = 1;
 
     protected function sedePrincipalId(): int

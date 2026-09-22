@@ -17,18 +17,18 @@ class Crear extends Component
     public string $notas = '';
     public array $cantidades = [];
 
-    public array $series = []; // [producto_id => [{serie, marca, ...}, ...]]
-    public array $produces = []; // [producto_id => produce] — shared across all units of same product
+    public array $series = []; 
+    public array $produces = []; 
 
     public string $seccion = 'elegir';
 
-    // Modal kit
+    
     public bool $modalKitAbierto = false;
     public int $modalKitId = 0;
     public string $modalKitNombre = '';
     public int $modalKitCantidad = 0;
     public array $modalComponentes = [];
-    public string $kitProduce = ''; // Produce compartido para todos los componentes del kit
+    public string $kitProduce = ''; 
     public bool $mostrandoFormNuevo = false;
 
     public string $nuevoNombre = '';
@@ -51,7 +51,7 @@ class Crear extends Component
     public string $editarKitNombre = '';
     public string $editarKitGeneracion = '';
 
-    // Productos por cantidad
+    
     public string $subSeccionProductos = '';
     public array $cantidadesCantidad = [];
     public string $buscarCantidad = '';
@@ -60,16 +60,30 @@ class Crear extends Component
     public ?int $nuevoCantidadCategoriaId = null;
     public int $nuevoCantidadStockInicial = 1;
 
-    /**
-     * Campos que se comparten entre todas las unidades del mismo producto (ej: produce).
-     * El resto de campos del esquema son por unidad.
-     */
     public static array $camposCompartidos = ['produce'];
 
-    // ── Helper centralizado de errores ──────────────────────────
-    // Cualquier excepción inesperada pasa por acá: se loguea, se avisa
-    // al usuario y NUNCA se toca el estado de modales/forms, para que
-    // el usuario pueda corregir y reintentar sin perder lo que cargó.
+    public function incrementarCantidad(int $productoId): void
+    {
+        $this->cantidades[$productoId] = ($this->cantidades[$productoId] ?? 0) + 1;
+    }
+
+    public function decrementarCantidad(int $productoId): void
+    {
+        $actual = $this->cantidades[$productoId] ?? 0;
+        $this->cantidades[$productoId] = max(0, $actual - 1);
+    }
+
+    public function incrementarCantidadCantidad(int $productoId): void
+    {
+        $this->cantidadesCantidad[$productoId] = ($this->cantidadesCantidad[$productoId] ?? 0) + 1;
+    }
+
+    public function decrementarCantidadCantidad(int $productoId): void
+    {
+        $actual = $this->cantidadesCantidad[$productoId] ?? 0;
+        $this->cantidadesCantidad[$productoId] = max(0, $actual - 1);
+    }
+
     private function avisarError(\Throwable $e, string $evento = 'swal-init', string $mensajeAmigable = 'Ocurrió un error inesperado. Intentá nuevamente.'): void
     {
         report($e);
@@ -86,7 +100,7 @@ class Crear extends Component
         $this->seccion = 'elegir';
     }
 
-    // ── Productos por cantidad ─────────────────────────────────
+    
 
     public function abrirSubSeccion(string $tipo): void
     {
@@ -143,7 +157,7 @@ class Crear extends Component
     {
         $this->resetValidation();
 
-        // ── Validaciones: si fallan, el form permanece abierto ──
+        
         if (empty(trim($this->nuevoCantidadNombre))) {
             $this->dispatch('swal-init', tipo: 'error', titulo: 'Error', mensaje: 'El nombre es obligatorio.');
             return;
@@ -172,14 +186,14 @@ class Crear extends Component
             ]);
 
             $this->cantidadesCantidad[$producto->id] = $this->nuevoCantidadStockInicial;
-            // NO cerrar el form — solo limpiar campos para que el usuario pueda crear otro
+            
             $this->nuevoCantidadNombre = '';
             $this->nuevoCantidadStockInicial = 1;
-            // Mantener la categoría seleccionada por si crea varios en la misma
+            
 
             $this->dispatch('swal-init', tipo: 'success', titulo: '¡Listo!', mensaje: "{$producto->nombre} registrado con stock inicial.");
         } catch (\Throwable $e) {
-            // Ante un error de BD (ej. constraint), el form NO se cierra
+            
             $this->avisarError($e, 'swal-init', 'No se pudo registrar el producto.');
         }
     }
@@ -217,13 +231,13 @@ class Crear extends Component
             $this->redirect(route('almacen.recepciones.listado'));
 
         } catch (\Throwable $e) {
-            // La transacción falló completa: no se pierde nada en pantalla,
-            // el usuario sigue en la misma sección con sus cantidades cargadas.
+            
+            
             $this->avisarError($e, 'swal-init', 'No se pudo registrar la recepción.');
         }
     }
 
-    // ── Modal kit ──────────────────────────────────────────────
+    
 
     public function abrirModal(int $kitId, int $cantidad): void
     {
@@ -255,7 +269,7 @@ class Crear extends Component
                     $esSerializado = $producto->categoria->es_serializado ?? false;
                     $esquema = $producto->categoria->esquema_atributos ?? ['serie'];
                     $camposEsquema = is_string($esquema) ? (json_decode($esquema, true) ?? ['serie']) : $esquema;
-                    // Campos por unidad (excluyendo 'produce' que es compartido)
+                    
                     $camposPorUnidad = $esSerializado
                         ? array_values(array_diff($camposEsquema, self::$camposCompartidos))
                         : [];
@@ -268,7 +282,7 @@ class Crear extends Component
                         'campos_esquema' => $camposPorUnidad,
                     ];
 
-                    // Para serializados: crear N unidades (una por kit)
+                    
                     if ($esSerializado) {
                         $entry['unidades'] = [];
                         for ($u = 0; $u < $cantidad; $u++) {
@@ -288,8 +302,8 @@ class Crear extends Component
 
             $this->modalKitAbierto = true;
         } catch (\Throwable $e) {
-            // Si algo falla al abrir el modal, avisamos y no dejamos el modal
-            // a medio abrir con datos incompletos.
+            
+            
             $this->modalKitAbierto = false;
             $this->avisarError($e, 'swal-kit', 'No se pudo abrir el detalle del kit.');
         }
@@ -330,24 +344,14 @@ class Crear extends Component
     {
         $this->resetValidation();
 
-        // ── Validaciones: si fallan, el modal Y el form permanecen abiertos ──
         if (!$this->modalKitId) {
             $this->dispatch('swal-kit', tipo: 'error', titulo: 'Error', mensaje: 'No hay kit seleccionado.');
             return;
         }
 
-        if (empty(trim($this->nuevoNombre))) {
-            $this->dispatch('swal-kit', tipo: 'error', titulo: 'Error', mensaje: 'El nombre es obligatorio.');
-            return;
-        }
-
         try {
-            if (Producto::where('nombre', 'LIKE', trim($this->nuevoNombre))->exists()) {
-                $this->dispatch('swal-kit', tipo: 'error', titulo: 'Duplicado', mensaje: 'Ya existe un producto con ese nombre.');
-                return;
-            }
-
             $categoria = null;
+            $nombre = trim($this->nuevoNombre);
 
             if ($this->nuevoTipo === 'serializado') {
                 if (!$this->nuevoCategoriaId) {
@@ -358,6 +362,13 @@ class Crear extends Component
                 $categoria = CategoriaAlmacen::find($this->nuevoCategoriaId);
                 if (!$categoria || !$categoria->es_serializado) {
                     $this->dispatch('swal-kit', tipo: 'error', titulo: 'Error', mensaje: 'Categoría inválida.');
+                    return;
+                }
+
+                $nombre = $categoria->nombre;
+
+                if (Producto::where('nombre', 'LIKE', $nombre)->exists()) {
+                    $this->dispatch('swal-kit', tipo: 'error', titulo: 'Duplicado', mensaje: 'Ya existe un producto con ese nombre.');
                     return;
                 }
 
@@ -384,6 +395,16 @@ class Crear extends Component
                     }
                 }
             } else {
+                if (empty($nombre)) {
+                    $this->dispatch('swal-kit', tipo: 'error', titulo: 'Error', mensaje: 'El nombre es obligatorio.');
+                    return;
+                }
+
+                if (Producto::where('nombre', 'LIKE', $nombre)->exists()) {
+                    $this->dispatch('swal-kit', tipo: 'error', titulo: 'Duplicado', mensaje: 'Ya existe un producto con ese nombre.');
+                    return;
+                }
+
                 if ($this->nuevaCantidad < 1) {
                     $this->dispatch('swal-kit', tipo: 'error', titulo: 'Error', mensaje: 'La cantidad debe ser al menos 1.');
                     return;
@@ -402,7 +423,7 @@ class Crear extends Component
 
             $producto = Producto::create([
                 'categoria_id' => $categoria->id,
-                'nombre' => trim($this->nuevoNombre),
+                'nombre' => $nombre,
                 'activo' => true,
             ]);
 
@@ -438,7 +459,7 @@ class Crear extends Component
                     }
                     $entry['unidades'][] = $unit;
                 }
-                // Si el usuario ya puso una serie en el formulario, meterla en la primera unidad
+                
                 if (!empty($this->nuevoSerie)) {
                     $entry['unidades'][0]['serie'] = strtoupper(trim($this->nuevoSerie));
                 }
@@ -448,7 +469,7 @@ class Crear extends Component
 
             $this->modalComponentes[] = $entry;
 
-            // NO cerrar el form ni el modal — solo limpiar campos para que el usuario pueda crear otro
+            
             $this->nuevoNombre = '';
             $this->nuevoTipo = 'serializado';
             $this->nuevoCategoriaId = null;
@@ -457,7 +478,7 @@ class Crear extends Component
 
             $this->dispatch('swal-kit', tipo: 'success', titulo: '¡Listo!', mensaje: 'Componente registrado y agregado al kit.');
         } catch (\Throwable $e) {
-            // Ante cualquier error de BD, ni el modal ni el form se cierran
+            
             $this->avisarError($e, 'swal-kit', 'No se pudo registrar el componente.');
         }
     }
@@ -528,7 +549,7 @@ class Crear extends Component
 
             $this->productoExistenteId = null;
         } catch (\Throwable $e) {
-            // El modal permanece abierto para que el usuario reintente
+            
             $this->avisarError($e, 'swal-kit', 'No se pudo agregar el componente existente.');
         }
     }
@@ -545,11 +566,11 @@ class Crear extends Component
                 ->where('producto_componente_id', $componente['producto_id'])
                 ->delete();
 
-            // Solo quitamos del arreglo en memoria si el delete en BD no falló
+            
             array_splice($this->modalComponentes, $index, 1);
         } catch (\Throwable $e) {
-            // Si falla el delete en BD, NO tocamos el arreglo en memoria
-            // (así lo que ve el usuario sigue siendo consistente con la BD)
+            
+            
             $this->avisarError($e, 'swal-kit', 'No se pudo quitar el componente.');
         }
     }
@@ -586,7 +607,7 @@ class Crear extends Component
     {
         $this->resetValidation();
 
-        // ── Validaciones: si fallan, el form permanece abierto ──
+        
         if (empty(trim($this->nuevoKitNombre))) {
             $this->dispatch('swal-kit', tipo: 'error', titulo: 'Error', mensaje: 'El nombre del kit es obligatorio.');
             return;
@@ -616,7 +637,7 @@ class Crear extends Component
             ]);
 
             $this->cantidades[$producto->id] = 0;
-            // NO cerrar el form — solo limpiar campos para crear otro kit
+            
             $this->nuevoKitNombre = '';
             $this->nuevoKitGeneracion = '';
 
@@ -689,7 +710,7 @@ class Crear extends Component
     {
         $this->resetValidation();
 
-        // ── Validación: si falla, el modal permanece abierto ──
+        
         if (empty(trim($this->editarKitNombre))) {
             $this->dispatch('swal-kit', tipo: 'error', titulo: 'Error', mensaje: 'El nombre es obligatorio.');
             return;
@@ -712,16 +733,16 @@ class Crear extends Component
                 'atributos' => array_merge($kit->atributos ?? [], ['generacion' => trim($this->editarKitGeneracion)]),
             ]);
 
-            // Solo cerramos el modal cuando el update salió bien
+            
             $this->modalEditarKit = false;
             $this->dispatch('swal-kit', tipo: 'success', titulo: '¡Listo!', mensaje: 'Kit actualizado.');
         } catch (\Throwable $e) {
-            // El modal NO se cierra ante un error de BD
+            
             $this->avisarError($e, 'swal-kit', 'No se pudo actualizar el kit.');
         }
     }
 
-    // ── Guardar kits ───────────────────────────────────────────
+    
 
     public function guardar(): void
     {
@@ -746,13 +767,13 @@ class Crear extends Component
     {
         if (empty($this->modalComponentes)) {
             $this->dispatch('swal-kit', tipo: 'warning', titulo: 'Atención', mensaje: 'No hay componentes en este kit.');
-            return; // modal permanece abierto
+            return; 
         }
 
-        // ── Validación de campos y series ──
-        // Envuelta en try/catch: cualquier índice inesperado faltante
-        // (undefined array key, etc.) se transforma en un aviso amigable
-        // en lugar de romper la request y "cerrar" el modal.
+        
+        
+        
+        
         try {
             $seriesIngresadas = [];
 
@@ -764,52 +785,52 @@ class Crear extends Component
                 $nombreComponente = $componente['nombre'] ?? 'componente';
 
                 foreach ($unidades as $uIdx => $unidad) {
-                    // Validar campos requeridos del esquema (excepto produce que es opcional y compartido)
+                    
                     foreach ($camposEsquema as $campo) {
                         if ($campo === 'produce') continue;
                         $valor = $unidad[$campo] ?? null;
                         if (empty($valor)) {
                             $this->dispatch('swal-kit', tipo: 'error', titulo: 'Campo faltante',
                                 mensaje: ucfirst(str_replace('_', ' ', $campo)) . " es obligatorio para: {$nombreComponente} (unidad " . ($uIdx + 1) . ")");
-                            return; // modal permanece abierto
+                            return; 
                         }
                     }
 
-                    // Validar serie (siempre requerida para serializados)
+                    
                     $serie = strtoupper(trim((string) ($unidad['serie'] ?? '')));
                     if ($serie === '') {
                         $this->dispatch('swal-kit', tipo: 'error', titulo: 'Serie faltante',
                             mensaje: "Registrá la serie de: {$nombreComponente} (unidad " . ($uIdx + 1) . ")");
-                        return; // modal permanece abierto
+                        return; 
                     }
 
                     if (in_array($serie, $seriesIngresadas, true)) {
                         $this->dispatch('swal-kit', tipo: 'error', titulo: 'Serie duplicada', mensaje: "Duplicado: \"{$serie}\"");
-                        return; // modal permanece abierto
+                        return; 
                     }
 
                     if (ItemSerializado::where('serie', $serie)->exists()) {
                         $this->dispatch('swal-kit', tipo: 'error', titulo: 'Serie duplicada', mensaje: "La serie \"{$serie}\" ya está registrada.");
-                        return; // modal permanece abierto
+                        return; 
                     }
 
                     $seriesIngresadas[] = $serie;
                 }
             }
         } catch (\Throwable $e) {
-            // Error inesperado durante la validación: el modal NO se cierra
+            
             $this->avisarError($e, 'swal-kit', 'No se pudieron validar los datos del kit. Revisá los campos e intentá de nuevo.');
             return;
         }
 
-        // ── Guardado real ──
+        
         try {
             DB::transaction(function () {
                 $this->guardarRecetaKit();
                 $this->crearKitsConComponentes();
             });
 
-            // Solo cerramos el modal (o avanzamos de kit) cuando el guardado fue exitoso
+            
             $this->cerrarModal();
             $this->colaIndex++;
 
@@ -823,8 +844,8 @@ class Crear extends Component
             $this->redirect(route('almacen.recepciones.listado'));
 
         } catch (\Throwable $e) {
-            // La transacción falló: el modal NO se cierra, el usuario conserva
-            // todo lo que cargó y puede corregir/reintentar.
+            
+            
             $this->avisarError($e, 'swal-kit', 'No se pudo registrar la recepción del kit: ' . $e->getMessage());
         }
     }
@@ -867,11 +888,11 @@ class Crear extends Component
                 if (!$producto) throw new \RuntimeException("El producto {$componente['producto_id']} no existe.");
 
                 if ($componente['es_serializado']) {
-                    // Obtener la unidad correspondiente a este kit (índice $i)
+                    
                     $unidad = $componente['unidades'][$i] ?? null;
                     if (!$unidad) throw new \RuntimeException("Faltan datos para {$componente['nombre']} (kit " . ($i + 1) . ")");
 
-                    // Atributos base del componente
+                    
                     $atributos = [
                         'agregado_a_kit' => true,
                         'fecha' => now()->toDateString(),
@@ -880,7 +901,7 @@ class Crear extends Component
                         'recepcion_fecha' => now()->toDateString(),
                     ];
 
-                    // Agregar campos del esquema desde la unidad (marca, generacion, capacidad, etc.)
+                    
                     $camposEsquema = $componente['campos_esquema'] ?? [];
                     foreach ($camposEsquema as $campo) {
                         if ($campo === 'produce') continue;
@@ -890,7 +911,7 @@ class Crear extends Component
                         }
                     }
 
-                    // Produce compartido (opcional)
+                    
                     if ($kitProduce !== '') {
                         $atributos['produce'] = $kitProduce;
                     }
@@ -925,7 +946,7 @@ class Crear extends Component
         MovimientoStock::registrar($kit, 'entrada', $this->modalKitCantidad, null, $usuarioId, 'Entrada por recepción', $sedeId);
     }
 
-    // ── Guardar productos individuales (serializados) ──────────
+    
 
     public function guardarProductos(): void
     {
@@ -936,9 +957,9 @@ class Crear extends Component
             return;
         }
 
-        // ── Validar campos requeridos según esquema de cada producto ──
-        // Envuelta en try/catch: si algo inesperado ocurre acá (esquema mal
-        // formado, índice faltante), avisamos sin perder lo cargado.
+        
+        
+        
         try {
             foreach ($conCantidad as $productoId => $cantidad) {
                 $producto = Producto::find($productoId);
@@ -949,7 +970,7 @@ class Crear extends Component
                 $camposUnidad = self::camposPorUnidad($campos);
                 $seriesProducto = $this->series[$productoId] ?? [];
 
-                // Validar campos por unidad
+                
                 for ($i = 0; $i < $cantidad; $i++) {
                     $data = $seriesProducto[$i] ?? [];
                     foreach ($camposUnidad as $campo) {
@@ -957,7 +978,7 @@ class Crear extends Component
                             $this->addError('general', "Falta {$campo} para {$producto->nombre} (unidad " . ($i + 1) . ").");
                             $this->dispatch('swal-init', tipo: 'error', titulo: 'Campo faltante',
                                 mensaje: "Falta {$campo} para {$producto->nombre} (unidad " . ($i + 1) . ").");
-                            return; // formulario permanece con lo cargado, sin navegar
+                            return; 
                         }
                     }
                 }
@@ -992,12 +1013,12 @@ class Crear extends Component
                             'registrado_por' => $usuarioId,
                         ];
 
-                        // Campo compartido (produce) — mismo valor para todas las unidades
+                        
                         if ($produceCompartido !== null && $produceCompartido !== '') {
                             $atributos['produce'] = $produceCompartido;
                         }
 
-                        // Campos por unidad (serie, marca, generacion, capacidad, etc.)
+                        
                         foreach ($camposUnidad as $campo) {
                             $valor = $data[$campo] ?? null;
                             if ($valor !== null && $valor !== '') {
@@ -1025,13 +1046,13 @@ class Crear extends Component
             $this->redirect(route('almacen.recepciones.listado'));
 
         } catch (\Throwable $e) {
-            // La transacción falló: el usuario permanece en la misma pantalla,
-            // con todas las series y cantidades tal como las había cargado.
+            
+            
             $this->avisarError($e, 'swal-init', 'No se pudo registrar la recepción.');
         }
     }
 
-    // ── Getters ────────────────────────────────────────────────
+    
 
     public function mount(): void
     {

@@ -13,7 +13,7 @@
 
             @forelse ($traslados as $t)
             <div class="bg-white rounded-xl border border-gray-200 p-5 mb-4 shadow-sm hover:shadow-md transition duration-200">
-                {{-- Cabecera de la tarjeta --}}
+
                 <div class="flex justify-between items-start mb-4 pb-4 border-b border-gray-100">
                     <div class="space-y-1">
                         <div class="flex items-center gap-2">
@@ -36,20 +36,19 @@
                             <i class="far fa-user mr-1"></i>{{ $t->enviadoPor->name }}
                         </p>
                     </div>
-                    
+
                     <button wire:click="verDetalle({{ $t->id }})"
                         class="w-9 h-9 flex items-center justify-center text-indigo-600 bg-indigo-50 hover:bg-indigo-600 hover:text-white rounded-lg transition-colors"
                         title="Ver detalle completo">
                         <i class="fas fa-eye text-sm"></i>
                     </button>
                 </div>
-        
-                {{-- Lista de items (Vista previa limitada) --}}
+
                 <div>
                     <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3">
                         Contenido del traslado ({{ $t->detalles->count() }} items)
                     </p>
-                    
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                         @php $detallesPreview = $t->detalles->take(4); @endphp
                         @foreach ($detallesPreview as $d)
@@ -70,15 +69,14 @@
                             </div>
                         @endforeach
                     </div>
-                    
+
                     @if($t->detalles->count() > 4)
                         <button wire:click="verDetalle({{ $t->id }})" class="w-full mt-2 py-1.5 text-xs text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50 rounded font-medium transition text-center">
                             Ver los {{ $t->detalles->count() - 4 }} productos restantes <i class="fas fa-chevron-right text-[9px] ml-1"></i>
                         </button>
                     @endif
                 </div>
-        
-                {{-- Observaciones --}}
+
                 @if ($t->observaciones)
                     <div class="mt-4 bg-amber-50/50 border border-amber-100 p-2.5 rounded-lg text-xs text-amber-800 flex gap-2 items-start">
                         <i class="fas fa-comment-alt mt-0.5 opacity-60"></i> 
@@ -99,14 +97,12 @@
         </div>
     </div>
 
-    {{-- Modal detalle --}}
     @if($mostrarDetalle && $trasladoSeleccionado)
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4" x-data>
             <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" wire:click="cerrarDetalle"></div>
 
             <div class="relative bg-white rounded-2xl shadow-2xl border border-gray-200 w-full max-w-md overflow-hidden">
 
-                {{-- Header --}}
                 <div class="px-6 py-5 bg-gray-900 text-white">
                     <div class="flex items-center justify-between">
                         <div>
@@ -119,7 +115,6 @@
                     </div>
                 </div>
 
-                {{-- Badge tipo --}}
                 <div class="px-6 py-3 border-b border-gray-100">
                     @if($trasladoSeleccionado->es_kit_completo)
                         <span class="inline-flex items-center gap-1 px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full">
@@ -132,7 +127,6 @@
                     @endif
                 </div>
 
-                {{-- Lista de items --}}
                 <div class="px-6 py-4 max-h-64 overflow-y-auto">
                     <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Items enviados</p>
                     <div class="space-y-2">
@@ -160,7 +154,6 @@
                     </div>
                 </div>
 
-                {{-- Observaciones --}}
                 @if($trasladoSeleccionado->observaciones)
                     <div class="px-6 py-3 border-t border-gray-100 bg-gray-50">
                         <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Observaciones</p>
@@ -168,7 +161,6 @@
                     </div>
                 @endif
 
-                {{-- Footer --}}
                 <div class="px-6 py-4 border-t border-gray-100">
                     <button wire:click="cerrarDetalle" type="button"
                         class="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition font-medium text-sm">

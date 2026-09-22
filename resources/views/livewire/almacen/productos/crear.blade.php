@@ -32,11 +32,11 @@
                         @foreach ($this->categoria->esquema_atributos as $campo => $valor)
                             <div>
                                 @if (is_int($campo))
-                                    {{-- Flat: ["generacion"] --}}
+
                                     <x-label :value="ucfirst($valor)" />
                                     <x-input wire:model="atributos.{{ $valor }}" class="w-full rounded-lg border-gray-300 text-sm" />
                                 @else
-                                    {{-- Nested: {"generacion": ["3RA","5TA"]} --}}
+
                                     <x-label :value="ucfirst($campo)" />
                                     <select wire:model="atributos.{{ $campo }}" class="w-full rounded-lg border-gray-300 text-sm">
                                         <option value="">-- Selecciona --</option>

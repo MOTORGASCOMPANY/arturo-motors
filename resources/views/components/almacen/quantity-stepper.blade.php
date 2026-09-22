@@ -1,4 +1,4 @@
-@props(['model', 'min' => 0, 'max' => 99, 'color' => 'indigo', 'size' => 'md'])
+@props(['model', 'min' => 0, 'max' => 99, 'color' => 'indigo', 'size' => 'md', 'productId' => null, 'variant' => 'kits'])
 
 @php
     $btnBgMap = [
@@ -12,16 +12,18 @@
         'lg' => 'w-10 h-10 text-base',
     ];
     $sz = $sizeMap[$size] ?? $sizeMap['md'];
+    $method = $variant === 'cantidad' ? 'decrementarCantidadCantidad' : 'decrementarCantidad';
+    $methodInc = $variant === 'cantidad' ? 'incrementarCantidadCantidad' : 'incrementarCantidad';
 @endphp
 
 <div class="flex items-center gap-2 shrink-0">
     <button type="button"
-        wire:click="$set('{{ $model }}', Math.max({{ $min }}, {{ $model }} - 1))"
+        wire:click="{{ $method }}({{ $productId }})"
         class="{{ $sz }} rounded-lg {{ $btns['decr'] }} flex items-center justify-center font-bold transition-colors">−</button>
     <input type="number" min="{{ $min }}" max="{{ $max }}"
         wire:model.live="{{ $model }}"
         class="w-20 text-center text-lg font-bold border border-gray-300 rounded-lg py-1.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
     <button type="button"
-        wire:click="$set('{{ $model }}', {{ $model }} + 1)"
+        wire:click="{{ $methodInc }}({{ $productId }})"
         class="{{ $sz }} rounded-lg {{ $btns['incr'] }} flex items-center justify-center font-bold transition-colors">+</button>
 </div>

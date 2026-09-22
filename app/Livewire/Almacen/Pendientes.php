@@ -38,7 +38,7 @@ class Pendientes extends Component
         $this->solicitudSeleccionada = $itemId;
         $this->itemSolicitado = ItemSerializado::with(['producto.categoria', 'serviceOrder.cliente', 'serviceOrder.vehiculo'])->find($itemId);
         
-        // Buscar kits disponibles (productos cuya categoría tiene es_kit = true)
+        
         $this->kitsDisponibles = ItemSerializado::with('producto.categoria')
             ->whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true))
             ->where('estado', 'en_stock')
@@ -61,7 +61,7 @@ class Pendientes extends Component
 
         try {
             DB::transaction(function () {
-                // 1. Obtener el kit a abrir
+                
                 $kit = ItemSerializado::where('id', $this->kitSeleccionadoId)
                     ->where('estado', 'en_stock')
                     ->lockForUpdate()
@@ -71,10 +71,10 @@ class Pendientes extends Component
                     throw new \Exception('El kit ya no está disponible.');
                 }
 
-                // 2. Marcar kit como "abierto"
+                
                 $kit->update(['estado' => 'abierto']);
 
-                // 3. Buscar el componente del kit que coincida con lo solicitado
+                
                 $componentes = KitComponente::where('producto_kit_id', $kit->producto_id)->get();
                 
                 $componenteEncontrado = null;
@@ -90,7 +90,7 @@ class Pendientes extends Component
                     throw new \Exception('El kit no contiene esta pieza.');
                 }
 
-                // 4. Crear item para la pieza obtenida del kit
+                
                 $esSerializado = $componenteEncontrado->categoria?->es_serializado ?? false;
 
                 $nuevaPieza = ItemSerializado::create([
@@ -106,7 +106,7 @@ class Pendientes extends Component
                     ],
                 ]);
 
-                // 5. Actualizar item solicitado con la nueva pieza
+                
                 $this->itemSolicitado->update([
                     'atributos' => array_merge($this->itemSolicitado->atributos ?? [], [
                         'almacen_procesado' => true,
@@ -116,13 +116,13 @@ class Pendientes extends Component
                     ]),
                 ]);
 
-                // 6. Asignar pieza a la orden de servicio
+                
                 $nuevaPieza->update([
                     'estado' => 'asignado',
                     'service_order_id' => $this->itemSolicitado->service_order_id,
                 ]);
 
-                // 7. Devolver pieza que no calza al stock
+                
                 $this->itemSolicitado->update([
                     'estado' => 'en_stock',
                     'service_order_id' => null,

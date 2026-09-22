@@ -15,11 +15,11 @@ class Completar extends Component
     public ?int $kitItemId = null;
     public ?ItemSerializado $kit = null;
 
-    // Componentes faltantes que se van agregando
+    
     public array $faltantes = [];
-    // Estructura: [['producto_id' => X, 'cantidad' => 1, 'serie' => '']]
+    
 
-    // Búsqueda de piezas disponibles
+    
     public string $buscarPieza = '';
     public array $piezasEncontradas = [];
 
@@ -37,7 +37,7 @@ class Completar extends Component
             abort(404, 'Kit no encontrado.');
         }
 
-        // Cargar componentes faltantes del kit
+        
         $this->cargarFaltantes();
     }
 
@@ -45,7 +45,7 @@ class Completar extends Component
     {
         if (!$this->kit) return;
 
-        // Obtener componentes que debería tener el kit
+        
         $componentesEsperados = DB::table('kit_componentes')
             ->join('productos', 'producto_componente_id', '=', 'productos.id')
             ->join('categorias_almacen', 'productos.categoria_id', '=', 'categorias_almacen.id')
@@ -58,12 +58,12 @@ class Completar extends Component
             )
             ->get();
 
-        // Obtener componentes que ya tiene el kit (como hijos)
+        
         $componentesActuales = ItemSerializado::where('kit_padre_id', $this->kit->id)
             ->pluck('producto_id')
             ->toArray();
 
-        // Los que faltan son los que no están como hijos
+        
         $this->faltantes = [];
         foreach ($componentesEsperados as $comp) {
             if (!in_array($comp->producto_id, $componentesActuales)) {
@@ -89,11 +89,11 @@ class Completar extends Component
 
         $sedeId = $this->sedePrincipalId();
 
-        // Buscar piezas serializadas disponibles
+        
         $this->piezasEncontradas = ItemSerializado::with('producto.categoria')
             ->where('estado', 'en_stock')
             ->where('sede_id', $sedeId)
-            ->where('id', '!=', $this->kit->id) // no a sí mismo
+            ->where('id', '!=', $this->kit->id) 
             ->where(function ($q) use ($termino) {
                 $q->where('serie', 'like', "%{$termino}%")
                   ->orWhereHas('producto', fn ($p) => $p->where('nombre', 'like', "%{$termino}%"));
@@ -105,7 +105,7 @@ class Completar extends Component
 
     public function agregarPiezaDisponible(int $productoId, ?string $serie = null)
     {
-        // Verificar si ya está en faltantes
+        
         foreach ($this->faltantes as &$faltante) {
             if ($faltante['producto_id'] == $productoId && !$faltante['agregado']) {
                 $faltante['agregado'] = true;
@@ -137,7 +137,7 @@ class Completar extends Component
             return;
         }
 
-        // Validar series para serializados
+        
         foreach ($agregados as $faltante) {
             if ($faltante['es_serializado'] && empty(trim($faltante['serie']))) {
                 $this->addError('general', "Debes registrar la serie de: {$faltante['nombre']}");
@@ -151,7 +151,7 @@ class Completar extends Component
             DB::transaction(function () use ($agregados, $sedeId) {
                 foreach ($agregados as $faltante) {
                     if ($faltante['es_serializado']) {
-                        // Crear item serializado como hijo del kit
+                        
                         ItemSerializado::create([
                             'producto_id' => $faltante['producto_id'],
                             'kit_padre_id' => $this->kit->id,
@@ -164,7 +164,7 @@ class Completar extends Component
                             'sede_id' => $sedeId,
                         ]);
 
-                        // Registrar movimiento de entrada
+                        
                         $producto = Producto::find($faltante['producto_id']);
                         if ($producto) {
                             MovimientoStock::registrar(
@@ -173,7 +173,7 @@ class Completar extends Component
                             );
                         }
                     } else {
-                        // Crear item por cantidad como hijo del kit
+                        
                         for ($j = 0; $j < $faltante['cantidad']; $j++) {
                             ItemSerializado::create([
                                 'producto_id' => $faltante['producto_id'],
@@ -189,7 +189,7 @@ class Completar extends Component
                             ]);
                         }
 
-                        // Registrar movimiento de entrada
+                        
                         $producto = Producto::find($faltante['producto_id']);
                         if ($producto) {
                             MovimientoStock::registrar(
