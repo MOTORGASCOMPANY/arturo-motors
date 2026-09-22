@@ -1,4 +1,4 @@
-﻿<div x-data
+<div x-data
      x-on:swal.window="recepcionSwal.desdeServidor($event.detail, $wire)"
      x-on:swal-init.window="recepcionSwal.desdeServidor($event.detail, $wire)"
      x-on:swal-kit.window="recepcionSwal.desdeServidor($event.detail, $wire)">
@@ -1026,13 +1026,4 @@
             };
         })();
     </script>
-
-    @if (session('swal_exito'))
-        <script>
-            document.addEventListener('alpine:init', () => {
-                const s = @json(session('swal_exito'));
-                Swal.fire({ icon: s.tipo, title: s.titulo, text: s.mensaje, confirmButtonColor: '#4F46E5' });
-            });
-        </script>
-    @endif
 </div>
