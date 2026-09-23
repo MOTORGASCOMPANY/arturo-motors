@@ -1,26 +1,22 @@
 <div wire:loading.class="opacity-60 pointer-events-none" class="max-w-4xl mx-auto px-3 sm:px-0 py-6 sm:py-12 pb-28 sm:pb-12 space-y-5 sm:space-y-6">
 
-    <div class="flex items-center justify-between gap-2 sm:gap-3">
+    <div class="flex items-center gap-2 sm:gap-3">
         <a href="{{ route('almacen.traslados.listado') }}" wire:navigate
             class="px-3 sm:px-4 py-2.5 sm:py-2 bg-white border border-gray-200 rounded-lg text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 active:scale-[0.98] transition flex items-center gap-2 shadow-sm">
             <i class="fas fa-arrow-left text-xs"></i> <span>Volver</span>
         </a>
-        <a href="{{ route('almacen.traslados.listado') }}" wire:navigate
-            class="px-3 sm:px-4 py-2.5 sm:py-2 bg-white border border-gray-200 rounded-lg text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 active:scale-[0.98] transition flex items-center gap-2 shadow-sm">
-            <i class="fas fa-history text-xs"></i> Historial
-        </a>
     </div>
 
-    <div class="relative overflow-hidden bg-gray-900 text-white p-5 sm:p-8 rounded-2xl w-full">
-        <div class="absolute -right-8 -top-8 w-40 h-40 bg-white/5 rounded-full"></div>
-        <div class="absolute -right-2 -bottom-10 w-28 h-28 bg-white/5 rounded-full"></div>
+    <div class="relative overflow-hidden bg-indigo-600 text-white p-5 sm:p-8 rounded-2xl w-full">
+        <div class="absolute -right-8 -top-8 w-40 h-40 bg-white/10 rounded-full"></div>
+        <div class="absolute -right-2 -bottom-10 w-28 h-28 bg-white/10 rounded-full"></div>
         <div class="relative flex items-start gap-3 sm:gap-4">
-            <div class="w-11 h-11 sm:w-14 sm:h-14 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+            <div class="w-11 h-11 sm:w-14 sm:h-14 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
                 <i class="fas fa-truck text-lg sm:text-2xl"></i>
             </div>
             <div>
                 <h2 class="font-semibold text-lg sm:text-2xl leading-tight">Nuevo traslado</h2>
-                <p class="text-xs sm:text-sm text-gray-400 mt-1">Envía un kit o piezas sueltas desde Arturo Motors hacia otra sede</p>
+                <p class="text-xs sm:text-sm text-indigo-100 mt-1">Envía un kit o piezas sueltas desde Arturo Motors hacia otra sede</p>
             </div>
         </div>
     </div>
@@ -30,7 +26,7 @@
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6"
         x-data="{ hasSede: {{ $sedeDestinoId ? 'true' : 'false' }} }">
         <div class="flex items-center gap-2 mb-4">
-            <span class="w-7 h-7 {{ $sedeDestinoId ? 'bg-emerald-600 text-white' : 'bg-gray-900 text-white' }} text-xs font-bold rounded-full flex items-center justify-center shrink-0 transition-colors">
+            <span class="w-7 h-7 {{ $sedeDestinoId ? 'bg-emerald-600 text-white' : 'bg-indigo-600 text-white' }} text-xs font-bold rounded-full flex items-center justify-center shrink-0 transition-colors">
                 @if ($sedeDestinoId)
                     <i class="fas fa-check text-[11px]"></i>
                 @else
@@ -69,7 +65,7 @@
                 <p class="text-[11px] text-gray-400"><i class="fas fa-circle-info mr-1"></i>Elige una sede y presiona Continuar para seleccionar los items</p>
                 <button type="button" wire:click="$refresh" wire:loading.attr="disabled"
                     x-bind:disabled="!hasSede"
-                    x-bind:class="hasSede ? 'bg-gray-900 text-white hover:bg-gray-800' : 'bg-gray-200 text-gray-400 cursor-not-allowed'"
+                    x-bind:class="hasSede ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-gray-200 text-gray-400 cursor-not-allowed'"
                     class="shrink-0 px-5 py-2.5 rounded-lg text-sm font-semibold transition active:scale-[0.98]">
                     Continuar <i class="fas fa-arrow-right ml-1 text-xs"></i>
                 </button>
@@ -87,7 +83,7 @@
     @if ($sedeDestinoId)
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
             <div class="flex flex-wrap items-center gap-2 mb-4">
-                <span class="w-7 h-7 {{ !$this->resumenVacio ? 'bg-emerald-600 text-white' : 'bg-gray-900 text-white' }} text-xs font-bold rounded-full flex items-center justify-center shrink-0 transition-colors">
+                <span class="w-7 h-7 {{ !$this->resumenVacio ? 'bg-emerald-600 text-white' : 'bg-indigo-600 text-white' }} text-xs font-bold rounded-full flex items-center justify-center shrink-0 transition-colors">
                     @if (!$this->resumenVacio)
                         <i class="fas fa-check text-[11px]"></i>
                     @else
@@ -313,7 +309,7 @@
                                 class="w-20 rounded-lg border-gray-300 text-sm py-2.5 sm:py-2 text-center focus:border-indigo-500 focus:ring-indigo-500"
                                 placeholder="Cant.">
                             <button wire:click="agregarPiezaCantidad" type="button"
-                                class="flex-1 sm:flex-none px-4 py-2.5 sm:py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 active:scale-[0.98] transition whitespace-nowrap">
+                                class="flex-1 sm:flex-none px-4 py-2.5 sm:py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 active:scale-[0.98] transition whitespace-nowrap">
                                 <i class="fas fa-plus mr-1"></i> Agregar
                             </button>
                         </div>
@@ -406,7 +402,7 @@
 
     <button wire:click="confirmarTraslado" wire:loading.attr="disabled"
         @if ($this->resumenVacio || !$sedeDestinoId) disabled @endif
-        class="hidden sm:flex w-full items-center justify-center {{ $this->resumenVacio || !$sedeDestinoId ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gray-900 text-white hover:bg-gray-800 active:scale-[0.99]' }} rounded-xl py-3.5 sm:py-3 font-semibold text-sm transition-all">
+        class="hidden sm:flex w-full items-center justify-center {{ $this->resumenVacio || !$sedeDestinoId ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-indigo-600 text-white hover:bg-indigo-700 active:scale-[0.99]' }} rounded-xl py-3.5 sm:py-3 font-semibold text-sm transition-all">
         <span wire:loading.remove wire:target="confirmarTraslado">
             <i class="fas fa-truck mr-2"></i>
             @if (!$sedeDestinoId)
@@ -425,7 +421,7 @@
     <div class="sm:hidden fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-200 p-3 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
         <button wire:click="confirmarTraslado" wire:loading.attr="disabled"
             @if ($this->resumenVacio || !$sedeDestinoId) disabled @endif
-            class="w-full flex items-center justify-center {{ $this->resumenVacio || !$sedeDestinoId ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gray-900 text-white hover:bg-gray-800 active:scale-[0.99]' }} rounded-xl py-3.5 font-semibold text-sm transition-all">
+            class="w-full flex items-center justify-center {{ $this->resumenVacio || !$sedeDestinoId ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-indigo-600 text-white hover:bg-indigo-700 active:scale-[0.99]' }} rounded-xl py-3.5 font-semibold text-sm transition-all">
             <span wire:loading.remove wire:target="confirmarTraslado">
                 <i class="fas fa-truck mr-2"></i>
                 @if (!$sedeDestinoId)
@@ -528,7 +524,7 @@
                         Volver
                     </button>
                     <button wire:click="confirmarEnvio" wire:loading.attr="disabled" type="button"
-                        class="flex-1 px-4 py-3 sm:py-2.5 bg-gray-900 hover:bg-gray-800 active:scale-[0.98] text-white rounded-xl transition font-semibold text-sm flex items-center justify-center gap-2">
+                        class="flex-1 px-4 py-3 sm:py-2.5 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white rounded-xl transition font-semibold text-sm flex items-center justify-center gap-2">
                         <span wire:loading.remove wire:target="confirmarEnvio"><i class="fas fa-check mr-1"></i> Confirmar envío</span>
                         <span wire:loading wire:target="confirmarEnvio"><i class="fas fa-circle-notch fa-spin mr-1"></i> Enviando...</span>
                     </button>

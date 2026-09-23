@@ -54,6 +54,27 @@ class Detalle extends Component
             'documentos',
         ])->findOrFail($ordenId);
 
+        // Historial de conversión: incluir hijos de los kits de la orden aunque
+        // service_order_id sea NULL (piezas defectuosas/devueltas tras reemplazo).
+        // Sin esto, /ordenes/{id} no muestra la pieza reemplazada y "no tiene
+        // sentido" comparado con el modal de /almacen/productos.
+        $kitPadreIds = $this->orden->items->pluck('kit_padre_id')->filter()->unique()->values();
+        if ($kitPadreIds->isNotEmpty()) {
+            $yaEnOrden = $this->orden->items->pluck('id')->all();
+            $hijosHistorial = \App\Models\ItemSerializado::whereIn('kit_padre_id', $kitPadreIds)
+                ->whereNull('service_order_id')
+                ->whereNotIn('id', $yaEnOrden)
+                ->with('producto.categoria')
+                ->get();
+
+            if ($hijosHistorial->isNotEmpty()) {
+                $this->orden->setRelation(
+                    'items',
+                    $this->orden->items->concat($hijosHistorial)->sortBy('id')->values()
+                );
+            }
+        }
+
         $this->checklistGrupos = ChecklistEvaluacion::grupos();
     }
 

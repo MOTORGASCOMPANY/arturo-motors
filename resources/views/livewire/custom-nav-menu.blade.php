@@ -758,21 +758,43 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
     </main>
 
     <script type="text/javascript">
-        document.addEventListener("DOMContentLoaded", () => {
-            const navbar = document.getElementById("navbar");
-            const sidebar = document.getElementById("sidebar");
-            const btnSidebarToggler = document.getElementById("btnSidebarToggler");
-            const navClosed = document.getElementById("navClosed");
-            const navOpen = document.getElementById("navOpen");
+        (function () {
+            if (window.__amSidebarBound) {
+                return;
+            }
+            window.__amSidebarBound = true;
 
-            btnSidebarToggler.addEventListener("click", (e) => {
+            function positionSidebar() {
+                var navbar = document.getElementById("navbar");
+                var sidebar = document.getElementById("sidebar");
+                if (navbar && sidebar) {
+                    sidebar.style.top = (parseInt(navbar.clientHeight, 10) - 1) + "px";
+                }
+            }
+
+            document.addEventListener("click", function (e) {
+                var btn = e.target.closest && e.target.closest("#btnSidebarToggler");
+                if (!btn) {
+                    return;
+                }
                 e.preventDefault();
-                sidebar.classList.toggle("show");
-                navClosed.classList.toggle("hidden");
-                navOpen.classList.toggle("hidden");
+                var sidebar = document.getElementById("sidebar");
+                var navClosed = document.getElementById("navClosed");
+                var navOpen = document.getElementById("navOpen");
+                if (sidebar) {
+                    sidebar.classList.toggle("show");
+                }
+                if (navClosed) {
+                    navClosed.classList.toggle("hidden");
+                }
+                if (navOpen) {
+                    navOpen.classList.toggle("hidden");
+                }
             });
 
-            sidebar.style.top = parseInt(navbar.clientHeight) - 1 + "px";
-        });
+            document.addEventListener("livewire:navigated", positionSidebar);
+            positionSidebar();
+            document.addEventListener("DOMContentLoaded", positionSidebar);
+        })();
     </script>
 </div>

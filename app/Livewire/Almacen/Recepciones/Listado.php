@@ -41,7 +41,9 @@ class Listado extends Component
                 'sede' => $item->sede?->nombre ?? '—',
                 'estado' => $item->estado,
                 'fecha' => $item->created_at,
+                // ID real de inventario (mismo #1033 de Productos)
                 'id' => $item->id,
+                'origen' => 'items_serializados',
             ]);
     }
 
@@ -62,7 +64,9 @@ class Listado extends Component
                 'estado' => null,
                 'cantidad' => $mov->cantidad,
                 'fecha' => $mov->created_at,
+                // ID real del ledger de movimientos
                 'id' => $mov->id,
+                'origen' => 'movimientos_stock',
             ]);
     }
 
@@ -72,18 +76,48 @@ class Listado extends Component
         $movimientos = $this->queryMovimientos();
         $all = $items->concat($movimientos)->sortByDesc('fecha')->values();
 
+        // Correlativo 1..N solo para orden visual (N.° de historial).
+        // El ID de columna SIEMPRE es el real de BD para casar con Inventario:
+        // kit/serializado → items_serializados.id (#1033), cantidad → movimientos_stock.id.
+        $all = $all->map(fn ($row, $i) => array_merge($row, ['nro' => $i + 1]))->values();
+
         $perPage = 15;
-        $page = $this->page ?? 1;
+        $total = $all->count();
+        $lastPage = max(1, (int) ceil($total / $perPage));
+
+        // Clamp: evita página vacía cuando ?page=N queda fuera de rango
+        // (filtro redujo resultados, datos borrados, o URL tipeada a mano).
+        // Livewire 3 guarda el estado en paginators['page'], NO en $this->page.
+        $page = (int) $this->getPage();
+        if ($page < 1) {
+            $page = 1;
+        } elseif ($page > $lastPage) {
+            $page = $lastPage;
+        }
+        if ((int) ($this->paginators['page'] ?? 0) !== $page) {
+            $this->paginators['page'] = $page;
+        }
+
         $paginated = $all->slice(($page - 1) * $perPage, $perPage)->values();
 
+        $paginator = new \Illuminate\Pagination\LengthAwarePaginator(
+            $paginated,
+            $total,
+            $perPage,
+            $page,
+            [
+                'path' => route('almacen.recepciones.listado'),
+                'pageName' => 'page',
+                'query' => array_filter(
+                    request()->query(),
+                    fn ($k) => $k !== 'page',
+                    ARRAY_FILTER_USE_KEY
+                ),
+            ]
+        );
+
         return view('livewire.almacen.recepciones.listado', [
-            'recepciones' => new \Illuminate\Pagination\LengthAwarePaginator(
-                $paginated,
-                $all->count(),
-                $perPage,
-                $page,
-                ['path' => route('almacen.recepciones.listado')]
-            ),
+            'recepciones' => $paginator,
             'conteos' => [
                 'kits' => $items->where('tipo', 'kit')->count(),
                 'serializados' => $items->where('tipo', 'serializado')->count(),

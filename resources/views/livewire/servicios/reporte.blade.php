@@ -1,18 +1,18 @@
 <div wire:loading.class="opacity-50 pointer-events-none transition-opacity duration-300" class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8 font-sans">
 
     {{-- Cabecera y Filtros --}}
-    <div class="bg-gray-200 p-6 sm:p-8 rounded-2xl w-full shadow-sm border border-gray-300/50">
+    <div class="bg-white border border-gray-200 p-6 sm:p-8 rounded-2xl w-full shadow-sm">
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-            
+
             {{-- Título --}}
-            <div>
-                <h2 class="text-gray-700 font-bold text-2xl tracking-tight flex items-center">
-                    <div class="bg-white p-2 rounded-lg shadow-sm mr-3">
-                        <i class="fas fa-chart-simple text-indigo-600 text-xl"></i>
-                    </div>
-                    Reporte de servicios
-                </h2>
-                <p class="text-gray-500 text-sm mt-1.5 ml-1">Conversiones, servicios simples y tendencia del período</p>
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center shrink-0">
+                    <i class="fas fa-chart-simple text-indigo-600 text-2xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-gray-800 font-bold text-2xl tracking-tight">Reporte de servicios</h2>
+                    <p class="text-gray-500 text-sm mt-1">Conversiones, servicios simples y tendencia del período</p>
+                </div>
             </div>
 
             {{-- Controles y Botones --}}

@@ -22,7 +22,9 @@ class Listado extends Component
     public string $filterStock = 'todos';
     public string $filterProveedor = '';
 
-    public ?int $filtroSedeId = 1;
+    // Sin tipo int: el <select> de "Todas las sedes" envía '' y rompía ?int
+    // (el filtro se quedaba en la primera sede y no mostraba el resto).
+    public $filtroSedeId = 1;
     public ?string $filtroEstado = null;
     public string $busquedaInventario = '';
 
@@ -51,6 +53,12 @@ class Listado extends Component
     public function mount()
     {
         $this->filtroSedeId = Sede::activas()->orderBy('id')->first()?->id ?? 1;
+    }
+
+    public function updatedFiltroSedeId($value): void
+    {
+        $this->filtroSedeId = ($value === '' || $value === null) ? null : (int) $value;
+        $this->resetPage();
     }
 
     public function updating($property)
@@ -187,10 +195,13 @@ class Listado extends Component
         }
 
         $piezasActuales = ItemSerializado::where('kit_padre_id', $kitItemId)
+            ->whereNotIn('estado', ['defectuoso', 'devuelta_por_no_calzar'])
             ->pluck('producto_id')
             ->countBy()
             ->toArray();
 
+        // No descontar KitPiezaExtraida: si la pieza volvió al kit (completarKit
+        // o reparación), el descuento histórico la hacía volver a "faltante".
         $this->completarKitComponentes = $receta->map(function ($comp) use ($piezasActuales, $sedeId) {
             $faltan = max(0, $comp->cantidad - ($piezasActuales[$comp->producto_id] ?? 0));
 
@@ -492,13 +503,15 @@ class Listado extends Component
         if ($tipo === 'sueltosCantidad') {
             $sedeId = $this->filtroSedeId;
 
-            // Stock suelto REAL = ProductoStockSede - items DENTRO de kits (no consumidos)
+            // Stock suelto REAL = ProductoStockSede − kits de ESA MISMA sede.
+            // Agrupar solo por producto_id con filtro "todas" restaba kits de
+            // cualquier sede a cada fila → componentes desaparecían.
             $itemsEnKits = ItemSerializado::whereHas('producto.categoria', fn ($q) => $q->where('es_serializado', false)->where('es_kit', false))
                 ->whereNotNull('kit_padre_id')
                 ->whereIn('estado', ['en_stock', 'abierto', 'completado', 'asignado'])
                 ->when($sedeId, fn ($q) => $q->where('sede_id', $sedeId))
                 ->get()
-                ->groupBy('producto_id')
+                ->groupBy(fn ($i) => $i->producto_id . ':' . $i->sede_id)
                 ->map->count();
 
             return ProductoStockSede::with(['producto.categoria', 'sede'])
@@ -511,7 +524,7 @@ class Listado extends Component
                 ->where('cantidad', '>', 0)
                 ->get()
                 ->map(function ($stock) use ($itemsEnKits) {
-                    $enKits = $itemsEnKits[$stock->producto_id] ?? 0;
+                    $enKits = $itemsEnKits[$stock->producto_id . ':' . $stock->sede_id] ?? 0;
                     $stock->cantidad_suelta_real = max(0, $stock->cantidad - $enKits);
                     return $stock;
                 })
@@ -590,7 +603,19 @@ class Listado extends Component
             )
             ->get();
 
-        $piezasActuales = $kit->piezasEnKit->pluck('producto_id')->countBy()->toArray();
+        $piezasTodas = $kit->piezasEnKit;
+
+        // Piezas ACTIVAS del kit (las que cuentan para la receta).
+        // Excluye solo defectuosas/devueltas.
+        // NO descuenta KitPiezaExtraida: ese registro es histórico ("salió una pieza").
+        // Si la computadora volvió a linkearse (completarKit / reparación de fantasma),
+        // descontarla de nuevo la borraba del detalle aunque esté físicamente en el kit.
+        // El caso fantasma se resuelve desvinculando el hijo (abrirKitYExtraerPieza),
+        // no restándolo de la receta.
+        $activas = $piezasTodas
+            ->reject(fn ($p) => in_array($p->estado, ['defectuoso', 'devuelta_por_no_calzar'], true));
+
+        $piezasActuales = $activas->pluck('producto_id')->countBy()->toArray();
 
         $componentes = $receta->map(function ($r) use ($piezasActuales) {
             $presente = $piezasActuales[$r->producto_id] ?? 0;
@@ -605,18 +630,32 @@ class Listado extends Component
 
         $kit->recetaDetalles = $componentes;
         $kit->totalEsperado = $receta->sum('cantidad');
-        $kit->totalPresente = $kit->piezasEnKit->count();
+        $kit->totalPresente = $activas->count();
 
-        // Resumen de piezas del kit agrupadas por producto (vista más compacta).
-        $kit->piezasResumidas = $kit->piezasEnKit
+        // Resumen de piezas ACTIVAS del kit agrupadas por producto.
+        // Excluye solo defectuosas/devueltas (van en reemplazados).
+        $kit->piezasResumidas = $activas
             ->groupBy('producto_id')
-            ->map(fn ($grupo) => [
-                'nombre'    => $grupo->first()->producto?->nombre ?? '—',
-                'cantidad'  => $grupo->count(),
-                'series'    => $grupo->pluck('serie')->filter()->values(),
-                'instalado' => $grupo->contains('estado', 'instalado'),
-            ])
+            ->map(function ($grupo) {
+                return [
+                    'nombre'         => $grupo->first()->producto?->nombre ?? '—',
+                    'cantidad'       => $grupo->count(),
+                    'cantidadCruda'  => $grupo->count(),
+                    'cantidadActiva' => $grupo->count(),
+                    'series'         => $grupo->pluck('serie')->filter()->values(),
+                    'instalado'      => $grupo->contains('estado', 'instalado'),
+                    'defectuosas'    => collect(),
+                    'estados'        => $grupo->pluck('estado')->unique()->values(),
+                ];
+            })
+            ->filter(fn ($g) => $g['cantidad'] > 0)
             ->values();
+
+        // Reemplazados/defectuosos que ya NO están activos en el kit
+        // (histórico de la conversión — so=NULL tras devolución al almacén).
+        $kit->reemplazados = $piezasTodas->filter(
+            fn ($p) => in_array($p->estado, ['defectuoso', 'devuelta_por_no_calzar'], true)
+        )->values();
 
         // Items de cantidad extra / repuestos asignados a la misma orden
         // (sueltos, sin kit_padre_id) — se muestran resaltados en azul.
@@ -627,6 +666,14 @@ class Listado extends Component
                 ->where('id', '!=', $kit->id)
                 ->whereNotIn('estado', ['defectuoso', 'devuelta_por_no_calzar'])
                 ->with('producto.categoria')
+                ->get()
+            : collect();
+
+        // Movimientos de stock de la conversión (salidas/entradas reales)
+        $kit->movimientosConversion = $kit->service_order_id
+            ? \App\Models\MovimientoStock::with('producto')
+                ->where('service_order_id', $kit->service_order_id)
+                ->orderBy('id')
                 ->get()
             : collect();
 
@@ -672,7 +719,7 @@ class Listado extends Component
         $sedeId = $this->filtroSedeId;
         $estado = $this->filtroEstado;
 
-        $kitsQuery = ItemSerializado::with('producto.categoria', 'sede')
+        $kitsQuery = ItemSerializado::with(['producto.categoria', 'sede', 'serviceOrder.cliente', 'piezasEnKit.producto.categoria'])
             ->whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true))
             ->when($sedeId, fn ($q) => $q->where('sede_id', $sedeId))
             ->when(
@@ -701,6 +748,8 @@ class Listado extends Component
                 fn ($q) => $q->where('es_kit', false)->where('es_serializado', true)
             )
             ->whereNull('kit_padre_id')
+            // Solo disponibles: instalado/defectuoso/consumido no es pieza suelta
+            ->where('estado', 'en_stock')
             ->when($sedeId, fn ($q) => $q->where('sede_id', $sedeId))
             ->when(
                 $this->busquedaInventario,
@@ -729,11 +778,14 @@ class Listado extends Component
             ->where('cantidad', '>', 0)
             ->get()
             ->map(function ($stock) use ($sedeId) {
-                // Restar items que están DENTRO de kits (no consumidos)
+                // Restar solo kits de LA MISMA sede de la fila de stock.
+                // Si el filtro es "todas", restar el total global de kits
+                // descuentaba piezas de Ancón al stock de Callao (y podían
+                // quedar en 0 → no aparecían los componentes).
                 $enKits = ItemSerializado::where('producto_id', $stock->producto_id)
                     ->whereNotNull('kit_padre_id')
                     ->whereIn('estado', ['en_stock', 'abierto', 'completado', 'asignado'])
-                    ->when($sedeId, fn ($q) => $q->where('sede_id', $sedeId))
+                    ->where('sede_id', $stock->sede_id)
                     ->count();
                 $stock->cantidad_suelta_real = max(0, $stock->cantidad - $enKits);
                 return $stock;

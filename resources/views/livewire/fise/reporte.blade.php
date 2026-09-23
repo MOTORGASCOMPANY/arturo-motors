@@ -1,18 +1,18 @@
 <div wire:loading.class="opacity-50 pointer-events-none transition-opacity duration-300" class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8 font-sans">
 
     {{-- Header --}}
-    <div class="bg-slate-900 p-6 sm:p-8 rounded-2xl w-full shadow-lg">
+    <div class="bg-white border border-gray-200 p-6 sm:p-8 rounded-2xl w-full shadow-sm">
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
 
             {{-- Título --}}
             <div class="flex items-center gap-4">
-                <div class="w-14 h-14 rounded-xl bg-white/10 border border-white/5 flex items-center justify-center shrink-0 shadow-inner">
-                    <i class="fas fa-hand-holding-dollar text-white text-2xl"></i>
+                <div class="w-14 h-14 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center shrink-0">
+                    <i class="fas fa-hand-holding-dollar text-indigo-600 text-2xl"></i>
                 </div>
 
                 <div>
-                    <h2 class="text-white font-bold text-2xl tracking-tight">Reporte FISE</h2>
-                    <p class="text-slate-400 text-sm mt-1">Solicitudes, pagos y rendimiento del programa</p>
+                    <h2 class="text-gray-800 font-bold text-2xl tracking-tight">Reporte FISE</h2>
+                    <p class="text-gray-500 text-sm mt-1">Solicitudes, pagos y rendimiento del programa</p>
                 </div>
             </div>
 
@@ -20,11 +20,11 @@
             <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 lg:gap-6 w-full lg:w-auto">
 
                 {{-- Filtros de Fecha --}}
-                <div class="flex items-center gap-3 bg-white/5 p-2 rounded-xl border border-white/10 w-full sm:w-auto">
+                <div class="flex items-center gap-3 bg-slate-50 p-2 rounded-xl border border-gray-200 w-full sm:w-auto">
                     <input
                         type="date"
                         wire:model.live="desde"
-                        class="text-sm rounded-lg border-transparent focus:border-slate-500 focus:ring-slate-500 bg-white/10 text-white shadow-sm py-2 px-3"
+                        class="text-sm rounded-lg border-gray-200 bg-white text-gray-700 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm py-2 px-3"
                     >
 
                     <span class="text-slate-400 text-sm font-medium">a</span>
@@ -32,7 +32,7 @@
                     <input
                         type="date"
                         wire:model.live="hasta"
-                        class="text-sm rounded-lg border-transparent focus:border-slate-500 focus:ring-slate-500 bg-white/10 text-white shadow-sm py-2 px-3"
+                        class="text-sm rounded-lg border-gray-200 bg-white text-gray-700 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm py-2 px-3"
                     >
                 </div>
 
@@ -40,17 +40,17 @@
                 <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
                     <button
                         wire:click="descargarPdf"
-                        class="bg-white/10 hover:bg-white/20 border border-white/10 text-white font-semibold rounded-xl py-2.5 px-4 shadow-sm transition-all duration-200 flex items-center justify-center gap-2 w-full sm:w-auto text-sm"
+                        class="bg-white hover:bg-red-50 border border-gray-200 text-gray-700 font-semibold rounded-xl py-2.5 px-4 shadow-sm transition-all duration-200 flex items-center justify-center gap-2 w-full sm:w-auto text-sm"
                     >
-                        <i class="fas fa-file-pdf text-red-400"></i>
+                        <i class="fas fa-file-pdf text-red-500"></i>
                         PDF
                     </button>
 
                     <button
                         wire:click="descargarExcel"
-                        class="bg-white/10 hover:bg-white/20 border border-white/10 text-white font-semibold rounded-xl py-2.5 px-4 shadow-sm transition-all duration-200 flex items-center justify-center gap-2 w-full sm:w-auto text-sm"
+                        class="bg-white hover:bg-emerald-50 border border-gray-200 text-gray-700 font-semibold rounded-xl py-2.5 px-4 shadow-sm transition-all duration-200 flex items-center justify-center gap-2 w-full sm:w-auto text-sm"
                     >
-                        <i class="fas fa-file-excel text-emerald-400"></i>
+                        <i class="fas fa-file-excel text-emerald-500"></i>
                         Excel
                     </button>
                 </div>

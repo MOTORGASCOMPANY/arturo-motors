@@ -1,30 +1,33 @@
 <div wire:loading.class="opacity-50 pointer-events-none" class="max-w-6xl mx-auto py-12 space-y-6">
 
-    <div class="bg-gray-200 p-8 rounded-xl w-full">
-        <div class="flex items-center justify-between flex-wrap gap-4">
-            <div>
-                <h2 class="text-gray-600 font-semibold text-2xl">
-                    <i class="fas fa-chart-line mr-2"></i>Reporte de caja
-                </h2>
-                <span class="text-xs">Resumen de ingresos y egresos por período</span>
+    <div class="bg-white border border-gray-200 p-6 sm:p-8 rounded-2xl w-full shadow-sm">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center shrink-0">
+                    <i class="fas fa-chart-line text-indigo-600 text-2xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-gray-800 font-bold text-2xl tracking-tight">Reporte de caja</h2>
+                    <p class="text-gray-500 text-sm mt-1">Resumen de ingresos y egresos por período</p>
+                </div>
             </div>
-            <div class="flex items-center gap-2">
-                <input type="date" wire:model.live="desde" class="text-sm rounded-lg border-gray-300">
+            <div class="flex items-center gap-2 flex-wrap">
+                <input type="date" wire:model.live="desde" class="text-sm rounded-lg border-gray-200 bg-slate-50 text-gray-700 focus:border-indigo-500 focus:ring-indigo-500 py-2 px-3">
                 <span class="text-gray-500 text-sm">a</span>
-                <input type="date" wire:model.live="hasta" class="text-sm rounded-lg border-gray-300">
+                <input type="date" wire:model.live="hasta" class="text-sm rounded-lg border-gray-200 bg-slate-50 text-gray-700 focus:border-indigo-500 focus:ring-indigo-500 py-2 px-3">
                 <label class="flex items-center gap-2 ml-2 cursor-pointer select-none">
                     <input type="checkbox" wire:model.live="soloFise" class="w-4 h-4 text-amber-500 border-gray-300 rounded focus:ring-amber-500">
                     <span class="text-sm font-medium text-gray-600">Solo FISE</span>
                 </label>
-                <div class="flex items-center gap-2 mt-2">
+                <div class="flex items-center gap-2">
                     <button wire:click="descargarPdf"
-                        class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-full py-2 px-4 shadow-sm transition-colors flex items-center gap-1.5">
-                        <i class="fas fa-file-pdf mr-1"></i>
+                        class="bg-white hover:bg-red-50 border border-gray-200 text-gray-700 font-semibold rounded-xl py-2.5 px-4 shadow-sm transition-all duration-200 flex items-center gap-2 text-sm">
+                        <i class="fas fa-file-pdf text-red-500"></i>
                         PDF
                     </button>
                     <button wire:click="descargarExcel"
-                        class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-full py-2 px-4 shadow-sm transition-colors flex items-center gap-1.5">
-                        <i class="fas fa-file-excel mr-1"></i>
+                        class="bg-white hover:bg-emerald-50 border border-gray-200 text-gray-700 font-semibold rounded-xl py-2.5 px-4 shadow-sm transition-all duration-200 flex items-center gap-2 text-sm">
+                        <i class="fas fa-file-excel text-emerald-500"></i>
                         Excel
                     </button>
                 </div>

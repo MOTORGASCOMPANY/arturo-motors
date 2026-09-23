@@ -263,6 +263,15 @@ class CambioPiezaService
                 'service_order_id' => $serviceOrderId,
             ]);
 
+            // 4b. Desvincular el hijo original del kit: sin esto el kit queda
+            // "fantasma" (extracción registrada pero el hijo sigue contando
+            // como presente en piezasEnKit / receta).
+            ItemSerializado::where('kit_padre_id', $kitItem->id)
+                ->where('producto_id', $productoPiezaId)
+                ->where('id', '!=', $piezaExtraida->id)
+                ->whereNotIn('estado', ['defectuoso', 'devuelta_por_no_calzar'])
+                ->update(['kit_padre_id' => null]);
+
             // 5. Registrar extracción en kit_piezas_extraidas
             KitPiezaExtraida::create([
                 'item_serializado_id' => $kitItem->id,
@@ -273,14 +282,15 @@ class CambioPiezaService
                 'extraida_en' => now(),
             ]);
 
-            // 6. Movimiento: salida del componente extraído
+            // 6. Movimiento: salida del componente extraído (nombre del COMPONENTE, no del kit)
+            $nombreComponente = $componente->componente->nombre ?? $kitProducto->nombre;
             MovimientoStock::registrar(
-                $kitItem->producto,
+                $componente->componente ?? $kitItem->producto,
                 'salida',
                 1,
                 $serviceOrderId,
                 Auth::id(),
-                "Apertura kit #{$kitItem->id} — extracción {$kitProducto->nombre}",
+                "Apertura kit #{$kitItem->id} — extracción {$nombreComponente}",
                 $sedeId
             );
 

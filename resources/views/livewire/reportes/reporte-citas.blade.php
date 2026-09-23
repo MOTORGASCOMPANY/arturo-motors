@@ -1,39 +1,39 @@
 <div wire:loading.class="opacity-50 pointer-events-none" class="max-w-6xl mx-auto py-12 space-y-6">
 
     {{-- Header --}}
-    <div class="bg-slate-900 p-6 sm:p-8 rounded-2xl w-full">
-        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div class="bg-white border border-gray-200 p-6 sm:p-8 rounded-2xl w-full shadow-sm">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div class="flex items-center gap-4">
-                <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
-                    <i class="fas fa-calendar-check text-white text-lg"></i>
+                <div class="w-14 h-14 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center shrink-0">
+                    <i class="fas fa-calendar-check text-indigo-600 text-2xl"></i>
                 </div>
                 <div>
-                    <h2 class="text-white font-semibold text-xl leading-tight">Reporte de Citas</h2>
-                    <span class="text-slate-400 text-xs">Análisis de agendamiento y conversión</span>
+                    <h2 class="text-gray-800 font-bold text-2xl tracking-tight">Reporte de Citas</h2>
+                    <p class="text-gray-500 text-sm mt-1">Análisis de agendamiento y conversión</p>
                 </div>
             </div>
             <div class="flex items-center gap-2 flex-wrap">
-                <input type="date" wire:model.live="desde" class="text-sm rounded-lg border-gray-600 bg-white/10 text-white placeholder-gray-400">
+                <input type="date" wire:model.live="desde" class="text-sm rounded-lg border-gray-200 bg-slate-50 text-gray-700 focus:border-indigo-500 focus:ring-indigo-500 py-2 px-3">
                 <span class="text-slate-400 text-sm">a</span>
-                <input type="date" wire:model.live="hasta" class="text-sm rounded-lg border-gray-600 bg-white/10 text-white placeholder-gray-400">
-                <select wire:model.live="sedeId" class="text-sm rounded-lg border-gray-600 bg-white/10 text-white">
+                <input type="date" wire:model.live="hasta" class="text-sm rounded-lg border-gray-200 bg-slate-50 text-gray-700 focus:border-indigo-500 focus:ring-indigo-500 py-2 px-3">
+                <select wire:model.live="sedeId" class="text-sm rounded-lg border-gray-200 bg-slate-50 text-gray-700 focus:border-indigo-500 focus:ring-indigo-500 py-2 px-3">
                     <option value="todos">Todas las sedes</option>
                     @foreach($sedes as $s)
                         <option value="{{ $s->id }}">{{ $s->nombre }}</option>
                     @endforeach
                 </select>
-                <select wire:model.live="estado" class="text-sm rounded-lg border-gray-600 bg-white/10 text-white">
+                <select wire:model.live="estado" class="text-sm rounded-lg border-gray-200 bg-slate-50 text-gray-700 focus:border-indigo-500 focus:ring-indigo-500 py-2 px-3">
                     <option value="todos">Todos los estados</option>
                     <option value="pendiente">Pendiente</option>
                     <option value="aceptada">Aceptada</option>
                     <option value="rechazada">Rechazada</option>
                     <option value="cancelada">Cancelada</option>
                 </select>
-                <button wire:click="descargarPdf" class="bg-white/10 hover:bg-white/20 text-white font-medium rounded-lg py-2 px-3 transition-colors flex items-center gap-1.5 text-sm">
-                    <i class="fas fa-file-pdf text-red-400"></i> PDF
+                <button wire:click="descargarPdf" class="bg-white hover:bg-red-50 border border-gray-200 text-gray-700 font-semibold rounded-xl py-2.5 px-4 shadow-sm transition-all duration-200 flex items-center gap-2 text-sm">
+                    <i class="fas fa-file-pdf text-red-500"></i> PDF
                 </button>
-                <button wire:click="descargarExcel" class="bg-white/10 hover:bg-white/20 text-white font-medium rounded-lg py-2 px-3 transition-colors flex items-center gap-1.5 text-sm">
-                    <i class="fas fa-file-excel text-emerald-400"></i> Excel
+                <button wire:click="descargarExcel" class="bg-white hover:bg-emerald-50 border border-gray-200 text-gray-700 font-semibold rounded-xl py-2.5 px-4 shadow-sm transition-all duration-200 flex items-center gap-2 text-sm">
+                    <i class="fas fa-file-excel text-emerald-500"></i> Excel
                 </button>
             </div>
         </div>

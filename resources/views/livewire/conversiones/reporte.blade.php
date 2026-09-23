@@ -1,27 +1,27 @@
 <div wire:loading.class="opacity-50 pointer-events-none transition-opacity duration-300" class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8 font-sans">
 
     {{-- Header --}}
-    <div class="bg-slate-900 p-6 sm:p-8 rounded-2xl w-full shadow-lg">
+    <div class="bg-white border border-gray-200 p-6 sm:p-8 rounded-2xl w-full shadow-sm">
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div class="flex items-center gap-4">
-                <div class="w-14 h-14 rounded-xl bg-white/10 border border-white/5 flex items-center justify-center shrink-0 shadow-inner">
-                    <i class="fas fa-car text-white text-2xl"></i>
+                <div class="w-14 h-14 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center shrink-0">
+                    <i class="fas fa-car text-indigo-600 text-2xl"></i>
                 </div>
                 <div>
-                    <h2 class="text-white font-bold text-2xl tracking-tight">Reporte de Conversiones GNV</h2>
-                    <p class="text-slate-400 text-sm mt-1">Kits instalados · Componentes · Balance de almacén</p>
+                    <h2 class="text-gray-800 font-bold text-2xl tracking-tight">Reporte de Conversiones GNV</h2>
+                    <p class="text-gray-500 text-sm mt-1">Kits instalados · Componentes · Balance de almacén</p>
                 </div>
             </div>
 
             <div class="flex items-center gap-3 w-full lg:w-auto justify-end">
                 <button onclick="exportarPDF()"
-                    class="bg-white/10 hover:bg-white/20 border border-white/10 text-white font-semibold rounded-xl py-2.5 px-4 shadow-sm transition-all duration-200 flex items-center justify-center gap-2 text-sm">
-                    <i class="fas fa-file-pdf text-red-400"></i>
+                    class="bg-white hover:bg-red-50 border border-gray-200 text-gray-700 font-semibold rounded-xl py-2.5 px-4 shadow-sm transition-all duration-200 flex items-center justify-center gap-2 text-sm">
+                    <i class="fas fa-file-pdf text-red-500"></i>
                     PDF
                 </button>
                 <button onclick="exportarExcel()"
-                    class="bg-white/10 hover:bg-white/20 border border-white/10 text-white font-semibold rounded-xl py-2.5 px-4 shadow-sm transition-all duration-200 flex items-center justify-center gap-2 text-sm">
-                    <i class="fas fa-file-excel text-emerald-400"></i>
+                    class="bg-white hover:bg-emerald-50 border border-gray-200 text-gray-700 font-semibold rounded-xl py-2.5 px-4 shadow-sm transition-all duration-200 flex items-center justify-center gap-2 text-sm">
+                    <i class="fas fa-file-excel text-emerald-500"></i>
                     Excel
                 </button>
             </div>

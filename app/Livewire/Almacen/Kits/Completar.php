@@ -61,9 +61,13 @@ class Completar extends Component
 
         
         $componentesActuales = ItemSerializado::where('kit_padre_id', $this->kit->id)
+            ->whereNotIn('estado', ['defectuoso', 'devuelta_por_no_calzar'])
             ->pluck('producto_id')
             ->countBy()
             ->toArray();
+
+        // No descontar KitPiezaExtraida: si la pieza volvió al kit, el descuento
+        // histórico la volvía a marcar como faltante.
 
         $this->faltantes = [];
         foreach ($componentesEsperados as $comp) {

@@ -226,47 +226,9 @@
         Livewire.on('entrega-confirmada', (event) => {
             const data = Array.isArray(event) ? event[0] : event;
             const redirectUrl = data && data.redirectUrl ? data.redirectUrl : null;
-            const resumen = data && data.resumen ? data.resumen : null;
-
-            let html = '';
-
-            if (resumen) {
-                html += '<div style="text-align:left;font-size:14px;">';
-                html += '<p style="margin-bottom:12px;"><strong>Kit:</strong> ' + resumen.nombre + '</p>';
-
-                if (resumen.piezas_cantidad && resumen.piezas_cantidad.length > 0) {
-                    html += '<p style="margin-bottom:6px;"><strong>Piezas por cantidad:</strong></p>';
-                    html += '<ul style="margin:0 0 12px 20px;padding:0;">';
-                    resumen.piezas_cantidad.forEach(function(p) {
-                        html += '<li>' + p.nombre + ' × ' + p.cantidad + '</li>';
-                    });
-                    html += '</ul>';
-                }
-
-                if (resumen.piezas_serializadas && resumen.piezas_serializadas.length > 0) {
-                    html += '<p style="margin-bottom:6px;"><strong>Piezas serializadas:</strong></p>';
-                    html += '<ul style="margin:0 0 0 20px;padding:0;">';
-                    resumen.piezas_serializadas.forEach(function(p) {
-                        html += '<li>' + p.nombre + ' → <code style="background:#f3f4f6;padding:1px 6px;border-radius:4px;">' + p.serie + '</code></li>';
-                    });
-                    html += '</ul>';
-                }
-
-                html += '</div>';
+            if (redirectUrl) {
+                window.location.href = redirectUrl;
             }
-
-            Swal.fire({
-                icon: 'success',
-                title: '¡KIT ASIGNADO!',
-                html: html || 'Kit asignado y descontado del almacén. La orden pasó a conversión.',
-                confirmButtonText: 'Aceptar',
-                allowOutsideClick: false,
-                allowEscapeKey: false
-            }).then(() => {
-                if (redirectUrl) {
-                    window.location.href = redirectUrl;
-                }
-            });
         });
 
         Livewire.on('entrega-error', (event) => {
