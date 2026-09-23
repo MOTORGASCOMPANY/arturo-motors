@@ -160,17 +160,23 @@
                                         'detalle' => 'Serie: ' . $item->serie,
                                         'icono' => 'fa-microchip',
                                         'tipo' => 'serial',
+                                        'cantidad' => 1,
                                         'reemplazado' => in_array($item->id, $this->itemsReemplazados),
                                     ]);
                                 }
-                                foreach($this->itemsCantidad as $item) {
+                                // Por cantidad: agrupar por producto (receta x2 no son "duplicados")
+                                foreach($this->itemsCantidad->groupBy('producto_id') as $grupo) {
+                                    $first = $grupo->first();
+                                    $qty = $grupo->count();
+                                    $reemplazado = $grupo->contains(fn ($i) => in_array($i->id, $this->itemsReemplazados));
                                     $todosItems->push((object)[
-                                        'id' => $item->id,
-                                        'nombre' => $item->producto->nombre,
-                                        'detalle' => 'Por cantidad',
+                                        'id' => $first->id,
+                                        'nombre' => $first->producto->nombre,
+                                        'detalle' => $qty > 1 ? "Por cantidad ×{$qty}" : 'Por cantidad',
                                         'icono' => 'fa-cubes',
                                         'tipo' => 'cantidad',
-                                        'reemplazado' => in_array($item->id, $this->itemsReemplazados),
+                                        'cantidad' => $qty,
+                                        'reemplazado' => $reemplazado,
                                     ]);
                                 }
                             @endphp
@@ -200,6 +206,9 @@
                                                 </div>
                                                 @if($item->reemplazado)
                                                     <span class="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold rounded shrink-0">OK</span>
+                                                @elseif($item->tipo === 'cantidad' && ($item->cantidad ?? 1) > 1)
+                                                    <span class="px-2 py-0.5 bg-orange-100 text-orange-700 text-[10px] font-bold rounded shrink-0">×{{ $item->cantidad }}</span>
+                                                    <span class="px-2 py-0.5 bg-orange-100 text-orange-700 text-[10px] font-bold rounded shrink-0">Cantidad</span>
                                                 @else
                                                     <span class="px-2 py-0.5 {{ $item->tipo === 'cantidad' ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-500' }} text-[10px] font-bold rounded shrink-0">{{ $item->tipo === 'cantidad' ? 'Cantidad' : 'Serial' }}</span>
                                                 @endif

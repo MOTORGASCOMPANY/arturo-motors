@@ -5,6 +5,7 @@ namespace App\Livewire\Conversiones;
 use App\Models\ServiceOrder;
 use App\Models\ItemSerializado;
 use App\Models\Producto;
+use App\Models\ProductoStockSede;
 use App\Models\MovimientoStock;
 use App\Models\Sede;
 use Illuminate\Support\Facades\DB;
@@ -468,6 +469,24 @@ class AsignarEquipos extends Component
                         $producto, 'salida', $cantidad, $this->orden->id, Auth::id(),
                         'Entrega para conversión #' . $this->orden->id, $sedeId
                     );
+
+                    // Enlazar como item de la orden (igual que reportes-piezas)
+                    // kit_padre_id = null a propósito: el descuento de "suelto" ya lo hace MovimientoStock;
+                    // si además se marcara dentro de un kit, el stock restaría dos veces.
+                    ItemSerializado::create([
+                        'producto_id' => $producto->id,
+                        'serie' => null,
+                        'estado' => 'asignado',
+                        'service_order_id' => $this->orden->id,
+                        'sede_id' => $sedeId,
+                        'atributos' => [
+                            'tipo' => 'cantidad',
+                            'cantidad_solicitada' => $cantidad,
+                            'repuesto_vario' => true,
+                            'creado_por' => 'asignar-equipos',
+                            'creado_en' => now()->toDateTimeString(),
+                        ],
+                    ]);
                 }
 
                 $this->orden->update(['estado' => 'en_conversion']);
