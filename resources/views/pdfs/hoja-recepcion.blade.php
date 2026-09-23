@@ -158,11 +158,26 @@
         <tr>
             <td class="esquema">
                 <span class="esquema-titulo">Esquema de Da&ntilde;os</span>
-                @if(!empty($orden->ficha_dano) && file_exists(public_path(ltrim($orden->ficha_dano, '/'))))
+                @php
+                    // Resolver path real vía Storage (no depende del symlink public/storage)
+                    $fichaAbs = null;
+                    if (!empty($orden->ficha_dano)) {
+                        $fichaRel = ltrim($orden->ficha_dano, '/');
+                        if (str_starts_with($fichaRel, 'storage/')) {
+                            $fichaRel = substr($fichaRel, strlen('storage/'));
+                        }
+                        $candidato = \Illuminate\Support\Facades\Storage::disk('public')->path($fichaRel);
+                        if (file_exists($candidato)) {
+                            $fichaAbs = $candidato;
+                        }
+                    }
+                    $usarDiagrama = in_array($orden->estado, ['aprobado_conversion', 'en_conversion', 'conversion_completada', 'entregado']);
+                @endphp
+                @if($fichaAbs)
                     <div style="text-align: center; padding: 2px; margin-top: 2px;">
-                        <img src="{{ public_path(ltrim($orden->ficha_dano, '/')) }}" style="width: 100%; max-width: 300px; height: auto;">
+                        <img src="{{ $fichaAbs }}" style="width: 100%; max-width: 300px; height: auto;">
                     </div>
-                @elseif(in_array($orden->estado, ['aprobado_conversion', 'en_conversion', 'conversion_completada', 'entregado']))
+                @elseif($usarDiagrama)
                     <div style="text-align: center; padding: 2px; margin-top: 2px;">
                         <img src="{{ public_path('images/Diagrama-vechiculos.png') }}" style="width: 100%; max-width: 300px; height: auto;">
                     </div>

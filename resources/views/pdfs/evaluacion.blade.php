@@ -67,6 +67,36 @@
         <div class="observaciones"><strong>Observaciones:</strong><br>{{ $orden->evaluacion_observaciones }}</div>
     @endif
 
+    {{-- Ficha de daño: ficha real → diagrama fallback → No disponible --}}
+    <div class="grupo-titulo">Esquema de Da&ntilde;os</div>
+    @php
+        $fichaAbs = null;
+        if (!empty($orden->ficha_dano)) {
+            $fichaRel = ltrim($orden->ficha_dano, '/');
+            if (str_starts_with($fichaRel, 'storage/')) {
+                $fichaRel = substr($fichaRel, strlen('storage/'));
+            }
+            $candidato = \Illuminate\Support\Facades\Storage::disk('public')->path($fichaRel);
+            if (file_exists($candidato)) {
+                $fichaAbs = $candidato;
+            }
+        }
+        $usarDiagrama = in_array($orden->estado, ['aprobado_conversion', 'en_conversion', 'conversion_completada', 'entregado']);
+    @endphp
+    @if($fichaAbs)
+        <div style="text-align: center; padding: 8px; border: 1px solid #eee; margin-top: 5px;">
+            <img src="{{ $fichaAbs }}" style="max-width: 100%; height: auto;">
+        </div>
+    @elseif($usarDiagrama)
+        <div style="text-align: center; padding: 8px; border: 1px solid #eee; margin-top: 5px;">
+            <img src="{{ public_path('images/Diagrama-vechiculos.png') }}" style="max-width: 100%; height: auto;">
+        </div>
+    @else
+        <div style="text-align: center; padding: 10px; border: 1px solid #eee; margin-top: 5px; color: #999; font-style: italic;">
+            No disponible
+        </div>
+    @endif
+
     <div class="resultado {{ $orden->evaluacion_aprobada ? 'apto' : 'no-apto' }}">{{ $orden->evaluacion_aprobada ? 'APTO PARA CONVERSI&Oacute;N' : 'NO APTO PARA CONVERSI&Oacute;N' }}</div>
 
     <p class="footer-note">Documento generado por el Sistema de Gesti&oacute;n Automotriz/Arturo Motors</p>

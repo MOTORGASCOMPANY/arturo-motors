@@ -87,10 +87,13 @@ class Evaluar extends Component
             return false;
         }
 
-        // Delete old ficha if exists
-        if ($this->orden->ficha_dano && str_starts_with($this->orden->ficha_dano, 'storage/')) {
-            $oldPath = str_replace('storage/', '', $this->orden->ficha_dano);
-            Storage::disk('public')->delete($oldPath);
+        // Delete old ficha if exists (acepta '/storage/...' o 'storage/...')
+        if ($this->orden->ficha_dano) {
+            $oldRel = ltrim($this->orden->ficha_dano, '/');
+            if (str_starts_with($oldRel, 'storage/')) {
+                $oldRel = substr($oldRel, strlen('storage/'));
+            }
+            Storage::disk('public')->delete($oldRel);
         }
 
         // Save new file
@@ -98,13 +101,37 @@ class Evaluar extends Component
         Storage::disk('public')->put($filename, $binary);
 
         $this->fichaDanoUrl = '/storage/' . $filename;
+
+        // Persistir en la orden de inmediato (no esperar a Apto/No apto)
+        try {
+            $this->orden->update(['ficha_dano' => $this->fichaDanoUrl]);
+        } catch (\Throwable $e) {
+            report($e);
+            $this->addError(
+                'fichaDano',
+                'La imagen se guardó en disco, pero no se pudo registrar en la orden. Se reintentará al guardar la evaluación.'
+            );
+        }
+
         return true;
     }
 
     public function guardarEvaluacion(bool $aprobado, bool $sinFichaConfirmado = false)
     {
-        // Si no hay ficha y no confirmó, detener
-        if (empty($this->fichaDanoUrl) && !$sinFichaConfirmado) {
+        $fichaVacia = empty($this->fichaDanoUrl);
+
+        // Sin ficha y sin confirmación → error visible, nunca return silencioso
+        if ($fichaVacia && !$sinFichaConfirmado) {
+            $this->addError(
+                'fichaDano',
+                'Falta la ficha de daño. Dibuja y guarda una, o confirma continuar sin ficha.'
+            );
+            $this->dispatch(
+                'minAlert',
+                titulo: 'Sin ficha de daño',
+                mensaje: 'No hay ficha guardada. Confirma continuar sin ficha o dibuja una antes de evaluar.',
+                icono: 'warning'
+            );
             return;
         }
 
@@ -117,12 +144,17 @@ class Evaluar extends Component
             ]);
         }
 
+        // Solo se limpia ficha_dano de la orden en el path "continuar sin ficha" confirmado
+        $fichaParaGuardar = ($sinFichaConfirmado && $fichaVacia)
+            ? null
+            : ($this->fichaDanoUrl ?: null);
+
         try {
             $this->orden->update([
                 'checklist_evaluacion' => $this->checklist,
                 'evaluacion_aprobada' => $aprobado,
                 'evaluacion_observaciones' => $this->observaciones ?: null,
-                'ficha_dano' => $this->fichaDanoUrl ?: null,
+                'ficha_dano' => $fichaParaGuardar,
                 'evaluado_por' => Auth::id(),
                 'evaluado_en' => now(),
                 'estado' => $aprobado ? 'aprobado_conversion' : 'evaluacion_rechazada',
