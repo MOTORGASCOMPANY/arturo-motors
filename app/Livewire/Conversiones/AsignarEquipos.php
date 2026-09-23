@@ -189,19 +189,26 @@ class AsignarEquipos extends Component
         $sedeId = $this->sedePrincipalId();
 
         // SOLO items POR CANTIDAD (es_serializado=false, no kits)
-        // CON stock en ProductoStockSede (stock suelto real, no asignado a kits)
+        // Stock suelto REAL = ProductoStockSede.cantidad - items asignados a kits
         return Producto::whereHas('categoria', fn ($q) => $q->where('es_serializado', false)->where('es_kit', false))
             ->whereHas('stockPorSede', fn ($q) => $q->where('sede_id', $sedeId)->where('cantidad', '>', 0))
             ->with(['stockPorSede' => fn ($q) => $q->where('sede_id', $sedeId)->where('cantidad', '>', 0)])
             ->get()
             ->map(function ($p) use ($sedeId) {
-                // Stock suelto REAL (de ProductoStockSede, no de ItemSerializado)
-                $stockSuelto = $p->stockPorSede->where('sede_id', $sedeId)->sum('cantidad');
+                $stockTotal = $p->stockPorSede->where('sede_id', $sedeId)->sum('cantidad');
+
+                // Restar componentes de cantidad reservados dentro de kits
+                $enKits = ItemSerializado::where('producto_id', $p->id)
+                    ->whereNotNull('kit_padre_id')
+                    ->whereIn('estado', ['en_stock', 'abierto', 'completado', 'asignado'])
+                    ->where('sede_id', $sedeId)
+                    ->count();
+
                 return (object) [
                     'producto_id' => $p->id,
                     'producto' => $p,
                     'tipo' => 'cantidad',
-                    'cantidad_disponible' => $stockSuelto,
+                    'cantidad_disponible' => max(0, $stockTotal - $enKits),
                 ];
             })
             ->filter(fn ($p) => $p->cantidad_disponible > 0)
