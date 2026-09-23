@@ -207,11 +207,8 @@ class Listado extends Component
                         ->orderBy('id')
                         ->get();
                 } else {
-                    $stock = ProductoStockSede::where('producto_id', $comp->producto_id)
-                        ->where('sede_id', $sedeId)
-                        ->where('cantidad', '>', 0)
-                        ->sum('cantidad');
-                    $disponibles = $stock > 0 ? ['stock' => $stock] : collect();
+                    $suelto = $this->sueltoDisponible($comp->producto_id, $sedeId);
+                    $disponibles = $suelto > 0 ? ['stock' => $suelto] : collect();
                 }
             }
 
@@ -340,21 +337,43 @@ class Listado extends Component
 
                             $item->update([
                                 'kit_padre_id' => $kit->id,
-                                'estado' => 'reemplazado',
+                                'estado' => 'en_stock',
                             ]);
                         }
                     } else {
-                        // Cantidad: decrementar stock en ProductoStockSede
+                        // Cantidad: crear hijos vinculados al kit SIN tocar el ledger.
+                        // El descuento real (salida) recién ocurre en finalizar() de la conversión.
                         $stock = ProductoStockSede::where('producto_id', $productoId)
                             ->where('sede_id', $sedeId)
                             ->lockForUpdate()
                             ->first();
 
-                        if (!$stock || $stock->cantidad < $faltan) {
+                        $cantidad = $stock ? (int) $stock->cantidad : 0;
+                        $enKits = ItemSerializado::where('producto_id', $productoId)
+                            ->whereNotNull('kit_padre_id')
+                            ->whereIn('estado', ['en_stock', 'abierto', 'completado', 'asignado'])
+                            ->where('sede_id', $sedeId)
+                            ->count();
+                        $suelto = max(0, $cantidad - $enKits);
+
+                        if ($suelto < $faltan) {
                             throw new \RuntimeException("Stock insuficiente para {$comp['nombre']} al confirmar.");
                         }
 
-                        $stock->decrement('cantidad', $faltan);
+                        for ($i = 0; $i < $faltan; $i++) {
+                            ItemSerializado::create([
+                                'producto_id' => $productoId,
+                                'kit_padre_id' => $kit->id,
+                                'serie' => null,
+                                'atributos' => [
+                                    'tipo' => 'cantidad',
+                                    'agregado_a_kit' => true,
+                                    'fecha' => now()->toDateString(),
+                                ],
+                                'estado' => 'en_stock',
+                                'sede_id' => $sedeId,
+                            ]);
+                        }
                     }
                 }
 
@@ -379,6 +398,22 @@ class Listado extends Component
         $this->dispatch('swal', tipo: 'success', titulo: '¡Kit completado!', mensaje: 'El kit se completó y movió a completados.');
     }
 
+    /** Stock suelto REAL (cantidad en sede − componentes lockeados dentro de kits). */
+    private function sueltoDisponible(int $productoId, int $sedeId): int
+    {
+        $cantidad = ProductoStockSede::where('producto_id', $productoId)
+            ->where('sede_id', $sedeId)
+            ->sum('cantidad');
+
+        $enKits = ItemSerializado::where('producto_id', $productoId)
+            ->whereNotNull('kit_padre_id')
+            ->whereIn('estado', ['en_stock', 'abierto', 'completado', 'asignado'])
+            ->where('sede_id', $sedeId)
+            ->count();
+
+        return max(0, (int) $cantidad - $enKits);
+    }
+
     private function refreshStockCompletarKit(): void
     {
         $sedeId = $this->completarKitSedeId;
@@ -398,11 +433,8 @@ class Listado extends Component
                     ->get()
                     ->toArray();
             } else {
-                $stock = ProductoStockSede::where('producto_id', $comp['producto_id'])
-                    ->where('sede_id', $sedeId)
-                    ->where('cantidad', '>', 0)
-                    ->sum('cantidad');
-                $comp['disponibles'] = $stock > 0 ? ['stock' => $stock] : collect();
+                $suelto = $this->sueltoDisponible($comp['producto_id'], $sedeId);
+                $comp['disponibles'] = $suelto > 0 ? ['stock' => $suelto] : collect();
             }
 
             $currentIds = $this->completarKitSeleccion[$comp['producto_id']] ?? [];
@@ -619,11 +651,8 @@ class Listado extends Component
                             break;
                         }
                     } else {
-                        $stock = \App\Models\ProductoStockSede::where('producto_id', $productoId)
-                            ->where('sede_id', $kit->sede_id)
-                            ->where('cantidad', '>', 0)
-                            ->sum('cantidad');
-                        if ($stock < $faltan) {
+                        $suelto = $this->sueltoDisponible($productoId, (int) $kit->sede_id);
+                        if ($suelto < $faltan) {
                             $todosConStock = false;
                             break;
                         }
@@ -869,21 +898,44 @@ class Listado extends Component
                 $this->buscar,
                 fn ($q) => $q->buscar($this->buscar)
             )
-            ->when($this->filterStock === 'bajo', function ($q) {
-                $sedeId = Sede::activas()->orderBy('id')->first()?->id ?? 1;
+            ->when(in_array($this->filterStock, ['bajo', 'sin'], true), function ($q) {
+                $sedeId = (int) (Sede::activas()->orderBy('id')->first()?->id ?? 1);
 
-                $q->whereRaw(
-                    '(SELECT COUNT(*) FROM items_serializados WHERE items_serializados.producto_id = productos.id AND items_serializados.estado = ? AND items_serializados.sede_id = ?) <= productos.stock_minimo',
-                    ['en_stock', $sedeId]
+                // Disponible REAL según modelo dual (mismo criterio que Producto::stockSueltoEnSede):
+                // kit = unidades disponibles (en_stock o completado); serializado = items sueltos;
+                // cantidad = stock_sede − enKits.
+                $estadosKit = implode(
+                    ', ',
+                    array_map(fn ($e) => "'{$e}'", ItemSerializado::ESTADOS_KIT_DISPONIBLE)
                 );
+                $suelto = "(CASE
+                    WHEN (SELECT ca.es_kit FROM categorias_almacen ca WHERE ca.id = productos.categoria_id) = 1 THEN (
+                        SELECT COUNT(*) FROM items_serializados i
+                        WHERE i.producto_id = productos.id AND i.estado IN ({$estadosKit}) AND i.sede_id = ?
+                    )
+                    WHEN (SELECT ca.es_serializado FROM categorias_almacen ca WHERE ca.id = productos.categoria_id) = 1 THEN (
+                        SELECT COUNT(*) FROM items_serializados i
+                        WHERE i.producto_id = productos.id AND i.estado = 'en_stock' AND i.sede_id = ?
+                          AND i.kit_padre_id IS NULL
+                    )
+                    ELSE GREATEST(0,
+                        COALESCE((SELECT SUM(ps.cantidad) FROM producto_stock_sede ps
+                                  WHERE ps.producto_id = productos.id AND ps.sede_id = ?), 0)
+                        - (SELECT COUNT(*) FROM items_serializados i
+                           WHERE i.producto_id = productos.id AND i.kit_padre_id IS NOT NULL
+                             AND i.estado IN ('en_stock', 'abierto', 'completado', 'asignado')
+                             AND i.sede_id = ?)
+                    )
+                END)";
+
+                $params = [$sedeId, $sedeId, $sedeId, $sedeId];
+
+                if ($this->filterStock === 'bajo') {
+                    $q->whereRaw("{$suelto} <= productos.stock_minimo", $params);
+                } else {
+                    $q->whereRaw("{$suelto} = 0", $params);
+                }
             })
-            ->when(
-                $this->filterStock === 'sin',
-                fn ($q) => $q->whereDoesntHave(
-                    'items',
-                    fn ($iq) => $iq->where('estado', 'en_stock')
-                )
-            )
             ->when(
                 $this->filterProveedor !== '',
                 fn ($q) => $q->where('proveedor', 'like', "%{$this->filterProveedor}%")

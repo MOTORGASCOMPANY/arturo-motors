@@ -36,7 +36,7 @@ class AlmacenExport implements FromCollection, WithHeadings, WithMapping, WithSt
         $this->rows = $productos->map(function ($p) {
             $porSede = [];
             foreach ($this->sedes as $s) {
-                $porSede[$s->nombre] = $p->stockEnSede($s->id);
+                $porSede[$s->nombre] = $p->stockSueltoEnSede($s->id);
             }
             return [
                 'producto' => $p,
@@ -173,7 +173,7 @@ class AlmacenExport implements FromCollection, WithHeadings, WithMapping, WithSt
     {
         $productos = Producto::with('categoria')->where('activo', true)->get();
         $stockPorCategoria = $productos->map(function ($p) {
-            $total = collect($this->sedes)->sum(fn ($s) => $p->stockEnSede($s->id));
+            $total = collect($this->sedes)->sum(fn ($s) => $p->stockSueltoEnSede($s->id));
             return ['cat' => $p->categoria->nombre, 'total' => $total];
         })->filter(fn ($r) => $r['total'] > 0)
           ->groupBy('cat')

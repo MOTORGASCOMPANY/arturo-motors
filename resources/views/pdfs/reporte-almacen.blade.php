@@ -107,7 +107,7 @@
             @foreach ($stockBajo as $p)
                 <tr>
                     <td class="font-bold">{{ $p->nombre }}</td>
-                    <td class="text-right text-red font-bold">{{ $p->stockEnSede(1) }}</td>
+                    <td class="text-right text-red font-bold">{{ $p->stockSueltoEnSede(1) }}</td>
                     <td class="text-right text-gray">{{ $p->stock_minimo }}</td>
                 </tr>
             @endforeach

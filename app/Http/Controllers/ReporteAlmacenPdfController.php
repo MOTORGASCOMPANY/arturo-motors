@@ -25,7 +25,7 @@ class ReporteAlmacenPdfController extends Controller
         $distribucion = $productos->map(function ($p) use ($sedes) {
             $porSede = [];
             foreach ($sedes as $s) {
-                $porSede[$s->id] = $p->stockEnSede($s->id);
+                $porSede[$s->id] = $p->stockSueltoEnSede($s->id);
             }
             return [
                 'producto' => $p,
@@ -43,7 +43,20 @@ class ReporteAlmacenPdfController extends Controller
 
         $distribucion = match ($filtroStock) {
             'con_stock' => $distribucion->filter(fn ($row) => $row['total'] > 0),
-            'sin_stock' => collect(),
+            // Rebuild desde todos los productos (igual que el reporte web):
+            // $distribucion ya viene filtrado a total > 0, así que sin_stock
+            // tenía que partir de cero — antes devolvía collect() vacío.
+            'sin_stock' => $productos->map(function ($p) use ($sedes) {
+                $porSede = [];
+                foreach ($sedes as $s) {
+                    $porSede[$s->id] = $p->stockSueltoEnSede($s->id);
+                }
+                return [
+                    'producto' => $p,
+                    'por_sede' => $porSede,
+                    'total' => array_sum($porSede),
+                ];
+            })->filter(fn ($row) => $row['total'] === 0),
             'stock_bajo' => $distribucion->filter(fn ($row) => $row['producto']->stock_bajo),
             default => $distribucion,
         };
@@ -54,7 +67,7 @@ class ReporteAlmacenPdfController extends Controller
 
         // Stock por sede
         $stockPorSede = $sedes->mapWithKeys(function ($s) use ($productos) {
-            $total = $productos->sum(fn ($p) => $p->stockEnSede($s->id));
+            $total = $productos->sum(fn ($p) => $p->stockSueltoEnSede($s->id));
             return [$s->nombre => $total];
         });
 

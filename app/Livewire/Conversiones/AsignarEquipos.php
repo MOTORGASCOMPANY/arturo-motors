@@ -74,7 +74,7 @@ class AsignarEquipos extends Component
     public function getKitsDisponiblesProperty()
     {
         $query = ItemSerializado::with('producto.categoria')
-            ->where('estado', 'en_stock')
+            ->kitDisponible()
             ->where('sede_id', $this->sedePrincipalId())
             ->whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true));
 
@@ -92,7 +92,7 @@ class AsignarEquipos extends Component
     public function getGeneracionesDisponiblesProperty()
     {
         return ItemSerializado::with('producto')
-            ->where('estado', 'en_stock')
+            ->kitDisponible()
             ->where('sede_id', $this->sedePrincipalId())
             ->whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true))
             ->get()
@@ -342,7 +342,7 @@ class AsignarEquipos extends Component
                 // 1. Abrir y asignar kit si se seleccionó uno
                 if ($this->kitItemId) {
                     $kit = ItemSerializado::where('id', $this->kitItemId)
-                        ->where('estado', 'en_stock')
+                        ->kitDisponible()
                         ->where('sede_id', $sedeId)
                         ->lockForUpdate()
                         ->first();

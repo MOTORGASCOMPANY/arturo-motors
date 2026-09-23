@@ -46,8 +46,8 @@ class ReporteConversionesPdfController extends Controller
             ->whereNotNull('kit_padre_id')
             ->count();
 
-        // Stock
-        $kitsEnStock = ItemSerializado::where('estado', 'en_stock')
+        // Stock (kits sellados o completados a mano)
+        $kitsEnStock = ItemSerializado::kitDisponible()
             ->whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true))
             ->count();
 

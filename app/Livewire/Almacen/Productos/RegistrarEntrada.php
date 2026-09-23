@@ -90,6 +90,13 @@ class RegistrarEntrada extends Component
                         'estado' => 'en_stock',
                         'sede_id' => $sedeId,
                     ]);
+
+                    // Historial: la entrada de cada serie debe quedar en el ledger,
+                    // igual que en Recepciones (modelo canónico entrada + item).
+                    MovimientoStock::registrar(
+                        $this->producto, 'entrada', 1, null, Auth::id(),
+                        "Entrada de serie {$serie}", $sedeId
+                    );
                 }
             });
         } catch (\Throwable $e) {

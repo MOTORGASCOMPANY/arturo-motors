@@ -95,8 +95,8 @@ class Reporte extends Component
             ->whereHas('producto.categoria', fn ($q) => $q->where('es_kit', false))
             ->count();
 
-        // Kits en stock
-        $kitsEnStock = ItemSerializado::where('estado', 'en_stock')
+        // Kits en stock (sellados o completados a mano)
+        $kitsEnStock = ItemSerializado::kitDisponible()
             ->whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true))
             ->count();
 

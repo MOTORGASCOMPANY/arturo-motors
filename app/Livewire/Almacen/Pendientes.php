@@ -41,7 +41,7 @@ class Pendientes extends Component
         
         $this->kitsDisponibles = ItemSerializado::with('producto.categoria')
             ->whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true))
-            ->where('estado', 'en_stock')
+            ->kitDisponible()
             ->where('sede_id', $this->itemSolicitado->sede_id)
             ->get()
             ->map(fn ($kit) => [
@@ -63,7 +63,7 @@ class Pendientes extends Component
             DB::transaction(function () {
                 
                 $kit = ItemSerializado::where('id', $this->kitSeleccionadoId)
-                    ->where('estado', 'en_stock')
+                    ->kitDisponible()
                     ->lockForUpdate()
                     ->first();
 

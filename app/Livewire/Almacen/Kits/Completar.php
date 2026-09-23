@@ -5,6 +5,7 @@ namespace App\Livewire\Almacen\Kits;
 use App\Models\ItemSerializado;
 use App\Models\Producto;
 use App\Models\MovimientoStock;
+use App\Models\ProductoStockSede;
 use App\Models\Sede;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -61,17 +62,20 @@ class Completar extends Component
         
         $componentesActuales = ItemSerializado::where('kit_padre_id', $this->kit->id)
             ->pluck('producto_id')
+            ->countBy()
             ->toArray();
 
-        
         $this->faltantes = [];
         foreach ($componentesEsperados as $comp) {
-            if (!in_array($comp->producto_id, $componentesActuales)) {
+            $presentes = $componentesActuales[$comp->producto_id] ?? 0;
+            $faltan = max(0, (int) $comp->cantidad_esperada - $presentes);
+
+            if ($faltan > 0) {
                 $this->faltantes[] = [
                     'producto_id' => $comp->producto_id,
                     'nombre' => $comp->nombre,
                     'es_serializado' => $comp->es_serializado,
-                    'cantidad' => $comp->cantidad_esperada,
+                    'cantidad' => $faltan,
                     'serie' => '',
                     'agregado' => false,
                 ];
@@ -93,6 +97,7 @@ class Completar extends Component
         $this->piezasEncontradas = ItemSerializado::with('producto.categoria')
             ->where('estado', 'en_stock')
             ->where('sede_id', $sedeId)
+            ->whereNull('kit_padre_id')
             ->where('id', '!=', $this->kit->id) 
             ->where(function ($q) use ($termino) {
                 $q->where('serie', 'like', "%{$termino}%")
@@ -149,35 +154,87 @@ class Completar extends Component
 
         try {
             DB::transaction(function () use ($agregados, $sedeId) {
-                foreach ($agregados as $faltante) {
-                    if ($faltante['es_serializado']) {
-                        
-                        ItemSerializado::create([
-                            'producto_id' => $faltante['producto_id'],
-                            'kit_padre_id' => $this->kit->id,
-                            'serie' => trim($faltante['serie']),
-                            'atributos' => [
-                                'agregado_a_kit' => true,
-                                'fecha' => now()->toDateString(),
-                            ],
-                            'estado' => 'en_stock',
-                            'sede_id' => $sedeId,
-                        ]);
+                $kit = ItemSerializado::where('id', $this->kit->id)
+                    ->whereIn('estado', ['en_stock', 'abierto'])
+                    ->lockForUpdate()
+                    ->first();
 
-                        
-                        $producto = Producto::find($faltante['producto_id']);
-                        if ($producto) {
-                            MovimientoStock::registrar(
-                                $producto, 'entrada', 1, null, Auth::id(),
-                                "Agregado serializado al kit {$this->kit->serie}", $sedeId
-                            );
+                if (!$kit) {
+                    throw new \RuntimeException('El kit ya no está disponible.');
+                }
+
+                foreach ($agregados as $faltante) {
+                    $productoId = $faltante['producto_id'];
+
+                    if ($faltante['es_serializado']) {
+                        $serie = trim($faltante['serie']);
+                        $existente = ItemSerializado::where('serie', $serie)
+                            ->lockForUpdate()
+                            ->first();
+
+                        if ($existente) {
+                            // Pieza ya registrada: solo vincularla al kit (sin entrada:
+                            // el stock ya fue contabilizado al recibirla).
+                            $puedeVincular = (int) $existente->producto_id === (int) $productoId
+                                && (int) $existente->sede_id === (int) $sedeId
+                                && $existente->estado === 'en_stock'
+                                && $existente->kit_padre_id === null;
+
+                            if (!$puedeVincular) {
+                                throw new \RuntimeException("La serie {$serie} ya está registrada y no está disponible para vincular.");
+                            }
+
+                            $existente->update(['kit_padre_id' => $kit->id]);
+                        } else {
+                            // Pieza NUEVA que llega con el kit: entrada + hijo.
+                            ItemSerializado::create([
+                                'producto_id' => $productoId,
+                                'kit_padre_id' => $kit->id,
+                                'serie' => $serie,
+                                'atributos' => [
+                                    'agregado_a_kit' => true,
+                                    'fecha' => now()->toDateString(),
+                                ],
+                                'estado' => 'en_stock',
+                                'sede_id' => $sedeId,
+                            ]);
+
+                            $producto = Producto::find($productoId);
+                            if ($producto) {
+                                MovimientoStock::registrar(
+                                    $producto, 'entrada', 1, null, Auth::id(),
+                                    "Agregado serializado al kit {$kit->serie}", $sedeId
+                                );
+                            }
                         }
                     } else {
-                        
-                        for ($j = 0; $j < $faltante['cantidad']; $j++) {
+                        $cantidad = (int) $faltante['cantidad'];
+
+                        // Cantidad: validar stock suelto, crear hijos SIN entrada ni
+                        // decremento (la salida recién ocurre en finalizar()).
+                        $stock = ProductoStockSede::where('producto_id', $productoId)
+                            ->where('sede_id', $sedeId)
+                            ->lockForUpdate()
+                            ->first();
+
+                        $total = $stock ? (int) $stock->cantidad : 0;
+                        $enKits = ItemSerializado::where('producto_id', $productoId)
+                            ->whereNotNull('kit_padre_id')
+                            ->whereIn('estado', ['en_stock', 'abierto', 'completado', 'asignado'])
+                            ->where('sede_id', $sedeId)
+                            ->count();
+                        $suelto = max(0, $total - $enKits);
+
+                        if ($suelto < $cantidad) {
+                            throw new \RuntimeException(
+                                "Stock insuficiente para {$faltante['nombre']}: necesitás {$cantidad}, hay {$suelto}."
+                            );
+                        }
+
+                        for ($j = 0; $j < $cantidad; $j++) {
                             ItemSerializado::create([
-                                'producto_id' => $faltante['producto_id'],
-                                'kit_padre_id' => $this->kit->id,
+                                'producto_id' => $productoId,
+                                'kit_padre_id' => $kit->id,
                                 'serie' => null,
                                 'atributos' => [
                                     'tipo' => 'cantidad',
@@ -188,23 +245,12 @@ class Completar extends Component
                                 'sede_id' => $sedeId,
                             ]);
                         }
-
-                        
-                        $producto = Producto::find($faltante['producto_id']);
-                        if ($producto) {
-                            MovimientoStock::registrar(
-                                $producto,
-                                'entrada',
-                                $faltante['cantidad'],
-                                null,
-                                Auth::id(),
-                                "Agregado al kit {$this->kit->serie}",
-                                $sedeId
-                            );
-                        }
                     }
                 }
             });
+        } catch (\RuntimeException $e) {
+            $this->dispatch('minToast', titulo: 'Atención', mensaje: $e->getMessage(), icono: 'warning');
+            return;
         } catch (\Throwable $e) {
             report($e);
             $this->dispatch('minToast', titulo: 'Error', mensaje: 'Ocurrió un error al guardar.', icono: 'error');

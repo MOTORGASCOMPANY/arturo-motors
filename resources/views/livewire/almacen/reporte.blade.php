@@ -259,7 +259,7 @@
                         @foreach ($stockBajo as $p)
                             <tr class="hover:bg-slate-50/80 transition-colors">
                                 <td class="px-4 py-3.5 font-medium text-slate-700">{{ $p->nombre }}</td>
-                                <td class="px-4 py-3.5 text-right text-red-600 font-bold tabular-nums">{{ $p->stockEnSede($filtroSede ?: 1) }}</td>
+                                <td class="px-4 py-3.5 text-right text-red-600 font-bold tabular-nums">{{ $p->stockSueltoEnSede($filtroSede ?: 1) }}</td>
                                 <td class="px-4 py-3.5 text-right text-slate-500 tabular-nums">{{ $p->stock_minimo }}</td>
                             </tr>
                         @endforeach

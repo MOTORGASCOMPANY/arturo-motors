@@ -70,6 +70,20 @@ class ItemSerializado extends Model
         return $query->where('estado', 'en_stock');
     }
 
+    /**
+     * Estados en los que un kit está disponible en almacén:
+     * - 'en_stock':   kit sellado recibido por recepción.
+     * - 'completado': kit armado/completado a mano.
+     * Única definición de "kit disponible" — usar este scope en vez de
+     * where('estado', 'en_stock') para no olvidar los dos estados.
+     */
+    public const ESTADOS_KIT_DISPONIBLE = ['en_stock', 'completado'];
+
+    public function scopeKitDisponible($query)
+    {
+        return $query->whereIn('estado', self::ESTADOS_KIT_DISPONIBLE);
+    }
+
     public function scopeBuscar($query, $search)
     {
         if ($search) {

@@ -793,13 +793,28 @@
     @php
         $faltantes = collect($completarKitComponentes)->filter(fn($c) => $c['faltan'] > 0);
         $seleccion = $completarKitSeleccion;
-        $puedeCompletar = $faltantes->isEmpty() || $faltantes->every(function ($c) use ($seleccion) {
+        // Stock disponible para componentes por cantidad (['stock' => N] | collect()).
+        $stockDe = function ($c): int {
+            $d = $c['disponibles'] ?? null;
+            return is_array($d) ? (int) ($d['stock'] ?? 0) : 0;
+        };
+        // Serializados: requieren selección exacta de items.
+        // Cantidad: no hay selección — alcanza con stock suelto >= faltan.
+        $puedeCompletar = $faltantes->isEmpty() || $faltantes->every(function ($c) use ($seleccion, $stockDe) {
+            if (!($c['es_serializado'] ?? false)) {
+                return $stockDe($c) >= $c['faltan'];
+            }
             $elegidos = collect($seleccion[$c['producto_id']] ?? [])->filter()->count();
             return $elegidos >= $c['faltan'];
         });
         $completos = collect($completarKitComponentes)->filter(fn($c) => $c['faltan'] <= 0);
         $totalFaltan = $faltantes->sum('faltan');
-        $totalElegidos = $faltantes->sum(fn ($c) => min(collect($seleccion[$c['producto_id']] ?? [])->filter()->count(), $c['faltan']));
+        $totalElegidos = $faltantes->sum(function ($c) use ($seleccion, $stockDe) {
+            if (!($c['es_serializado'] ?? false)) {
+                return min($stockDe($c), $c['faltan']);
+            }
+            return min(collect($seleccion[$c['producto_id']] ?? [])->filter()->count(), $c['faltan']);
+        });
         $pctElegidos = $totalFaltan > 0 ? round($totalElegidos / $totalFaltan * 100) : 100;
     @endphp
 
@@ -844,8 +859,16 @@
                     @foreach ($faltantes as $comp)
                         @php
                             $idsElegidos = is_array($completarKitSeleccion[$comp['producto_id']] ?? null) ? $completarKitSeleccion[$comp['producto_id']] : [];
-                            $elegidosComp = collect($idsElegidos)->filter()->count();
-                            $listo = $elegidosComp >= $comp['faltan'];
+                            $esSerialComp = $comp['es_serializado'] ?? false;
+                            $stockComp = is_array($comp['disponibles']) ? (int) ($comp['disponibles']['stock'] ?? 0) : 0;
+                            if ($esSerialComp) {
+                                $elegidosComp = collect($idsElegidos)->filter()->count();
+                                $listo = $elegidosComp >= $comp['faltan'];
+                            } else {
+                                // Cantidad: "listo" según stock suelto, no hay selección de items.
+                                $elegidosComp = min($stockComp, $comp['faltan']);
+                                $listo = $stockComp >= $comp['faltan'];
+                            }
                             $disponibles = $comp['disponibles'] instanceof \Illuminate\Support\Collection ? $comp['disponibles'] : collect($comp['disponibles']);
                         @endphp
                         <section class="rounded-xl border {{ $listo ? 'border-green-200' : 'border-amber-200' }} overflow-hidden">
@@ -858,32 +881,44 @@
                             </div>
                             @if ($disponibles->isNotEmpty())
                                 <div class="p-2.5 space-y-1.5 bg-white">
-                                    @foreach ($comp['disponibles'] as $item)
-                                        @php
-                                            $elegido = in_array($item['id'], $idsElegidos);
-                                            $produce = $item['atributos']['produce'] ?? $item->atributos['produce'] ?? null;
-                                            $fechaItem = $item['atributos']['fecha_recepcion'] ?? $item['atributos']['recepcion_fecha'] ?? $item['atributos']['fecha'] ?? '';
-                                        @endphp
-                                        <label class="flex items-center gap-3 px-3 py-2.5 rounded-lg border cursor-pointer transition-colors focus-within:ring-2 focus-within:ring-indigo-500 {{ $elegido ? 'bg-indigo-50 border-indigo-300' : 'bg-white border-gray-200 hover:border-gray-300' }}">
-                                            <input type="checkbox"
-                                                wire:model.live="completarKitSeleccion.{{ $comp['producto_id'] }}"
-                                                value="{{ $item['id'] }}"
-                                                class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                                            <span class="flex-1 min-w-0 flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                                                <span class="font-mono text-sm font-bold text-gray-800">{{ $item['serie'] }}</span>
-                                                @if ($produce)
-                                                    <span class="px-1.5 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded">{{ $produce }}</span>
-                                                @endif
-                                                @if ($fechaItem)
-                                                    <span class="text-xs text-gray-400">{{ $fechaItem }}</span>
-                                                @endif
+                                    @if ($esSerialComp)
+                                        @foreach ($comp['disponibles'] as $item)
+                                            @php
+                                                $elegido = in_array($item['id'], $idsElegidos);
+                                                $produce = $item['atributos']['produce'] ?? $item->atributos['produce'] ?? null;
+                                                $fechaItem = $item['atributos']['fecha_recepcion'] ?? $item['atributos']['recepcion_fecha'] ?? $item['atributos']['fecha'] ?? '';
+                                            @endphp
+                                            <label class="flex items-center gap-3 px-3 py-2.5 rounded-lg border cursor-pointer transition-colors focus-within:ring-2 focus-within:ring-indigo-500 {{ $elegido ? 'bg-indigo-50 border-indigo-300' : 'bg-white border-gray-200 hover:border-gray-300' }}">
+                                                <input type="checkbox"
+                                                    wire:model.live="completarKitSeleccion.{{ $comp['producto_id'] }}"
+                                                    value="{{ $item['id'] }}"
+                                                    class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                                <span class="flex-1 min-w-0 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                                                    <span class="font-mono text-sm font-bold text-gray-800">{{ $item['serie'] }}</span>
+                                                    @if ($produce)
+                                                        <span class="px-1.5 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded">{{ $produce }}</span>
+                                                    @endif
+                                                    @if ($fechaItem)
+                                                        <span class="text-xs text-gray-400">{{ $fechaItem }}</span>
+                                                    @endif
+                                                </span>
+                                            </label>
+                                        @endforeach
+                                    @else
+                                        {{-- Cantidad: sin checkboxes — solo se muestra el stock suelto disponible. --}}
+                                        <div class="flex items-center gap-2 px-3 py-2.5 rounded-lg border border-indigo-100 bg-indigo-50/50 text-sm">
+                                            <i class="fas fa-cubes text-indigo-500"></i>
+                                            <span class="text-slate-700">
+                                                Disponible en almacén:
+                                                <strong class="tabular-nums">{{ $stockComp }}</strong>
+                                                — se tomarán <strong class="tabular-nums">{{ $comp['faltan'] }}</strong> al confirmar.
                                             </span>
-                                        </label>
-                                    @endforeach
+                                        </div>
+                                    @endif
                                 </div>
                             @else
                                 <div class="px-4 py-4 text-center text-sm text-red-600 font-semibold bg-white">
-                                    <i class="fas fa-times-circle mr-1"></i>Sin items disponibles en almacén
+                                    <i class="fas fa-times-circle mr-1"></i>{{ $esSerialComp ? 'Sin items disponibles en almacén' : 'Sin stock suelto disponible' }}
                                 </div>
                             @endif
                         </section>

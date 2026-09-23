@@ -63,7 +63,7 @@ class Crear extends Component
 
         $kits = ItemSerializado::with(['producto.categoria', 'sede'])
             ->whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true))
-            ->where('estado', 'en_stock')
+            ->kitDisponible()
             ->where('sede_id', $sedeId)
             ->whereNull('kit_padre_id')
             ->when(

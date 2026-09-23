@@ -43,7 +43,7 @@ class Reporte extends Component
         $distribucion = $productos->map(function ($p) use ($sedes) {
             $porSede = [];
             foreach ($sedes as $s) {
-                $porSede[$s->id] = $p->stockEnSede($s->id);
+                $porSede[$s->id] = $p->stockSueltoEnSede($s->id);
             }
             return [
                 'producto' => $p,
@@ -68,7 +68,7 @@ class Reporte extends Component
             'sin_stock' => $productos->map(function ($p) use ($sedes) {
                 $porSede = [];
                 foreach ($sedes as $s) {
-                    $porSede[$s->id] = $p->stockEnSede($s->id);
+                    $porSede[$s->id] = $p->stockSueltoEnSede($s->id);
                 }
                 return [
                     'producto' => $p,
@@ -82,7 +82,7 @@ class Reporte extends Component
 
         
         $stockPorSede = $sedes->mapWithKeys(function ($s) use ($productos) {
-            $total = $productos->sum(fn ($p) => $p->stockEnSede($s->id));
+            $total = $productos->sum(fn ($p) => $p->stockSueltoEnSede($s->id));
             return [$s->nombre => $total];
         });
 
