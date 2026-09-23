@@ -67,23 +67,64 @@
         </div>
     </div>
 
-    {{-- Gráfico de citas por día --}}
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6" wire:ignore wire:key="chart-citas">
-        <h3 class="text-sm font-bold text-slate-500 uppercase mb-4">Citas por día</h3>
+    {{-- Lineal suave: horas del día seleccionado --}}
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6" wire:key="chart-citas">
+        {{-- Header: 3 filas, sin apretar --}}
+        <div class="mb-5 space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-2.5">
+                    <span class="w-9 h-9 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0">
+                        <i class="fas fa-chart-line text-emerald-600 text-sm"></i>
+                    </span>
+                    <h3 class="text-sm font-extrabold text-slate-700 uppercase tracking-wider">{{ $chartTitle }}</h3>
+                </div>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-[11px] font-bold text-slate-600 bg-slate-100 border border-slate-200 rounded-full px-3 py-1.5">
+                        <i class="fas fa-filter text-slate-400 mr-1"></i>{{ $filtroBadge }}
+                    </span>
+                    <span class="text-[13px] font-extrabold text-emerald-600">+{{ $sumAceptadas }}</span>
+                    <span class="text-[13px] font-extrabold text-red-500">-{{ $sumNoAceptadas }}</span>
+                    <span class="text-[13px] font-bold text-indigo-600" title="Con orden de servicio">{{ $sumConversion }} OS</span>
+                </div>
+            </div>
+
+            {{-- Navegación de día --}}
+            <div class="flex items-center justify-center gap-3">
+                <button
+                    type="button"
+                    wire:click="diaAnterior"
+                    class="w-9 h-9 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 flex items-center justify-center transition shadow-sm"
+                    title="Día anterior"
+                >
+                    <i class="fas fa-chevron-left text-xs"></i>
+                </button>
+                <div class="text-center min-w-[220px] px-4 py-2 rounded-xl bg-slate-50 border border-slate-200">
+                    <div class="text-base font-extrabold text-slate-800 capitalize">{{ $periodoLabel }}</div>
+                    <div class="text-[11px] text-slate-400 mt-0.5">00:00 – 23:59 · {{ $citasDelDia }} citas</div>
+                </div>
+                <button
+                    type="button"
+                    wire:click="diaSiguiente"
+                    class="w-9 h-9 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 flex items-center justify-center transition shadow-sm"
+                    title="Día siguiente"
+                >
+                    <i class="fas fa-chevron-right text-xs"></i>
+                </button>
+            </div>
+        </div>
+
         @if ($total > 0)
-            <div class="relative w-full" style="height: 300px;">
+            <div class="relative w-full" style="height: 300px;" wire:ignore>
                 <canvas id="chartCitas"
                     data-labels='@json($labels)'
-                    data-pendientes='@json($pendientesPorDia ?? [])'
-                    data-aceptadas='@json($aceptadasPorDia ?? [])'
-                    data-rechazadas='@json($rechazadasPorDia ?? [])'
-                    data-canceladas='@json($canceladasPorDia ?? [])'></canvas>
+                    data-aceptadas='@json($aceptadasPorPeriodo ?? [])'
+                    data-noaceptadas='@json($noAceptadasPorPeriodo ?? [])'
+                    data-conversion='@json($conversionPorPeriodo ?? [])'></canvas>
             </div>
-            <div class="flex flex-wrap gap-4 mt-3 justify-center text-xs">
-                <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-amber-500"></span> Pendientes</div>
-                <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-emerald-500"></span> Aceptadas</div>
-                <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-red-500"></span> Rechazadas</div>
-                <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-slate-400"></span> Canceladas</div>
+            <div class="flex flex-wrap gap-5 mt-4 justify-center text-xs font-semibold text-slate-600">
+                <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-sm border-2 border-emerald-500 bg-emerald-400"></span> Aceptadas</div>
+                <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-sm border-2 border-red-500 bg-red-400"></span> No aceptadas</div>
+                <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-sm border-2 border-indigo-500 bg-indigo-400"></span> Con OS (conversión)</div>
             </div>
         @else
             <div class="flex flex-col items-center justify-center py-16 text-center">
@@ -174,29 +215,92 @@
             if (!canvas || typeof Chart === 'undefined') return;
 
             const labels = JSON.parse(canvas.dataset.labels || '[]');
-            const pendientes = JSON.parse(canvas.dataset.pendientes || '[]');
             const aceptadas = JSON.parse(canvas.dataset.aceptadas || '[]');
-            const rechazadas = JSON.parse(canvas.dataset.rechazadas || '[]');
-            const canceladas = JSON.parse(canvas.dataset.canceladas || '[]');
+            const noAceptadas = JSON.parse(canvas.dataset.noaceptadas || '[]');
+            const conversion = JSON.parse(canvas.dataset.conversion || '[]');
 
             if (window.chartCitasInstance) window.chartCitasInstance.destroy();
 
             window.chartCitasInstance = new Chart(canvas, {
-                type: 'bar',
+                type: 'line',
                 data: {
                     labels: labels,
                     datasets: [
-                        { label: 'Pendientes', data: pendientes, backgroundColor: '#f59e0b', borderRadius: 3, borderSkipped: false },
-                        { label: 'Aceptadas', data: aceptadas, backgroundColor: '#10b981', borderRadius: 3, borderSkipped: false },
-                        { label: 'Rechazadas', data: rechazadas, backgroundColor: '#ef4444', borderRadius: 3, borderSkipped: false },
-                        { label: 'Canceladas', data: canceladas, backgroundColor: '#94a3b8', borderRadius: 3, borderSkipped: false },
+                        {
+                            label: 'Aceptadas',
+                            data: aceptadas,
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                            borderWidth: 2.5,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 3,
+                            pointHoverRadius: 6,
+                            pointBackgroundColor: '#ffffff',
+                            pointBorderColor: '#10b981',
+                            pointBorderWidth: 2
+                        },
+                        {
+                            label: 'No aceptadas',
+                            data: noAceptadas,
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.12)',
+                            borderWidth: 2.5,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 3,
+                            pointHoverRadius: 6,
+                            pointBackgroundColor: '#ffffff',
+                            pointBorderColor: '#ef4444',
+                            pointBorderWidth: 2
+                        },
+                        {
+                            label: 'Con OS (conversión)',
+                            data: conversion,
+                            borderColor: '#4f46e5',
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            borderDash: [6, 4],
+                            fill: false,
+                            tension: 0.4,
+                            pointRadius: 3,
+                            pointHoverRadius: 6,
+                            pointBackgroundColor: '#ffffff',
+                            pointBorderColor: '#4f46e5',
+                            pointBorderWidth: 2
+                        },
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => ctx.dataset.label + ': ' + ctx.parsed.y } } },
-                    scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, ticks: { stepSize: 1 } } }
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#0f172a',
+                            titleFont: { size: 12 },
+                            bodyFont: { size: 12 },
+                            padding: 10,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: (ctx) => ctx.dataset.label + ': ' + ctx.parsed.y
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { maxRotation: 45, autoSkip: true, font: { size: 10 }, color: '#94a3b8' },
+                            grid: { display: false },
+                            border: { display: false }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1, precision: 0, color: '#94a3b8', font: { size: 10 } },
+                            grid: { color: '#f1f5f9' },
+                            border: { display: false }
+                        }
+                    }
                 }
             });
         };
@@ -211,10 +315,9 @@
             const canvas = document.getElementById('chartCitas');
             if (!canvas) return;
             canvas.dataset.labels = JSON.stringify(data.labels);
-            canvas.dataset.pendientes = JSON.stringify(data.pendientes);
             canvas.dataset.aceptadas = JSON.stringify(data.aceptadas);
-            canvas.dataset.rechazadas = JSON.stringify(data.rechazadas);
-            canvas.dataset.canceladas = JSON.stringify(data.canceladas);
+            canvas.dataset.noaceptadas = JSON.stringify(data.noAceptadas);
+            canvas.dataset.conversion = JSON.stringify(data.conversion || []);
             window.renderChartCitas();
         });
 

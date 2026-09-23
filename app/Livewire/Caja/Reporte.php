@@ -191,18 +191,114 @@ class Reporte extends Component
             ->orderByDesc('total')
             ->get();
 
+        // Flujo neto acumulado (saldo caja física: solo efectivo - egresos)
+        $efectivoPorDia = MovimientoCaja::where('tipo', 'ingreso')
+            ->where('metodo_pago', 'efectivo')
+            ->whereBetween('created_at', [$desde, $hasta])
+            ->selectRaw('DATE(created_at) as fecha, SUM(monto) as total')
+            ->groupBy('fecha')->pluck('total', 'fecha');
+
+        $flujoAcumulado = [];
+        $saldo = (float) $this->efectivoAnterior;
+        for ($i = 0; $i < $dias; $i++) {
+            $fecha = $desde->copy()->addDays($i);
+            $clave = $fecha->format('Y-m-d');
+            $saldo += (float) ($efectivoPorDia[$clave] ?? 0) - (float) ($egresosPorDia[$clave] ?? 0);
+            $flujoAcumulado[] = round($saldo, 2);
+        }
+
+        // Ingresos por hora del día (0–23)
+        $ingresosPorHoraRaw = MovimientoCaja::where('tipo', 'ingreso')
+            ->whereBetween('created_at', [$desde, $hasta])
+            ->when($this->soloFise, fn ($q) => $q->where('metodo_pago', 'fise'))
+            ->selectRaw('HOUR(created_at) as hora, SUM(monto) as total')
+            ->groupBy('hora')
+            ->pluck('total', 'hora');
+
+        $labelsHora = [];
+        $ingresosPorHoraData = [];
+        for ($h = 0; $h < 24; $h++) {
+            $labelsHora[] = sprintf('%02d', $h);
+            $ingresosPorHoraData[] = (float) ($ingresosPorHoraRaw[$h] ?? 0);
+        }
+
+        // FISE vs no FISE por día
+        $fisePorDia = MovimientoCaja::where('tipo', 'ingreso')
+            ->where('metodo_pago', 'fise')
+            ->whereBetween('created_at', [$desde, $hasta])
+            ->selectRaw('DATE(created_at) as fecha, SUM(monto) as total')
+            ->groupBy('fecha')->pluck('total', 'fecha');
+        $noFisePorDia = MovimientoCaja::where('tipo', 'ingreso')
+            ->where('metodo_pago', '!=', 'fise')
+            ->whereBetween('created_at', [$desde, $hasta])
+            ->selectRaw('DATE(created_at) as fecha, SUM(monto) as total')
+            ->groupBy('fecha')->pluck('total', 'fecha');
+
+        $fiseDiaData = [];
+        $noFiseDiaData = [];
+        for ($i = 0; $i < $dias; $i++) {
+            $fecha = $desde->copy()->addDays($i);
+            $clave = $fecha->format('Y-m-d');
+            $fiseDiaData[] = (float) ($fisePorDia[$clave] ?? 0);
+            $noFiseDiaData[] = (float) ($noFisePorDia[$clave] ?? 0);
+        }
+
+        // Top 5 ingresos del período
+        $topIngresos = MovimientoCaja::where('tipo', 'ingreso')
+            ->whereBetween('created_at', [$desde, $hasta])
+            ->when($this->soloFise, fn ($q) => $q->where('metodo_pago', 'fise'))
+            ->with('usuario')
+            ->orderByDesc('monto')
+            ->limit(5)
+            ->get();
+
         // Ticket promedio por sesión
         $sesionesCerradas = $sesiones->filter(fn ($s) => $s->estado === 'cerrada');
         $ticketPromedio = $sesionesCerradas->count() > 0
             ? $sesionesCerradas->avg(fn ($s) => (float) ($s->monto_cierre ?? 0))
             : 0;
 
-        // Dispatch chart data to JS (wire:ignore prevents morph from updating data-* attrs)
-        $this->dispatch('chart-data-updated',
-            labels: $labels,
-            chartData: $chartData,
-            colores: $colores
-        );
+        // Payload único para todos los charts (script application/json)
+        $metodosTotales = [];
+        foreach ($metodos as $m) {
+            $metodosTotales[$m] = (float) ($ingresosPorMetodo[$m] ?? 0);
+        }
+        $metodosConDatos = array_values(array_filter($metodos, fn ($m) => $metodosTotales[$m] > 0));
+
+        $egresosLabelsChart = $egresosPorConcepto->pluck('concepto')->map(fn ($c) => $c ?: 'Sin concepto')->values()->all();
+        $egresosDataChart = $egresosPorConcepto->pluck('total')->map(fn ($v) => (float) $v)->values()->all();
+
+        $charts = [
+            'labels' => $labels,
+            'ingresosData' => $ingresosData,
+            'egresosData' => $egresosData,
+            'flujoAcumulado' => $flujoAcumulado,
+            'labelsHora' => $labelsHora,
+            'ingresosPorHoraData' => $ingresosPorHoraData,
+            'fiseDiaData' => $fiseDiaData,
+            'noFiseDiaData' => $noFiseDiaData,
+            'metodos' => $metodosConDatos,
+            'metodosTotales' => $metodosTotales,
+            'colores' => $colores,
+            'egresosLabels' => $egresosLabelsChart,
+            'egresosDataCat' => $egresosDataChart,
+            'metodosLabels' => [
+                'efectivo' => 'Efectivo',
+                'tarjeta' => 'Tarjeta',
+                'transferencia' => 'Transferencia',
+                'fise' => 'FISE',
+                'otro' => 'Otro',
+            ],
+            'efectivoAnterior' => (float) $this->efectivoAnterior,
+            'hasIngresos' => array_sum($ingresosData) > 0,
+            'hasEgresos' => array_sum($egresosData) > 0,
+            'hasMetodos' => count($metodosConDatos) > 0,
+            'hasEgresosCat' => count($egresosLabelsChart) > 0,
+            'hasHora' => array_sum($ingresosPorHoraData) > 0,
+            'hasFiseData' => array_sum($fiseDiaData) + array_sum($noFiseDiaData) > 0,
+        ];
+
+        $this->dispatch('chart-data-updated', charts: $charts);
 
         return view('livewire.caja.reporte', [
             'sesiones' => $sesiones,
@@ -220,6 +316,11 @@ class Reporte extends Component
             'metodos' => $metodos,
             'egresosPorConcepto' => $egresosPorConcepto,
             'ticketPromedio' => $ticketPromedio,
+            'charts' => $charts,
+            'topIngresos' => $topIngresos,
+            'flujoFinal' => $flujoAcumulado[$dias - 1] ?? $this->efectivoAnterior,
+            'fiseTotal' => array_sum($fiseDiaData),
+            'noFiseTotal' => array_sum($noFiseDiaData),
         ]);
     }
 }

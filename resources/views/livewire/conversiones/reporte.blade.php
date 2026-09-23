@@ -1,6 +1,6 @@
-<div wire:loading.class="opacity-50 pointer-events-none transition-opacity duration-300" class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8 font-sans">
+<div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8 font-sans">
 
-    {{-- Header --}}
+    {{-- Header (mismo patrón almacén: blanco + acento indigo) --}}
     <div class="bg-white border border-gray-200 p-6 sm:p-8 rounded-2xl w-full shadow-sm">
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div class="flex items-center gap-4">
@@ -8,18 +8,30 @@
                     <i class="fas fa-car text-indigo-600 text-2xl"></i>
                 </div>
                 <div>
-                    <h2 class="text-gray-800 font-bold text-2xl tracking-tight">Reporte de Conversiones GNV</h2>
-                    <p class="text-gray-500 text-sm mt-1">Kits instalados · Componentes · Balance de almacén</p>
+                    <div class="flex items-center gap-3 flex-wrap">
+                        <h2 class="text-indigo-600 font-bold text-2xl tracking-tight">Reporte de Conversiones GNV</h2>
+                        <a href="{{ route('ordenes.listado') }}" wire:navigate
+                            class="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-full px-3 py-1 transition-colors">
+                            <i class="fas fa-clipboard-list"></i>
+                            Órdenes
+                        </a>
+                        <a href="{{ route('almacen.productos.listado') }}" wire:navigate
+                            class="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-full px-3 py-1 transition-colors">
+                            <i class="fas fa-boxes-stacked"></i>
+                            Productos
+                        </a>
+                    </div>
+                    <p class="text-gray-500 text-sm mt-1">Conversiones · kits · stock · {{ $filtroBadge }}</p>
                 </div>
             </div>
 
             <div class="flex items-center gap-3 w-full lg:w-auto justify-end">
-                <button onclick="exportarPDF()"
+                <button type="button" onclick="exportarPDF()"
                     class="bg-white hover:bg-red-50 border border-gray-200 text-gray-700 font-semibold rounded-xl py-2.5 px-4 shadow-sm transition-all duration-200 flex items-center justify-center gap-2 text-sm">
                     <i class="fas fa-file-pdf text-red-500"></i>
                     PDF
                 </button>
-                <button onclick="exportarExcel()"
+                <button type="button" onclick="exportarExcel()"
                     class="bg-white hover:bg-emerald-50 border border-gray-200 text-gray-700 font-semibold rounded-xl py-2.5 px-4 shadow-sm transition-all duration-200 flex items-center justify-center gap-2 text-sm">
                     <i class="fas fa-file-excel text-emerald-500"></i>
                     Excel
@@ -28,75 +40,125 @@
         </div>
     </div>
 
-    {{-- KPIs --}}
+    {{-- 4 tarjetas de indicadores --}}
     <div>
         <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4 px-1 flex items-center gap-2">
             <i class="fas fa-gauge-high text-slate-400"></i>
-            Indicadores generales
+            Indicadores de conversión
+            <span class="ml-auto inline-flex items-center gap-1.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 px-3 py-1 text-xs font-bold normal-case tracking-normal">
+                {{ $filtroBadge }}
+            </span>
         </h3>
 
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-5">
-
-            <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-slate-200/80 border-l-4 border-l-blue-500 p-5 flex items-center gap-4">
-                <div class="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
-                    <i class="fas fa-car text-blue-600"></i>
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+            {{-- 1. Conversiones --}}
+            <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow border border-slate-200/80 border-l-4 border-l-blue-500 p-5">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                        <i class="fas fa-car text-blue-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-3xl font-extrabold text-slate-800 leading-none">{{ number_format($totalConversiones) }}</p>
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Conversiones</span>
+                    </div>
                 </div>
-                <div class="min-w-0">
-                    <p class="text-2xl font-extrabold text-slate-800 leading-none">{{ number_format($totalConversiones) }}</p>
-                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Conversiones</span>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-slate-200/80 border-l-4 border-l-emerald-500 p-5 flex items-center gap-4">
-                <div class="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
-                    <i class="fas fa-circle-check text-emerald-600"></i>
-                </div>
-                <div class="min-w-0">
-                    <p class="text-2xl font-extrabold text-emerald-600 leading-none">{{ number_format($completadas) }}</p>
-                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Completadas</span>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-slate-200/80 border-l-4 border-l-indigo-500 p-5 flex items-center gap-4">
-                <div class="w-11 h-11 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
-                    <i class="fas fa-percent text-indigo-600"></i>
-                </div>
-                <div class="min-w-0">
-                    <p class="text-2xl font-extrabold text-indigo-600 leading-none">{{ $tasaCompletado }}%</p>
-                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Tasa completado</span>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-slate-200/80 border-l-4 border-l-amber-500 p-5 flex items-center gap-4">
-                <div class="w-11 h-11 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
-                    <i class="fas fa-clock text-amber-600"></i>
-                </div>
-                <div class="min-w-0">
-                    <p class="text-2xl font-extrabold text-amber-600 leading-none">{{ $duracionPromedio }}h</p>
-                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Duración promedio</span>
+                <div class="space-y-2 text-sm">
+                    <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl">
+                        <span class="text-slate-600 font-medium">Completadas</span>
+                        <span class="font-extrabold text-emerald-600">{{ number_format($completadas) }}</span>
+                    </div>
+                    <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl">
+                        <span class="text-slate-600 font-medium">En proceso</span>
+                        <span class="font-extrabold text-amber-600">{{ number_format($enProceso) }}</span>
+                    </div>
+                    <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl">
+                        <span class="text-slate-600 font-medium">Tasa completado</span>
+                        <span class="font-extrabold text-indigo-600">{{ $tasaCompletado }}%</span>
+                    </div>
+                    <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl">
+                        <span class="text-slate-600 font-medium">Duración prom.</span>
+                        <span class="font-extrabold text-amber-600">{{ $duracionPromedio }}h</span>
+                    </div>
                 </div>
             </div>
 
-            <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-slate-200/80 border-l-4 border-l-amber-500 p-5 flex items-center gap-4">
-                <div class="w-11 h-11 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
-                    <i class="fas fa-gears text-amber-600"></i>
+            {{-- 2. Instalados --}}
+            <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow border border-slate-200/80 border-l-4 border-l-cyan-500 p-5">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-xl bg-cyan-50 flex items-center justify-center shrink-0">
+                        <i class="fas fa-gears text-cyan-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-3xl font-extrabold text-slate-800 leading-none">{{ number_format($itemsInstalados) }}</p>
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Instalados</span>
+                    </div>
                 </div>
-                <div class="min-w-0">
-                    <p class="text-2xl font-extrabold text-slate-800 leading-none">{{ number_format($itemsInstalados) }}</p>
-                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Piezas instaladas</span>
+                <div class="space-y-2 text-sm">
+                    <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl">
+                        <span class="text-slate-600 font-medium">Con serie</span>
+                        <span class="font-extrabold text-cyan-700">{{ number_format($instaladosSerializados) }}</span>
+                    </div>
+                    <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl">
+                        <span class="text-slate-600 font-medium">Por cantidad</span>
+                        <span class="font-extrabold text-purple-600">{{ number_format($instaladosCantidad) }}</span>
+                    </div>
+                    <div class="p-2.5 bg-cyan-50/60 border border-cyan-100 rounded-xl text-xs text-cyan-800 leading-snug">
+                        Despachados a órdenes filtradas · serie = con número de serie · cantidad = por unidad
+                    </div>
                 </div>
             </div>
 
-            <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-slate-200/80 border-l-4 border-l-indigo-500 p-5 flex items-center gap-4">
-                <div class="w-11 h-11 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
-                    <i class="fas fa-box text-indigo-600"></i>
+            {{-- 3. Kits --}}
+            <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow border border-slate-200/80 border-l-4 border-l-indigo-500 p-5">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
+                        <i class="fas fa-box text-indigo-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-3xl font-extrabold text-slate-800 leading-none">{{ number_format($kitsDisponibles) }}</p>
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Kits disponibles</span>
+                    </div>
                 </div>
-                <div class="min-w-0">
-                    <p class="text-2xl font-extrabold text-slate-800 leading-none">{{ number_format($kitsEnStock) }}</p>
-                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Kits en almacén</span>
+                <div class="space-y-2 text-sm">
+                    <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl">
+                        <span class="text-slate-600 font-medium">Sellados</span>
+                        <span class="font-extrabold text-indigo-600">{{ number_format($kitsSellados) }}</span>
+                    </div>
+                    <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl">
+                        <span class="text-slate-600 font-medium">Completados</span>
+                        <span class="font-extrabold text-purple-600">{{ number_format($kitsCompletados) }}</span>
+                    </div>
+                    <div class="p-2.5 bg-indigo-50/60 border border-indigo-100 rounded-xl text-xs text-indigo-800 leading-snug">
+                        En stock en almacén · mismos criterios que /almacen/productos
+                    </div>
                 </div>
             </div>
 
+            {{-- 4. Sueltos --}}
+            <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow border border-slate-200/80 border-l-4 border-l-emerald-500 p-5">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+                        <i class="fas fa-puzzle-piece text-emerald-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-3xl font-extrabold text-slate-800 leading-none">{{ number_format($piezasSueltas) }}</p>
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Piezas sueltas</span>
+                    </div>
+                </div>
+                <div class="space-y-2 text-sm">
+                    <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl">
+                        <span class="text-slate-600 font-medium">Con serie</span>
+                        <span class="font-extrabold text-emerald-600">{{ number_format($sueltosSerializados) }}</span>
+                    </div>
+                    <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl">
+                        <span class="text-slate-600 font-medium">Por cantidad</span>
+                        <span class="font-extrabold text-amber-600">{{ number_format($sueltosCantidadTotal) }}</span>
+                    </div>
+                    <div class="p-2.5 bg-emerald-50/60 border border-emerald-100 rounded-xl text-xs text-emerald-800 leading-snug">
+                        Stock real · cantidad = unidades sueltas menos componentes en kits
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -105,10 +167,12 @@
         <div class="flex items-center gap-2 mb-4">
             <i class="fas fa-sliders text-slate-400"></i>
             <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Filtros</span>
+            <span class="ml-auto inline-flex items-center gap-1.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 px-3 py-1 text-xs font-bold">
+                {{ $filtroBadge }}
+            </span>
         </div>
 
         <div class="flex flex-wrap items-end gap-4">
-
             <div class="flex flex-col gap-1.5">
                 <label class="text-xs font-semibold text-slate-500">Sede</label>
                 <select wire:model.live="filtroSede"
@@ -125,8 +189,12 @@
                 <select wire:model.live="filtroEstado"
                     class="rounded-xl border-slate-200 text-sm py-2 px-3 focus:border-indigo-500 focus:ring-indigo-500 bg-slate-50 min-w-[10rem]">
                     <option value="todos">Todos</option>
-                    <option value="conversion_completada">Completadas</option>
+                    <option value="en_evaluacion">En evaluación</option>
+                    <option value="aprobado_conversion">Aprobadas</option>
                     <option value="en_conversion">En proceso</option>
+                    <option value="conversion_completada">Completadas</option>
+                    <option value="listo_para_entrega">Listas entrega</option>
+                    <option value="entregado">Entregadas</option>
                 </select>
             </div>
 
@@ -143,50 +211,113 @@
             </div>
 
             @if ($filtroSede || $filtroEstado !== 'todos' || $filtroFechaDesde || $filtroFechaHasta)
-                <button wire:click="$set('filtroSede', null); $set('filtroEstado', 'todos'); $set('filtroFechaDesde', null); $set('filtroFechaHasta', null)"
+                <button wire:click="limpiarFiltros"
                     class="inline-flex items-center gap-1.5 text-xs font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 rounded-full px-3.5 py-2 ml-auto transition-colors">
                     <i class="fas fa-xmark"></i>
                     Limpiar filtros
                 </button>
             @endif
-
         </div>
     </div>
 
-    {{-- Charts --}}
+    {{-- Charts row 1 --}}
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6" wire:ignore>
-            <h3 class="text-sm font-bold text-slate-600 uppercase tracking-wider mb-5 flex items-center gap-2">
-                <i class="fas fa-chart-column text-slate-400"></i>
-                Conversiones por mes
-            </h3>
-            <div class="relative" style="height: 280px;">
-                <canvas id="chartConversionesMes"></canvas>
+        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6">
+            <div class="flex items-center justify-between gap-2 mb-5">
+                <h3 class="text-sm font-bold text-slate-600 uppercase tracking-wider flex items-center gap-2">
+                    <i class="fas fa-chart-column text-slate-400"></i>
+                    Conversiones por mes
+                </h3>
+                <span class="text-[11px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-full px-2.5 py-1">{{ $filtroBadge }}</span>
+            </div>
+            <div class="relative" style="height: 280px;" wire:ignore>
+                <canvas id="chartConvMes"></canvas>
             </div>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6" wire:ignore>
-            <h3 class="text-sm font-bold text-slate-600 uppercase tracking-wider mb-5 flex items-center gap-2">
-                <i class="fas fa-chart-pie text-slate-400"></i>
-                Kits más utilizados
-            </h3>
-            <div class="relative" style="height: 280px;">
-                <canvas id="chartKitsTipo"></canvas>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6">
+            <div class="flex items-center justify-between gap-2 mb-5">
+                <h3 class="text-sm font-bold text-slate-600 uppercase tracking-wider flex items-center gap-2">
+                    <i class="fas fa-chart-pie text-slate-400"></i>
+                    Por estado
+                </h3>
+                <span class="text-[11px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-full px-2.5 py-1 shrink-0">{{ $filtroBadge }}</span>
+            </div>
+            <div class="relative" style="height: 280px;" wire:ignore>
+                <canvas id="chartConvEstado"></canvas>
             </div>
         </div>
     </div>
 
-    @if (!empty($reportesPorPieza))
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6" wire:ignore>
-            <h3 class="text-sm font-bold text-slate-600 uppercase tracking-wider mb-5 flex items-center gap-2">
-                <i class="fas fa-triangle-exclamation text-slate-400"></i>
-                Piezas más reportadas (no calzan)
-            </h3>
-            <div class="relative" style="height: 260px;">
-                <canvas id="chartReportesPieza"></canvas>
+    {{-- Charts row 2 --}}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6">
+            <div class="flex items-center justify-between gap-2 mb-2 flex-wrap">
+                <h3 class="text-sm font-bold text-slate-600 uppercase tracking-wider flex items-center gap-2">
+                    <i class="fas fa-box-open text-slate-400"></i>
+                    Kits en almacén
+                </h3>
+                <span class="text-[11px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-full px-2.5 py-1 shrink-0">{{ $filtroBadge }}</span>
+            </div>
+            <p class="text-xs text-slate-500 mb-4">
+                Total <span class="font-extrabold text-slate-800">{{ number_format($kitsTotal) }}</span>
+                · Sellados <span class="font-bold text-indigo-600">{{ number_format($kitsSelladosChart) }}</span>
+                · Completados <span class="font-bold text-violet-600">{{ number_format($kitsCompletadosChart) }}</span>
+                · Asignados a clientes <span class="font-bold text-emerald-600">{{ number_format($kitsAsignadosChart) }}</span>
+            </p>
+            <div class="relative" style="height: 240px;" wire:ignore>
+                <canvas id="chartKitsUsados"></canvas>
             </div>
         </div>
-    @endif
+
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6">
+            <div class="flex items-center justify-between gap-2 mb-5">
+                <h3 class="text-sm font-bold text-slate-600 uppercase tracking-wider flex items-center gap-2">
+                    <i class="fas fa-gears text-slate-400"></i>
+                    Componentes instalados
+                </h3>
+                <span class="text-[11px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-full px-2.5 py-1 shrink-0">{{ $filtroBadge }}</span>
+            </div>
+            <div class="relative" style="height: 260px;" wire:ignore>
+                <canvas id="chartComponentes"></canvas>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6">
+            <div class="flex items-center justify-between gap-2 mb-5">
+                <h3 class="text-sm font-bold text-slate-600 uppercase tracking-wider flex items-center gap-2">
+                    <i class="fas fa-truck text-slate-400"></i>
+                    Despachados: serie vs cantidad
+                </h3>
+                <span class="text-[11px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-full px-2.5 py-1 shrink-0">{{ $filtroBadge }}</span>
+            </div>
+            <div class="relative" style="height: 260px;" wire:ignore>
+                <canvas id="chartDespachados"></canvas>
+            </div>
+            <p class="text-xs text-slate-400 mt-3">
+                Items instalados/despachados a las órdenes filtradas: con número de serie vs por unidad de cantidad.
+            </p>
+        </div>
+    </div>
+
+    {{-- Chart 5: balance --}}
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6">
+        <div class="flex items-center justify-between gap-2 mb-5">
+            <h3 class="text-sm font-bold text-slate-600 uppercase tracking-wider flex items-center gap-2">
+                <i class="fas fa-warehouse text-slate-400"></i>
+                Balance de almacén por sede
+            </h3>
+            <span class="text-[11px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-full px-2.5 py-1">{{ $filtroBadge }}</span>
+        </div>
+        <div class="relative" style="height: 280px;" wire:ignore>
+            <canvas id="chartBalanceSedes"></canvas>
+        </div>
+        <p class="text-xs text-slate-400 mt-3">
+            Kits = disponibles (sellados + completados) · Sueltos = mismos criterios que
+            <a href="{{ route('almacen.productos.listado') }}" class="text-indigo-600 font-semibold hover:underline">/almacen/productos</a>
+            (stock real menos componentes dentro de kits de esa sede).
+        </p>
+    </div>
 
     {{-- Tabla detalle --}}
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
@@ -196,7 +327,7 @@
                 Detalle de conversiones
             </h3>
             <span class="bg-slate-100 text-slate-600 py-1 px-3 rounded-full text-xs font-bold shadow-sm">
-                {{ count($detalleOrdenes) }} órdenes
+                {{ count($detalleOrdenes) }} órdenes · {{ $filtroBadge }}
             </span>
         </div>
 
@@ -270,15 +401,20 @@
                                 @endif
                             </td>
                             <td class="px-4 py-3.5 text-center">
-                                @if ($d['orden']->estado === 'conversion_completada')
-                                    <span class="inline-flex items-center rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs text-emerald-700 font-bold uppercase tracking-wider">
-                                        Completada
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs text-amber-700 font-bold uppercase tracking-wider">
-                                        En proceso
-                                    </span>
-                                @endif
+                                @php
+                                    $badgeEstado = match ($d['estado']) {
+                                        'conversion_completada' => ['Completada', 'emerald'],
+                                        'en_conversion' => ['En proceso', 'amber'],
+                                        'entregado' => ['Entregada', 'blue'],
+                                        'listo_para_entrega' => ['Lista entrega', 'cyan'],
+                                        'aprobado_conversion' => ['Aprobada', 'indigo'],
+                                        'en_evaluacion' => ['Evaluación', 'slate'],
+                                        default => [$d['estado'], 'slate'],
+                                    };
+                                @endphp
+                                <span class="inline-flex items-center rounded-md border border-{{ $badgeEstado[1] }}-200 bg-{{ $badgeEstado[1] }}-50 px-2.5 py-1 text-xs text-{{ $badgeEstado[1] }}-700 font-bold uppercase tracking-wider">
+                                    {{ $badgeEstado[0] }}
+                                </span>
                             </td>
                         </tr>
                     @empty
@@ -294,80 +430,32 @@
         </div>
     </div>
 
-    {{-- Balance del almacén --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6">
-            <h3 class="text-sm font-bold text-slate-600 uppercase tracking-wider mb-4 flex items-center gap-2">
-                <i class="fas fa-warehouse text-slate-400"></i>
-                Balance de almacén
-            </h3>
-            <div class="space-y-2.5">
-                <div class="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl">
-                    <div class="flex items-center gap-2.5">
-                        <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
-                            <i class="fas fa-box text-indigo-600 text-xs"></i>
-                        </div>
-                        <span class="text-sm font-medium text-slate-600">Kits en stock</span>
-                    </div>
-                    <span class="text-lg font-extrabold text-slate-800">{{ number_format($kitsEnStock) }}</span>
-                </div>
-                <div class="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl">
-                    <div class="flex items-center gap-2.5">
-                        <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
-                            <i class="fas fa-puzzle-piece text-emerald-600 text-xs"></i>
-                        </div>
-                        <span class="text-sm font-medium text-slate-600">Piezas sueltas</span>
-                    </div>
-                    <span class="text-lg font-extrabold text-slate-800">{{ number_format($stockPiezasSueltas) }}</span>
-                </div>
-                <div class="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl">
-                    <div class="flex items-center gap-2.5">
-                        <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center shrink-0">
-                            <i class="fas fa-wrench text-amber-600 text-xs"></i>
-                        </div>
-                        <span class="text-sm font-medium text-slate-600">Piezas por cantidad instaladas</span>
-                    </div>
-                    <span class="text-lg font-extrabold text-slate-800">{{ number_format($piezasCantidad) }}</span>
-                </div>
-            </div>
-        </div>
+    {{-- Payload charts: fuera de wire:ignore, se morph con cada filtro --}}
+    <div id="reporteConvPayload" class="hidden" aria-hidden="true">@json($charts)</div>
 
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6">
-            <h3 class="text-sm font-bold text-slate-600 uppercase tracking-wider mb-4 flex items-center gap-2">
-                <i class="fas fa-chart-simple text-slate-400"></i>
-                Resumen
-            </h3>
-            <div class="space-y-2.5">
-                <div class="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl">
-                    <div class="flex items-center gap-2.5">
-                        <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
-                            <i class="fas fa-car text-blue-600 text-xs"></i>
-                        </div>
-                        <span class="text-sm font-medium text-slate-600">Total conversiones</span>
-                    </div>
-                    <span class="text-lg font-extrabold text-slate-800">{{ number_format($totalConversiones) }}</span>
-                </div>
-                <div class="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl">
-                    <div class="flex items-center gap-2.5">
-                        <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
-                            <i class="fas fa-check-circle text-emerald-600 text-xs"></i>
-                        </div>
-                        <span class="text-sm font-medium text-slate-600">Completadas</span>
-                    </div>
-                    <span class="text-lg font-extrabold text-emerald-600">{{ number_format($completadas) }}</span>
-                </div>
-                <div class="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl">
-                    <div class="flex items-center gap-2.5">
-                        <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center shrink-0">
-                            <i class="fas fa-gears text-amber-600 text-xs"></i>
-                        </div>
-                        <span class="text-sm font-medium text-slate-600">Piezas instaladas</span>
-                    </div>
-                    <span class="text-lg font-extrabold text-amber-600">{{ number_format($itemsInstalados) }}</span>
-                </div>
-            </div>
-        </div>
-    </div>
+    @push('js')
+        <script src="{{ asset('js/components/reporte-conversiones-charts.js') }}"></script>
+    @endpush
+
+    @script
+    <script>
+        (function () {
+            function go() {
+                if (typeof window.renderReporteConvCharts === 'function') {
+                    window.renderReporteConvCharts();
+                    return true;
+                }
+                return false;
+            }
+            if (!go()) {
+                var tries = 0;
+                var wait = setInterval(function () {
+                    if (go() || ++tries > 50) clearInterval(wait);
+                }, 40);
+            }
+        })();
+    </script>
+    @endscript
 
     <style>
         .custom-scrollbar::-webkit-scrollbar {
@@ -388,134 +476,4 @@
             background: #94a3b8;
         }
     </style>
-
-    <script>
-        function renderCharts() {
-            const colors = ['#4f46e5', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
-
-            // Chart: Conversiones por mes
-            const ctxMes = document.getElementById('chartConversionesMes');
-            if (ctxMes) {
-                const porMes = @json($porMes);
-                const labels = Object.keys(porMes);
-                const completadas = labels.map(k => porMes[k]['completadas']);
-                const enProceso = labels.map(k => porMes[k]['en_proceso']);
-
-                if (window.chartMes) window.chartMes.destroy();
-                if (labels.length > 0) {
-                    window.chartMes = new Chart(ctxMes, {
-                        type: 'bar',
-                        data: {
-                            labels: labels,
-                            datasets: [
-                                { label: 'Completadas', data: completadas, backgroundColor: '#10b981', borderRadius: 6, barPercentage: 0.6, categoryPercentage: 0.8 },
-                                { label: 'En proceso', data: enProceso, backgroundColor: '#f59e0b', borderRadius: 6, barPercentage: 0.6, categoryPercentage: 0.8 }
-                            ]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { position: 'bottom', labels: { boxWidth: 10, padding: 12, font: { size: 11, family: "'Inter', sans-serif" } } }
-                            },
-                            scales: {
-                                y: { beginAtZero: true, stacked: true, grid: { color: '#f1f5f9', drawBorder: false } },
-                                x: { stacked: true, grid: { display: false } }
-                            }
-                        }
-                    });
-                }
-            }
-
-            // Chart: Kits más utilizados
-            const ctxKits = document.getElementById('chartKitsTipo');
-            if (ctxKits) {
-                const kitsPorTipo = @json($kitsPorTipo);
-                const labels = Object.keys(kitsPorTipo);
-                const data = Object.values(kitsPorTipo);
-
-                if (window.chartKits) window.chartKits.destroy();
-                if (labels.length > 0) {
-                    window.chartKits = new Chart(ctxKits, {
-                        type: 'doughnut',
-                        data: {
-                            labels: labels,
-                            datasets: [{ data: data, backgroundColor: colors, borderWidth: 2, borderColor: '#ffffff' }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            cutout: '60%',
-                            plugins: {
-                                legend: { position: 'bottom', labels: { boxWidth: 10, padding: 12, font: { size: 11, family: "'Inter', sans-serif" } } }
-                            }
-                        }
-                    });
-                }
-            }
-
-            // Chart: Piezas más reportadas
-            const ctxReportes = document.getElementById('chartReportesPieza');
-            if (ctxReportes) {
-                const reportesPorPieza = @json($reportesPorPieza);
-                const labels = Object.keys(reportesPorPieza);
-                const data = Object.values(reportesPorPieza);
-
-                if (window.chartReportes) window.chartReportes.destroy();
-                if (labels.length > 0) {
-                    window.chartReportes = new Chart(ctxReportes, {
-                        type: 'bar',
-                        data: {
-                            labels: labels,
-                            datasets: [{ label: 'Reportes', data: data, backgroundColor: '#ef4444', borderRadius: 6, maxBarThickness: 40 }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            indexAxis: 'y',
-                            plugins: { legend: { display: false } },
-                            scales: {
-                                x: { beginAtZero: true, grid: { color: '#f1f5f9', drawBorder: false } },
-                                y: { grid: { display: false } }
-                            }
-                        }
-                    });
-                }
-            }
-        }
-
-        document.addEventListener('livewire:navigated', renderCharts);
-        document.addEventListener('livewire:updated', renderCharts);
-    </script>
-
-    <script>
-        window.exportarPDF = function () {
-            Swal.fire({
-                title: 'Exportando PDF',
-                text: 'Generando el reporte...',
-                icon: 'info',
-                allowOutsideClick: false,
-                showConfirmButton: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                    window.location.href = '{{ $this->exportPdfUrl() }}';
-                    setTimeout(() => { Swal.close(); }, 3000);
-                }
-            });
-        };
-        window.exportarExcel = function () {
-            Swal.fire({
-                title: 'Exportando Excel',
-                text: 'Generando el reporte...',
-                icon: 'info',
-                allowOutsideClick: false,
-                showConfirmButton: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                    window.location.href = '{{ $this->exportExcelUrl() }}';
-                    setTimeout(() => { Swal.close(); }, 3000);
-                }
-            });
-        };
-    </script>
 </div>

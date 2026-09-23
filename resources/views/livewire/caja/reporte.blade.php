@@ -62,28 +62,142 @@
         </div>
     @endif
 
-    {{-- Chart: SIEMPRE en el DOM (fuera del condicional) --}}
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6" wire:ignore wire:key="reporte-caja-chart">
-        <h3 class="text-sm font-bold text-gray-500 uppercase mb-4">{{ $soloFise ? 'FISE por día' : 'Ingresos por día (desglose por método de pago)' }}</h3>
-        <div class="relative w-full" style="height: 320px;">
-            <canvas id="chartReporteCaja"
-                data-labels='@json($labels)'
-                data-chartdata='@json($chartData)'
-                data-colores='@json($colores)'></canvas>
+    {{-- Charts: 3 filas — 1-2 / 3-6 / 4-5 --}}
+    <script type="application/json" id="cajaReportPayload">@json($charts)</script>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        {{-- 1. Ingresos vs egresos (barras agrupadas) --}}
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6" wire:ignore wire:key="caja-c1">
+            <h3 class="text-sm font-bold text-gray-500 uppercase mb-4">
+                <i class="fas fa-exchange-alt mr-1.5 text-emerald-500"></i>Ingresos vs. egresos por día
+            </h3>
+            <div class="relative w-full" style="height: 280px;">
+                <canvas id="chartIngresosEgresos"></canvas>
+            </div>
+            <div id="emptyIE" class="hidden flex flex-col items-center justify-center py-10 text-center">
+                <i class="fas fa-chart-bar text-3xl text-gray-300 mb-2"></i>
+                <p class="text-sm text-gray-400 font-medium">No hay datos para este gráfico</p>
+            </div>
+            <div class="flex flex-wrap gap-4 mt-3 justify-center text-xs font-semibold text-gray-600">
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-emerald-500"></span> Ingresos</span>
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-red-500"></span> Egresos</span>
+            </div>
         </div>
-        <div class="flex flex-wrap gap-4 mt-3 justify-center">
-            @foreach ($metodos as $metodo)
-                @php $total = $ingresosPorMetodo[$metodo] ?? 0; @endphp
-                @if ($total > 0)
-                    <div class="flex items-center gap-1.5 text-xs">
-                        <span class="w-3 h-3 rounded-sm" style="background: {{ $colores[$metodo] }}"></span>
-                        <span class="font-medium text-gray-600">{{ ucfirst($metodo) }}</span>
-                        <span class="text-gray-400">S/ {{ number_format($total, 2) }}</span>
+
+        {{-- 2. Flujo neto acumulado (línea) --}}
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6" wire:ignore wire:key="caja-c2">
+            <div class="flex items-start justify-between gap-2 mb-4">
+                <h3 class="text-sm font-bold text-gray-500 uppercase">
+                    <i class="fas fa-chart-area mr-1.5 text-indigo-500"></i>Flujo neto acumulado
+                </h3>
+                <span class="text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-full px-2.5 py-1">
+                    Inicia S/ {{ number_format($efectivoAnterior, 2) }}
+                </span>
+            </div>
+            <div class="relative w-full" style="height: 280px;">
+                <canvas id="chartFlujoAcum"></canvas>
+            </div>
+            <div id="emptyFlujo" class="hidden flex flex-col items-center justify-center py-10 text-center">
+                <i class="fas fa-chart-area text-3xl text-gray-300 mb-2"></i>
+                <p class="text-sm text-gray-400 font-medium">No hay datos para este gráfico</p>
+            </div>
+            <p class="text-center text-xs text-gray-400 mt-2">Saldo de caja al cierre de cada día</p>
+        </div>
+
+        {{-- 3. Distribución por método de pago (dona) --}}
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6" wire:ignore wire:key="caja-c3">
+            <h3 class="text-sm font-bold text-gray-500 uppercase mb-4">
+                <i class="fas fa-credit-card mr-1.5 text-violet-500"></i>Distribución por método de pago
+            </h3>
+            <div class="relative w-full" style="height: 280px;">
+                <canvas id="chartMetodosPago"></canvas>
+            </div>
+            <div id="emptyMetodos" class="hidden flex flex-col items-center justify-center py-10 text-center">
+                <i class="fas fa-credit-card text-3xl text-gray-300 mb-2"></i>
+                <p class="text-sm text-gray-400 font-medium">No hay datos para este gráfico</p>
+                <p class="text-xs text-gray-300 mt-1">Sin ingresos por método en el período</p>
+            </div>
+        </div>
+
+        {{-- 6. FISE vs no FISE por día --}}
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6" wire:ignore wire:key="caja-c6">
+            <div class="flex items-start justify-between gap-2 mb-4">
+                <h3 class="text-sm font-bold text-gray-500 uppercase">
+                    <i class="fas fa-hand-holding-usd mr-1.5 text-amber-500"></i>Ingresos FISE vs. no FISE
+                </h3>
+                <span class="text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-1">
+                    FISE S/ {{ number_format($fiseTotal, 2) }} · Otros S/ {{ number_format($noFiseTotal, 2) }}
+                </span>
+            </div>
+            <div class="relative w-full" style="height: 260px;">
+                <canvas id="chartFiseNoFise"></canvas>
+            </div>
+            <div id="emptyFise" class="hidden flex flex-col items-center justify-center py-10 text-center">
+                <i class="fas fa-chart-bar text-3xl text-gray-300 mb-2"></i>
+                <p class="text-sm text-gray-400 font-medium">No hay datos para este gráfico</p>
+            </div>
+            <div class="flex flex-wrap gap-4 mt-3 justify-center text-xs font-semibold text-gray-600">
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-amber-500"></span> FISE</span>
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-emerald-500"></span> No FISE</span>
+            </div>
+        </div>
+
+        {{-- 4. Egresos por categoría (barras horizontales) --}}
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6" wire:ignore wire:key="caja-c4">
+            <h3 class="text-sm font-bold text-gray-500 uppercase mb-4">
+                <i class="fas fa-file-invoice-dollar mr-1.5 text-red-500"></i>Egresos por categoría
+            </h3>
+            <div class="relative w-full" style="height: 280px;">
+                <canvas id="chartEgresosCat"></canvas>
+            </div>
+            <div id="emptyEgresosCat" class="hidden flex flex-col items-center justify-center py-10 text-center">
+                <i class="fas fa-file-invoice-dollar text-3xl text-gray-300 mb-2"></i>
+                <p class="text-sm text-gray-400 font-medium">No hay datos para este gráfico</p>
+                <p class="text-xs text-gray-300 mt-1">Sin egresos en el período seleccionado</p>
+            </div>
+        </div>
+
+        {{-- 5. Ingresos por hora del día --}}
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6" wire:ignore wire:key="caja-c5">
+            <h3 class="text-sm font-bold text-gray-500 uppercase mb-4">
+                <i class="fas fa-clock mr-1.5 text-sky-500"></i>Ingresos por hora del día
+            </h3>
+            <div class="relative w-full" style="height: 280px;">
+                <canvas id="chartIngresosHora"></canvas>
+            </div>
+            <div id="emptyHora" class="hidden flex flex-col items-center justify-center py-10 text-center">
+                <i class="fas fa-clock text-3xl text-gray-300 mb-2"></i>
+                <p class="text-sm text-gray-400 font-medium">No hay datos para este gráfico</p>
+            </div>
+        </div>
+    </div>
+
+    {{-- Extra: Top 5 ingresos --}}
+    @if ($topIngresos->count())
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6">
+        <h3 class="text-sm font-bold text-gray-500 uppercase mb-4">
+            <i class="fas fa-trophy mr-1.5 text-amber-500"></i>Top 5 ingresos del período
+        </h3>
+        <div class="space-y-2">
+            @foreach ($topIngresos as $i => $mov)
+            <div class="flex items-center justify-between gap-3 bg-gray-50 rounded-lg px-4 py-3 border border-gray-100">
+                <div class="flex items-center gap-3 min-w-0">
+                    <span class="w-7 h-7 rounded-full bg-indigo-50 text-indigo-700 text-xs font-extrabold flex items-center justify-center shrink-0">{{ $i + 1 }}</span>
+                    <div class="min-w-0">
+                        <p class="text-sm font-semibold text-gray-800 truncate">{{ $mov->concepto ?: 'Ingreso' }}</p>
+                        <p class="text-xs text-gray-400">
+                            {{ $mov->created_at?->format('d/m/Y H:i') }}
+                            @if($mov->usuario) · {{ $mov->usuario->name }} @endif
+                            @if($mov->metodo_pago) · {{ ucfirst($mov->metodo_pago) }} @endif
+                        </p>
                     </div>
-                @endif
+                </div>
+                <span class="text-sm font-extrabold text-emerald-600 shrink-0">S/ {{ number_format($mov->monto, 2) }}</span>
+            </div>
             @endforeach
         </div>
     </div>
+    @endif
 
     @if ($sesionesConDescuadre->count())
         <div class="bg-red-50 border border-red-200 rounded-xl p-5">
@@ -182,106 +296,253 @@
 
     @script
     <script>
-        const METODOS_LABELS = {
-            efectivo: 'Efectivo',
-            tarjeta: 'Tarjeta',
-            transferencia: 'Transferencia',
-            fise: 'FISE',
-            otro: 'Otro'
-        };
+        function cajaMoney(v) {
+            return 'S/ ' + Number(v || 0).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
 
-        window.renderReporteCajaChart = function () {
-            const canvas = document.getElementById('chartReporteCaja');
-            if (!canvas) {
-                console.error('[reporte-caja] No se encontró el canvas #chartReporteCaja');
-                return;
-            }
+        function cajaDestroy(key) {
+            if (window[key]) { window[key].destroy(); window[key] = null; }
+        }
 
-            if (typeof Chart === 'undefined') {
-                console.error('[reporte-caja] Chart.js no está cargado en esta página. Verifica que el script de Chart.js se incluya antes de este componente.');
-                return;
-            }
+        function cajaReadPayload() {
+            const el = document.getElementById('cajaReportPayload');
+            if (!el) return null;
+            try { return JSON.parse(el.textContent || 'null'); } catch (e) { return null; }
+        }
 
-            let labels, chartData, colores;
+        function cajaToggle(idCanvas, idEmpty, showEmpty) {
+            const canvas = document.getElementById(idCanvas);
+            const empty = document.getElementById(idEmpty);
+            const wrap = canvas ? canvas.parentElement : null;
+            if (wrap) wrap.classList.toggle('hidden', !!showEmpty);
+            if (empty) empty.classList.toggle('hidden', !showEmpty);
+            if (empty) empty.classList.toggle('flex', !!showEmpty);
+        }
+
+        window.renderReporteCajaCharts = function () {
+            if (typeof Chart === 'undefined') return;
+            const d = cajaReadPayload();
+            if (!d || !d.labels) return;
+
+            const moneyScale = {
+                beginAtZero: true,
+                ticks: { callback: v => 'S/ ' + v.toLocaleString(), color: '#94a3b8', font: { size: 10 } },
+                grid: { color: '#f1f5f9' },
+                border: { display: false }
+            };
+            const xTicks = { ticks: { color: '#94a3b8', font: { size: 10 }, maxRotation: 45, autoSkip: true }, grid: { display: false }, border: { display: false } };
+            const legendBottom = {
+                display: true,
+                position: 'bottom',
+                labels: { boxWidth: 10, padding: 12, font: { size: 11, family: "'Inter', sans-serif" } }
+            };
+
+            // 1. Ingresos vs egresos
             try {
-                labels = JSON.parse(canvas.dataset.labels || '[]');
-                chartData = JSON.parse(canvas.dataset.chartdata || '{}');
-                colores = JSON.parse(canvas.dataset.colores || '{}');
-            } catch (e) {
-                console.error('[reporte-caja] Error parseando data-* del canvas:', e, {
-                    labels: canvas.dataset.labels,
-                    chartdata: canvas.dataset.chartdata,
-                    colores: canvas.dataset.colores,
-                });
-                return;
-            }
-
-            console.log('[reporte-caja] labels:', labels, 'chartData:', chartData, 'colores:', colores);
-
-            if (window.chartReporteCajaInstance) window.chartReporteCajaInstance.destroy();
-
-            const datasets = [];
-            for (const [metodo, data] of Object.entries(chartData)) {
-                const total = data.reduce((a, b) => a + b, 0);
-                if (total > 0) {
-                    datasets.push({
-                        label: METODOS_LABELS[metodo] || metodo,
-                        data: data,
-                        backgroundColor: colores[metodo] || '#6b7280',
-                        borderRadius: 3,
-                        borderSkipped: false,
+                cajaDestroy('chartIE');
+                const hasIE = (d.ingresosData || []).some(v => Number(v) > 0) || (d.egresosData || []).some(v => Number(v) > 0);
+                cajaToggle('chartIngresosEgresos', 'emptyIE', !hasIE);
+                const cIE = document.getElementById('chartIngresosEgresos');
+                if (cIE && hasIE) {
+                    window.chartIE = new Chart(cIE, {
+                        type: 'bar',
+                        data: {
+                            labels: d.labels,
+                            datasets: [
+                                { label: 'Ingresos', data: d.ingresosData, backgroundColor: '#10b981', borderRadius: 4, barPercentage: 0.85, categoryPercentage: 0.7 },
+                                { label: 'Egresos', data: d.egresosData, backgroundColor: '#ef4444', borderRadius: 4, barPercentage: 0.85, categoryPercentage: 0.7 }
+                            ]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false, animation: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + cajaMoney(ctx.parsed.y) } }
+                            },
+                            scales: { x: xTicks, y: moneyScale }
+                        }
                     });
                 }
-            }
+            } catch (e) { console.error('[caja] chart1', e); }
 
-            if (datasets.length === 0) {
-                console.warn('[reporte-caja] No hay datasets con datos > 0, no se dibuja el gráfico.');
-                return;
-            }
+            // 2. Flujo acumulado
+            try {
+                cajaDestroy('chartFlujo');
+                const hasFlujo = (d.flujoAcumulado || []).some(v => Number(v) !== 0);
+                cajaToggle('chartFlujoAcum', 'emptyFlujo', !hasFlujo && !d.flujoAcumulado?.length);
+                const cF = document.getElementById('chartFlujoAcum');
+                if (cF && d.flujoAcumulado && d.flujoAcumulado.length) {
+                    window.chartFlujo = new Chart(cF, {
+                        type: 'line',
+                        data: {
+                            labels: d.labels,
+                            datasets: [{
+                                label: 'Saldo acumulado',
+                                data: d.flujoAcumulado,
+                                borderColor: '#4f46e5',
+                                backgroundColor: 'rgba(79, 70, 229, 0.12)',
+                                borderWidth: 2.5,
+                                fill: true,
+                                tension: 0.35,
+                                pointRadius: 3,
+                                pointHoverRadius: 6,
+                                pointBackgroundColor: '#fff',
+                                pointBorderColor: '#4f46e5',
+                                pointBorderWidth: 2
+                            }]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false, animation: false,
+                            interaction: { mode: 'index', intersect: false },
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: { callbacks: { label: ctx => 'Saldo: ' + cajaMoney(ctx.parsed.y) } }
+                            },
+                            scales: { x: xTicks, y: moneyScale }
+                        }
+                    });
+                }
+            } catch (e) { console.error('[caja] chart2', e); }
 
-            window.chartReporteCajaInstance = new Chart(canvas, {
-                type: 'bar',
-                data: { labels, datasets },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'top', labels: { usePointStyle: true, pointStyle: 'rectRounded' } },
-                        tooltip: {
-                            callbacks: {
-                                label: (ctx) => ctx.dataset.label + ': S/ ' + ctx.parsed.y.toLocaleString('es-PE', { minimumFractionDigits: 2 })
+            // 3. Métodos de pago (dona)
+            try {
+                cajaDestroy('chartMetodos');
+                const totals = d.metodosTotales || {};
+                const metodos = (d.metodos || []).filter(m => Number(totals[m]) > 0);
+                const labelsM = metodos.map(m => (d.metodosLabels && d.metodosLabels[m]) || m);
+                const dataM = metodos.map(m => Number(totals[m]) || 0);
+                const hasMetodos = dataM.length > 0;
+                cajaToggle('chartMetodosPago', 'emptyMetodos', !hasMetodos);
+                const cM = document.getElementById('chartMetodosPago');
+                if (cM && hasMetodos) {
+                    window.chartMetodos = new Chart(cM, {
+                        type: 'doughnut',
+                        data: {
+                            labels: labelsM,
+                            datasets: [{
+                                data: dataM,
+                                backgroundColor: metodos.map(m => (d.colores && d.colores[m]) || '#6b7280'),
+                                borderWidth: 2,
+                                borderColor: '#fff'
+                            }]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false, animation: false, cutout: '58%',
+                            plugins: {
+                                legend: legendBottom,
+                                tooltip: { callbacks: { label: ctx => ctx.label + ': ' + cajaMoney(ctx.parsed) } }
                             }
                         }
-                    },
-                    scales: {
-                        x: { stacked: true },
-                        y: {
-                            stacked: true,
-                            beginAtZero: true,
-                            ticks: { callback: v => 'S/ ' + v.toLocaleString() }
-                        }
-                    }
+                    });
                 }
-            });
+            } catch (e) { console.error('[caja] chart3', e); }
+
+            // 6. FISE vs no FISE
+            try {
+                cajaDestroy('chartFise');
+                const hasFise = (d.fiseDiaData || []).some(v => Number(v) > 0) || (d.noFiseDiaData || []).some(v => Number(v) > 0);
+                cajaToggle('chartFiseNoFise', 'emptyFise', !hasFise);
+                const cFi = document.getElementById('chartFiseNoFise');
+                if (cFi && hasFise) {
+                    window.chartFise = new Chart(cFi, {
+                        type: 'bar',
+                        data: {
+                            labels: d.labels,
+                            datasets: [
+                                { label: 'FISE', data: d.fiseDiaData, backgroundColor: '#f59e0b', borderRadius: 3, barPercentage: 0.9, categoryPercentage: 0.75 },
+                                { label: 'No FISE', data: d.noFiseDiaData, backgroundColor: '#10b981', borderRadius: 3, barPercentage: 0.9, categoryPercentage: 0.75 }
+                            ]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false, animation: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + cajaMoney(ctx.parsed.y) } }
+                            },
+                            scales: { x: { ...xTicks, stacked: true }, y: { ...moneyScale, stacked: true } }
+                        }
+                    });
+                }
+            } catch (e) { console.error('[caja] chart6', e); }
+
+            // 4. Egresos por categoría
+            try {
+                cajaDestroy('chartEgCat');
+                const hasCat = (d.egresosLabels || []).length > 0 && (d.egresosDataCat || []).some(v => Number(v) > 0);
+                cajaToggle('chartEgresosCat', 'emptyEgresosCat', !hasCat);
+                const cE = document.getElementById('chartEgresosCat');
+                if (cE && hasCat) {
+                    window.chartEgCat = new Chart(cE, {
+                        type: 'bar',
+                        data: {
+                            labels: d.egresosLabels,
+                            datasets: [{
+                                label: 'Egresos',
+                                data: d.egresosDataCat,
+                                backgroundColor: '#ef4444',
+                                borderRadius: 6,
+                                maxBarThickness: 28
+                            }]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false, animation: false, indexAxis: 'y',
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: { callbacks: { label: ctx => cajaMoney(ctx.parsed.x) } }
+                            },
+                            scales: {
+                                x: { beginAtZero: true, ticks: { callback: v => 'S/ ' + v.toLocaleString(), color: '#94a3b8', font: { size: 10 } }, grid: { color: '#f1f5f9' }, border: { display: false } },
+                                y: { ticks: { color: '#64748b', font: { size: 11 } }, grid: { display: false }, border: { display: false } }
+                            }
+                        }
+                    });
+                }
+            } catch (e) { console.error('[caja] chart4', e); }
+
+            // 5. Ingresos por hora
+            try {
+                cajaDestroy('chartHora');
+                const hasHora = (d.ingresosPorHoraData || []).some(v => Number(v) > 0);
+                cajaToggle('chartIngresosHora', 'emptyHora', !hasHora);
+                const cH = document.getElementById('chartIngresosHora');
+                if (cH && hasHora) {
+                    window.chartHora = new Chart(cH, {
+                        type: 'bar',
+                        data: {
+                            labels: d.labelsHora,
+                            datasets: [{
+                                label: 'Ingresos',
+                                data: d.ingresosPorHoraData,
+                                backgroundColor: '#0ea5e9',
+                                borderRadius: 4,
+                                barPercentage: 0.9
+                            }]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false, animation: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: { callbacks: { title: items => (items[0]?.label || '') + ':00', label: ctx => cajaMoney(ctx.parsed.y) } }
+                            },
+                            scales: { x: { ...xTicks, ticks: { ...xTicks.ticks, maxRotation: 0, autoSkip: false, font: { size: 9 } } }, y: moneyScale }
+                        }
+                    });
+                }
+            } catch (e) { console.error('[caja] chart5', e); }
         };
 
-        window.renderReporteCajaChart();
+        window.renderReporteCajaCharts();
 
         Livewire.hook('morph.updated', ({ component }) => {
-            if (component.name === 'caja.reporte') {
-                window.renderReporteCajaChart();
-            }
+            if (component.name === 'caja.reporte') window.renderReporteCajaCharts();
         });
 
-        // Update canvas data-* attrs when server dispatches new chart data
-        // (wire:ignore prevents morph from updating them)
-        $wire.on('chart-data-updated', (data) => {
-            const canvas = document.getElementById('chartReporteCaja');
-            if (!canvas) return;
-            canvas.dataset.labels = JSON.stringify(data.labels);
-            canvas.dataset.chartdata = JSON.stringify(data.chartData);
-            canvas.dataset.colores = JSON.stringify(data.colores);
-            window.renderReporteCajaChart();
+        $wire.on('chart-data-updated', (payload) => {
+            const el = document.getElementById('cajaReportPayload');
+            if (el && payload && payload.charts) {
+                el.textContent = JSON.stringify(payload.charts);
+            }
+            window.renderReporteCajaCharts();
         });
 
         $wire.on('descargar-pdf', (params) => {
