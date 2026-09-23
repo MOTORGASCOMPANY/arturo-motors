@@ -440,8 +440,9 @@ class ReportesPendientes extends Component
             $sedeId = Sede::activas()->orderBy('id')->first()?->id ?? 1;
 
             
+            // Despacho almacén → orden: RESTA stock (salida), no suma
             MovimientoStock::registrar(
-                $item->producto, 'entrada', $cantidad, null, Auth::id(),
+                $item->producto, 'salida', $cantidad, $orden->id, Auth::id(),
                 "Cantidad adicional para orden #{$orden->id}", $sedeId
             );
 
