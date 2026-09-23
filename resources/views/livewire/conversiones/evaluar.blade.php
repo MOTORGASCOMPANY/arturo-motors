@@ -23,6 +23,7 @@
 
         <div class="p-6 space-y-6">
             <x-input-error for="general" />
+            <x-input-error for="fichaDano" />
 
             <div class="flex flex-col lg:flex-row gap-6">
 
