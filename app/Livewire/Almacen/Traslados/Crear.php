@@ -144,14 +144,17 @@ class Crear extends Component
     {
         $sedeId = $this->sedeOrigenId();
 
-        return Producto::where('activo', true)
-            ->whereHas('categoria', fn ($q) => $q->where('es_kit', false))
+        return Producto::with('categoria')
+            ->where('activo', true)
+            ->whereHas('categoria', fn ($q) => $q->where('es_kit', false)->where('es_serializado', false))
             ->whereHas(
                 'stockPorSede',
                 fn ($q) => $q->where('sede_id', $sedeId)->where('cantidad', '>', 0)
             )
             ->get()
-            ->map(fn ($p) => tap($p, fn ($p) => $p->disponible = $p->stockEnSede($sedeId)));
+            ->map(fn ($p) => tap($p, fn ($p) => $p->disponible = $p->stockSueltoEnSede($sedeId)))
+            ->filter(fn ($p) => $p->disponible > 0)
+            ->values();
     }
 
     public function agregarPiezaCantidad()
@@ -161,8 +164,8 @@ class Crear extends Component
             'cantidadPieza' => 'required|integer|min:1',
         ]);
 
-        $producto = Producto::find($this->productoCantidadId);
-        $disponible = $producto->stockEnSede($this->sedeOrigenId());
+        $producto = Producto::with('categoria')->find($this->productoCantidadId);
+        $disponible = $producto->stockSueltoEnSede($this->sedeOrigenId());
         $yaTiene = $this->cantidadSeleccionados[$this->productoCantidadId] ?? 0;
 
         if (($yaTiene + $this->cantidadPieza) > $disponible) {
@@ -470,33 +473,35 @@ class Crear extends Component
 
                 
                 foreach ($this->cantidadSeleccionados as $productoId => $cantidad) {
-                    $itemsPieza = ItemSerializado::where('producto_id', $productoId)
-                        ->where('estado', 'en_stock')
+                    $producto = Producto::with('categoria')->find($productoId);
+                    if (! $producto) {
+                        continue;
+                    }
+
+                    $stock = \App\Models\ProductoStockSede::where('producto_id', $productoId)
                         ->where('sede_id', $sedeOrigenId)
                         ->lockForUpdate()
-                        ->limit($cantidad)
-                        ->get();
+                        ->first();
 
-                    if ($itemsPieza->count() < $cantidad) {
-                        $nombre = Producto::find($productoId)?->nombre;
-                        throw new \RuntimeException("No hay stock suficiente de {$nombre}.");
+                    $enKits = ItemSerializado::where('producto_id', $productoId)
+                        ->whereNotNull('kit_padre_id')
+                        ->whereIn('estado', ['en_stock', 'abierto', 'completado', 'asignado'])
+                        ->where('sede_id', $sedeOrigenId)
+                        ->count();
+
+                    $disponible = max(0, (int) ($stock->cantidad ?? 0) - $enKits);
+                    if ($disponible < $cantidad) {
+                        throw new \RuntimeException("No hay stock suelto suficiente de {$producto->nombre}. Disponible: {$disponible}.");
                     }
 
-                    foreach ($itemsPieza as $itemPieza) {
-                        $itemPieza->update(['sede_id' => $this->sedeDestinoId]);
-                    }
-
-                    $producto = Producto::find($productoId);
-                    if ($producto) {
-                        MovimientoStock::registrar(
-                            $producto, 'salida', $cantidad, null, Auth::id(),
-                            "Traslado #{$traslado->id}", $sedeOrigenId
-                        );
-                        MovimientoStock::registrar(
-                            $producto, 'entrada', $cantidad, null, Auth::id(),
-                            "Traslado #{$traslado->id}", $this->sedeDestinoId
-                        );
-                    }
+                    MovimientoStock::registrar(
+                        $producto, 'salida', $cantidad, null, Auth::id(),
+                        "Traslado #{$traslado->id}", $sedeOrigenId
+                    );
+                    MovimientoStock::registrar(
+                        $producto, 'entrada', $cantidad, null, Auth::id(),
+                        "Traslado #{$traslado->id}", $this->sedeDestinoId
+                    );
 
                     TrasladoDetalle::create([
                         'traslado_id' => $traslado->id,

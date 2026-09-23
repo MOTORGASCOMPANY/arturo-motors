@@ -168,6 +168,11 @@ class Realizar extends Component
             return;
         }
 
+        if ($this->orden->fecha_fin_conversion) {
+            $this->dispatch('minToast', titulo: 'Ya finalizada', mensaje: 'La conversión ya fue finalizada.', icono: 'info');
+            return;
+        }
+
         $pendientes = ReportePiezaNoEncajada::where('service_order_id', $this->orden->id)
             ->whereIn('estado', ['pendiente', 'buscando_pieza', 'solicitando_almacen'])
             ->count();
@@ -183,6 +188,33 @@ class Realizar extends Component
 
         try {
             DB::transaction(function () {
+                // Componentes de kit POR CANTIDAD: al asignar el kit nunca se
+                // registró MovimientoStock::salida — solo quedaron "lockeados"
+                // virtualmente en enKits (estado asignado). Al marcarlos
+                // 'instalado' salen del lock, así que el ledger debe descontarse
+                // ahora; si no, el stock suelto reaparece en almacén como fantasma.
+                // Serializados NO llevan salida acá: su disponibilidad se controla
+                // por estado de item (nunca cuentan como sueltos con kit_padre_id).
+                $componentesCantidad = ItemSerializado::where('service_order_id', $this->orden->id)
+                    ->where('estado', 'asignado')
+                    ->whereNotNull('kit_padre_id')
+                    ->whereHas('producto.categoria', fn ($q) => $q->where('es_serializado', false)->where('es_kit', false))
+                    ->with('producto')
+                    ->get();
+
+                foreach ($componentesCantidad->groupBy(fn ($i) => $i->producto_id . '|' . $i->sede_id) as $grupo) {
+                    $item = $grupo->first();
+                    MovimientoStock::registrar(
+                        $item->producto,
+                        'salida',
+                        $grupo->count(),
+                        $this->orden->id,
+                        Auth::id(),
+                        'Componentes de kit consumidos en conversión #' . $this->orden->id,
+                        $item->sede_id
+                    );
+                }
+
                 ItemSerializado::where('service_order_id', $this->orden->id)
                     ->where('estado', 'asignado')
                     ->whereNull('kit_padre_id')
@@ -194,27 +226,24 @@ class Realizar extends Component
                     ->whereNotNull('kit_padre_id')
                     ->update(['estado' => 'instalado']);
 
-                $itemsReemplazo = ItemSerializado::where('service_order_id', $this->orden->id)
+                // Piezas sueltas asignadas a la orden (repuestos, cantidad adicional).
+                // El stock YA se descontó al asignarlas (MovimientoStock::salida).
+                // Se marcan como instaladas porque se USARON en la conversión;
+                // NO se devuelven al almacén. Las devoluciones por "no calza" ya
+                // se gestionan al momento del reporte (CambioPiezaService / Pendientes).
+                $itemsSuelto = ItemSerializado::where('service_order_id', $this->orden->id)
                     ->where('estado', 'asignado')
                     ->whereNull('kit_padre_id')
                     ->whereDoesntHave('piezasEnKit')
                     ->get();
 
-                foreach ($itemsReemplazo as $item) {
+                foreach ($itemsSuelto as $item) {
                     $item->update([
-                        'estado' => 'en_stock',
-                        'service_order_id' => null,
+                        'estado' => 'instalado',
                         'atributos' => array_merge($item->atributos ?? [], [
-                            'devuelto_por_no_calza' => true,
-                            'devuelto_en' => now()->toDateTimeString(),
+                            'instalado_en' => now()->toDateTimeString(),
                         ]),
                     ]);
-
-                    MovimientoStock::registrar(
-                        $item->producto, 'entrada', 1,
-                        $this->orden->id, Auth::id(),
-                        "Devolución pieza al finalizar conversión"
-                    );
                 }
 
                 $this->orden->update([

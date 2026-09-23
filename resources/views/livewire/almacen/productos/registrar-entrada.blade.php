@@ -29,7 +29,7 @@
                     <div>
                         <x-label for="cantidadEntrada" value="Cantidad a ingresar" />
                         <x-input type="number" min="1" wire:model="cantidadEntrada" class="w-full rounded-lg border-gray-300" />
-                        <p class="text-xs text-gray-500 mt-1">Stock actual: {{ $producto->stock }}</p>
+                        <p class="text-xs text-gray-500 mt-1">Stock actual: {{ $producto->stock_disponible }}</p>
                     </div>
                 @endif
             @endif

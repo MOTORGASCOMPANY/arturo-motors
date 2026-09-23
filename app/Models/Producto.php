@@ -61,7 +61,7 @@ class Producto extends Model
 
     public function getStockDisponibleAttribute()
     {
-        return $this->stockEnSede(self::sedePrincipalId());
+        return $this->stockSueltoEnSede(self::sedePrincipalId());
     }
 
     public function stockEnSede(int $sedeId): int
@@ -70,6 +70,42 @@ class Producto extends Model
             ->where('estado', 'en_stock')
             ->where('sede_id', $sedeId)
             ->count();
+    }
+
+    /**
+     * Stock suelto REAL disponible en una sede (lo que se puede vender/trasladar).
+     *
+     * - Kits: unidades del kit en stock.
+     * - Serializados: items sueltos (fuera de kits) en stock.
+     * - Cantidad: producto_stock_sede − componentes lockeados dentro de kits.
+     */
+    public function stockSueltoEnSede(int $sedeId): int
+    {
+        $categoria = $this->categoria;
+
+        if ($categoria?->es_kit) {
+            return $this->stockEnSede($sedeId);
+        }
+
+        if ($categoria?->es_serializado) {
+            return $this->items()
+                ->where('estado', 'en_stock')
+                ->where('sede_id', $sedeId)
+                ->whereNull('kit_padre_id')
+                ->count();
+        }
+
+        $cantidad = (int) $this->stockPorSede()
+            ->where('sede_id', $sedeId)
+            ->sum('cantidad');
+
+        $enKits = $this->items()
+            ->whereNotNull('kit_padre_id')
+            ->whereIn('estado', ['en_stock', 'abierto', 'completado', 'asignado'])
+            ->where('sede_id', $sedeId)
+            ->count();
+
+        return max(0, $cantidad - $enKits);
     }
 
     public function stockTotal(): int

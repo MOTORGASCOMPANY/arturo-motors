@@ -575,6 +575,29 @@ class Listado extends Component
         $kit->totalEsperado = $receta->sum('cantidad');
         $kit->totalPresente = $kit->piezasEnKit->count();
 
+        // Resumen de piezas del kit agrupadas por producto (vista más compacta).
+        $kit->piezasResumidas = $kit->piezasEnKit
+            ->groupBy('producto_id')
+            ->map(fn ($grupo) => [
+                'nombre'    => $grupo->first()->producto?->nombre ?? '—',
+                'cantidad'  => $grupo->count(),
+                'series'    => $grupo->pluck('serie')->filter()->values(),
+                'instalado' => $grupo->contains('estado', 'instalado'),
+            ])
+            ->values();
+
+        // Items de cantidad extra / repuestos asignados a la misma orden
+        // (sueltos, sin kit_padre_id) — se muestran resaltados en azul.
+        $kit->itemsExtraOrden = $kit->service_order_id
+            ? ItemSerializado::where('service_order_id', $kit->service_order_id)
+                ->whereNull('kit_padre_id')
+                ->whereDoesntHave('piezasEnKit')
+                ->where('id', '!=', $kit->id)
+                ->whereNotIn('estado', ['defectuoso', 'devuelta_por_no_calzar'])
+                ->with('producto.categoria')
+                ->get()
+            : collect();
+
         // Verificar si todos los componentes faltantes tienen stock disponible
         $tieneFaltantes = $componentes->contains(fn($r) => !$r['completo']);
         $todosConStock = true;

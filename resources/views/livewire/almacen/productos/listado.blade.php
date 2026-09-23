@@ -459,27 +459,50 @@
                                 </div>
                             @endif
 
-                            {{-- Piezas asignadas --}}
-                            @if ($k->piezasEnKit && $k->piezasEnKit->isNotEmpty())
+                            {{-- Piezas asignadas (resumidas por producto) --}}
+                            @if ($k->piezasResumidas && $k->piezasResumidas->isNotEmpty())
                                 <div>
-                                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Piezas asignadas ({{ $k->piezasEnKit->count() }})</p>
+                                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Equipos del kit ({{ $k->totalPresente }})</p>
                                     <div class="space-y-1.5">
-                                        @foreach ($k->piezasEnKit as $pieza)
-                                            @php
-                                                $pEstado = match($pieza->estado) {
-                                                    'en_stock' => ['label' => 'En stock', 'chip' => 'bg-green-100 text-green-700'],
-                                                    'reemplazado' => ['label' => 'Asignado', 'chip' => 'bg-blue-100 text-blue-700'],
-                                                    default => ['label' => $pieza->estado, 'chip' => 'bg-gray-100 text-gray-600'],
-                                                };
-                                            @endphp
+                                        @foreach ($k->piezasResumidas as $pr)
                                             <div class="flex items-center gap-2.5 px-3 py-2 bg-gray-50 rounded-lg border border-gray-100">
+                                                <i class="fas fa-microchip text-indigo-500 text-xs shrink-0"></i>
                                                 <div class="min-w-0 flex-1">
-                                                    <p class="text-sm font-medium text-gray-700">{{ $pieza->producto?->nombre ?? '—' }}</p>
-                                                    @if ($pieza->serie)
-                                                        <p class="text-xs text-gray-500 mt-0.5 font-mono">#{{ $pieza->serie }}</p>
+                                                    <p class="text-sm font-medium text-gray-700 truncate">{{ $pr['nombre'] }}</p>
+                                                    @if ($pr['series']->isNotEmpty())
+                                                        <p class="text-xs text-gray-400 mt-0.5 font-mono truncate">
+                                                            {{ $pr['series']->take(3)->implode(', ') }}{{ $pr['series']->count() > 3 ? ' +' . ($pr['series']->count() - 3) : '' }}
+                                                        </p>
                                                     @endif
                                                 </div>
-                                                <span class="px-2 py-0.5 {{ $pEstado['chip'] }} text-[10px] font-bold rounded-full">{{ $pEstado['label'] }}</span>
+                                                @if ($pr['cantidad'] > 1)
+                                                    <span class="shrink-0 px-2 py-0.5 bg-indigo-100 text-indigo-700 text-xs font-black rounded-full tabular-nums">×{{ $pr['cantidad'] }}</span>
+                                                @endif
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+
+                            {{-- Cantidad extra / repuestos de la orden (azul) --}}
+                            @if ($k->itemsExtraOrden && $k->itemsExtraOrden->isNotEmpty())
+                                <div>
+                                    <p class="text-[10px] font-bold text-blue-500 uppercase tracking-wider mb-2">
+                                        <i class="fas fa-plus-circle mr-1"></i>Cantidad extra asignada ({{ $k->itemsExtraOrden->count() }})
+                                    </p>
+                                    <div class="space-y-1.5">
+                                        @foreach ($k->itemsExtraOrden as $extra)
+                                            <div class="flex items-center gap-2.5 px-3 py-2 bg-blue-50 rounded-lg border border-blue-200">
+                                                <i class="fas fa-cubes text-blue-500 text-xs shrink-0"></i>
+                                                <div class="min-w-0 flex-1">
+                                                    <p class="text-sm font-medium text-blue-800 truncate">{{ $extra->producto?->nombre ?? '—' }}</p>
+                                                    @if ($extra->serie)
+                                                        <p class="text-xs text-blue-500 mt-0.5 font-mono">#{{ $extra->serie }}</p>
+                                                    @elseif (($extra->atributos['cantidad_solicitada'] ?? null))
+                                                        <p class="text-xs text-blue-500 mt-0.5">Cantidad: {{ $extra->atributos['cantidad_solicitada'] }}</p>
+                                                    @endif
+                                                </div>
+                                                <span class="shrink-0 px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold rounded-full">{{ $extra->estado }}</span>
                                             </div>
                                         @endforeach
                                     </div>
@@ -720,7 +743,7 @@
                     <ul class="divide-y divide-gray-100 max-h-[65vh] overflow-y-auto">
                         @foreach ($productos as $p)
                             @php
-                                $stock = $p->categoria->es_kit ? $p->stockTotal() : $p->stock_disponible;
+                                $stock = $p->categoria->es_kit ? $p->stockSueltoEnSede(\App\Models\Sede::activas()->orderBy('id')->first()?->id ?? 1) : $p->stock_disponible;
                                 $stockColor = $stock > 0 ? 'text-green-600' : 'text-red-500';
                             @endphp
                             <li class="grid grid-cols-12 items-center gap-x-4 gap-y-2 px-4 py-3 hover:bg-gray-50 transition-colors">
