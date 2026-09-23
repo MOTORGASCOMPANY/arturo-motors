@@ -31,13 +31,16 @@ class Listado extends Component
     public string $nivelInventario = 'dashboard';
     public ?string $filtroTipoInventario = null;
     public ?int $kitSeleccionadoId = null;
+    public bool $mostrarDetalleKit = false;
 
     public bool $modalCompletarKitAbierto = false;
     public int $completarKitItemId = 0;
     public int $completarKitSedeId = 0;
     public string $completarKitNombre = '';
     public array $completarKitComponentes = [];
-    public array $completarKitSeleccion = []; 
+    public array $completarKitSeleccion = [];
+
+    public bool $modalListadoAbierto = false; 
 
     
     public bool $modalEditarItemAbierto = false;
@@ -86,17 +89,25 @@ class Listado extends Component
         $this->nivelInventario = 'listado';
         $this->filtroTipoInventario = $tipo;
         $this->kitSeleccionadoId = null;
+        $this->modalListadoAbierto = true;
     }
 
     public function verDetalleKit(int $kitId): void
     {
-        $this->nivelInventario = 'detalle';
         $this->kitSeleccionadoId = $kitId;
+        $this->mostrarDetalleKit = true;
     }
 
+    public function cerrarDetalleKit(): void
+    {
+        $this->mostrarDetalleKit = false;
+        $this->kitSeleccionadoId = null;
+    }
+
+    /** Vuelve del detalle del kit al listado intermedio (sin cerrar el modal de tipo). */
     public function volverListado(): void
     {
-        $this->nivelInventario = 'listado';
+        $this->mostrarDetalleKit = false;
         $this->kitSeleccionadoId = null;
     }
 
@@ -105,6 +116,43 @@ class Listado extends Component
         $this->nivelInventario = 'dashboard';
         $this->filtroTipoInventario = null;
         $this->kitSeleccionadoId = null;
+        $this->mostrarDetalleKit = false;
+        $this->modalListadoAbierto = false;
+    }
+
+    /** Sincroniza el cierre del listado cuando x-modal lo cierra (click fuera / Esc). */
+    public function updatedModalListadoAbierto(bool $value): void
+    {
+        if ($value) {
+            return;
+        }
+
+        $this->nivelInventario = 'dashboard';
+        $this->filtroTipoInventario = null;
+        $this->kitSeleccionadoId = null;
+        $this->mostrarDetalleKit = false;
+    }
+
+    /** Limpia el detalle cuando x-modal lo cierra. */
+    public function updatedMostrarDetalleKit(bool $value): void
+    {
+        if (!$value) {
+            $this->kitSeleccionadoId = null;
+        }
+    }
+
+    /** Limpia el modal de completar kit cuando x-modal lo cierra. */
+    public function updatedModalCompletarKitAbierto(bool $value): void
+    {
+        if ($value) {
+            return;
+        }
+
+        $this->completarKitItemId = 0;
+        $this->completarKitSedeId = 0;
+        $this->completarKitNombre = '';
+        $this->completarKitComponentes = [];
+        $this->completarKitSeleccion = [];
     }
 
     public function abrirCompletarKit(int $kitItemId): void
@@ -183,10 +231,7 @@ class Listado extends Component
     public function cerrarCompletarKit(): void
     {
         $this->modalCompletarKitAbierto = false;
-        $this->completarKitItemId = 0;
-        $this->completarKitNombre = '';
-        $this->completarKitComponentes = [];
-        $this->completarKitSeleccion = [];
+        // El resto de la limpieza lo hace updatedModalCompletarKitAbierto
     }
 
     public function toggleSeleccion(int $productoId, int $itemId): void
@@ -823,17 +868,25 @@ class Listado extends Component
             ->orderBy('nombre')
             ->paginate(15);
 
+        // Solo calcula datos pesados cuando la vista actual los necesita.
+        // Antes se recalculaban en cada render (abrir/cerrar modal = segundos de espera).
         return view('livewire.almacen.productos.listado', [
             'productos' => $query,
             'categorias' => CategoriaAlmacen::orderBy('nombre')->get(),
             'sedes' => Sede::activas()->get(),
-            'resumenInventario' => $this->resumenInventario,
-            'kits' => $this->kits,
-            'listadoInventario' => $this->listadoInventario,
+            'resumenInventario' => ($this->vistaActual === 'inventario' && $this->nivelInventario === 'dashboard')
+                ? $this->resumenInventario
+                : [],
+            'kits' => $this->vistaActual === 'kits'
+                ? $this->kits
+                : ['sellados' => collect(), 'incompletos' => collect(), 'completados' => collect(), 'consumidos' => collect()],
+            'listadoInventario' => $this->modalListadoAbierto
+                ? $this->listadoInventario
+                : collect(),
             'listadoInventarioTitulo' => $this->listadoInventarioTitulo,
             'listadoInventarioIcono' => $this->listadoInventarioIcono,
             'listadoInventarioColor' => $this->listadoInventarioColor,
-            'kitDetalle' => $this->kitDetalle,
+            'kitDetalle' => $this->mostrarDetalleKit ? $this->kitDetalle : null,
         ]);
     }
 }
