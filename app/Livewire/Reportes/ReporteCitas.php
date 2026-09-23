@@ -16,8 +16,22 @@ class ReporteCitas extends Component
 
     public function mount(): void
     {
-        $this->desde = now()->startOfMonth()->format('Y-m-d');
+        $this->desde = now()->format('Y-m-d');
         $this->hasta = now()->format('Y-m-d');
+    }
+
+    public function diaAnterior(): void
+    {
+        $nuevo = \Illuminate\Support\Carbon::parse($this->desde ?: now())->subDay()->toDateString();
+        $this->desde = $nuevo;
+        $this->hasta = $nuevo;
+    }
+
+    public function diaSiguiente(): void
+    {
+        $nuevo = \Illuminate\Support\Carbon::parse($this->desde ?: now())->addDay()->toDateString();
+        $this->desde = $nuevo;
+        $this->hasta = $nuevo;
     }
 
     protected function rangoValido(): array
@@ -55,23 +69,33 @@ class ReporteCitas extends Component
         $conOrden = $citas->filter(fn ($c) => $c->serviceOrder !== null)->count();
         $porcentajeConversion = $total > 0 ? round(($conOrden / $total) * 100, 1) : 0;
 
-        // Citas por día (para gráfico)
-        $dias = min($desde->diffInDays($hasta) + 1, 90);
+        // Gráfico SIEMPRE por horas del día seleccionado (fecha "desde")
+        $diaChart = $desde->copy()->startOfDay();
         $labels = [];
-        $pendientesPorDia = [];
-        $aceptadasPorDia = [];
-        $rechazadasPorDia = [];
-        $canceladasPorDia = [];
+        $aceptadasPorPeriodo = [];
+        $noAceptadasPorPeriodo = [];
+        $conversionPorPeriodo = [];
+        $granularity = 'hora';
 
-        for ($i = 0; $i < $dias; $i++) {
-            $fecha = $desde->copy()->addDays($i)->format('Y-m-d');
-            $labels[] = $desde->copy()->addDays($i)->format('d/m');
-            $diaCitas = $citas->filter(fn ($c) => $c->fecha_cita->format('Y-m-d') === $fecha);
-            $pendientesPorDia[] = $diaCitas->where('estado', 'pendiente')->count();
-            $aceptadasPorDia[] = $diaCitas->where('estado', 'aceptada')->count();
-            $rechazadasPorDia[] = $diaCitas->where('estado', 'rechazada')->count();
-            $canceladasPorDia[] = $diaCitas->where('estado', 'cancelada')->count();
+        $citasDia = $citas->filter(fn ($c) => $c->fecha_cita->isSameDay($diaChart));
+        for ($h = 0; $h < 24; $h++) {
+            $labels[] = sprintf('%02d:00', $h);
+            $enHora = $citasDia->filter(fn ($c) => (int) $c->fecha_cita->format('G') === $h);
+            $aceptadasPorPeriodo[] = $enHora->where('estado', 'aceptada')->count();
+            $noAceptadasPorPeriodo[] = $enHora
+                ->filter(fn ($c) => in_array($c->estado, ['rechazada', 'cancelada'], true))
+                ->count();
+            $conversionPorPeriodo[] = $enHora->filter(fn ($c) => $c->serviceOrder !== null)->count();
         }
+
+        $sumAceptadas = array_sum($aceptadasPorPeriodo);
+        $sumNoAceptadas = array_sum($noAceptadasPorPeriodo);
+        $sumConversion = array_sum($conversionPorPeriodo);
+        $periodoLabel = $diaChart->locale('es')->isoFormat('dddd DD/MM/YYYY');
+        $chartTitle = 'Citas por hora';
+        $sedeNombre = $this->sedeId === 'todos'
+            ? null
+            : optional(Sede::find($this->sedeId))->nombre;
 
         // Citas por asesor
         $porAsesor = $citas->groupBy(fn ($c) => $c->nombre_asesor ?? 'Sin asesor')
@@ -100,10 +124,9 @@ class ReporteCitas extends Component
 
         $this->dispatch('chart-data-citas',
             labels: $labels,
-            pendientes: $pendientesPorDia,
-            aceptadas: $aceptadasPorDia,
-            rechazadas: $rechazadasPorDia,
-            canceladas: $canceladasPorDia,
+            aceptadas: $aceptadasPorPeriodo,
+            noAceptadas: $noAceptadasPorPeriodo,
+            conversion: $conversionPorPeriodo,
         );
 
         return view('livewire.reportes.reporte-citas', [
@@ -121,6 +144,20 @@ class ReporteCitas extends Component
             'porSede' => $porSede,
             'motivos' => $motivos,
             'labels' => $labels,
+            'aceptadasPorPeriodo' => $aceptadasPorPeriodo,
+            'noAceptadasPorPeriodo' => $noAceptadasPorPeriodo,
+            'conversionPorPeriodo' => $conversionPorPeriodo,
+            'granularity' => $granularity,
+            'chartTitle' => $chartTitle,
+            'periodoLabel' => $periodoLabel,
+            'sumAceptadas' => $sumAceptadas,
+            'sumNoAceptadas' => $sumNoAceptadas,
+            'sumConversion' => $sumConversion,
+            'filtroBadge' => trim(
+                ($sedeNombre ?: 'Todas las sedes')
+                . ' · ' . ($this->estado !== 'todos' ? ucfirst($this->estado) : 'Todos')
+            ),
+            'citasDelDia' => $citasDia->count(),
         ]);
     }
 

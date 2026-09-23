@@ -362,18 +362,45 @@
                         ->reject(fn ($item) => in_array($item->id, $padreIds))
                         ->each(fn ($item) => $individuales->push($item));
 
-                    // Movimientos separados por momento de la conversión
-                    $movsCantidad = $orden->movimientosStock
-                        ->filter(fn ($m) => str_contains(strtolower($m->motivo ?? ''), 'componentes de kit consumidos'))
-                        ->groupBy('producto_id')
-                        ->map(fn ($g) => [
-                            'producto' => $g->first()->producto,
-                            'cantidad' => (int) $g->sum('cantidad'),
-                        ])
-                        ->values();
+                    // Movimientos: NO repetir lo que ya está en el kit
+                    $kitProductoIds = $orden->items
+                        ->filter(fn ($i) => $i->kit_padre_id)
+                        ->pluck('producto_id')
+                        ->filter()
+                        ->unique();
 
-                    $movsDurante = $orden->movimientosStock
-                        ->reject(fn ($m) => str_contains(strtolower($m->motivo ?? ''), 'componentes de kit consumidos'));
+                    $inicioConversion = $orden->fecha_inicio_conversion;
+
+                    $esMovKit = function ($m) use ($kitProductoIds): bool {
+                        $motivo = strtolower($m->motivo ?? '');
+                        if (str_contains($motivo, 'componentes de kit consumidos')) {
+                            return true;
+                        }
+                        if (str_contains($motivo, 'apertura kit')) {
+                            return true;
+                        }
+                        if (str_contains($motivo, 'entrega para conversión')
+                            && $kitProductoIds->contains($m->producto_id)) {
+                            return true;
+                        }
+                        return false;
+                    };
+
+                    $movsDuranteRaw = $orden->movimientosStock->reject($esMovKit);
+
+                    // Enriquecer movimientos con momento (antes/durante) SIN perder relaciones
+                    $movsDurante = $movsDuranteRaw->map(function ($m) use ($inicioConversion) {
+                        $esAntes = $inicioConversion && $m->created_at && $m->created_at->lt($inicioConversion);
+                        $m->setAttribute('_momento', $esAntes ? 'antes' : 'durante');
+                        return $m;
+                    });
+
+                    // Enriquecer individuales con momento (antes/durante)
+                    $individuales = $individuales->map(function ($item) use ($inicioConversion) {
+                        $esAntes = $inicioConversion && $item->created_at && $item->created_at->lt($inicioConversion);
+                        $item->setAttribute('_momento', $esAntes ? 'antes' : 'durante');
+                        return $item;
+                    });
 
                     $clsMov = function (string $motivo): array {
                         $m = strtolower($motivo);
@@ -393,6 +420,67 @@
                             return ['border-blue-300', 'bg-blue-50', 'text-blue-900', 'text-blue-500', 'bg-blue-100', 'text-blue-800', 'DESPACHO'];
                         }
                         return ['border-gray-200', 'bg-white', 'text-gray-800', 'text-gray-400', 'bg-gray-100', 'text-gray-600', ''];
+                    };
+
+                    // Filas del kit agrupadas por producto (cantidad al costado)
+                    $filasKit = function ($hijos) {
+                        $filas = [];
+                        foreach ($hijos->groupBy('producto_id') as $grupo) {
+                            $fuera = $grupo->filter(fn ($h) => in_array($h->estado, ['defectuoso', 'devuelta_por_no_calzar'], true));
+                            $dentro = $grupo->reject(fn ($h) => in_array($h->estado, ['defectuoso', 'devuelta_por_no_calzar'], true));
+
+                            foreach ($fuera as $hijo) {
+                                $esSerial = (bool) ($hijo->producto?->categoria?->es_serializado);
+                                $hermanoFuera = $grupo->contains(
+                                    fn ($o) => in_array($o->estado, ['defectuoso', 'devuelta_por_no_calzar'], true)
+                                );
+                                $esNuevo = $esSerial && $hermanoFuera && !in_array($hijo->estado, ['defectuoso', 'devuelta_por_no_calzar'], true);
+                                $filas[] = [
+                                    'hijo' => $hijo,
+                                    'cantidad' => 1,
+                                    'mostrarSerie' => true,
+                                    'fuera' => true,
+                                    'nuevo' => false,
+                                    'badge' => $hijo->estado === 'defectuoso' ? 'No calza' : 'Devuelto',
+                                ];
+                            }
+
+                            foreach ($dentro as $hijo) {
+                                $esSerial = (bool) ($hijo->producto?->categoria?->es_serializado);
+                                if ($esSerial) {
+                                    $filas[] = [
+                                        'hijo' => $hijo,
+                                        'cantidad' => 1,
+                                        'mostrarSerie' => true,
+                                        'fuera' => false,
+                                        'nuevo' => $grupo->contains(fn ($o) => in_array($o->estado, ['defectuoso', 'devuelta_por_no_calzar'], true)),
+                                        'badge' => $grupo->contains(fn ($o) => in_array($o->estado, ['defectuoso', 'devuelta_por_no_calzar'], true))
+                                            ? 'Instalado'
+                                            : '',
+                                    ];
+                                }
+                                // cantidad: se emite UNA sola vez al cerrar el producto
+                            }
+
+                            if ($dentro->isNotEmpty()) {
+                                $primero = $dentro->first();
+                                $esSerial = (bool) ($primero->producto?->categoria?->es_serializado);
+                                if (!$esSerial) {
+                                    $filas[] = [
+                                        'hijo' => $primero,
+                                        'cantidad' => $dentro->count(),
+                                        'mostrarSerie' => false,
+                                        'fuera' => false,
+                                        'nuevo' => false,
+                                        'badge' => 'Cantidad kit',
+                                    ];
+                                } else {
+                                    // Serializados dentro: cada uno con su serie (ya emitidos arriba)
+                                }
+                            }
+                        }
+
+                        return collect($filas);
                     };
                 @endphp
                 <div class="bg-gray-200 rounded-xl shadow-sm border border-gray-300/80 p-6">
@@ -479,16 +567,12 @@
                                         x-collapse
                                         class="border-t border-green-200 bg-green-50/40">
                                         <div class="p-3 space-y-1.5">
-                                            @foreach ($hijos as $hijo)
+                                            @foreach ($filasKit($hijos) as $fila)
                                                 @php
-                                                    $esFuera = in_array($hijo->estado, ['defectuoso', 'devuelta_por_no_calzar'], true);
-                                                    $esSerial = (bool) ($hijo->producto?->categoria?->es_serializado);
-                                                    $hermanoFuera = $hijos->contains(
-                                                        fn ($o) => $o->producto_id === $hijo->producto_id
-                                                            && in_array($o->estado, ['defectuoso', 'devuelta_por_no_calzar'], true)
-                                                    );
-                                                    $esNuevo = !$esFuera && $esSerial && $hermanoFuera;
-                                                    $esCantidadKit = !$esFuera && !$esNuevo && !$esSerial;
+                                                    $hijo = $fila['hijo'];
+                                                    $esFuera = $fila['fuera'];
+                                                    $esNuevo = $fila['nuevo'];
+                                                    $esCantidadKit = !$esFuera && !$esNuevo && !$fila['mostrarSerie'];
 
                                                     if ($esFuera) {
                                                         $filaCls = 'border-red-300 bg-red-50';
@@ -496,28 +580,28 @@
                                                         $txtCls = 'text-red-900';
                                                         $serieCls = 'text-red-600';
                                                         $badge = 'bg-red-100 text-red-800';
-                                                        $badgeLabel = $hijo->estado === 'defectuoso' ? 'No calza' : 'Devuelto';
+                                                        $badgeLabel = $fila['badge'];
                                                     } elseif ($esNuevo) {
                                                         $filaCls = 'border-purple-300 bg-purple-50';
                                                         $icoCls = 'text-purple-500';
                                                         $txtCls = 'text-purple-900';
                                                         $serieCls = 'text-purple-600';
                                                         $badge = 'bg-purple-100 text-purple-800';
-                                                        $badgeLabel = 'Instalado';
+                                                        $badgeLabel = $fila['badge'] ?: 'Instalado';
                                                     } elseif ($esCantidadKit) {
                                                         $filaCls = 'border-orange-300 bg-orange-50';
                                                         $icoCls = 'text-orange-500';
                                                         $txtCls = 'text-orange-900';
                                                         $serieCls = 'text-orange-600';
                                                         $badge = 'bg-orange-100 text-orange-800';
-                                                        $badgeLabel = 'Cantidad kit';
+                                                        $badgeLabel = $fila['badge'] ?: 'Cantidad kit';
                                                     } else {
                                                         $filaCls = 'border-gray-200 bg-white';
                                                         $icoCls = 'text-gray-400';
                                                         $txtCls = 'text-gray-700';
                                                         $serieCls = 'text-gray-500';
                                                         $badge = '';
-                                                        $badgeLabel = '';
+                                                        $badgeLabel = $fila['badge'];
                                                     }
                                                 @endphp
                                                 <div class="flex items-center justify-between text-xs py-1 px-2 rounded border {{ $filaCls }}">
@@ -532,9 +616,15 @@
                                                             </span>
                                                         @endif
                                                     </div>
-                                                    <span class="font-mono text-[10px] {{ $serieCls }} shrink-0 ml-2">
-                                                        {{ Str::limit($hijo->serie, 20) }}
-                                                    </span>
+                                                    @if ($fila['mostrarSerie'])
+                                                        <span class="font-mono text-[10px] {{ $serieCls }} shrink-0 ml-2">
+                                                            {{ Str::limit($hijo->serie, 20) }}
+                                                        </span>
+                                                    @else
+                                                        <span class="font-bold text-[11px] {{ $txtCls }} shrink-0 ml-2">
+                                                            × {{ $fila['cantidad'] }}
+                                                        </span>
+                                                    @endif
                                                 </div>
                                             @endforeach
                                         </div>
@@ -545,82 +635,70 @@
                         </div>
                     @endif
 
-                    {{-- 2. Cantidad despachada al momento de la conversión (naranja) --}}
-                    @if ($movsCantidad->isNotEmpty())
-                        <p class="text-xs font-bold text-orange-600 uppercase mb-2">
-                            <i class="fas fa-cubes mr-1"></i>Items de cantidad despachados al momento de la conversión
-                        </p>
-
-                        <div class="space-y-1.5 mb-4">
-                            @foreach ($movsCantidad as $idx => $row)
-                                <div wire:key="mov-cant-{{ $idx }}"
-                                    class="flex justify-between items-center text-sm border border-orange-300 bg-orange-50 rounded-lg px-3 py-2">
-                                    <span class="font-medium text-orange-900 min-w-0 truncate">
-                                        {{ $row['producto']->nombre ?? '—' }}
-                                        <span class="ml-1.5 text-[9px] font-black uppercase bg-orange-100 text-orange-800 px-1.5 py-0.5 rounded align-middle">
-                                            Cantidad kit
-                                        </span>
-                                    </span>
-                                    <span class="font-semibold text-orange-900 shrink-0 ml-2">
-                                        × {{ $row['cantidad'] }}
-                                    </span>
-                                </div>
-                            @endforeach
-                        </div>
-                    @endif
-
-                    {{-- 3. Items despachados durante la conversión (colores por tipo) --}}
+                    {{-- 3. Items asignados y despachados (antes y durante la conversión) --}}
                     @if ($movsDurante->isNotEmpty() || $individuales->isNotEmpty())
                         <p class="text-xs font-bold text-gray-700 uppercase mb-2">
-                            <i class="fas fa-truck mr-1"></i>Items despachados durante la conversión
+                            <i class="fas fa-truck mr-1"></i>Items asignados y despachados (antes y durante la conversión)
                         </p>
 
-                        <div class="space-y-1.5">
-                            {{-- Sueltos asignados a la orden (si no tienen movimiento equivalente) --}}
-                            @foreach ($individuales as $item)
-                                @php
-                                    $tieneMov = $movsDurante->contains(
-                                        fn ($m) => $m->producto_id === $item->producto_id
-                                    );
-                                @endphp
-                                @if (! $tieneMov)
-                                    <div wire:key="ind-{{ $item->id }}"
-                                        class="flex justify-between items-center text-sm border border-blue-300 bg-blue-50 rounded-lg px-3 py-2">
-                                        <span class="font-medium text-blue-900 min-w-0">
-                                            <span class="flex items-center gap-2 flex-wrap">
-                                                {{ $item->producto->nombre ?? '—' }}
-                                                <span class="text-[9px] font-black uppercase bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded">DESPACHO</span>
-                                            </span>
-                                            @if ($item->serie)
-                                                <span class="block text-[10px] font-mono text-blue-600 mt-0.5">{{ $item->serie }}</span>
-                                            @endif
-                                        </span>
+                        @foreach (['antes', 'durante'] as $momento)
+                            @php
+                                $movsM = $movsDurante->filter(fn ($m) => ($m->_momento ?? 'durante') === $momento);
+                                $indsM = $individuales->filter(fn ($i) => ($i->_momento ?? 'durante') === $momento);
+                                $hayM = $movsM->isNotEmpty() || $indsM->isNotEmpty();
+                            @endphp
+                            @if ($hayM)
+                                <div class="mb-3">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="w-2 h-2 rounded-full {{ $momento === 'antes' ? 'bg-amber-500' : 'bg-emerald-500' }}"></span>
+                                        <span class="text-[10px] font-extrabold uppercase tracking-wider {{ $momento === 'antes' ? 'text-amber-700' : 'text-emerald-700' }}">{{ strtoupper($momento) }}</span>
                                     </div>
-                                @endif
-                            @endforeach
-
-                            @foreach ($movsDurante as $mov)
-                                @php $mc = $clsMov($mov->motivo ?? ''); @endphp
-                                <div wire:key="mov-dur-{{ $mov->id }}"
-                                    class="flex justify-between items-start text-sm border rounded-lg px-3 py-2 {{ $mc[0] }} {{ $mc[1] }}">
-                                    <span class="font-medium {{ $mc[2] }} min-w-0">
-                                        <span class="flex items-center gap-2 flex-wrap">
-                                            {{ $mov->producto->nombre }}
-                                            @if ($mc[6])
-                                                <span class="text-[9px] font-black uppercase {{ $mc[4] }} {{ $mc[5] }} px-1.5 py-0.5 rounded">{{ $mc[6] }}</span>
+                                    <div class="space-y-1.5 ml-3">
+                                        @foreach ($indsM as $item)
+                                            @php
+                                                $tieneMov = $movsM->contains(fn ($m) => $m->producto_id === $item->producto_id);
+                                            @endphp
+                                            @if (! $tieneMov)
+                                                <div wire:key="ind-{{ $item->id }}-{{ $momento }}"
+                                                    class="flex justify-between items-center text-sm border border-blue-300 bg-blue-50 rounded-lg px-3 py-2">
+                                                    <span class="font-medium text-blue-900 min-w-0">
+                                                        <span class="flex items-center gap-2 flex-wrap">
+                                                            {{ $item->producto->nombre ?? '—' }}
+                                                            <span class="text-[9px] font-black uppercase bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded">DESPACHO</span>
+                                                        </span>
+                                                        @if ($item->serie)
+                                                            <span class="block text-[10px] font-mono text-blue-600 mt-0.5">{{ $item->serie }}</span>
+                                                        @endif
+                                                    </span>
+                                                </div>
                                             @endif
-                                        </span>
-                                        @if ($mov->motivo)
-                                            <span class="block text-[10px] font-normal {{ $mc[3] }} mt-0.5">{{ $mov->motivo }}</span>
-                                        @endif
-                                    </span>
+                                        @endforeach
 
-                                    <span class="font-semibold {{ $mc[2] }} shrink-0 ml-2">
-                                        × {{ $mov->cantidad }}
-                                    </span>
+                                        @foreach ($movsM as $mov)
+                                            @php $mc = $clsMov($mov->motivo ?? ''); @endphp
+                                            <div wire:key="mov-dur-{{ $mov->id }}-{{ $momento }}"
+                                                class="flex justify-between items-start text-sm border rounded-lg px-3 py-2 {{ $mc[0] }} {{ $mc[1] }}">
+                                                <span class="font-medium {{ $mc[2] }} min-w-0">
+                                                    <span class="flex items-center gap-2 flex-wrap">
+                                                        {{ $mov->producto->nombre }}
+                                                        @if ($mc[6])
+                                                            <span class="text-[9px] font-black uppercase {{ $mc[4] }} {{ $mc[5] }} px-1.5 py-0.5 rounded">{{ $mc[6] }}</span>
+                                                        @endif
+                                                    </span>
+                                                    @if ($mov->motivo)
+                                                        <span class="block text-[10px] font-normal {{ $mc[3] }} mt-0.5">{{ $mov->motivo }}</span>
+                                                    @endif
+                                                </span>
+
+                                                <span class="font-semibold {{ $mc[2] }} shrink-0 ml-2">
+                                                    × {{ $mov->cantidad }}
+                                                </span>
+                                            </div>
+                                        @endforeach
+                                    </div>
                                 </div>
-                            @endforeach
-                        </div>
+                            @endif
+                        @endforeach
                     @endif
                 </div>
             @endif
