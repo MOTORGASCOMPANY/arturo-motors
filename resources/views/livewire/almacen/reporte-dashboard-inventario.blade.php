@@ -8,157 +8,139 @@
                     <i class="fas fa-warehouse text-indigo-600 text-2xl"></i>
                 </div>
                 <div>
-                    <div class="flex items-center gap-3 flex-wrap">
-                        <h2 class="text-gray-800 font-bold text-2xl tracking-tight">Dashboard de almacén</h2>
-                        <a href="{{ route('almacen.productos.listado') }}"
-                            class="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-full px-3 py-1 transition-colors">
-                            <i class="fas fa-boxes-stacked"></i>
-                            Productos
-                        </a>
-                    </div>
-                    <p class="text-gray-500 text-sm mt-1">Stock, kits y movimientos · {{ $sedeLabel }}</p>
+                    <h2 class="text-gray-800 font-bold text-2xl tracking-tight">Dashboard de almacén</h2>
+                    <p class="text-gray-500 text-sm mt-1">Kits, piezas y stock · <span class="font-medium text-indigo-600">{{ $sedeLabel }}</span></p>
                 </div>
             </div>
-
             <div class="flex items-center gap-3 w-full lg:w-auto justify-end">
-                <button type="button" onclick="exportarPDF()"
-                    class="bg-white hover:bg-red-50 border border-gray-200 text-gray-700 font-semibold rounded-xl py-2.5 px-4 shadow-sm transition-all duration-200 flex items-center justify-center gap-2 text-sm">
-                    <i class="fas fa-file-pdf text-red-500"></i>
-                    PDF
-                </button>
-                <button type="button" onclick="exportarExcel()"
-                    class="bg-white hover:bg-emerald-50 border border-gray-200 text-gray-700 font-semibold rounded-xl py-2.5 px-4 shadow-sm transition-all duration-200 flex items-center justify-center gap-2 text-sm">
-                    <i class="fas fa-file-excel text-emerald-500"></i>
-                    Excel
-                </button>
+                <a href="{{ route('ReporteAlmacen.Pdf', ['sede_id' => $sedeActual]) }}"
+                   class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-red-600 hover:bg-red-700 border border-red-700 shadow-sm transition-colors"
+                   target="_blank">
+                    <i class="fas fa-file-pdf text-[14px]"></i>
+                    <span>PDF</span>
+                </a>
+                <a href="{{ route('ReporteAlmacen.Excel', ['sede_id' => $sedeActual]) }}"
+                   class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 border border-emerald-700 shadow-sm transition-colors"
+                   target="_blank">
+                    <i class="fas fa-file-excel text-[14px]"></i>
+                    <span>Excel</span>
+                </a>
+                <a href="{{ route('almacen.productos.listado') }}"
+                    class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-orange-600 hover:bg-orange-700 border border-orange-700 shadow-sm transition-colors"
+                    target="_blank">
+                    <i class="fas fa-boxes-stacked text-[14px]"></i>
+                    <span>Ver productos</span>
+                </a>
             </div>
         </div>
     </div>
 
-    {{-- Filtros (afectan KPIs, gráficos y tablas) --}}
+    {{-- Selector de sede + badge --}}
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5">
         <div class="flex items-center gap-2 mb-4">
-            <i class="fas fa-sliders text-slate-400"></i>
-            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Filtros</span>
+            <i class="fas fa-map-marker-alt text-slate-400"></i>
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Sede</span>
             <span class="ml-auto inline-flex items-center gap-1.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 px-3 py-1 text-xs font-bold">
                 <i class="fas fa-filter text-[10px]"></i>
-                {{ $filtroBadge }}
+                {{ $sedeLabel }}
             </span>
         </div>
-
-        <div class="flex flex-wrap items-end gap-4">
-            <div class="flex flex-col gap-1.5">
-                <label for="filtroSede" class="text-xs font-semibold text-slate-500">Sede</label>
-                <select id="filtroSede" wire:model.live="filtroSede"
-                    class="rounded-xl border-slate-200 text-sm py-2 px-3 focus:border-indigo-500 focus:ring-indigo-500 bg-slate-50 min-w-[10rem]">
-                    <option value="">Todas</option>
-                    @foreach ($sedes as $s)
-                        <option value="{{ $s->id }}">{{ $s->nombre }}</option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div class="flex flex-col gap-1.5">
-                <label for="filtroStock" class="text-xs font-semibold text-slate-500">Stock</label>
-                <select id="filtroStock" wire:model.live="filtroStock"
-                    class="rounded-xl border-slate-200 text-sm py-2 px-3 focus:border-indigo-500 focus:ring-indigo-500 bg-slate-50 min-w-[10rem]">
-                    <option value="todos">Todos</option>
-                    <option value="con_stock">Con stock</option>
-                    <option value="sin_stock">Sin stock</option>
-                    <option value="stock_bajo">Stock bajo</option>
-                </select>
-            </div>
-
-            @if ($filtroSede || $filtroStock !== 'todos')
-                <button type="button" wire:click="limpiarFiltros"
-                    class="inline-flex items-center gap-1.5 text-xs font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 rounded-full px-3.5 py-2 ml-auto transition-colors">
-                    <i class="fas fa-xmark"></i>
-                    Limpiar filtros
-                </button>
-            @endif
-        </div>
+        <x-almacen.inventario-selector-sede :sedes="$sedes" :filtroSede="$sedeActual" :sedeLabel="$sedeLabel" :showBadge="false" />
     </div>
 
-    {{-- KPIs --}}
-    <div>
-        <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4 px-1 flex items-center gap-2">
-            <i class="fas fa-gauge-high text-slate-400"></i>
-            Indicadores generales
-        </h3>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            <x-almacen.reporte-kpi
-                :value="number_format($totalItems)"
-                label="Total de items"
-                icon="fa-boxes-stacked"
-                color="blue"
-            />
-            <x-almacen.reporte-kpi
-                :value="number_format($productosConStock)"
-                :label="'Productos con stock · ' . $porcentajeStock . '%'"
-                icon="fa-circle-check"
-                color="emerald"
-            />
-            <x-almacen.reporte-kpi
-                :value="$stockBajo->count()"
-                label="Productos en stock bajo"
-                icon="fa-triangle-exclamation"
-                :color="$stockBajo->count() > 0 ? 'red' : 'slate'"
-            />
-            <x-almacen.reporte-kpi
-                :value="number_format($valorTotal, 0, ',', '.')"
-                label="Valor del inventario"
-                icon="fa-sack-dollar"
-                color="indigo"
-                prefix="S/ "
-            />
-        </div>
+    {{-- 2 KPIs en grid --}}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-5">
+        <x-almacen.inventario-kpi-consumo :tasa="$tasa" />
+        <x-almacen.inventario-kpi-alertas :alertas="$alertas" />
     </div>
 
-    {{-- 6 gráficos --}}
-    <x-almacen.inventario-graficos
-        :filtroBadge="$filtroBadge"
-        :nivelOk="$nivelOk"
-        :nivelBajo="$nivelBajo"
-        :nivelSin="$nivelSin"
-        :totalEntradas30="$totalEntradas30"
-        :totalSalidas30="$totalSalidas30"
-    />
+    {{-- Gráfico de barras --}}
+    <x-almacen.inventario-grafico-barras :grafico="$grafico" :sedeActual="$sedeActual" />
 
-    {{-- Tabla distribución --}}
-    <x-almacen.inventario-distribucion :distribucion="$distribucion" :sedes="$sedes" />
-
-    <x-almacen.inventario-movimientos :movimientosRecientes="$movimientosRecientes" />
-
-    <x-almacen.inventario-stock-bajo
-        :stockBajo="$stockBajo"
-        :filtroSede="$filtroSede"
-        :sedes="$sedes"
-        :sedeStock="$sedeStock"
-    />
-
-    <x-almacen.inventario-kits-instalados :kitsInstalados="$kitsInstalados" />
-
-    <style>
-        .custom-scrollbar::-webkit-scrollbar {
-            height: 6px;
-            width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #f8fafc;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-    </style>
-
-    {{-- Payload de charts: DEBE estar fuera de wire:ignore y re-renderizar con Livewire.
-         @script solo corre 1 vez en LW3; este div sí se actualiza en cada filtro. --}}
-    <div id="reportePayload" class="hidden" aria-hidden="true">@json($charts)</div>
+    {{-- Tabla de productos --}}
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
+        <div class="p-6 border-b border-slate-200">
+            <h3 class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-2">
+                <i class="fas fa-list text-slate-400"></i>
+                Productos en {{ $sedeLabel }}
+            </h3>
+            <p class="text-xs text-slate-400">Stock suelto disponible (kits = unidades; serializados = items sueltos; cantidad = stock - en kits)</p>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-slate-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Producto</th>
+                        <th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Categoría</th>
+                        <th class="px-4 py-3 text-right text-xs font-bold text-slate-500 uppercase tracking-wider w-28">Stock</th>
+                        <th class="px-4 py-3 text-right text-xs font-bold text-slate-500 uppercase tracking-wider w-28">Mínimo</th>
+                        <th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider w-36">Estado</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @forelse ($productos as $p)
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="px-4 py-3">
+                                <p class="text-sm font-medium text-slate-800">{{ $p['nombre'] }}</p>
+                            </td>
+                            <td class="px-4 py-3">
+                                <p class="text-xs text-slate-500">{{ $p['categoria'] }}</p>
+                            </td>
+                            <td class="px-4 py-3 text-right">
+                                <p class="text-xl font-bold tabular-nums {{ $p['sin_stock'] ? 'text-red-600' : ($p['es_bajo'] ? 'text-amber-600' : 'text-emerald-600') }}">{{ $p['stock'] }}</p>
+                            </td>
+                            <td class="px-4 py-3 text-right">
+                                <p class="text-sm text-slate-500">{{ $p['stock_minimo'] ?? '—' }}</p>
+                            </td>
+                            <td class="px-4 py-3">
+                                @if ($p['sin_stock'])
+                                    <span class="inline-flex items-center gap-1 px-2 py-1 bg-red-50 text-red-700 text-xs font-bold rounded-full">
+                                        <i class="fas fa-times-circle text-[10px]"></i> Sin stock
+                                    </span>
+                                @elseif ($p['es_bajo'])
+                                    <span class="inline-flex items-center gap-1 px-2 py-1 bg-amber-50 text-amber-700 text-xs font-bold rounded-full">
+                                        <i class="fas fa-exclamation-triangle text-[10px]"></i> Stock bajo
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center gap-1 px-2 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full">
+                                        <i class="fas fa-check-circle text-[10px]"></i> OK
+                                    </span>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="px-4 py-12 text-center text-slate-400">
+                                <i class="fas fa-box-open text-3xl mb-2"></i>
+                                <p>No hay productos con stock, alertas o stock bajo en esta sede</p>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        
+        {{-- Resumen al pie --}}
+        <div class="px-4 py-3 bg-slate-50 border-t border-slate-100">
+            <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+                <span>
+                    Total: <strong class="text-slate-700">{{ $productos->count() }}</strong> productos
+                </span>
+                <span class="flex items-center gap-4">
+                    <span class="flex items-center gap-1">
+                        <i class="fas fa-circle text-red-500 text-[8px]"></i> Sin stock: <strong>{{ $productos->where('sin_stock', true)->count() }}</strong>
+                    </span>
+                    <span class="flex items-center gap-1">
+                        <i class="fas fa-circle text-amber-500 text-[8px]"></i> Stock bajo: <strong>{{ $productos->where('es_bajo', true)->count() }}</strong>
+                    </span>
+                    <span class="flex items-center gap-1">
+                        <i class="fas fa-circle text-emerald-500 text-[8px]"></i> OK: <strong>{{ $productos->where('sin_stock', false)->where('es_bajo', false)->count() }}</strong>
+                    </span>
+                </span>
+            </div>
+        </div>
+    </div>
 
     @push('js')
         <script src="{{ asset('js/components/reporte-charts.js') }}"></script>
@@ -166,28 +148,13 @@
 
     @script
     <script>
-        (function () {
-            function syncPayload() {
-                var el = document.getElementById('reportePayload');
-                if (el && el.textContent) {
-                    try { window.reporteData = JSON.parse(el.textContent); } catch (e) { /* keep old */ }
-                }
-            }
-            syncPayload();
-            function go() {
-                if (typeof window.renderReporteCharts === 'function') {
-                    syncPayload();
-                    window.renderReporteCharts();
-                    return true;
-                }
-                return false;
-            }
-            if (!go()) {
-                var tries = 0;
-                var wait = setInterval(function () {
-                    if (go() || ++tries > 50) clearInterval(wait);
-                }, 40);
-            }
+        (function() {
+            // Auto-hide skeletons when data arrives
+            const observer = new MutationObserver(() => {
+                document.querySelectorAll('[x-data]').forEach(el => {
+                    if (el.__alpine) return;
+                });
+            });
         })();
     </script>
     @endscript

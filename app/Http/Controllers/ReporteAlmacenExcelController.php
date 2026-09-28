@@ -10,8 +10,10 @@ class ReporteAlmacenExcelController extends Controller
 {
     public function __invoke(Request $request)
     {
+        $filtroSede = $request->input('sede_id') ? (int) $request->input('sede_id') : null;
+
         return Excel::download(
-            new AlmacenExport(),
+            new AlmacenExport($filtroSede),
             'reporte-almacen-' . now()->format('Y-m-d-Hi') . '.xlsx'
         );
     }

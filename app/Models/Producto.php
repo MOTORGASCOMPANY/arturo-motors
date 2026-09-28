@@ -121,9 +121,24 @@ class Producto extends Model
         return $this->items()->count();
     }
 
-    public function getStockBajoAttribute()
+    /**
+     * Verifica si el producto tiene stock bajo en una sede específica.
+     *
+     * @param int $sedeId
+     * @return bool
+     */
+    public function stockBajoEnSede(int $sedeId): bool
     {
-        return $this->stock_minimo > 0 && $this->stock_disponible <= $this->stock_minimo;
+        return $this->stock_minimo > 0 && $this->stockSueltoEnSede($sedeId) <= $this->stock_minimo;
+    }
+
+    /**
+     * @deprecated Usar stockBajoEnSede($sedeId) en su lugar.
+     * Mantiene compatibilidad: usa sede principal (Callao = 1).
+     */
+    public function getStockBajoAttribute(): bool
+    {
+        return $this->stockBajoEnSede(self::sedePrincipalId());
     }
 
     // Scopes

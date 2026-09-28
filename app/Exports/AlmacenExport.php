@@ -23,10 +23,12 @@ class AlmacenExport implements FromCollection, WithHeadings, WithMapping, WithSt
 {
     private $sedes;
     private $rows = [];
+    private ?int $filtroSede;
 
-    public function __construct()
+    public function __construct(?int $filtroSede = null)
     {
         $this->sedes = Sede::activas()->orderBy('id')->get();
+        $this->filtroSede = $filtroSede;
     }
 
     public function collection()
@@ -36,7 +38,12 @@ class AlmacenExport implements FromCollection, WithHeadings, WithMapping, WithSt
         $this->rows = $productos->map(function ($p) {
             $porSede = [];
             foreach ($this->sedes as $s) {
-                $porSede[$s->nombre] = $p->stockSueltoEnSede($s->id);
+                // Si hay filtro de sede, solo calcular esa sede
+                if ($this->filtroSede && $s->id !== $this->filtroSede) {
+                    $porSede[$s->nombre] = 0;
+                } else {
+                    $porSede[$s->nombre] = $p->stockSueltoEnSede($s->id);
+                }
             }
             return [
                 'producto' => $p,
@@ -52,6 +59,7 @@ class AlmacenExport implements FromCollection, WithHeadings, WithMapping, WithSt
     {
         $headings = ['Producto', 'Categoría'];
         foreach ($this->sedes as $s) {
+            if ($this->filtroSede && $s->id !== $this->filtroSede) continue;
             $headings[] = $s->nombre;
         }
         $headings[] = 'Total';
@@ -65,6 +73,7 @@ class AlmacenExport implements FromCollection, WithHeadings, WithMapping, WithSt
             $row['producto']->categoria->nombre ?? 'N/A',
         ];
         foreach ($this->sedes as $s) {
+            if ($this->filtroSede && $s->id !== $this->filtroSede) continue;
             $data[] = $row['por_sede'][$s->nombre] ?? 0;
         }
         $data[] = $row['total'];
@@ -73,7 +82,11 @@ class AlmacenExport implements FromCollection, WithHeadings, WithMapping, WithSt
 
     public function styles(Worksheet $sheet): void
     {
-        $lastCol = chr(64 + 2 + $this->sedes->count() + 1);
+        $sedesFiltradas = $this->filtroSede
+            ? $this->sedes->filter(fn ($s) => $s->id === $this->filtroSede)
+            : $this->sedes;
+
+        $lastCol = chr(64 + 2 + $sedesFiltradas->count() + 1);
 
         // Header
         $sheet->getStyle("A1:{$lastCol}1")->getFont()->setBold(true);
@@ -95,6 +108,10 @@ class AlmacenExport implements FromCollection, WithHeadings, WithMapping, WithSt
         $dataCount = $this->rows->count();
         if ($dataCount === 0) return;
 
+        $sedesFiltradas = $this->filtroSede
+            ? $this->sedes->filter(fn ($s) => $s->id === $this->filtroSede)
+            : $this->sedes;
+
         $colors = ['3b82f6', '10b981', 'f59e0b', '8b5cf6'];
         $startCol = 60;
         $sheetName = $sheet->getTitle();
@@ -105,7 +122,7 @@ class AlmacenExport implements FromCollection, WithHeadings, WithMapping, WithSt
         for ($i = 0; $i < $dataCount; $i++) {
             $sheet->setCellValueByColumnAndRow($startCol, $i + 2, $this->rows[$i]['producto']->nombre);
         }
-        foreach ($this->sedes as $idx => $sede) {
+        foreach ($sedesFiltradas as $idx => $sede) {
             $col = $startCol + 1 + $idx;
             $sheet->setCellValueByColumnAndRow($col, 1, $sede->nombre);
             for ($i = 0; $i < $dataCount; $i++) {
@@ -125,7 +142,7 @@ class AlmacenExport implements FromCollection, WithHeadings, WithMapping, WithSt
         // Data series (one per sede)
         $dataSeriesValues = [];
         $dataSeriesLabels = [];
-        foreach ($this->sedes as $idx => $sede) {
+        foreach ($sedesFiltradas as $idx => $sede) {
             $col = $startCol + 1 + $idx;
             $valLetter = self::colLetter($col);
             $valCell = "'{$sheetName}'!\${$valLetter}\$2:\${$valLetter}\$" . ($dataCount + 1);
@@ -171,9 +188,13 @@ class AlmacenExport implements FromCollection, WithHeadings, WithMapping, WithSt
 
     private function addPieChart(Worksheet $sheet): void
     {
+        $sedesFiltradas = $this->filtroSede
+            ? $this->sedes->filter(fn ($s) => $s->id === $this->filtroSede)
+            : $this->sedes;
+
         $productos = Producto::with('categoria')->where('activo', true)->get();
-        $stockPorCategoria = $productos->map(function ($p) {
-            $total = collect($this->sedes)->sum(fn ($s) => $p->stockSueltoEnSede($s->id));
+        $stockPorCategoria = $productos->map(function ($p) use ($sedesFiltradas) {
+            $total = collect($sedesFiltradas)->sum(fn ($s) => $p->stockSueltoEnSede($s->id));
             return ['cat' => $p->categoria->nombre, 'total' => $total];
         })->filter(fn ($r) => $r['total'] > 0)
           ->groupBy('cat')

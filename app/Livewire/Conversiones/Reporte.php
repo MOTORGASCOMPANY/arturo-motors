@@ -15,6 +15,7 @@ class Reporte extends Component
     public string $filtroEstado = 'todos';
     public ?string $filtroFechaDesde = null;
     public ?string $filtroFechaHasta = null;
+    public ?int $filtroTecnico = null;  // NUEVO: filtro técnico opcional
 
     public function updatedFiltroSede($value): void
     {
@@ -78,6 +79,7 @@ class Reporte extends Component
             'estado' => $this->filtroEstado !== 'todos' ? $this->filtroEstado : null,
             'desde' => $this->filtroFechaDesde,
             'hasta' => $this->filtroFechaHasta,
+            'tecnico_id' => $this->filtroTecnico,
         ]);
     }
 
@@ -92,6 +94,96 @@ class Reporte extends Component
             'listo_para_entrega',
             'entregado',
         ];
+    }
+
+    /** Rendimiento por técnico (órdenes asignadas / completadas / items / duración / reportes). */
+    public function getRendimientoTecnicosProperty()
+    {
+        $tecnicoId = $this->filtroTecnico;
+
+        // Órdenes base con los filtros aplicados (sede, estado, fecha)
+        $query = ServiceOrder::with(['tecnico', 'items.producto.categoria'])
+            ->whereIn('estado', ['en_conversion', 'conversion_completada']);
+
+        if ($tecnicoId) {
+            $query->where('tecnico_id', $tecnicoId);
+        }
+
+        // Aplicar sede y estado/fecha igual que el query principal
+        $sedeId = $this->filtroSede;
+        if ($sedeId) {
+            $query->whereHas('items', fn ($q) => $q->where('sede_id', $sedeId));
+        }
+
+        if ($this->filtroEstado !== 'todos') {
+            $query->where('estado', $this->filtroEstado);
+        }
+
+        if ($this->filtroFechaDesde) {
+            $query->where(function ($q) {
+                $q->whereDate('created_at', '>=', $this->filtroFechaDesde)
+                    ->orWhereDate('fecha_inicio_conversion', '>=', $this->filtroFechaDesde);
+            });
+        }
+
+        if ($this->filtroFechaHasta) {
+            $query->where(function ($q) {
+                $q->whereDate('created_at', '<=', $this->filtroFechaHasta)
+                    ->orWhereDate('fecha_inicio_conversion', '<=', $this->filtroFechaHasta);
+            });
+        }
+
+        $ordenes = $query->orderByDesc('created_at')->get();
+        $ordenIds = $ordenes->pluck('id');
+
+        // Traer todos los técnicos únicos que aparecen en las órdenes filtradas
+        $tecnicosIds = $ordenes->pluck('tecnico_id')->unique()->values()->toArray();
+        $tecnicos = User::whereIn('id', $tecnicosIds)->get();
+
+        $ranking = [];
+        foreach ($tecnicos as $t) {
+            $tecnicoOrdenes = $ordenes->where('tecnico_id', $t->id);
+            $asignadas = $tecnicoOrdenes->count();
+            $completadas = $tecnicoOrdenes->where('estado', 'conversion_completada')->count();
+            $pendientePct = $asignadas > 0 ? round(($completadas / $asignadas) * 100, 1) : 0;
+
+            // Items instalados en las órdenes de este técnico (mismo criterio que el reporte)
+            $itemsInstalados = ItemSerializado::where('estado', 'instalado')
+                ->where(function ($q) use ($ordenIds) {
+                    $q->whereIn('service_order_id', $ordenIds)
+                        ->orWhereHas('kitPadre', fn ($qq) => $qq->whereIn('service_order_id', $ordenIds));
+                })
+                ->when($sedeId, fn ($q) => $q->where('sede_id', $sedeId))
+                ->whereIn('service_order_id', $ordenIds)
+                ->count();
+
+            // Duración promedio solo de las completadas
+            $duracionProm = $tecnicoOrdenes->whereNotNull('fecha_inicio_conversion')
+                ->whereNotNull('fecha_fin_conversion')
+                ->avg(fn ($o) => $o->fecha_inicio_conversion->diffInHours($o->fecha_fin_conversion));
+            $duracionProm = round($duracionProm ?? 0, 1);
+
+            // Reportes pendientes en las órdenes de este técnico (subquery simple)
+            $reportesPend = ServiceOrder::whereIn('id', $ordenIds)
+                ->where('tecnico_id', $t->id)
+                ->sum(DB::raw('(SELECT COUNT(*) FROM reportes_pendientes WHERE servicio_order_id = service_orders.id)'));
+
+            $ranking[] = [
+                'tecnico' => $t,
+                'asignadas' => $asignadas,
+                'completadas' => $completadas,
+                '%' => $pendientePct,
+                'items_instalados' => $itemsInstalados,
+                'duracion_prom' => $duracionProm,
+                'reportes_p' => $reportesPend,
+            ];
+        }
+
+        // Ordenar por completadas descendente y tomar top 5
+        usort($ranking, fn ($a, $b) => $b['completadas'] <=> $a['completadas']);
+        $ranking = array_slice($ranking, 0, 5);
+
+        return collect($ranking);
     }
 
     public function render()
