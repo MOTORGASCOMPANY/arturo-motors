@@ -17,12 +17,12 @@ use App\Http\Controllers\ReporteConversionesPdfController;
 use App\Http\Controllers\ReporteConversionesExcelController;
 use App\Livewire\AdminPermisos;
 use App\Livewire\AdminRoles;
-use App\Livewire\Almacen\Categorias\Crear as CategoriasCrear;
-use App\Livewire\Almacen\Categorias\Listado as CategoriasListado;
-use App\Livewire\Almacen\Productos\Crear as ProductosCrear;
-use App\Livewire\Almacen\Productos\Listado as ProductosListado;
+use App\Livewire\Almacen\CategoriaAlta as CategoriasCrear;
+use App\Livewire\Almacen\CategoriaListado as CategoriasListado;
+use App\Livewire\Almacen\ProductoAlta as ProductosCrear;
+use App\Livewire\Almacen\ProductoListado as ProductosListado;
 
-use App\Livewire\Almacen\Traslados\Listado as TrasladosListado;
+use App\Livewire\Almacen\TrasladoListado as TrasladosListado;
 use App\Livewire\Caja\AbrirCaja;
 use App\Livewire\Caja\CerrarCaja;
 use App\Livewire\Caja\DetalleSesion;
@@ -32,7 +32,7 @@ use App\Livewire\Caja\HistorialSesiones;
 use App\Livewire\Caja\RegistrarEgreso;
 use App\Livewire\Caja\Reporte as ReporteCaja;
 use App\Livewire\Servicios\Reporte as ReporteServicios;
-use App\Livewire\Almacen\Reporte as ReporteAlmacen;
+use App\Livewire\Almacen\ReporteDashboardInventario as ReporteAlmacen;
 use App\Livewire\Conversiones\Reporte as ReporteConversiones;
 use App\Livewire\CrearCitas;
 use App\Livewire\Conversiones\AlmacenPendientes;
@@ -57,7 +57,6 @@ use App\Livewire\ProcesarCobro;
 use App\Livewire\Reportes\ReporteCitas;
 use App\Livewire\RRHH\Contratos;
 use App\Http\Controllers\CmsController;
-use App\Livewire\Almacen\Kits\Pendientes;
 
 use App\Livewire\Cms\GestionarContacto;
 use App\Livewire\Cms\GestionarContenido;
@@ -158,17 +157,17 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::get('/almacen/productos', ProductosListado::class)->name('almacen.productos.listado');
 
     // Recepciones de kits
-    Route::get('/almacen/recepciones', \App\Livewire\Almacen\Recepciones\Listado::class)->name('almacen.recepciones.listado');
-    Route::get('/almacen/recepciones/crear', \App\Livewire\Almacen\Recepciones\Crear::class)->name('almacen.recepciones.crear');
+    Route::get('/almacen/recepciones', \App\Livewire\Almacen\RecepcionListado::class)->name('almacen.recepciones.listado');
+    Route::get('/almacen/recepciones/crear', \App\Livewire\Almacen\RecepcionAlta::class)->name('almacen.recepciones.crear');
 
 
 
     // Monitoreo de conversiones activas (dashboard en tiempo real)
-    Route::get('/almacen/reportes-piezas', \App\Livewire\Almacen\ReportesPendientes::class)->name('almacen.reportes-piezas');
+    Route::get('/almacen/reportes-piezas', \App\Livewire\Almacen\ReporteConversionesActivas::class)->name('almacen.reportes-piezas');
 
     // Traslados
     Route::get('/almacen/traslados', TrasladosListado::class)->name('almacen.traslados.listado');
-    Route::get('/almacen/traslados/crear', \App\Livewire\Almacen\Traslados\Crear::class)->name('almacen.traslados.crear');
+    Route::get('/almacen/traslados/crear', \App\Livewire\Almacen\TrasladoAlta::class)->name('almacen.traslados.crear');
 
     Route::get('/citas/reporte', ReporteCitas::class)->name('citas.reporte');
     Route::get('/caja/reporte', ReporteCaja::class)->name('caja.reporte');
