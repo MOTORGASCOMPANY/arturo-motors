@@ -191,10 +191,12 @@ class CambioPiezaService
             return collect();
         }
 
-        // Buscar items_serializados que sean kits completos en stock
+        // Buscar items_serializados que sean kits disponibles (sellados
+        // O completados): ambos se pueden abrir para extraer una pieza.
+        // Al extraer, abrirKitYExtraerPieza() los deja en 'abierto' (= Incompletos).
         return ItemSerializado::with('producto.componentes.componente')
             ->whereIn('producto_id', $kitProductoIds)
-            ->where('estado', 'en_stock')
+            ->whereIn('estado', ['en_stock', 'completado'])
             ->where('sede_id', $sedeId)
             ->whereNull('service_order_id')
             ->whereNull('kit_padre_id')
