@@ -44,6 +44,10 @@ class Listado extends Component
 
     public bool $modalListadoAbierto = false; 
 
+    // Detalle de pieza serializada suelta (clic en fila del listado).
+    public bool $modalDetallePiezaAbierto = false;
+    public ?int $piezaSeleccionadaId = null;
+
     
     public bool $modalEditarItemAbierto = false;
     public ?int $editarItemId = null;
@@ -94,6 +98,11 @@ class Listado extends Component
 
     public function verListadoInventario(string $tipo): void
     {
+        // Modal de items por cantidad eliminado (innecesario).
+        if ($tipo === 'sueltosCantidad') {
+            return;
+        }
+
         $this->nivelInventario = 'listado';
         $this->filtroTipoInventario = $tipo;
         $this->kitSeleccionadoId = null;
@@ -104,6 +113,27 @@ class Listado extends Component
     {
         $this->kitSeleccionadoId = $kitId;
         $this->mostrarDetalleKit = true;
+    }
+
+    /** Abre el detalle de una pieza serializada suelta (origen de ingreso, registro y datos). */
+    public function verDetallePieza(int $itemId): void
+    {
+        $this->piezaSeleccionadaId = $itemId;
+        $this->modalDetallePiezaAbierto = true;
+    }
+
+    public function cerrarDetallePieza(): void
+    {
+        $this->modalDetallePiezaAbierto = false;
+        $this->piezaSeleccionadaId = null;
+    }
+
+    /** Limpia el detalle cuando x-modal lo cierra (click fuera / Esc). */
+    public function updatedModalDetallePiezaAbierto(bool $value): void
+    {
+        if (!$value) {
+            $this->piezaSeleccionadaId = null;
+        }
     }
 
     public function cerrarDetalleKit(): void
@@ -574,6 +604,77 @@ class Listado extends Component
         };
     }
 
+    /**
+     * Detalle de pieza serializada suelta.
+     * Mapea en BD: origen de ingreso y quién registró desde
+     * items_serializados.atributos (recepcion_fecha, registrado_por,
+     * serie_registrada_por/en) + ledger movimientos_stock
+     * ("Entrada de serie {serie}" → usuario_id).
+     */
+    public function getPiezaDetalleProperty()
+    {
+        if (!$this->piezaSeleccionadaId) return null;
+
+        $item = ItemSerializado::with([
+            'producto.categoria',
+            'sede',
+            'serviceOrder.cliente',
+            'serviceOrder.vehiculo',
+            'serviceOrder.tecnico',
+            'kitPadre.producto',
+        ])->find($this->piezaSeleccionadaId);
+
+        if (!$item) return null;
+
+        $atr = $item->atributos ?? [];
+
+        // Ledger de entrada de ESTA serie (RegistrarEntrada).
+        $movEntrada = null;
+        if ($item->serie) {
+            $movEntrada = \App\Models\MovimientoStock::where('tipo', 'entrada')
+                ->where('motivo', "Entrada de serie {$item->serie}")
+                ->orderBy('id')
+                ->first();
+        }
+
+        $origen = match (true) {
+            !empty($atr['recepcion_fecha'])   => 'Recepción',
+            !empty($atr['agregado_a_kit'])    => 'Agregada a kit',
+            $movEntrada !== null              => 'Entrada manual',
+            !empty($atr['serie_registrada_en']) => 'Registro de serie',
+            default                           => 'Alta en almacén',
+        };
+
+        $registradoPorId = $atr['registrado_por']
+            ?? $atr['serie_registrada_por']
+            ?? $movEntrada?->usuario_id;
+
+        $registradoPor = $registradoPorId
+            ? \App\Models\User::find($registradoPorId)
+            : null;
+
+        $fechaRegistro = $atr['serie_registrada_en']
+            ?? $atr['recepcion_fecha']
+            ?? $movEntrada?->created_at
+            ?? $item->created_at;
+
+        // Normaliza a string legible (fecha corta o fecha+hora según venga).
+        try {
+            $f = \Carbon\Carbon::parse($fechaRegistro);
+            $fechaFmt = ($f->format('H:i:s') === '00:00:00')
+                ? $f->format('d/m/Y')
+                : $f->format('d/m/Y H:i');
+        } catch (\Throwable) {
+            $fechaFmt = (string) $fechaRegistro;
+        }
+
+        $item->setAttribute('_origen', $origen);
+        $item->setAttribute('_registradoPor', $registradoPor?->name ?? '—');
+        $item->setAttribute('_fechaRegistro', $fechaFmt);
+
+        return $item;
+    }
+
     public function getKitDetalleProperty()
     {
         if (!$this->kitSeleccionadoId) return null;
@@ -802,6 +903,24 @@ class Listado extends Component
             ->when($sedeId, fn ($q) => $q->where('sede_id', $sedeId))
             ->count();
 
+        // Productos del catálogo SIN stock suelto en la sede filtrada (alerta roja).
+        $sedesActivas = Sede::activas()->orderBy('id')->get();
+        $sinStock = Producto::with('categoria')
+            ->where('activo', true)
+            ->when(
+                $this->busquedaInventario,
+                fn ($q) => $q->where('nombre', 'like', "%{$this->busquedaInventario}%")
+            )
+            ->get()
+            ->filter(function ($p) use ($sedeId, $sedesActivas) {
+                if ($sedeId) {
+                    return $p->stockSueltoEnSede((int) $sedeId) <= 0;
+                }
+                // "Todas las sedes": sin stock en ninguna.
+                return $sedesActivas->sum(fn ($s) => $p->stockSueltoEnSede($s->id)) <= 0;
+            })
+            ->values();
+
         return [
             'kitsSellados' => $kitsSellados,
             'kitsIncompletos' => $kitsIncompletos,
@@ -809,6 +928,7 @@ class Listado extends Component
             'kitsCompletados' => $kitsCompletados,
             'sueltosSerializados' => $sueltosSerializados,
             'sueltosCantidad' => $sueltosCantidad,
+            'sinStock' => $sinStock,
             'conteos' => [
                 'sellados' => $kitsSellados->flatten()->count(),
                 'incompletos' => $kitsIncompletos->flatten()->count(),
@@ -818,6 +938,7 @@ class Listado extends Component
                 'sueltosSerializados' => $sueltosSerializados->count(),
                 'sueltosCantidadTipos' => $sueltosCantidad->count(),
                 'sueltosCantidadTotal' => $sueltosCantidad->sum('cantidad_suelta_real'),
+                'sinStock' => $sinStock->count(),
             ],
         ];
     }
@@ -1014,6 +1135,7 @@ class Listado extends Component
             'listadoInventarioIcono' => $this->listadoInventarioIcono,
             'listadoInventarioColor' => $this->listadoInventarioColor,
             'kitDetalle' => $this->mostrarDetalleKit ? $this->kitDetalle : null,
+            'piezaDetalle' => $this->modalDetallePiezaAbierto ? $this->piezaDetalle : null,
         ]);
     }
 }
