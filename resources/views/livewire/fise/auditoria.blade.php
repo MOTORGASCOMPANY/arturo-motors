@@ -311,10 +311,5 @@
                 }
             });
         }
-
-        // Loading durante_save
-        Livewire.on('registrarPago', function() {
-            Swal.showLoading();
-        });
     </script>
 </div>

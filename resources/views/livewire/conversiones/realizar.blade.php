@@ -229,26 +229,3 @@
         </x-dialog-modal>
     @endif
 </div>
-
-<script>
-    document.addEventListener('livewire:initialized', () => {
-        Livewire.on('conversion-terminada', (event) => {
-            const data = Array.isArray(event) ? event[0] : event;
-            const redirectUrl = data && data.redirectUrl ? data.redirectUrl : null;
-
-            Swal.fire({
-                icon: 'success',
-                title: '¡Conversión terminada!',
-                text: 'La orden está lista para entrega.',
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#16a34a',
-                allowOutsideClick: false,
-                allowEscapeKey: false
-            }).then(() => {
-                if (redirectUrl) {
-                    window.location.href = redirectUrl;
-                }
-            });
-        });
-    });
-</script>
