@@ -225,4 +225,5 @@
     </div>
 
     @livewire('r-r-h-h.create-contrato')
+    
 </div>
