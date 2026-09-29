@@ -70,14 +70,25 @@ class Reporte extends Component
         $aprobadasPorDia = [];
         $rechazadasPorDia = [];
         $pendientesPorDia = [];
+        $montoTotalPorDia = [];
+        $montoPagadoPorDia = [];
+        $saldoPendientePorDia = [];
 
         for ($i = 0; $i < $dias; $i++) {
             $fecha = $desde->copy()->addDays($i)->format('Y-m-d');
             $labels[] = $desde->copy()->addDays($i)->format('d/m');
-            $dia = $solicitudes->filter(fn ($s) => $s->created_at->format('Y-m-d') === $fecha);
-            $aprobadasPorDia[] = $dia->where('estado', 'aprobado')->count();
-            $rechazadasPorDia[] = $dia->where('estado', 'rechazado')->count();
-            $pendientesPorDia[] = $dia->where('estado', 'pendiente')->count();
+            
+            // Solicitudes por día
+            $diaSol = $solicitudes->filter(fn ($s) => $s->created_at->format('Y-m-d') === $fecha);
+            $aprobadasPorDia[] = $diaSol->where('estado', 'aprobado')->count();
+            $rechazadasPorDia[] = $diaSol->where('estado', 'rechazado')->count();
+            $pendientesPorDia[] = $diaSol->where('estado', 'pendiente')->count();
+
+            // Pagos por día (montos)
+            $diaPag = $pagos->filter(fn ($p) => $p->created_at->format('Y-m-d') === $fecha);
+            $montoTotalPorDia[] = (float) $diaPag->sum('monto_total');
+            $montoPagadoPorDia[] = (float) $diaPag->sum('monto_pagado');
+            $saldoPendientePorDia[] = (float) $diaPag->sum('monto_total') - (float) $diaPag->sum('monto_pagado');
         }
 
         // ─── Pagos por técnico ───
@@ -96,6 +107,13 @@ class Reporte extends Component
             pendientes: $pendientesPorDia,
         );
 
+        $this->dispatch('chart-pagos-fise',
+            labels: $labels,
+            montoTotal: $montoTotalPorDia,
+            montoPagado: $montoPagadoPorDia,
+            saldoPendiente: $saldoPendientePorDia,
+        );
+
         return view('livewire.fise.reporte', [
             'desde' => $desde,
             'hasta' => $hasta,
@@ -106,7 +124,7 @@ class Reporte extends Component
             'solicitudesRechazadas' => $solicitudesRechazadas,
             'solicitudesPendientes' => $solicitudesPendientes,
             'tasaAprobacion' => $tasaAprobacion,
-            // Pagos
+            // Pagos (totales para tarjetas si se usan en otro lado)
             'pagos' => $pagos,
             'totalPagos' => $totalPagos,
             'montoTotalFise' => $montoTotalFise,
@@ -119,8 +137,11 @@ class Reporte extends Component
             'ingresosCajaFise' => $ingresosCajaFise,
             // Por técnico
             'pagosPorTecnico' => $pagosPorTecnico,
-            // Chart
+            // Charts
             'labels' => $labels,
+            'montoTotalPorDia' => $montoTotalPorDia,
+            'montoPagadoPorDia' => $montoPagadoPorDia,
+            'saldoPendientePorDia' => $saldoPendientePorDia,
         ]);
     }
 

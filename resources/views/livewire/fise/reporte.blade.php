@@ -111,84 +111,120 @@
         </div>
     </div>
 
-    {{-- KPIs Pagos --}}
-    <div>
-        <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4 px-1 flex items-center gap-2">
-            <i class="fas fa-money-check-dollar text-slate-400"></i>
-            Pagos FISE
-        </h3>
+    {{-- Gráficos: Solicitudes y Pagos por día --}}
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {{-- Gráfico de solicitudes --}}
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 flex flex-col h-full" wire:ignore wire:key="chart-fise">
 
-            <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-slate-200/80 p-5 flex flex-col justify-center">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total pagos</span>
-                    <i class="fas fa-file-invoice-dollar text-slate-200 text-lg"></i>
+            <h3 class="text-sm font-bold text-slate-600 uppercase tracking-wider mb-6 flex items-center gap-2">
+                <i class="fas fa-chart-line text-slate-400"></i>
+                Solicitudes FISE por día
+            </h3>
+
+            @if ($totalSolicitudes > 0)
+
+                <div class="relative w-full flex-grow" style="min-height: 280px;">
+                    <canvas
+                        id="chartFise"
+                        data-labels='@json($labels)'
+                        data-aprobadas='@json($aprobadasPorDia ?? [])'
+                        data-rechazadas='@json($rechazadasPorDia ?? [])'
+                        data-pendientes='@json($pendientesPorDia ?? [])'
+                    ></canvas>
                 </div>
-                <p class="text-3xl font-extrabold text-slate-800">{{ $totalPagos }}</p>
-            </div>
 
-            <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-slate-200/80 p-5 flex flex-col justify-center border-l-4 border-l-indigo-500">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Monto total</span>
-                    <i class="fas fa-sack-dollar text-indigo-100 text-lg"></i>
-                </div>
-                <p class="text-2xl font-extrabold text-indigo-600">
-                    S/ {{ number_format($montoTotalFise, 2) }}
-                </p>
-            </div>
+                <div class="flex flex-wrap gap-4 mt-6 justify-center">
 
-            <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-slate-200/80 p-5 flex flex-col justify-center border-l-4 border-l-emerald-500">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Monto pagado</span>
-                    <i class="fas fa-money-bill-wave text-emerald-100 text-lg"></i>
-                </div>
-                <p class="text-2xl font-extrabold text-emerald-600">
-                    S/ {{ number_format($montoPagadoFise, 2) }}
-                </p>
-            </div>
+                    <div class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-full border border-slate-100 text-xs font-semibold text-slate-600 shadow-sm">
+                        <span class="w-3 h-3 rounded-full bg-emerald-500 shadow-inner"></span>
+                        Aprobadas
+                    </div>
 
-            <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-slate-200/80 p-5 flex flex-col justify-center border-l-4 border-l-amber-500">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Saldo pendiente</span>
-                    <i class="fas fa-hand-holding-dollar text-amber-100 text-lg"></i>
-                </div>
-                <p class="text-2xl font-extrabold text-amber-600">
-                    S/ {{ number_format($saldoPendiente, 2) }}
-                </p>
-            </div>
+                    <div class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-full border border-slate-100 text-xs font-semibold text-slate-600 shadow-sm">
+                        <span class="w-3 h-3 rounded-full bg-red-500 shadow-inner"></span>
+                        Rechazadas
+                    </div>
 
-            <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-slate-200/80 p-5 flex flex-col justify-center">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Pagados (Cant.)</span>
-                    <i class="fas fa-check-double text-emerald-100 text-lg"></i>
-                </div>
-                <p class="text-3xl font-extrabold text-emerald-600">{{ $pagosPagados }}</p>
-            </div>
+                    <div class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-full border border-slate-100 text-xs font-semibold text-slate-600 shadow-sm">
+                        <span class="w-3 h-3 rounded-full bg-amber-500 shadow-inner"></span>
+                        Pendientes
+                    </div>
 
-            <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-slate-200/80 p-5 flex flex-col justify-center">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Parciales (Cant.)</span>
-                    <i class="fas fa-hourglass-half text-amber-100 text-lg"></i>
                 </div>
-                <p class="text-3xl font-extrabold text-amber-600">{{ $pagosParciales }}</p>
-            </div>
 
-            <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-slate-200/80 p-5 flex flex-col justify-center md:col-span-2 lg:col-span-2 border-l-4 border-l-slate-700 bg-slate-50/50">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Ingresos caja FISE</span>
-                    <i class="fas fa-cash-register text-slate-300 text-lg"></i>
+            @else
+
+                <div class="flex flex-col items-center justify-center py-16 text-center flex-grow bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+                    <div class="w-16 h-16 bg-white shadow-sm rounded-full flex items-center justify-center mb-4">
+                        <i class="fas fa-file-circle-question text-slate-300 text-2xl"></i>
+                    </div>
+
+                    <p class="text-slate-600 font-semibold text-lg">Sin datos</p>
+                    <p class="text-slate-400 text-sm mt-1">No hay solicitudes FISE en este periodo</p>
                 </div>
-                <p class="text-3xl font-extrabold text-slate-700">
-                    S/ {{ number_format($ingresosCajaFise, 2) }}
-                </p>
-            </div>
+
+            @endif
 
         </div>
+
+        {{-- Gráfico de pagos por día (montos) --}}
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 flex flex-col h-full" wire:ignore wire:key="chart-pagos-fise">
+
+            <h3 class="text-sm font-bold text-slate-600 uppercase tracking-wider mb-6 flex items-center gap-2">
+                <i class="fas fa-chart-area text-slate-400"></i>
+                Pagos FISE por día
+            </h3>
+
+            @if ($totalPagos > 0)
+
+                <div class="relative w-full flex-grow" style="min-height: 280px;">
+                    <canvas
+                        id="chartPagosFise"
+                        data-labels='@json($labels)'
+                        data-monto-total='@json($montoTotalPorDia ?? [])'
+                        data-monto-pagado='@json($montoPagadoPorDia ?? [])'
+                        data-saldo-pendiente='@json($saldoPendientePorDia ?? [])'
+                    ></canvas>
+                </div>
+
+                <div class="flex flex-wrap gap-4 mt-6 justify-center">
+
+                    <div class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-full border border-slate-100 text-xs font-semibold text-slate-600 shadow-sm">
+                        <span class="w-3 h-3 rounded-full bg-indigo-500 shadow-inner"></span>
+                        Monto total
+                    </div>
+
+                    <div class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-full border border-slate-100 text-xs font-semibold text-slate-600 shadow-sm">
+                        <span class="w-3 h-3 rounded-full bg-emerald-500 shadow-inner"></span>
+                        Monto pagado
+                    </div>
+
+                    <div class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-full border border-slate-100 text-xs font-semibold text-slate-600 shadow-sm">
+                        <span class="w-3 h-3 rounded-full bg-amber-500 shadow-inner"></span>
+                        Saldo pendiente
+                    </div>
+
+                </div>
+
+            @else
+
+                <div class="flex flex-col items-center justify-center py-16 text-center flex-grow bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+                    <div class="w-16 h-16 bg-white shadow-sm rounded-full flex items-center justify-center mb-4">
+                        <i class="fas fa-chart-line text-slate-300 text-2xl"></i>
+                    </div>
+
+                    <p class="text-slate-600 font-semibold text-lg">Sin datos</p>
+                    <p class="text-slate-400 text-sm mt-1">No hay pagos FISE en este periodo</p>
+                </div>
+
+            @endif
+
+        </div>
+
     </div>
 
-    {{-- Layout Mixto: Gráfico y Tabla Técnicos --}}
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    {{-- Tabla pagos por técnico --}}
 
         {{-- Gráfico de solicitudes --}}
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 flex flex-col h-full" wire:ignore wire:key="chart-fise">
@@ -668,6 +704,149 @@
 
         window.renderChartFise();
 
+        // --- Gráfico Pagos FISE por día (líneas) ---
+        window.renderChartPagosFise = function () {
+            const canvas = document.getElementById('chartPagosFise');
+
+            if (!canvas || typeof Chart === 'undefined') {
+                return;
+            }
+
+            const labels = JSON.parse(canvas.dataset.labels || '[]');
+            const montoTotal = JSON.parse(canvas.dataset.montoTotal || '[]');
+            const montoPagado = JSON.parse(canvas.dataset.montoPagado || '[]');
+            const saldoPendiente = JSON.parse(canvas.dataset.saldoPendiente || '[]');
+
+            if (window.chartPagosFiseInstance) {
+                window.chartPagosFiseInstance.destroy();
+            }
+
+            window.chartPagosFiseInstance = new Chart(canvas, {
+                type: 'line',
+
+                data: {
+                    labels: labels,
+
+                    datasets: [
+                        {
+                            label: 'Monto total',
+                            data: montoTotal,
+                            borderColor: '#4f46e5',
+                            backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                            fill: true,
+                            tension: 0.3,
+                            pointRadius: 3,
+                            pointBackgroundColor: '#4f46e5',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2
+                        },
+                        {
+                            label: 'Monto pagado',
+                            data: montoPagado,
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            fill: true,
+                            tension: 0.3,
+                            pointRadius: 3,
+                            pointBackgroundColor: '#10b981',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2
+                        },
+                        {
+                            label: 'Saldo pendiente',
+                            data: saldoPendiente,
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                            fill: true,
+                            tension: 0.3,
+                            pointRadius: 3,
+                            pointBackgroundColor: '#f59e0b',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2
+                        }
+                    ]
+                },
+
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+
+                        tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            titleColor: '#0f172a',
+                            bodyColor: '#475569',
+                            borderColor: '#e2e8f0',
+                            borderWidth: 1,
+                            padding: 12,
+                            boxPadding: 6,
+                            usePointStyle: true,
+
+                            titleFont: {
+                                size: 14,
+                                weight: 'bold',
+                                family: "'Inter', sans-serif"
+                            },
+
+                            bodyFont: {
+                                size: 13,
+                                family: "'Inter', sans-serif"
+                            },
+
+                            callbacks: {
+                                label: (ctx) => `${ctx.dataset.label}: S/ ${ctx.parsed.y.toLocaleString('es-PE', {minimumFractionDigits: 2})}`
+                            }
+                        }
+                    },
+
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false,
+                                drawBorder: false
+                            },
+
+                            ticks: {
+                                font: {
+                                    family: "'Inter', sans-serif"
+                                },
+                                color: '#64748b'
+                            }
+                        },
+
+                        y: {
+                            beginAtZero: true,
+
+                            ticks: {
+                                font: {
+                                    family: "'Inter', sans-serif"
+                                },
+                                color: '#94a3b8',
+                                callback: (value) => 'S/ ' + value.toLocaleString('es-PE')
+                            },
+
+                            grid: {
+                                color: '#f1f5f9',
+                                drawBorder: false,
+                                borderDash: [5, 5]
+                            }
+                        }
+                    }
+                }
+            });
+        };
+
+        window.renderChartPagosFise();
+
         // Nota: el <div> que contiene el canvas tiene wire:ignore, así que Livewire
         // NO actualizará sus atributos data-* en re-renders posteriores.
         // Este hook solo es útil si algo fuerza un remount completo del componente;
@@ -675,6 +854,7 @@
         Livewire.hook('morph.updated', ({ component }) => {
             if (component.name === 'fise.reporte') {
                 window.renderChartFise();
+                window.renderChartPagosFise();
             }
         });
 
@@ -693,6 +873,21 @@
             window.renderChartFise();
         });
 
+        $wire.on('chart-pagos-fise', (data) => {
+            const canvas = document.getElementById('chartPagosFise');
+
+            if (!canvas) {
+                return;
+            }
+
+            canvas.dataset.labels = JSON.stringify(data.labels);
+            canvas.dataset.montoTotal = JSON.stringify(data.montoTotal);
+            canvas.dataset.montoPagado = JSON.stringify(data.montoPagado);
+            canvas.dataset.saldoPendiente = JSON.stringify(data.saldoPendiente);
+
+            window.renderChartPagosFise();
+        });
+
         // Popups de reporte vía componente reutilizable: js/components/carga-swal.js
         Livewire.on('descargar-pdf', (params) => {
             CargaSwal.nota('Próximamente', 'La exportación PDF del reporte FISE está en desarrollo.');
@@ -702,6 +897,7 @@
             CargaSwal.nota('Próximamente', 'La exportación Excel del reporte FISE está en desarrollo.');
         });
     </script>
+    @endscript
 
     <style>
         .custom-scrollbar::-webkit-scrollbar {
@@ -722,6 +918,5 @@
             background: #94a3b8;
         }
     </style>
-    @endscript
 
 </div>
