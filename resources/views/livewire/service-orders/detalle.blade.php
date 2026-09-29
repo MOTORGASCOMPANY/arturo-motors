@@ -405,9 +405,6 @@
                     if (str_contains($m, 'entrega para conversión') || str_contains($m, 'despacho')) {
                         return ['border-blue-300', 'bg-blue-50', 'text-blue-900', 'text-blue-500', 'bg-blue-100', 'text-blue-800', 'DESPACHO'];
                     }
-                    if (str_contains($m, 'devoluci')) {
-                        return ['border-gray-300', 'bg-gray-100', 'text-gray-800', 'text-gray-500', 'bg-gray-200', 'text-gray-700', 'DEVOLUCIÓN'];
-                    }
                     return ['border-gray-200', 'bg-white', 'text-gray-800', 'text-gray-400', 'bg-gray-100', 'text-gray-600', ''];
                     };
 
@@ -495,9 +492,6 @@
                         ];
                     }
 
-                    // Etiquetas que significan "la pieza volvió": no cuentan como usadas.
-                    $esDevolucion = fn (string $badge): bool => in_array(strtoupper($badge), ['DEVOLUCIÓN', 'DEFECTUOSA'], true);
-
                     $agrupadas = [];
 
                     foreach ($filasSeccion as $fila) {
@@ -509,7 +503,6 @@
                                 'chips'      => [],
                                 'movs'       => [],
                                 'despachado' => 0,
-                                'devuelto'   => 0,
                             ];
                         }
 
@@ -519,11 +512,7 @@
                         ];
                         $agrupadas[$key]['movs'][] = $fila;
 
-                        if ($esDevolucion($fila['badge'])) {
-                            $agrupadas[$key]['devuelto'] += $fila['cantidad'];
-                        } else {
-                            $agrupadas[$key]['despachado'] += $fila['cantidad'];
-                        }
+                        $agrupadas[$key]['despachado'] += $fila['cantidad'];
                     }
 
                     ksort($agrupadas);
@@ -698,11 +687,7 @@
                                                     × {{ $p['despachado'] }}
                                                 </span>
                                             @endif
-                                            @if ($p['devuelto'] > 0)
-                                                <span class="text-[11px] font-bold text-gray-400">
-                                                    −× {{ $p['devuelto'] }}
-                                                </span>
-                                            @endif
+                                            
                                             <i class="fas fa-chevron-down text-gray-400 text-[10px] transition-transform"
                                                 :class="piezaAbierta === {{ $productoId }} ? 'rotate-180' : ''"></i>
                                         </span>
