@@ -59,54 +59,202 @@
         <!-- CargaSwal: componente reutilizable de carga para todos los reportes -->
         <script src="{{ asset('js/components/carga-swal.js') }}"></script>
 
-        <!-- Script para SweetAlert2 con Livewire -->
+        <!-- AppSwal: API unificada SweetAlert2 para toda la aplicación -->
         <script>
-            document.addEventListener("DOMContentLoaded", function() {
-
-                // 1. Notificaciones enviadas por redirección con session()->flash('swal', [...])
-                @if (session()->has('swal'))
-                    (function() {
-                        const swalData = @json(session('swal'));
-                        Swal.fire({
-                            toast: true,
-                            position: 'top-end',
-                            icon: swalData.icono || swalData.icon || 'success',
-                            title: swalData.titulo || swalData.title || '',
-                            text: swalData.mensaje || swalData.text || '',
-                            showConfirmButton: false,
-                            timer: 3000,
-                            timerProgressBar: true,
-                            didOpen: (toast) => {
-                                toast.addEventListener('mouseenter', Swal.stopTimer);
-                                toast.addEventListener('mouseleave', Swal.resumeTimer);
-                            }
-                        });
-                    })();
-                @endif
-
-                // 2. Alerta Modal Centrada vía Livewire dispatch (sin redirección)
-                Livewire.on('minAlert', function(params) {
+            window.AppSwal = {
+                cargar: function(titulo, texto) {
+                    titulo = titulo || 'Cargando';
+                    texto = texto || 'Por favor espera...';
                     Swal.fire({
-                        title: params.titulo || params['titulo'],
-                        text: params.mensaje || params['mensaje'],
-                        icon: params.icono || params['icono']
+                        title: titulo,
+                        text: texto,
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        showConfirmButton: false,
+                        didOpen: function() { Swal.showLoading(); }
                     });
-                });
+                },
 
-                // 3. Toast en tiempo real vía Livewire dispatch (sin redirección)
-                Livewire.on('minToast', function(params) {
-                    Swal.fire({
+                cerrar: function() {
+                    Swal.close();
+                },
+
+                exito: function(titulo, texto, opts) {
+                    opts = opts || {};
+                    return Swal.fire({
+                        icon: 'success',
+                        title: titulo,
+                        text: texto || '',
+                        confirmButtonColor: '#16a34a',
+                        confirmButtonText: opts.confirmText || 'OK',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false
+                    });
+                },
+
+                error: function(titulo, texto, opts) {
+                    opts = opts || {};
+                    return Swal.fire({
+                        icon: 'error',
+                        title: titulo,
+                        text: texto || '',
+                        confirmButtonColor: '#dc2626',
+                        confirmButtonText: opts.confirmText || 'OK',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false
+                    });
+                },
+
+                alerta: function(titulo, texto, opts) {
+                    opts = opts || {};
+                    return Swal.fire({
+                        icon: 'warning',
+                        title: titulo,
+                        text: texto || '',
+                        confirmButtonColor: '#f59e0b',
+                        confirmButtonText: opts.confirmText || 'OK',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false
+                    });
+                },
+
+                confirmar: function(titulo, texto, opts) {
+                    opts = opts || {};
+                    return Swal.fire({
+                        icon: 'question',
+                        title: titulo,
+                        text: texto || '',
+                        showCancelButton: true,
+                        confirmButtonColor: '#16a34a',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: opts.confirmText || 'Sí, confirmar',
+                        cancelButtonText: opts.cancelText || 'Cancelar',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false
+                    });
+                },
+
+                input: function(titulo, tipo, opts) {
+                    opts = opts || {};
+                    tipo = tipo || 'text';
+                    return Swal.fire({
+                        title: titulo,
+                        input: tipo,
+                        inputPlaceholder: opts.placeholder,
+                        inputValue: opts.value,
+                        showCancelButton: true,
+                        confirmButtonText: opts.confirmText || 'Guardar',
+                        cancelButtonText: 'Cancelar',
+                        inputValidator: opts.validator,
+                        allowOutsideClick: false,
+                        allowEscapeKey: false
+                    });
+                },
+
+                toast: function(icono, titulo, posicion) {
+                    posicion = posicion || 'top-end';
+                    var Toast = Swal.mixin({
                         toast: true,
-                        position: 'top-end',
-                        icon: params.icono || params['icono'],
-                        title: params.titulo || params['titulo'],
-                        text: params.mensaje || params['mensaje'],
+                        position: posicion,
                         showConfirmButton: false,
                         timer: 3000,
-                        timerProgressBar: true
+                        timerProgressBar: true,
+                        didOpen: function(toast) {
+                            toast.addEventListener('mouseenter', Swal.stopTimer);
+                            toast.addEventListener('mouseleave', Swal.resumeTimer);
+                        }
                     });
+                    Toast.fire({ icon: icono, title: titulo });
+                },
+
+                nota: function(titulo, texto) {
+                    return Swal.fire({
+                        title: titulo,
+                        text: texto || '',
+                        icon: 'info',
+                        confirmButtonText: 'Entendido',
+                        confirmButtonColor: '#2563eb',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false
+                    });
+                }
+            };
+
+            var metodos = ['cargar', 'cerrar', 'exito', 'alerta', 'nota', 'toast'];
+            for (var i = 0; i < metodos.length; i++) {
+                (function(m) {
+                    Livewire.on('swal:' + m, function(data) {
+                        var args = Array.isArray(data) ? data : [data];
+                        window.AppSwal[m].apply(window.AppSwal, args);
+                    });
+                })(metodos[i]);
+            }
+
+            Livewire.on('swal:confirmar', function(data) {
+                var titulo = data.titulo || data.titulo;
+                var texto = data.texto || data.mensaje || data.text;
+                var opts = {};
+                for (var k in data) {
+                    if (k !== 'titulo' && k !== 'texto' && k !== 'mensaje' && k !== 'text' && k !== 'callback' && k !== 'callbackParams') {
+                        opts[k] = data[k];
+                    }
+                }
+                window.AppSwal.confirmar(titulo, texto, opts).then(function(result) {
+                    if (result.isConfirmed && data.callback) {
+                        @this.call(data.callback, data.callbackParams || []);
+                    }
                 });
             });
+
+            Livewire.on('swal:input', function(data) {
+                var titulo = data.titulo || data.titulo;
+                var tipo = data.tipo || 'text';
+                var opts = {};
+                for (var k in data) {
+                    if (k !== 'titulo' && k !== 'tipo' && k !== 'callback' && k !== 'callbackParams') {
+                        opts[k] = data[k];
+                    }
+                }
+                window.AppSwal.input(titulo, tipo, opts).then(function(result) {
+                    if (result.isConfirmed && data.callback) {
+                        var params = { value: result.value };
+                        if (data.callbackParams) {
+                            for (var pk in data.callbackParams) {
+                                params[pk] = data.callbackParams[pk];
+                            }
+                        }
+                        @this.call(data.callback, params);
+                    }
+                });
+            });
+
+            Livewire.on('swal', function(data) {
+                if (data && data.icon && !data.custom) {
+                    Swal.fire(data);
+                }
+            });
+
+            @if (session()->has('swal'))
+                (function() {
+                    var swalData = @json(session('swal'));
+                    var Toast = Swal.mixin({
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true,
+                        didOpen: function(toast) {
+                            toast.addEventListener('mouseenter', Swal.stopTimer);
+                            toast.addEventListener('mouseleave', Swal.resumeTimer);
+                        }
+                    });
+                    Toast.fire({
+                        icon: swalData.icono || swalData.icon || 'success',
+                        title: swalData.titulo || swalData.title || '',
+                        text: swalData.mensaje || swalData.text || ''
+                    });
+                })();
+            @endif
         </script>
 
         @stack('js')
