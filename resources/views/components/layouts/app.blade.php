@@ -7,23 +7,15 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <link rel="icon" type="image/jpg" href="{{ asset('images/LOGOFINAL.jpg') }}" />
         <title>ARTURO MOTORS</title>
-        <!-- Este es el app.blade.php de components/layouts -->
 
-        <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-        <!-- FASE 2: Inter para los reportes -->
         <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 
-        {{-- Agregue esto para date-picker --}}
-        <!-- Flatpickr CSS -->
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
         
-        <!-- Scripts -->
-        
 
-        <!-- Styles -->
         @livewireStyles
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
@@ -33,30 +25,20 @@
         <x-banner />
 
         <div class="min-h-screen bg-gray-100">
-            {{-- @livewire('navigation-menu') --}}
             @livewire('custom-nav-menu')
 
-            <!-- Page Content -->
             <main class="pt-16">
                 {{ $slot }}
             </main>
         </div>
 
-        {{-- $slot --}}
         @stack('modals')
 
         @livewireScripts
 
-        <!-- Flatpickr JS -->
         <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-
-        <!-- Chart.js -->
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-        <!-- SweetAlert2 -->
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-        <!-- CargaSwal: componente reutilizable de carga para todos los reportes -->
         <script src="{{ asset('js/components/carga-swal.js') }}"></script>
 
         <!-- AppSwal: API unificada SweetAlert2 para toda la aplicación -->
@@ -235,8 +217,7 @@
                 }
             });
 
-            // ===== EVENTOS EXISTENTES DE COMPONENTES (compatibilidad total) =====
-            // asignar-equipos.blade.php
+            // Eventos existentes de componentes
             Livewire.on('asignacion-bloqueada', function(data) {
                 var d = Array.isArray(data) ? data[0] : data;
                 window.AppSwal.alerta(d.titulo || 'Atención', d.mensaje || '');
@@ -254,24 +235,16 @@
                 var d = Array.isArray(data) ? data[0] : data;
                 window.AppSwal.error('Error', d.mensaje || 'Ocurrió un error');
             });
-
-            // realizar.blade.php
             Livewire.on('conversion-terminada', function(data) {
                 var d = Array.isArray(data) ? data[0] : data;
                 window.AppSwal.exito('¡Conversión terminada!', 'La orden está lista para entrega.')
                     .then(function() { if (d && d.redirectUrl) window.location.href = d.redirectUrl; });
             });
-
-            // fise/auditoria.blade.php
             Livewire.on('registrarPago', function() {
                 window.AppSwal.cargar('Registrando pago', 'Procesando...');
             });
-
-            // recepcion-alta (Alpine events via Livewire)
-            Livewire.on('swal-init', function(data) { /* handled by Alpine */ });
-            Livewire.on('swal-kit', function(data) { /* handled by Alpine */ });
-
-            // minToast / minAlert - eventos legacy usados por componentes (EntregarCobrar, etc.)
+            Livewire.on('swal-init', function(data) {});
+            Livewire.on('swal-kit', function(data) {});
             Livewire.on('minToast', function(data) {
                 var icono = data.icono || data.icon || 'success';
                 var titulo = data.titulo || data.title || '';
