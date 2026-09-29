@@ -271,6 +271,20 @@
             Livewire.on('swal-init', function(data) { /* handled by Alpine */ });
             Livewire.on('swal-kit', function(data) { /* handled by Alpine */ });
 
+            // minToast / minAlert - eventos legacy usados por componentes (EntregarCobrar, etc.)
+            Livewire.on('minToast', function(data) {
+                var icono = data.icono || data.icon || 'success';
+                var titulo = data.titulo || data.title || '';
+                var texto = data.mensaje || data.text || '';
+                window.AppSwal.toast(icono, (titulo ? titulo + ': ' : '') + texto);
+            });
+            Livewire.on('minAlert', function(data) {
+                var icono = data.icono || data.icon || 'warning';
+                var titulo = data.titulo || data.title || 'Atención';
+                var texto = data.mensaje || data.text || '';
+                window.AppSwal.alerta(titulo, texto);
+            });
+
             @if (session()->has('swal'))
                 (function() {
                     var swalData = @json(session('swal'));
