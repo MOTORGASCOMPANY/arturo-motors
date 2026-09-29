@@ -4,16 +4,6 @@
         @documento-eliminado.window="Swal.fire({icon:'success', title:'Eliminado', text: $event.detail.mensaje || 'Documento eliminado.', timer:2200, showConfirmButton:false})"
         @documento-error.window="Swal.fire({icon:'error', title:'Ups', text: $event.detail.mensaje || 'Ocurrió un error.'})">
 
-        @once
-            <script>
-                if (typeof Swal === 'undefined') {
-                    const s = document.createElement('script');
-                    s.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11';
-                    s.defer = true;
-                    document.head.appendChild(s);
-                }
-            </script>
-
             <script>
                 document.addEventListener('alpine:init', () => {
                     Alpine.data('visorArchivos', () => ({
@@ -1556,6 +1546,5 @@
                     </div>
                 </div>
             </div>
-        @endif
     </div>
 </div>
