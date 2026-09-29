@@ -195,13 +195,14 @@
                 var texto = data.texto || data.mensaje || data.text;
                 var opts = {};
                 for (var k in data) {
-                    if (k !== 'titulo' && k !== 'texto' && k !== 'mensaje' && k !== 'text' && k !== 'callback' && k !== 'callbackParams') {
+                    if (k !== 'titulo' && k !== 'texto' && k !== 'mensaje' && k !== 'text' && k !== 'onConfirm') {
                         opts[k] = data[k];
                     }
                 }
                 window.AppSwal.confirmar(titulo, texto, opts).then(function(result) {
-                    if (result.isConfirmed && data.callback) {
-                        @this.call(data.callback, data.callbackParams || []);
+                    if (result.isConfirmed && data.onConfirm && typeof data.onConfirm === 'function') {
+                        var params = data.callbackParams || [];
+                        data.onConfirm.apply(null, params);
                     }
                 });
             });
@@ -211,19 +212,19 @@
                 var tipo = data.tipo || 'text';
                 var opts = {};
                 for (var k in data) {
-                    if (k !== 'titulo' && k !== 'tipo' && k !== 'callback' && k !== 'callbackParams') {
+                    if (k !== 'titulo' && k !== 'tipo' && k !== 'onConfirm') {
                         opts[k] = data[k];
                     }
                 }
                 window.AppSwal.input(titulo, tipo, opts).then(function(result) {
-                    if (result.isConfirmed && data.callback) {
+                    if (result.isConfirmed && data.onConfirm && typeof data.onConfirm === 'function') {
                         var params = { value: result.value };
                         if (data.callbackParams) {
                             for (var pk in data.callbackParams) {
                                 params[pk] = data.callbackParams[pk];
                             }
                         }
-                        @this.call(data.callback, params);
+                        data.onConfirm(params);
                     }
                 });
             });

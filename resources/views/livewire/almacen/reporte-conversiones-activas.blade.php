@@ -142,5 +142,5 @@
         </x-dialog-modal>
     @endif
 
-    @livewire('almacen.conversion-partes-generales-modal')
+    <x-almacen.conversion-partes-generales-modal />
 </div>
