@@ -105,52 +105,42 @@
 
     @if($modalAbierto && $this->conversionSeleccionada)
         @php $orden = $this->conversionSeleccionada; @endphp
-        <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
-            <div class="absolute inset-0 bg-black/60 backdrop-blur-[2px]" wire:click="cerrarModal"></div>
-
-            <div class="relative bg-white sm:rounded-2xl shadow-2xl w-full h-[92vh] sm:h-auto sm:max-h-[90vh] sm:max-w-5xl overflow-hidden flex flex-col ring-1 ring-black/5 rounded-t-2xl">
-
-                <div class="px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-blue-600 to-blue-700 flex items-center justify-between gap-2 shrink-0">
-                    <div class="flex items-center gap-3 min-w-0">
-                        <div class="w-9 h-9 sm:w-11 sm:h-11 bg-white/15 rounded-xl flex items-center justify-center backdrop-blur-sm shrink-0">
-                            <i class="fas fa-car text-white text-sm sm:text-base"></i>
-                        </div>
-                        <div class="min-w-0">
-                            <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                                <span class="font-bold text-white text-sm sm:text-base">Orden #{{ $orden->id }}</span>
-                                <span class="px-2 py-0.5 bg-white/20 text-white text-xs font-mono font-semibold rounded">{{ $orden->vehiculo->placa }}</span>
-                                @if($this->generacionKit)
-                                    <span class="px-2 py-0.5 bg-purple-500 text-white text-[10px] font-bold rounded">{{ $this->generacionKit }}</span>
-                                @endif
-                            </div>
-                            <span class="text-xs sm:text-sm text-blue-100 block truncate">
-                                {{ $orden->cliente->nombre }} {{ $orden->cliente->apellido }}
-                                &middot; T&eacute;c: {{ $orden->tecnico->name ?? '—' }}
-                            </span>
-                        </div>
+        <x-dialog-modal wire:model="modalAbierto" maxWidth="2xl">
+            <x-slot name="title">
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-9 h-9 sm:w-11 sm:h-11 bg-white/15 rounded-xl flex items-center justify-center backdrop-blur-sm shrink-0">
+                        <i class="fas fa-car text-white text-sm sm:text-base"></i>
                     </div>
-                    <div class="flex items-center gap-2 sm:gap-3 shrink-0">
-                        <span class="hidden xs:inline sm:inline px-3 py-1 bg-white text-blue-700 text-xs font-bold rounded-full whitespace-nowrap">En conversi&oacute;n</span>
-                        <button wire:click="cerrarModal" class="w-9 h-9 sm:w-8 sm:h-8 flex items-center justify-center text-white/80 hover:text-white hover:bg-white/15 rounded-lg transition">
-                            <i class="fas fa-times"></i>
-                        </button>
+                    <div class="min-w-0">
+                        <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                            <span class="font-bold text-white text-sm sm:text-base">Orden #{{ $orden->id }}</span>
+                            <span class="px-2 py-0.5 bg-white/20 text-white text-xs font-mono font-semibold rounded">{{ $orden->vehiculo->placa }}</span>
+                            @if($this->generacionKit)
+                                <span class="px-2 py-0.5 bg-purple-500 text-white text-[10px] font-bold rounded">{{ $this->generacionKit }}</span>
+                            @endif
+                        </div>
+                        <span class="text-xs sm:text-sm text-blue-100 block truncate">
+                            {{ $orden->cliente->nombre }} {{ $orden->cliente->apellido }}
+                            &middot; T&eacute;c: {{ $orden->tecnico->name ?? '—' }}
+                        </span>
                     </div>
                 </div>
+            </x-slot>
 
+            <x-slot name="content">
                 <div class="flex-1 min-h-0 flex flex-col lg:flex-row overflow-hidden">
-
                     <x-almacen.conversion-modal-piezas />
-
                     <x-almacen.conversion-modal-historial />
-
                 </div>
+            </x-slot>
 
-                <div class="px-4 sm:px-6 py-3 border-t border-gray-200 bg-gray-50 flex justify-end shrink-0">
-                    <button wire:click="cerrarModal" class="w-full sm:w-auto px-4 py-2.5 sm:py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition font-medium text-xs">Cerrar</button>
-                </div>
-            </div>
-        </div>
+            <x-slot name="footer">
+                <x-secondary-button wire:click="$set('modalAbierto', false)" class="w-full sm:w-auto">
+                    Cerrar
+                </x-secondary-button>
+            </x-slot>
+        </x-dialog-modal>
     @endif
 
-    <x-almacen.conversion-partes-generales />
+    @livewire('almacen.conversion-partes-generales-modal')
 </div>

@@ -196,42 +196,37 @@
 
     {{-- MODAL: COMPONENTES --}}
     @if($modalPartesAbierto)
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div class="absolute inset-0 bg-black/60" wire:click="cerrarPartesGenerales"></div>
-            <div class="relative bg-white rounded-lg shadow-2xl w-full max-w-md overflow-hidden">
-                <div class="px-5 py-3 border-b border-gray-200 flex items-center justify-between">
-                    <h3 class="font-bold text-gray-900 text-sm">Componentes del kit</h3>
-                    <button wire:click="cerrarPartesGenerales" class="w-7 h-7 flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition">
-                        <i class="fas fa-times text-xs"></i>
-                    </button>
-                </div>
-                <div class="px-5 py-4 max-h-[28rem] overflow-y-auto">
-                    @if($this->todasPiezasKit->isEmpty())
-                        <p class="text-sm text-gray-400 text-center py-4">No hay componentes</p>
-                    @else
-                        <div class="space-y-1.5">
-                            @foreach($this->todasPiezasKit as $comp)
-                                <div class="flex items-center justify-between py-2 px-3 rounded-lg bg-gray-50">
-                                    <span class="text-sm font-medium text-gray-900">{{ $comp->nombre }}</span>
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-xs font-bold text-gray-700">x{{ $comp->cantidad_esperada }}</span>
-                                        <span class="px-1.5 py-0.5 {{ $comp->es_serializado ? 'bg-blue-100 text-blue-700' : 'bg-gray-200 text-gray-600' }} text-[10px] font-semibold rounded">
-                                            {{ $comp->es_serializado ? 'Serial' : 'Cant.' }}
-                                        </span>
-                                    </div>
+        <x-dialog-modal wire:model="modalPartesAbierto" maxWidth="lg">
+            <x-slot name="title">
+                <h3 class="font-bold text-gray-900 text-sm">Componentes del kit</h3>
+            </x-slot>
+
+            <x-slot name="content">
+                @if($this->todasPiezasKit->isEmpty())
+                    <p class="text-sm text-gray-400 text-center py-4">No hay componentes</p>
+                @else
+                    <div class="space-y-1.5 max-h-[28rem] overflow-y-auto">
+                        @foreach($this->todasPiezasKit as $comp)
+                            <div class="flex items-center justify-between py-2 px-3 rounded-lg bg-gray-50">
+                                <span class="text-sm font-medium text-gray-900">{{ $comp->nombre }}</span>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs font-bold text-gray-700">x{{ $comp->cantidad_esperada }}</span>
+                                    <span class="px-1.5 py-0.5 {{ $comp->es_serializado ? 'bg-blue-100 text-blue-700' : 'bg-gray-200 text-gray-600' }} text-[10px] font-semibold rounded">
+                                        {{ $comp->es_serializado ? 'Serial' : 'Cant.' }}
+                                    </span>
                                 </div>
-                            @endforeach
-                        </div>
-                    @endif
-                </div>
-                <div class="px-5 py-3 border-t border-gray-200 bg-gray-50 flex justify-end">
-                    <button wire:click="cerrarPartesGenerales" type="button"
-                            class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition font-medium text-xs">
-                        Cerrar
-                    </button>
-                </div>
-            </div>
-        </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+            </x-slot>
+
+            <x-slot name="footer">
+                <x-secondary-button wire:click="$set('modalPartesAbierto', false)">
+                    Cerrar
+                </x-secondary-button>
+            </x-slot>
+        </x-dialog-modal>
     @endif
 </div>
 
