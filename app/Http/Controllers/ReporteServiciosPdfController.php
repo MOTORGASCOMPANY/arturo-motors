@@ -16,8 +16,10 @@ class ReporteServiciosPdfController extends Controller
         $desde = Carbon::parse($desdeStr);
         $hasta = Carbon::parse($hastaStr);
 
+        $tipoServicio = $request->input('tipoServicio', 'todos');
+
         $comprobantes = Comprobante::whereBetween('created_at', [$desdeStr . ' 00:00:00', $hastaStr . ' 23:59:59'])
-            ->when($request->tipoServicio !== 'todos', function ($q) {
+            ->when($tipoServicio !== 'todos', function ($q) use ($request) {
                 $q->whereHas('serviceOrder.service', fn ($s) => $s->where('tipo', $request->tipoServicio));
             })
             ->with(['serviceOrder.service', 'serviceOrder.tecnico'])
@@ -27,7 +29,7 @@ class ReporteServiciosPdfController extends Controller
         $totalOrdenes = $comprobantes->count();
 
         $ventasPorServicio = $comprobantes
-            ->groupBy(fn ($c) => $c->serviceOrder->service->nombre)
+            ->groupBy(fn ($c) => $c->serviceOrder?->service?->nombre ?? 'Sin servicio')
             ->map(fn ($grupo) => [
                 'cantidad' => $grupo->count(),
                 'total' => $grupo->sum('monto'),
@@ -35,8 +37,8 @@ class ReporteServiciosPdfController extends Controller
             ->sortByDesc('total');
 
         $ventasPorTecnico = $comprobantes
-            ->filter(fn ($c) => $c->serviceOrder->tecnico_id !== null)
-            ->groupBy(fn ($c) => $c->serviceOrder->tecnico->name)
+            ->filter(fn ($c) => $c->serviceOrder?->tecnico_id !== null)
+            ->groupBy(fn ($c) => $c->serviceOrder?->tecnico?->name ?? 'Sin técnico')
             ->map(fn ($grupo) => [
                 'cantidad' => $grupo->count(),
                 'total' => $grupo->sum('monto'),
@@ -46,7 +48,7 @@ class ReporteServiciosPdfController extends Controller
         // Serie diaria para el gráfico
         $dias = min(($desde->diffInDays($hasta) + 1), 90);
         $ventasPorDia = Comprobante::whereBetween('created_at', [$desdeStr . ' 00:00:00', $hastaStr . ' 23:59:59'])
-            ->when($request->tipoServicio !== 'todos', function ($q) {
+            ->when($tipoServicio !== 'todos', function ($q) use ($request) {
                 $q->whereHas('serviceOrder.service', fn ($s) => $s->where('tipo', $request->tipoServicio));
             })
             ->selectRaw('DATE(created_at) as fecha, SUM(monto) as total')
@@ -73,7 +75,7 @@ class ReporteServiciosPdfController extends Controller
             'data' => $data,
             'desde' => $desde,
             'hasta' => $hasta,
-            'tipoServicio' => $request->tipoServicio ?? 'todos',
+            'tipoServicio' => $tipoServicio,
         ])->setPaper('a4', 'landscape');
 
         return $pdf->download('reporte-servicios-' . now()->format('Y-m-d-Hi') . '.pdf');

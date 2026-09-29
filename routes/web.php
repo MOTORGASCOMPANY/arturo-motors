@@ -188,6 +188,9 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::get('/reporte-conversiones/pdf', [ReporteConversionesPdfController::class, '__invoke'])->name('ReporteConversiones.Pdf');
     Route::get('/reporte-conversiones/excel', [ReporteConversionesExcelController::class, '__invoke'])->name('ReporteConversiones.Excel');
 
+    Route::get('/reporte-caja/pdf', [ReporteCajaPdfController::class, '__invoke'])->name('ReporteCaja.Pdf');
+    Route::get('/reporte-caja/excel', [ReporteCajaExcelController::class, '__invoke'])->name('ReporteCaja.Excel');
+
     // Componentes hijos
     Route::get('/selector', SelectorClienteVehiculo::class)->name('selector');
     Route::get('/procesarcobro', ProcesarCobro::class)->name('procesar');

@@ -32,25 +32,38 @@ class ConversionesExport implements FromCollection, WithHeadings, WithMapping, W
             'tecnico',
             'items.producto.categoria',
             'items.kitPadre.producto',
-        ])->whereIn('estado', ['en_conversion', 'conversion_completada']);
+        ])->tipoConversion()
+            ->whereIn('estado', ServiceOrder::ESTADOS_CONVERSION);
 
         if (!empty($this->filtros['sede_id'])) {
             $query->whereHas('items', fn ($q) => $q->where('sede_id', (int) $this->filtros['sede_id']));
         }
 
-        if (!empty($this->filtros['estado'])) {
+        if (!empty($this->filtros['estado']) && $this->filtros['estado'] !== 'todos') {
             $query->where('estado', $this->filtros['estado']);
         }
 
+        if (!empty($this->filtros['tecnico_id'])) {
+            $query->where('tecnico_id', (int) $this->filtros['tecnico_id']);
+        }
+
+        // Mismo criterio de fecha que la vista del reporte.
         if (!empty($this->filtros['desde'])) {
-            $query->where('fecha_inicio_conversion', '>=', $this->filtros['desde']);
+            $query->where(function ($q) {
+                $q->whereDate('created_at', '>=', $this->filtros['desde'])
+                    ->orWhereDate('fecha_inicio_conversion', '>=', $this->filtros['desde']);
+            });
         }
 
         if (!empty($this->filtros['hasta'])) {
-            $query->where('fecha_inicio_conversion', '<=', $this->filtros['hasta'] . ' 23:59:59');
+            $query->where(function ($q) {
+                $q->whereDate('created_at', '<=', $this->filtros['hasta'])
+                    ->orWhereDate('fecha_inicio_conversion', '<=', $this->filtros['hasta']);
+            });
         }
 
-        $ordenes = $query->orderByDesc('fecha_inicio_conversion')->get();
+        // Mismo orden que la tabla de la vista.
+        $ordenes = $query->orderByDesc('created_at')->get();
 
         $this->rows = $ordenes->map(function ($o) {
             $kitPadre = $o->items->first(fn ($i) => $i->kit_padre_id === null && ($i->producto->categoria->es_kit ?? false));
@@ -67,7 +80,7 @@ class ConversionesExport implements FromCollection, WithHeadings, WithMapping, W
 
             return [
                 'orden_id' => $o->id,
-                'cliente' => trim($o->cliente->nombre . ' ' . $o->cliente->apellido),
+                'cliente' => trim(($o->cliente?->nombre ?? '') . ' ' . ($o->cliente?->apellido ?? '')) ?: '—',
                 'placa' => $o->vehiculo->placa ?? 'N/A',
                 'vehiculo' => trim(($o->vehiculo->marca ?? '') . ' ' . ($o->vehiculo->modelo ?? '')),
                 'servicio' => $o->service->nombre ?? 'N/A',

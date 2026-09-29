@@ -545,51 +545,22 @@
             window.renderReporteCajaCharts();
         });
 
+        // Carga reutilizable de todos los reportes: js/components/carga-swal.js
         $wire.on('descargar-pdf', (params) => {
-            const url = params.url;
-            if (!url || url === '#') {
-                Swal.fire({ title: 'Sin datos', text: 'No hay datos para exportar en este período.', icon: 'warning', timer: 3000, showConfirmButton: false });
-                return;
-            }
-            Swal.fire({
-                title: 'Exportando PDF',
-                text: 'Generando el reporte, por favor espera...',
-                icon: 'info',
-                allowOutsideClick: false,
-                allowEscapeKey: false,
-                showConfirmButton: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                    window.location.href = url;
-                    setTimeout(() => {
-                        Swal.close();
-                        Swal.fire({ title: 'Descarga iniciada', text: 'El archivo PDF se está descargando.', icon: 'success', timer: 2000, showConfirmButton: false });
-                    }, 3000);
-                }
+            CargaSwal.exportar({
+                url: params.url,
+                titulo: 'Exportando PDF',
+                texto: 'Generando el reporte, por favor espera...',
+                archivo: 'PDF'
             });
         });
 
         $wire.on('descargar-excel', (params) => {
-            const url = params.url;
-            if (!url || url === '#') {
-                Swal.fire({ title: 'Sin datos', text: 'No hay datos para exportar en este período.', icon: 'warning', timer: 3000, showConfirmButton: false });
-                return;
-            }
-            Swal.fire({
-                title: 'Exportando Excel',
-                text: 'Generando el reporte, por favor espera...',
-                icon: 'info',
-                allowOutsideClick: false,
-                allowEscapeKey: false,
-                showConfirmButton: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                    window.location.href = url;
-                    setTimeout(() => {
-                        Swal.close();
-                        Swal.fire({ title: 'Descarga iniciada', text: 'El archivo Excel se está descargando.', icon: 'success', timer: 2000, showConfirmButton: false });
-                    }, 3000);
-                }
+            CargaSwal.exportar({
+                url: params.url,
+                titulo: 'Exportando Excel',
+                texto: 'Generando el reporte, por favor espera...',
+                archivo: 'Excel'
             });
         });
     </script>

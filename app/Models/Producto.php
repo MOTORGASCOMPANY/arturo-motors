@@ -70,34 +70,36 @@ class Producto extends Model
      * - Kits: unidades disponibles (selladas 'en_stock' o 'completado' a mano).
      * - Serializados: items sueltos (fuera de kits) en stock.
      * - Cantidad: producto_stock_sede − componentes lockeados dentro de kits.
+     *
+     * $sedeId = null → todas las sedes (filtro "Todas" de los reportes).
      */
-    public function stockSueltoEnSede(int $sedeId): int
+    public function stockSueltoEnSede(?int $sedeId = null): int
     {
         $categoria = $this->categoria;
 
         if ($categoria?->es_kit) {
             return $this->items()
                 ->whereIn('estado', ItemSerializado::ESTADOS_KIT_DISPONIBLE)
-                ->where('sede_id', $sedeId)
+                ->when($sedeId, fn ($q) => $q->where('sede_id', $sedeId))
                 ->count();
         }
 
         if ($categoria?->es_serializado) {
             return $this->items()
                 ->where('estado', 'en_stock')
-                ->where('sede_id', $sedeId)
                 ->whereNull('kit_padre_id')
+                ->when($sedeId, fn ($q) => $q->where('sede_id', $sedeId))
                 ->count();
         }
 
         $cantidad = (int) $this->stockPorSede()
-            ->where('sede_id', $sedeId)
+            ->when($sedeId, fn ($q) => $q->where('sede_id', $sedeId))
             ->sum('cantidad');
 
         $enKits = $this->items()
             ->whereNotNull('kit_padre_id')
             ->whereIn('estado', ['en_stock', 'abierto', 'completado', 'asignado'])
-            ->where('sede_id', $sedeId)
+            ->when($sedeId, fn ($q) => $q->where('sede_id', $sedeId))
             ->count();
 
         return max(0, $cantidad - $enKits);
@@ -124,10 +126,10 @@ class Producto extends Model
     /**
      * Verifica si el producto tiene stock bajo en una sede específica.
      *
-     * @param int $sedeId
+     * @param int|null $sedeId null → todas las sedes
      * @return bool
      */
-    public function stockBajoEnSede(int $sedeId): bool
+    public function stockBajoEnSede(?int $sedeId = null): bool
     {
         return $this->stock_minimo > 0 && $this->stockSueltoEnSede($sedeId) <= $this->stock_minimo;
     }

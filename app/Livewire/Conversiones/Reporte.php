@@ -10,8 +10,40 @@ use Livewire\Component;
 
 class Reporte extends Component
 {
+    /** Sede por defecto del reporte: Callao (también al limpiar filtros). */
+    public const SEDE_DEFAULT = 1;
+
+    /** Etiquetas canónicas de los estados del pipeline de conversión. */
+    private const ESTADO_LABELS = [
+        'en_evaluacion' => 'En evaluación',
+        'aprobado_conversion' => 'Aprobadas',
+        'en_conversion' => 'En proceso',
+        'conversion_completada' => 'Completadas',
+        'listo_para_entrega' => 'Listas entrega',
+        'entregado' => 'Entregadas',
+    ];
+
+    /**
+     * Color hex de cada estado (gráfico de dona).
+     * Debe coincidir con los badges de reporte-tabla.blade.php.
+     */
+    private const ESTADO_COLORS = [
+        'en_evaluacion' => '#64748b',         // slate
+        'aprobado_conversion' => '#6366f1',   // indigo
+        'en_conversion' => '#f59e0b',         // amber
+        'conversion_completada' => '#2563eb', // brand (azul)
+        'listo_para_entrega' => '#06b6d4',    // cyan
+        'entregado' => '#10b981',             // emerald
+    ];
+
+    /** Orden de las celdas del desglose por tipo de conversión (GNV / GLP). */
+    private const ORDEN_TIPO_CONVERSION = [
+        'GNV' => 0,
+        'GLP' => 1,
+    ];
+
     // Sin tipo int: el <select> de "Todas" envía '' y rompía ?int.
-    public $filtroSede = null;
+    public $filtroSede = self::SEDE_DEFAULT;
     public string $filtroEstado = 'todos';
     public ?string $filtroFechaDesde = null;
     public ?string $filtroFechaHasta = null;
@@ -20,6 +52,11 @@ class Reporte extends Component
     public function updatedFiltroSede($value): void
     {
         $this->filtroSede = ($value === '' || $value === null) ? null : (int) $value;
+
+        // El cambio de sede puede dejar un estado sin órdenes: vuelve a "todos".
+        if ($this->filtroEstado !== 'todos' && ! array_key_exists($this->filtroEstado, $this->estadosDisponibles())) {
+            $this->filtroEstado = 'todos';
+        }
     }
 
     public function updatedFiltroEstado($value): void
@@ -29,7 +66,7 @@ class Reporte extends Component
 
     public function limpiarFiltros(): void
     {
-        $this->filtroSede = null;
+        $this->filtroSede = self::SEDE_DEFAULT;
         $this->filtroEstado = 'todos';
         $this->filtroFechaDesde = null;
         $this->filtroFechaHasta = null;
@@ -41,15 +78,7 @@ class Reporte extends Component
             ? (Sede::find($this->filtroSede)?->nombre ?? 'Sede')
             : 'Todas las sedes';
 
-        $estado = match ($this->filtroEstado) {
-            'en_evaluacion' => 'En evaluación',
-            'aprobado_conversion' => 'Aprobadas',
-            'en_conversion' => 'En proceso',
-            'conversion_completada' => 'Completadas',
-            'listo_para_entrega' => 'Listas entrega',
-            'entregado' => 'Entregadas',
-            default => 'Todos estados',
-        };
+        $estado = self::ESTADO_LABELS[$this->filtroEstado] ?? 'Todos estados';
 
         $fechas = [];
         if ($this->filtroFechaDesde) {
@@ -83,17 +112,30 @@ class Reporte extends Component
         ]);
     }
 
-    /** Mismos estados de /ordenes + pipeline de conversión. */
+    /** Mismos estados de /ordenes + pipeline de conversión (compartidos con PDF y Excel). */
     private function estadosConversion(): array
     {
-        return [
-            'en_evaluacion',
-            'aprobado_conversion',
-            'en_conversion',
-            'conversion_completada',
-            'listo_para_entrega',
-            'entregado',
-        ];
+        return ServiceOrder::ESTADOS_CONVERSION;
+    }
+
+    /**
+     * Estados del pipeline que tienen órdenes reales (respeta el filtro de sede).
+     * Evita ofrecer estados sin datos en el <select>.
+     */
+    public function estadosDisponibles(): array
+    {
+        $existentes = ServiceOrder::query()
+            ->tipoConversion()
+            ->whereIn('estado', $this->estadosConversion())
+            ->when($this->filtroSede, fn ($q) => $q->whereHas('items', fn ($iq) => $iq->where('sede_id', $this->filtroSede)))
+            ->distinct()
+            ->pluck('estado')
+            ->all();
+
+        return collect($this->estadosConversion())
+            ->filter(fn ($e) => in_array($e, $existentes, true))
+            ->mapWithKeys(fn ($e) => [$e => self::ESTADO_LABELS[$e]])
+            ->all();
     }
 
     /** Rendimiento por técnico (órdenes asignadas / completadas / items / duración / reportes). */
@@ -186,6 +228,25 @@ class Reporte extends Component
         return collect($ranking);
     }
 
+    /**
+     * Tipo de conversión a partir del servicio contratado: "Conversión GNV" → GNV.
+     * Alimenta los sub-datos de la tarjeta "Kits instalados".
+     */
+    private static function tipoConversionLabel(?string $servicio): string
+    {
+        if ($servicio === null || trim($servicio) === '') {
+            return 'Sin tipo';
+        }
+        if (stripos($servicio, 'GNV') !== false) {
+            return 'GNV';
+        }
+        if (stripos($servicio, 'GLP') !== false) {
+            return 'GLP';
+        }
+
+        return $servicio;
+    }
+
     public function render()
     {
         $sedeId = $this->filtroSede;
@@ -198,8 +259,10 @@ class Reporte extends Component
             'vehiculo',
             'service',
             'tecnico',
+            'comprobante',
             'items.producto.categoria',
             'items.kitPadre.producto',
+            'items.sede',
         ])->tipoConversion()
             ->whereIn('estado', $this->estadosConversion());
 
@@ -265,6 +328,29 @@ class Reporte extends Component
             ->filter(fn ($i) => ($i->atributos['tipo'] ?? '') !== 'cantidad')
             ->count();
 
+        // ─── Kits instalados en las órdenes filtradas ───
+        // Un kit por orden: es el padre (kit_padre_id NULL) ya instalado o consumido.
+        // Sede y fechas ya vienen aplicadas en $ordenes (=> $ordenIds).
+        $kitsInstaladosRows = ItemSerializado::whereNull('kit_padre_id')
+            ->whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true))
+            ->whereIn('estado', ['instalado', 'consumido'])
+            ->whereIn('service_order_id', $ordenIds)
+            ->with('serviceOrder.service')
+            ->get();
+
+        $kitsInstalados = $kitsInstaladosRows->count();
+
+        // Sub-datos: esos kits agrupados por el tipo de conversión (GNV / GLP).
+        // Si sólo hay un tipo se muestra una sola celda; si hay varios, se distribuyen.
+        $instaladosPorCombustible = $kitsInstaladosRows
+            ->countBy(fn ($k) => self::tipoConversionLabel($k->serviceOrder?->service?->nombre))
+            ->toArray();
+        uksort(
+            $instaladosPorCombustible,
+            fn ($a, $b) => (self::ORDEN_TIPO_CONVERSION[$a] ?? 2) <=> (self::ORDEN_TIPO_CONVERSION[$b] ?? 2)
+                ?: strcmp($a, $b)
+        );
+
         // ─── Balance de almacén (misma lógica que /almacen/productos) ───
         // Solo el filtro de sede aplica al stock (estado/fecha no inventan stock).
         $kitsDisponibles = ItemSerializado::kitDisponible()
@@ -328,16 +414,8 @@ class Reporte extends Component
 
         // 2. Distribución por estado
         $porEstado = $ordenes->countBy('estado')->toArray();
-        $estadoLabels = [
-            'en_evaluacion' => 'En evaluación',
-            'aprobado_conversion' => 'Aprobadas',
-            'en_conversion' => 'En proceso',
-            'conversion_completada' => 'Completadas',
-            'listo_para_entrega' => 'Listas entrega',
-            'entregado' => 'Entregadas',
-        ];
         $porEstado = collect($porEstado)
-            ->mapWithKeys(fn ($c, $k) => [$estadoLabels[$k] ?? $k => $c])
+            ->mapWithKeys(fn ($c, $k) => [self::ESTADO_LABELS[$k] ?? $k => $c])
             ->toArray();
 
         // 3. Estado de kits en almacén: sellados / completados / asignados a clientes
@@ -439,6 +517,10 @@ class Reporte extends Component
                 'placa' => $o->vehiculo->placa ?? 'N/A',
                 'vehiculo' => trim(($o->vehiculo->marca ?? '') . ' ' . ($o->vehiculo->modelo ?? '')) ?: 'N/A',
                 'tecnico' => $o->tecnico->name ?? 'N/A',
+                // service_orders no tiene sede_id: la sede vive en los items serializados.
+                'sede' => $o->items->first(fn ($i) => $i->sede_id)?->sede?->nombre,
+                'precio' => $o->precio_final ?: null,
+                'folio' => $o->comprobante?->folio,
                 'kit_nombre' => $kitPadre?->producto->nombre ?? 'N/A',
                 'kit_generacion' => $kitPadre?->producto->atributos['generacion'] ?? '',
                 'total_componentes' => $hijos->count() ?: $o->items->count(),
@@ -457,6 +539,9 @@ class Reporte extends Component
                 'duracion_horas' => $o->fecha_inicio_conversion && $o->fecha_fin_conversion
                     ? round($o->fecha_inicio_conversion->diffInHours($o->fecha_fin_conversion), 1)
                     : null,
+                'duracion_min' => $o->fecha_inicio_conversion && $o->fecha_fin_conversion
+                    ? (int) round($o->fecha_inicio_conversion->diffInMinutes($o->fecha_fin_conversion))
+                    : null,
                 'estado' => $o->estado,
             ];
         });
@@ -468,6 +553,11 @@ class Reporte extends Component
             'dataMesOtras' => array_column($porMes, 'otras'),
             'labelsEstado' => array_keys($porEstado),
             'dataEstado' => array_values($porEstado),
+            // Color por estado, en el MISMO orden que labelsEstado (evita colores posicionales malos)
+            'coloresEstado' => array_map(
+                fn ($etiqueta) => self::ESTADO_COLORS[array_search($etiqueta, self::ESTADO_LABELS, true)] ?? '#94a3b8',
+                array_keys($porEstado)
+            ),
             'labelsKits' => array_keys($kitsEstadoChart),
             'dataKits' => array_values($kitsEstadoChart),
             'kitsTotal' => $kitsTotalChart,
@@ -498,6 +588,8 @@ class Reporte extends Component
             'itemsInstalados' => $itemsInstalados,
             'instaladosCantidad' => $instaladosCantidad,
             'instaladosSerializados' => $instaladosSerializados,
+            'kitsInstalados' => $kitsInstalados,
+            'instaladosPorCombustible' => $instaladosPorCombustible,
             'kitsDisponibles' => $kitsDisponibles,
             'kitsSellados' => $kitsSellados,
             'kitsCompletados' => $kitsCompletados,
@@ -516,6 +608,7 @@ class Reporte extends Component
             'stockPorSede' => $stockPorSede,
             'despachadosPorTipo' => $despachadosPorTipo,
             'sedes' => $sedes,
+            'estadosDisponibles' => $this->estadosDisponibles(),
             'filtroBadge' => $filtroBadge,
             'charts' => $charts,
         ]);

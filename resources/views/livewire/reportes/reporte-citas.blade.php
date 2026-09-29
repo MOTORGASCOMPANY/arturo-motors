@@ -321,19 +321,22 @@
             window.renderChartCitas();
         });
 
+        // Carga reutilizable de todos los reportes: js/components/carga-swal.js
         Livewire.on('descargar-pdf', (params) => {
-            const url = params.url;
-            if (!url) { Swal.fire({ title: 'Sin datos', text: 'No hay datos para exportar.', icon: 'warning', timer: 3000, showConfirmButton: false }); return; }
-            Swal.fire({ title: 'Exportando PDF', text: 'Generando el reporte...', icon: 'info', allowOutsideClick: false, showConfirmButton: false,
-                didOpen: () => { Swal.showLoading(); window.location.href = url; setTimeout(() => { Swal.close(); Swal.fire({ title: 'Descarga iniciada', text: 'El archivo PDF se está descargando.', icon: 'success', timer: 2000, showConfirmButton: false }); }, 3000); }
+            CargaSwal.exportar({
+                url: params.url,
+                titulo: 'Exportando PDF',
+                texto: 'Generando el reporte...',
+                archivo: 'PDF'
             });
         });
 
         Livewire.on('descargar-excel', (params) => {
-            const url = params.url;
-            if (!url) { Swal.fire({ title: 'Sin datos', text: 'No hay datos para exportar.', icon: 'warning', timer: 3000, showConfirmButton: false }); return; }
-            Swal.fire({ title: 'Exportando Excel', text: 'Generando el reporte...', icon: 'info', allowOutsideClick: false, showConfirmButton: false,
-                didOpen: () => { Swal.showLoading(); window.location.href = url; setTimeout(() => { Swal.close(); Swal.fire({ title: 'Descarga iniciada', text: 'El archivo Excel se está descargando.', icon: 'success', timer: 2000, showConfirmButton: false }); }, 3000); }
+            CargaSwal.exportar({
+                url: params.url,
+                titulo: 'Exportando Excel',
+                texto: 'Generando el reporte...',
+                archivo: 'Excel'
             });
         });
     </script>

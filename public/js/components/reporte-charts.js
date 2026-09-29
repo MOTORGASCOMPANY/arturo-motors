@@ -241,45 +241,20 @@
     };
 
     window.exportarPDF = function () {
-        const url = window.reporteData && window.reporteData.exportPdfUrl;
-        if (!url) return;
-        if (typeof Swal !== 'undefined') {
-            Swal.fire({
-                title: 'Exportando PDF',
-                text: 'Generando el reporte...',
-                icon: 'info',
-                allowOutsideClick: false,
-                showConfirmButton: false,
-                didOpen: function () {
-                    Swal.showLoading();
-                    window.location.href = url;
-                    setTimeout(function () { Swal.close(); }, 3000);
-                }
-            });
-        } else {
-            window.location.href = url;
-        }
+        // Componente reutilizable de carga (ver js/components/carga-swal.js)
+        CargaSwal.exportar({
+            url: window.reporteData && window.reporteData.exportPdfUrl,
+            titulo: 'Exportando PDF',
+            texto: 'Generando el reporte...'
+        });
     };
 
     window.exportarExcel = function () {
-        const url = window.reporteData && window.reporteData.exportExcelUrl;
-        if (!url) return;
-        if (typeof Swal !== 'undefined') {
-            Swal.fire({
-                title: 'Exportando Excel',
-                text: 'Generando el reporte...',
-                icon: 'info',
-                allowOutsideClick: false,
-                showConfirmButton: false,
-                didOpen: function () {
-                    Swal.showLoading();
-                    window.location.href = url;
-                    setTimeout(function () { Swal.close(); }, 3000);
-                }
-            });
-        } else {
-            window.location.href = url;
-        }
+        CargaSwal.exportar({
+            url: window.reporteData && window.reporteData.exportExcelUrl,
+            titulo: 'Exportando Excel',
+            texto: 'Generando el reporte...'
+        });
     };
 
     function scheduleRender() {

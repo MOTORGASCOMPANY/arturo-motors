@@ -9,6 +9,19 @@ class ServiceOrder extends Model
 {
     use HasFactory;
 
+    /**
+     * Estados del pipeline de conversión.
+     * Única fuente de verdad: la vista del reporte, el PDF y el Excel usan esta misma lista.
+     */
+    public const ESTADOS_CONVERSION = [
+        'en_evaluacion',
+        'aprobado_conversion',
+        'en_conversion',
+        'conversion_completada',
+        'listo_para_entrega',
+        'entregado',
+    ];
+
     protected $table = 'service_orders';
 
     protected $fillable = [

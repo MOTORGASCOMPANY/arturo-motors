@@ -362,25 +362,22 @@
                         ->reject(fn ($item) => in_array($item->id, $padreIds))
                         ->each(fn ($item) => $individuales->push($item));
 
-                    // Movimientos: NO repetir lo que ya está en el kit
-                    $kitProductoIds = $orden->items
-                        ->filter(fn ($i) => $i->kit_padre_id)
-                        ->pluck('producto_id')
-                        ->filter()
-                        ->unique();
-
                     $inicioConversion = $orden->fecha_inicio_conversion;
 
-                    $esMovKit = function ($m) use ($kitProductoIds): bool {
+                    // Movimientos que el panel del Kit ya representa: NO se repiten acá.
+                    //
+                    // IMPORTANTE: "Entrega para conversión" NUNCA se filtra. Ese motivo lo
+                    // escribe únicamente AsignarEquipos para piezas SUELTAS (kit_padre_id
+                    // = null, ver comentario ahí mismo). Antes se descartaba si el producto
+                    // también era componente del kit, y eso tragaba los despachos extra:
+                    // la pieza se perdía del listado y su item quedaba sin el × cantidad.
+                    // El consumo real del kit usa "Componentes de kit consumidos" (Realizar).
+                    $esMovKit = function ($m): bool {
                         $motivo = strtolower($m->motivo ?? '');
                         if (str_contains($motivo, 'componentes de kit consumidos')) {
                             return true;
                         }
                         if (str_contains($motivo, 'apertura kit')) {
-                            return true;
-                        }
-                        if (str_contains($motivo, 'entrega para conversión')
-                            && $kitProductoIds->contains($m->producto_id)) {
                             return true;
                         }
                         return false;
@@ -416,72 +413,131 @@
                         if (str_contains($m, 'apertura kit')) {
                             return ['border-green-300', 'bg-green-50', 'text-green-900', 'text-green-500', 'bg-green-100', 'text-green-800', 'KIT'];
                         }
-                        if (str_contains($m, 'entrega para conversión') || str_contains($m, 'despacho')) {
-                            return ['border-blue-300', 'bg-blue-50', 'text-blue-900', 'text-blue-500', 'bg-blue-100', 'text-blue-800', 'DESPACHO'];
-                        }
-                        return ['border-gray-200', 'bg-white', 'text-gray-800', 'text-gray-400', 'bg-gray-100', 'text-gray-600', ''];
+                    if (str_contains($m, 'entrega para conversión') || str_contains($m, 'despacho')) {
+                        return ['border-blue-300', 'bg-blue-50', 'text-blue-900', 'text-blue-500', 'bg-blue-100', 'text-blue-800', 'DESPACHO'];
+                    }
+                    if (str_contains($m, 'devoluci')) {
+                        return ['border-gray-300', 'bg-gray-100', 'text-gray-800', 'text-gray-500', 'bg-gray-200', 'text-gray-700', 'DEVOLUCIÓN'];
+                    }
+                    return ['border-gray-200', 'bg-white', 'text-gray-800', 'text-gray-400', 'bg-gray-100', 'text-gray-600', ''];
                     };
 
-                    // Filas del kit agrupadas por producto (cantidad al costado)
-                    $filasKit = function ($hijos) {
-                        $filas = [];
-                        foreach ($hijos->groupBy('producto_id') as $grupo) {
-                            $fuera = $grupo->filter(fn ($h) => in_array($h->estado, ['defectuoso', 'devuelta_por_no_calzar'], true));
-                            $dentro = $grupo->reject(fn ($h) => in_array($h->estado, ['defectuoso', 'devuelta_por_no_calzar'], true));
+                    // Filas del kit: SOLO su composición vigente.
+                    // Las piezas que salieron (defectuosas / no calzan) y las que las
+                    // reemplazaron NO se listan acá: eso es historia de la orden y ya se
+                    // ve en "Items asignados y despachados" (DEFECTUOSA / REEMPLAZO).
+                    $fueraDelKit = fn ($h): bool => in_array($h->estado, ['defectuoso', 'devuelta_por_no_calzar'], true);
 
-                            foreach ($fuera as $hijo) {
-                                $esSerial = (bool) ($hijo->producto?->categoria?->es_serializado);
-                                $hermanoFuera = $grupo->contains(
-                                    fn ($o) => in_array($o->estado, ['defectuoso', 'devuelta_por_no_calzar'], true)
-                                );
-                                $esNuevo = $esSerial && $hermanoFuera && !in_array($hijo->estado, ['defectuoso', 'devuelta_por_no_calzar'], true);
-                                $filas[] = [
-                                    'hijo' => $hijo,
-                                    'cantidad' => 1,
-                                    'mostrarSerie' => true,
-                                    'fuera' => true,
-                                    'nuevo' => false,
-                                    'badge' => $hijo->estado === 'defectuoso' ? 'No calza' : 'Devuelto',
-                                ];
+                    $filasKit = function ($hijos) use ($fueraDelKit) {
+                        $filas = [];
+
+                        foreach ($hijos->groupBy('producto_id') as $grupo) {
+                            $dentro = $grupo->reject($fueraDelKit);
+
+                            if ($dentro->isEmpty()) {
+                                continue;
                             }
 
-                            foreach ($dentro as $hijo) {
-                                $esSerial = (bool) ($hijo->producto?->categoria?->es_serializado);
-                                if ($esSerial) {
+                            $esSerial = (bool) ($dentro->first()->producto?->categoria?->es_serializado);
+
+                            if ($esSerial) {
+                                // Serializados: una fila por unidad, con su serie.
+                                foreach ($dentro as $hijo) {
                                     $filas[] = [
                                         'hijo' => $hijo,
                                         'cantidad' => 1,
                                         'mostrarSerie' => true,
-                                        'fuera' => false,
-                                        'nuevo' => $grupo->contains(fn ($o) => in_array($o->estado, ['defectuoso', 'devuelta_por_no_calzar'], true)),
-                                        'badge' => $grupo->contains(fn ($o) => in_array($o->estado, ['defectuoso', 'devuelta_por_no_calzar'], true))
-                                            ? 'Instalado'
-                                            : '',
                                     ];
                                 }
-                                // cantidad: se emite UNA sola vez al cerrar el producto
+
+                                continue;
                             }
 
-                            if ($dentro->isNotEmpty()) {
-                                $primero = $dentro->first();
-                                $esSerial = (bool) ($primero->producto?->categoria?->es_serializado);
-                                if (!$esSerial) {
-                                    $filas[] = [
-                                        'hijo' => $primero,
-                                        'cantidad' => $dentro->count(),
-                                        'mostrarSerie' => false,
-                                        'fuera' => false,
-                                        'nuevo' => false,
-                                        'badge' => 'Cantidad kit',
-                                    ];
-                                } else {
-                                    // Serializados dentro: cada uno con su serie (ya emitidos arriba)
-                                }
-                            }
+                            // Piezas por cantidad: una sola fila con el total.
+                            $filas[] = [
+                                'hijo' => $dentro->first(),
+                                'cantidad' => $dentro->count(),
+                                'mostrarSerie' => false,
+                            ];
                         }
 
                         return collect($filas);
                     };
+
+                    // --- Piezas despachadas / devueltas: consolidadas por producto ---
+                    // Antes cada movimiento era una tarjeta apilada (scroll infinito) y los
+                    // items sin movimiento quedaban a secas, sin × cantidad. Ahora se
+                    // agrupan: una fila por producto con el desglose en chips, y el detalle
+                    // de cada movimiento queda plegado atrás del chevron.
+                    $filasSeccion = [];
+
+                    foreach ($movsDurante as $mov) {
+                        $mc = $clsMov($mov->motivo ?? '');
+                        $filasSeccion[] = [
+                            'producto_id' => (int) $mov->producto_id,
+                            'nombre'      => $mov->producto->nombre ?? ('Producto #'.$mov->producto_id),
+                            'cantidad'    => (int) $mov->cantidad,
+                            'badge'       => $mc[6] ?: 'OTRO',
+                            'mc'          => $mc,
+                            'motivo'      => $mov->motivo,
+                            'momento'     => $mov->_momento ?? 'durante',
+                        ];
+                    }
+
+                    // Items enlazados a la orden que NINGÚN movimiento representa.
+                    // Su cantidad vive en atributos.cantidad_solicitada (AsignarEquipos).
+                    $conMovimiento = array_column($filasSeccion, 'producto_id');
+
+                    foreach ($individuales as $item) {
+                        if (in_array((int) $item->producto_id, $conMovimiento, true)) {
+                            continue;
+                        }
+
+                        $atributos = is_array($item->atributos) ? $item->atributos : [];
+
+                        $filasSeccion[] = [
+                            'producto_id' => (int) $item->producto_id,
+                            'nombre'      => $item->producto->nombre ?? ('Producto #'.$item->producto_id),
+                            'cantidad'    => (int) ($atributos['cantidad_solicitada'] ?? 1),
+                            'badge'       => 'ASIGNADO',
+                            'mc'          => ['border-blue-300', 'bg-blue-50', 'text-blue-900', 'text-blue-500', 'bg-blue-100', 'text-blue-800', 'ASIGNADO'],
+                            'motivo'      => 'Ítem enlazado a la orden sin movimiento de stock',
+                            'momento'     => $item->_momento ?? 'durante',
+                        ];
+                    }
+
+                    // Etiquetas que significan "la pieza volvió": no cuentan como usadas.
+                    $esDevolucion = fn (string $badge): bool => in_array(strtoupper($badge), ['DEVOLUCIÓN', 'DEFECTUOSA'], true);
+
+                    $agrupadas = [];
+
+                    foreach ($filasSeccion as $fila) {
+                        $key = $fila['producto_id'];
+
+                        if (! isset($agrupadas[$key])) {
+                            $agrupadas[$key] = [
+                                'nombre'     => $fila['nombre'],
+                                'chips'      => [],
+                                'movs'       => [],
+                                'despachado' => 0,
+                                'devuelto'   => 0,
+                            ];
+                        }
+
+                        $agrupadas[$key]['chips'][$fila['badge']] = [
+                            'n'  => ($agrupadas[$key]['chips'][$fila['badge']]['n'] ?? 0) + $fila['cantidad'],
+                            'mc' => $fila['mc'],
+                        ];
+                        $agrupadas[$key]['movs'][] = $fila;
+
+                        if ($esDevolucion($fila['badge'])) {
+                            $agrupadas[$key]['devuelto'] += $fila['cantidad'];
+                        } else {
+                            $agrupadas[$key]['despachado'] += $fila['cantidad'];
+                        }
+                    }
+
+                    ksort($agrupadas);
                 @endphp
                 <div class="bg-gray-200 rounded-xl shadow-sm border border-gray-300/80 p-6">
                     <h3 class="text-sm font-bold text-gray-800 uppercase mb-3">
@@ -539,7 +595,7 @@
                                                     {{ $kitItem->producto->nombre ?? $kitItem->producto_id }}
                                                 </p>
                                                 <p class="text-[10px] font-medium text-green-700">
-                                                    Kit · {{ $hijos->count() }} componentes
+                                                    Kit · {{ $hijos->reject($fueraDelKit)->count() }} componentes
                                                 </p>
                                             </div>
                                         </div>
@@ -570,38 +626,17 @@
                                             @foreach ($filasKit($hijos) as $fila)
                                                 @php
                                                     $hijo = $fila['hijo'];
-                                                    $esFuera = $fila['fuera'];
-                                                    $esNuevo = $fila['nuevo'];
-                                                    $esCantidadKit = !$esFuera && !$esNuevo && !$fila['mostrarSerie'];
 
-                                                    if ($esFuera) {
-                                                        $filaCls = 'border-red-300 bg-red-50';
-                                                        $icoCls = 'text-red-500';
-                                                        $txtCls = 'text-red-900';
-                                                        $serieCls = 'text-red-600';
-                                                        $badge = 'bg-red-100 text-red-800';
-                                                        $badgeLabel = $fila['badge'];
-                                                    } elseif ($esNuevo) {
-                                                        $filaCls = 'border-purple-300 bg-purple-50';
-                                                        $icoCls = 'text-purple-500';
-                                                        $txtCls = 'text-purple-900';
-                                                        $serieCls = 'text-purple-600';
-                                                        $badge = 'bg-purple-100 text-purple-800';
-                                                        $badgeLabel = $fila['badge'] ?: 'Instalado';
-                                                    } elseif ($esCantidadKit) {
-                                                        $filaCls = 'border-orange-300 bg-orange-50';
-                                                        $icoCls = 'text-orange-500';
-                                                        $txtCls = 'text-orange-900';
-                                                        $serieCls = 'text-orange-600';
-                                                        $badge = 'bg-orange-100 text-orange-800';
-                                                        $badgeLabel = $fila['badge'] ?: 'Cantidad kit';
-                                                    } else {
+                                                    if ($fila['mostrarSerie']) {
                                                         $filaCls = 'border-gray-200 bg-white';
                                                         $icoCls = 'text-gray-400';
                                                         $txtCls = 'text-gray-700';
                                                         $serieCls = 'text-gray-500';
-                                                        $badge = '';
-                                                        $badgeLabel = $fila['badge'];
+                                                    } else {
+                                                        $filaCls = 'border-orange-300 bg-orange-50';
+                                                        $icoCls = 'text-orange-500';
+                                                        $txtCls = 'text-orange-900';
+                                                        $serieCls = 'text-orange-600';
                                                     }
                                                 @endphp
                                                 <div class="flex items-center justify-between text-xs py-1 px-2 rounded border {{ $filaCls }}">
@@ -610,9 +645,9 @@
                                                         <span class="font-medium {{ $txtCls }} truncate">
                                                             {{ $hijo->producto->nombre ?? $hijo->producto_id }}
                                                         </span>
-                                                        @if ($badgeLabel)
-                                                            <span class="shrink-0 text-[9px] font-black uppercase {{ $badge }} px-1.5 py-0.5 rounded">
-                                                                {{ $badgeLabel }}
+                                                        @if (! $fila['mostrarSerie'])
+                                                            <span class="shrink-0 text-[9px] font-black uppercase bg-orange-100 text-orange-800 px-1.5 py-0.5 rounded">
+                                                                Cantidad kit
                                                             </span>
                                                         @endif
                                                     </div>
@@ -635,70 +670,89 @@
                         </div>
                     @endif
 
-                    {{-- 3. Items asignados y despachados (antes y durante la conversión) --}}
-                    @if ($movsDurante->isNotEmpty() || $individuales->isNotEmpty())
+                    {{-- 3. Items asignados y despachados — una fila por producto, detalle plegado --}}
+                    @if ($agrupadas !== [])
                         <p class="text-xs font-bold text-gray-700 uppercase mb-2">
-                            <i class="fas fa-truck mr-1"></i>Items asignados y despachados (antes y durante la conversión)
+                            <i class="fas fa-truck mr-1"></i>Items asignados y despachados
+                            <span class="text-gray-500 font-semibold normal-case ml-1">
+                                · {{ count($agrupadas) }} {{ Str::plural('producto', count($agrupadas)) }}
+                                · {{ count($filasSeccion) }} {{ Str::plural('movimiento', count($filasSeccion)) }}
+                            </span>
                         </p>
 
-                        @foreach (['antes', 'durante'] as $momento)
-                            @php
-                                $movsM = $movsDurante->filter(fn ($m) => ($m->_momento ?? 'durante') === $momento);
-                                $indsM = $individuales->filter(fn ($i) => ($i->_momento ?? 'durante') === $momento);
-                                $hayM = $movsM->isNotEmpty() || $indsM->isNotEmpty();
-                            @endphp
-                            @if ($hayM)
-                                <div class="mb-3">
-                                    <div class="flex items-center gap-2 mb-2">
-                                        <span class="w-2 h-2 rounded-full {{ $momento === 'antes' ? 'bg-amber-500' : 'bg-emerald-500' }}"></span>
-                                        <span class="text-[10px] font-extrabold uppercase tracking-wider {{ $momento === 'antes' ? 'text-amber-700' : 'text-emerald-700' }}">{{ strtoupper($momento) }}</span>
-                                    </div>
-                                    <div class="space-y-1.5 ml-3">
-                                        @foreach ($indsM as $item)
-                                            @php
-                                                $tieneMov = $movsM->contains(fn ($m) => $m->producto_id === $item->producto_id);
-                                            @endphp
-                                            @if (! $tieneMov)
-                                                <div wire:key="ind-{{ $item->id }}-{{ $momento }}"
-                                                    class="flex justify-between items-center text-sm border border-blue-300 bg-blue-50 rounded-lg px-3 py-2">
-                                                    <span class="font-medium text-blue-900 min-w-0">
-                                                        <span class="flex items-center gap-2 flex-wrap">
-                                                            {{ $item->producto->nombre ?? '—' }}
-                                                            <span class="text-[9px] font-black uppercase bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded">DESPACHO</span>
-                                                        </span>
-                                                        @if ($item->serie)
-                                                            <span class="block text-[10px] font-mono text-blue-600 mt-0.5">{{ $item->serie }}</span>
+                        <div class="bg-white/70 border border-gray-300 rounded-lg overflow-hidden divide-y divide-gray-200"
+                            x-data="{ piezaAbierta: null }">
+
+                            @foreach ($agrupadas as $productoId => $p)
+                                <div wire:key="pieza-{{ $productoId }}">
+                                    <button type="button"
+                                        @click="piezaAbierta = piezaAbierta === {{ $productoId }} ? null : {{ $productoId }}"
+                                        class="w-full flex items-center justify-between gap-3 px-3 py-2 text-left hover:bg-gray-50 transition-colors">
+
+                                        <span class="flex items-center gap-1.5 min-w-0 flex-wrap">
+                                            <i class="fa-solid fa-wrench text-[10px] text-gray-400 shrink-0"></i>
+                                            <span class="text-xs font-bold text-gray-800 shrink-0">
+                                                {{ $p['nombre'] }}
+                                            </span>
+
+                                            @foreach ($p['chips'] as $badge => $chip)
+                                                <span
+                                                    class="text-[9px] font-black uppercase px-1.5 py-0.5 rounded {{ $chip['mc'][4] }} {{ $chip['mc'][5] }}">
+                                                    {{ $badge }} ×{{ $chip['n'] }}
+                                                </span>
+                                            @endforeach
+                                        </span>
+
+                                        <span class="flex items-center gap-2 shrink-0">
+                                            @if ($p['despachado'] > 0)
+                                                <span class="text-[11px] font-black text-gray-800">
+                                                    × {{ $p['despachado'] }}
+                                                </span>
+                                            @endif
+                                            @if ($p['devuelto'] > 0)
+                                                <span class="text-[11px] font-bold text-gray-400">
+                                                    −× {{ $p['devuelto'] }}
+                                                </span>
+                                            @endif
+                                            <i class="fas fa-chevron-down text-gray-400 text-[10px] transition-transform"
+                                                :class="piezaAbierta === {{ $productoId }} ? 'rotate-180' : ''"></i>
+                                        </span>
+                                    </button>
+
+                                    <div x-show="piezaAbierta === {{ $productoId }}" x-collapse
+                                        class="border-t border-gray-200 bg-gray-50/70">
+                                        <div class="p-2 space-y-1">
+                                            @foreach ($p['movs'] as $mv)
+                                                <div
+                                                    class="flex items-center justify-between gap-2 text-[11px] px-2 py-1 rounded border {{ $mv['mc'][0] }} {{ $mv['mc'][1] }}">
+                                                    <span class="min-w-0 flex items-center gap-1.5 flex-wrap">
+                                                        @if ($mv['mc'][6])
+                                                            <span
+                                                                class="text-[9px] font-black uppercase px-1 py-0.5 rounded {{ $mv['mc'][4] }} {{ $mv['mc'][5] }}">
+                                                                {{ $mv['mc'][6] }}
+                                                            </span>
                                                         @endif
+                                                        <span class="{{ $mv['mc'][3] }} truncate">
+                                                            {{ $mv['motivo'] }}
+                                                        </span>
+                                                    </span>
+
+                                                    <span class="flex items-center gap-2 shrink-0">
+                                                        <span
+                                                            class="text-[9px] font-bold uppercase {{ ($mv['momento'] ?? 'durante') === 'antes' ? 'text-amber-600' : 'text-emerald-600' }}">
+                                                            {{ $mv['momento'] ?? 'durante' }}
+                                                        </span>
+                                                        <span class="font-black {{ $mv['mc'][2] }}">
+                                                            × {{ $mv['cantidad'] }}
+                                                        </span>
                                                     </span>
                                                 </div>
-                                            @endif
-                                        @endforeach
-
-                                        @foreach ($movsM as $mov)
-                                            @php $mc = $clsMov($mov->motivo ?? ''); @endphp
-                                            <div wire:key="mov-dur-{{ $mov->id }}-{{ $momento }}"
-                                                class="flex justify-between items-start text-sm border rounded-lg px-3 py-2 {{ $mc[0] }} {{ $mc[1] }}">
-                                                <span class="font-medium {{ $mc[2] }} min-w-0">
-                                                    <span class="flex items-center gap-2 flex-wrap">
-                                                        {{ $mov->producto->nombre }}
-                                                        @if ($mc[6])
-                                                            <span class="text-[9px] font-black uppercase {{ $mc[4] }} {{ $mc[5] }} px-1.5 py-0.5 rounded">{{ $mc[6] }}</span>
-                                                        @endif
-                                                    </span>
-                                                    @if ($mov->motivo)
-                                                        <span class="block text-[10px] font-normal {{ $mc[3] }} mt-0.5">{{ $mov->motivo }}</span>
-                                                    @endif
-                                                </span>
-
-                                                <span class="font-semibold {{ $mc[2] }} shrink-0 ml-2">
-                                                    × {{ $mov->cantidad }}
-                                                </span>
-                                            </div>
-                                        @endforeach
+                                            @endforeach
+                                        </div>
                                     </div>
                                 </div>
-                            @endif
-                        @endforeach
+                            @endforeach
+                        </div>
                     @endif
                 </div>
             @endif

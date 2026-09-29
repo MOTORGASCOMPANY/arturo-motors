@@ -252,9 +252,11 @@ class Realizar extends Component
                 ]);
             });
 
-            $this->orden->refresh();
-            $this->dispatch('minToast', titulo: '¡Conversión completada!', mensaje: 'La orden está lista para entrega.', icono: 'success');
-            return $this->redirect(route('conversiones.mis-asignadas'));
+                        $this->orden->refresh();
+            $this->dispatch('conversion-terminada',
+                redirectUrl: route('conversiones.mis-asignadas')
+            );
+            return;
 
         } catch (\Throwable $e) {
             report($e);

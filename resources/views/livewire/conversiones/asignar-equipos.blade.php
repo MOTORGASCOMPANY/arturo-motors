@@ -174,7 +174,6 @@
                 <div class="w-full sm:w-28">
                     <x-label value="Cantidad" class="mb-1" />
                     <x-input type="number" min="1" wire:model="cantidadRepuesto" class="w-full text-center text-sm" />
-                    <x-input-error for="cantidadRepuesto" class="mt-1" />
                 </div>
                 <div class="w-full sm:w-auto">
                     <x-secondary-button wire:click="agregarRepuesto" type="button" class="w-full justify-center">
@@ -204,14 +203,14 @@
         </div>
 
         <div class="pt-2">
-            <x-button wire:click="confirmarEntrega"
+            <x-button wire:click="iniciarConfirmacion"
                       wire:loading.attr="disabled"
-                      wire:target="confirmarEntrega"
+                      wire:target="iniciarConfirmacion"
                       class="w-full justify-center py-3 text-sm font-semibold">
-                <span wire:loading.remove wire:target="confirmarEntrega">
+                <span wire:loading.remove wire:target="iniciarConfirmacion">
                     <i class="fas fa-check-circle mr-2"></i>Confirmar asignación
                 </span>
-                <span wire:loading wire:target="confirmarEntrega" class="inline-flex items-center">
+                <span wire:loading wire:target="iniciarConfirmacion" class="inline-flex items-center">
                     <i class="fas fa-spinner fa-spin mr-2"></i>Procesando...
                 </span>
             </x-button>
@@ -219,16 +218,64 @@
         </div>
 
     </div>
+
 </div>
 
 <script>
     document.addEventListener('livewire:initialized', () => {
+
+        // 1) Modal bloqueante: NO se cierra con click afuera ni con ESC,
+        //    hay que presionar OK para volver a seleccionar o seguir.
+        Livewire.on('asignacion-bloqueada', (event) => {
+            const data = Array.isArray(event) ? event[0] : event;
+            const titulo = data && data.titulo ? data.titulo : 'Atención';
+            const mensaje = data && data.mensaje ? data.mensaje : '';
+
+            Swal.fire({
+                icon: 'warning',
+                title: titulo,
+                text: mensaje,
+                confirmButtonText: 'OK',
+                allowOutsideClick: false,
+                allowEscapeKey: false
+            });
+        });
+
+        // 2) Confirmación de la asignación (solo con kit seleccionado)
+        Livewire.on('asignacion-confirmar', () => {
+            Swal.fire({
+                icon: 'question',
+                title: '¿Confirmar asignación?',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, confirmar',
+                cancelButtonText: 'No, volver',
+                confirmButtonColor: '#16a34a',
+                cancelButtonColor: '#6b7280',
+                allowOutsideClick: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Livewire.dispatch('confirmar-entrega');
+                }
+            });
+        });
+
+        // 3) Asignación confirmada: último OK antes de salir de la pantalla
         Livewire.on('entrega-confirmada', (event) => {
             const data = Array.isArray(event) ? event[0] : event;
             const redirectUrl = data && data.redirectUrl ? data.redirectUrl : null;
-            if (redirectUrl) {
-                window.location.href = redirectUrl;
-            }
+
+            Swal.fire({
+                icon: 'success',
+                title: '¡Componentes asignados!',
+                text: 'La asignación se confirmó correctamente.',
+                confirmButtonText: 'OK',
+                allowOutsideClick: false,
+                allowEscapeKey: false
+            }).then(() => {
+                if (redirectUrl) {
+                    window.location.href = redirectUrl;
+                }
+            });
         });
 
         Livewire.on('entrega-error', (event) => {

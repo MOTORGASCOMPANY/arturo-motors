@@ -19,25 +19,38 @@ class ReporteConversionesPdfController extends Controller
             'tecnico',
             'items.producto.categoria',
             'items.kitPadre.producto',
-        ])->whereIn('estado', ['en_conversion', 'conversion_completada']);
+        ])->tipoConversion()
+            ->whereIn('estado', ServiceOrder::ESTADOS_CONVERSION);
 
         if ($request->filled('sede_id')) {
             $query->whereHas('items', fn ($q) => $q->where('sede_id', (int) $request->input('sede_id')));
         }
 
-        if ($request->filled('estado')) {
+        if ($request->filled('estado') && $request->input('estado') !== 'todos') {
             $query->where('estado', $request->input('estado'));
         }
 
+        if ($request->filled('tecnico_id')) {
+            $query->where('tecnico_id', (int) $request->input('tecnico_id'));
+        }
+
+        // Mismo criterio de fecha que la vista del reporte.
         if ($request->filled('desde')) {
-            $query->where('fecha_inicio_conversion', '>=', $request->input('desde'));
+            $query->where(function ($q) use ($request) {
+                $q->whereDate('created_at', '>=', $request->input('desde'))
+                    ->orWhereDate('fecha_inicio_conversion', '>=', $request->input('desde'));
+            });
         }
 
         if ($request->filled('hasta')) {
-            $query->where('fecha_inicio_conversion', '<=', $request->input('hasta') . ' 23:59:59');
+            $query->where(function ($q) use ($request) {
+                $q->whereDate('created_at', '<=', $request->input('hasta'))
+                    ->orWhereDate('fecha_inicio_conversion', '<=', $request->input('hasta'));
+            });
         }
 
-        $ordenes = $query->orderByDesc('fecha_inicio_conversion')->get();
+        // Mismo orden que la tabla de la vista.
+        $ordenes = $query->orderByDesc('created_at')->get();
 
         $totalConversiones = $ordenes->count();
         $completadas = $ordenes->where('estado', 'conversion_completada')->count();
@@ -64,7 +77,7 @@ class ReporteConversionesPdfController extends Controller
 
             return [
                 'orden' => $o,
-                'cliente' => $o->cliente->nombre . ' ' . $o->cliente->apellido,
+                'cliente' => trim(($o->cliente?->nombre ?? '') . ' ' . ($o->cliente?->apellido ?? '')) ?: '—',
                 'placa' => $o->vehiculo->placa ?? 'N/A',
                 'vehiculo' => trim(($o->vehiculo->marca ?? '') . ' ' . ($o->vehiculo->modelo ?? '')),
                 'tecnico' => $o->tecnico->name ?? 'N/A',

@@ -10,6 +10,7 @@ use App\Models\MovimientoStock;
 use App\Models\Sede;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class AsignarEquipos extends Component
@@ -153,6 +154,8 @@ class AsignarEquipos extends Component
             $itemsComp = $itemsExistentes->where('producto_id', $kc->producto_componente_id);
 
             if ($this->esSerializable($producto->nombre)) {
+                $listado = false;
+
                 foreach ($itemsComp as $item) {
                     $serie = $item->serie ?? ($this->seriesKit[$producto->id] ?? null);
                     if ($serie) {
@@ -160,7 +163,17 @@ class AsignarEquipos extends Component
                             'nombre' => $producto->nombre,
                             'serie' => $serie,
                         ];
+                        $listado = true;
                     }
+                }
+
+                // Componente que todavía no tiene item propio: se crea al confirmar,
+                // así que se lista con la serie que se está ingresando.
+                if (!$listado && !empty($this->seriesKit[$producto->id])) {
+                    $piezasSerializadas[] = [
+                        'nombre' => $producto->nombre,
+                        'serie' => $this->seriesKit[$producto->id],
+                    ];
                 }
             } else {
                 $cantidad = $itemsComp->count();
@@ -242,12 +255,21 @@ class AsignarEquipos extends Component
 
         if ($this->cantidadRepuesto > $disponible) {
             $this->addError('cantidadRepuesto', "Solo hay {$disponible} sueltos en stock.");
+            $this->bloquear([
+                'titulo' => 'Stock insuficiente',
+                'mensaje' => "Solo hay {$disponible} unidades disponibles en stock de {$producto->nombre}. Bajá la cantidad e intentá de nuevo.",
+            ]);
             return;
         }
 
         $key = $producto->id;
         if (isset($this->repuestosSeleccionados[$key])) {
-            $this->addError('cantidadRepuesto', 'Este producto ya está en la lista. Quitalo y volvé a agregarlo con la cantidad total.');
+            $mensajeDuplicado = 'Este producto ya está en la lista. Quitalo y volvé a agregarlo con la cantidad total.';
+            $this->addError('cantidadRepuesto', $mensajeDuplicado);
+            $this->bloquear([
+                'titulo' => 'Repuesto ya agregado',
+                'mensaje' => $mensajeDuplicado,
+            ]);
             return;
         }
 
@@ -286,53 +308,85 @@ class AsignarEquipos extends Component
     // ═══════════════════════════════════════════════
     // CONFIRMAR ASIGNACIÓN
     // ═══════════════════════════════════════════════
-    public function confirmarEntrega()
+    /**
+     * Validaciones previas a la confirmación.
+     *
+     * @return array{titulo: string, mensaje: string}|null null si todo está OK
+     */
+    private function validarAsignacion(): ?array
     {
-        if (empty($this->kitItemId) && empty($this->repuestosSeleccionados)) {
-            $this->dispatch('minToast', titulo: 'Faltan datos', mensaje: 'Seleccioná un kit para confirmar.', icono: 'warning');
-            return;
+        // 1. El kit es obligatorio
+        if (empty($this->kitItemId)) {
+            return ['titulo' => 'Kit no seleccionado', 'mensaje' => 'Seleccione el kit para continuar.'];
         }
 
-        // Validar series SOLO para componentes que necesitan serie (no la tienen aún)
-        if ($this->kitItemId) {
-            $componentes = $this->componentesKit; // Solo retorna los que necesitan serie
-            $seriesIngresadas = [];
+        // 2. Series SOLO para componentes que necesitan serie (no la tienen aún)
+        $seriesIngresadas = [];
+        foreach ($this->componentesKit as $comp) {
+            $serie = trim($this->seriesKit[$comp->producto_id] ?? '');
 
-            foreach ($componentes as $comp) {
-                $serie = trim($this->seriesKit[$comp->producto_id] ?? '');
+            if (empty($serie)) {
+                return ['titulo' => 'Serie requerida', 'mensaje' => "Ingrese el número de serie de: {$comp->nombre}"];
+            }
 
-                if (empty($serie)) {
-                    $this->dispatch('minToast', titulo: 'Serie requerida', mensaje: "Ingrese el número de serie de: {$comp->nombre}", icono: 'warning');
-                    return;
-                }
+            // Duplicados entre los que se están ingresando
+            $serieUpper = strtoupper($serie);
+            if (in_array($serieUpper, $seriesIngresadas)) {
+                return ['titulo' => 'Serie duplicada', 'mensaje' => "El serie \"{$serie}\" está repetido. Ingrese series diferentes."];
+            }
+            $seriesIngresadas[] = $serieUpper;
 
-                // Validar duplicados entre los que se están ingresando
-                $serieUpper = strtoupper($serie);
-                if (in_array($serieUpper, $seriesIngresadas)) {
-                    $this->dispatch('minToast', titulo: 'Serie duplicada', mensaje: "El serie \"{$serie}\" está repetido. Ingrese series diferentes.", icono: 'error');
-                    return;
-                }
-                $seriesIngresadas[] = $serieUpper;
-
-                // Validar que el serie no exista en OTRO item (no en el de este kit)
-                $existeEnOtro = ItemSerializado::where('serie', $serie)
-                    ->where('kit_padre_id', '!=', $this->kitItemId)
-                    ->exists();
-                if ($existeEnOtro) {
-                    $this->dispatch('minToast', titulo: 'Serie ya existe', mensaje: "El serie \"{$serie}\" ya está registrado en otro kit/item.", icono: 'error');
-                    return;
-                }
+            // El serie no puede existir en OTRO item (no en el de este kit)
+            $existeEnOtro = ItemSerializado::where('serie', $serie)
+                ->where('kit_padre_id', '!=', $this->kitItemId)
+                ->exists();
+            if ($existeEnOtro) {
+                return ['titulo' => 'Serie ya existe', 'mensaje' => "El serie \"{$serie}\" ya está registrado en otro kit/item."];
             }
         }
 
-        $sedeId = $this->orden->sede_id ?? $this->sedePrincipalId();
+        // 3. Guard: no duplicate assignment
+        if ($this->orden->items()->count() > 0) {
+            return ['titulo' => 'Orden ya asignada', 'mensaje' => 'Esta orden ya tiene items asignados. No se puede asignar un kit dos veces.'];
+        }
 
-        // Guard: no duplicate assignment
-        $yaTieneItems = $this->orden->items()->count() > 0;
-        if ($yaTieneItems) {
-            $this->dispatch('minToast', titulo: 'Error', mensaje: 'Esta orden ya tiene items asignados. No se puede asignar un kit dos veces.', icono: 'error');
+        return null;
+    }
+
+    /**
+     * Modal de SweetAlert2 que NO se cierra con click afuera ni con ESC:
+     * hay que presionar OK para volver a la pantalla.
+     */
+    private function bloquear(array $error): void
+    {
+        $this->dispatch('asignacion-bloqueada', titulo: $error['titulo'], mensaje: $error['mensaje']);
+    }
+
+    /**
+     * Botón "Confirmar asignación": valida y, si todo está OK, pide la confirmación
+     * al usuario (modal con Confirmar / Cancelar). La asignación real ocurre recién
+     * cuando el usuario confirma y se ejecuta confirmarEntrega().
+     */
+    public function iniciarConfirmacion(): void
+    {
+        if ($error = $this->validarAsignacion()) {
+            $this->bloquear($error);
             return;
         }
+
+        $this->dispatch('asignacion-confirmar');
+    }
+
+    #[On('confirmar-entrega')]
+    public function confirmarEntrega()
+    {
+        // Se re-valida por si se invoca sin pasar por iniciarConfirmacion()
+        if ($error = $this->validarAsignacion()) {
+            $this->bloquear($error);
+            return;
+        }
+
+        $sedeId = $this->orden->sede_id ?? $this->sedePrincipalId();
 
         // Preparar datos para la alerta
         $resumenKit = $this->resumenKit;
@@ -492,11 +546,11 @@ class AsignarEquipos extends Component
                 $this->orden->update(['estado' => 'en_conversion']);
             });
         } catch (\RuntimeException $e) {
-            $this->dispatch('minToast', titulo: 'Error', mensaje: $e->getMessage(), icono: 'error');
+            $this->bloquear(['titulo' => 'No se pudo confirmar', 'mensaje' => $e->getMessage()]);
             return;
         } catch (\Throwable $e) {
             report($e);
-            $this->dispatch('minToast', titulo: 'Error', mensaje: 'Ocurrió un error al confirmar. Intenta de nuevo.', icono: 'error');
+            $this->bloquear(['titulo' => 'Error', 'mensaje' => 'Ocurrió un error al confirmar. Intenta de nuevo.']);
             return;
         }
 

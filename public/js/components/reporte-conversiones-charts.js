@@ -143,7 +143,7 @@
 
         // 2. Distribución por estado de conversión
         safe(function () {
-            renderDoughnut('chartConvEstado', 'chartConvEstadoInst', d.labelsEstado, d.dataEstado, estadoColors);
+            renderDoughnut('chartConvEstado', 'chartConvEstadoInst', d.labelsEstado, d.dataEstado, d.coloresEstado || estadoColors);
         });
 
         // 3. Kits: sellados / completados / asignados a clientes
@@ -205,44 +205,19 @@
     document.addEventListener('livewire:init', registerHooks);
 
     window.exportarPDF = function () {
-        const url = window.reporteConvData && window.reporteConvData.exportPdfUrl;
-        if (!url) return;
-        if (typeof Swal !== 'undefined') {
-            Swal.fire({
-                title: 'Exportando PDF',
-                text: 'Generando el reporte...',
-                icon: 'info',
-                allowOutsideClick: false,
-                showConfirmButton: false,
-                didOpen: function () {
-                    Swal.showLoading();
-                    window.location.href = url;
-                    setTimeout(function () { Swal.close(); }, 3000);
-                }
-            });
-        } else {
-            window.location.href = url;
-        }
+        // Componente reutilizable de carga (ver js/components/carga-swal.js)
+        CargaSwal.exportar({
+            url: window.reporteConvData && window.reporteConvData.exportPdfUrl,
+            titulo: 'Exportando PDF',
+            texto: 'Generando el reporte...'
+        });
     };
 
     window.exportarExcel = function () {
-        const url = window.reporteConvData && window.reporteConvData.exportExcelUrl;
-        if (!url) return;
-        if (typeof Swal !== 'undefined') {
-            Swal.fire({
-                title: 'Exportando Excel',
-                text: 'Generando el reporte...',
-                icon: 'info',
-                allowOutsideClick: false,
-                showConfirmButton: false,
-                didOpen: function () {
-                    Swal.showLoading();
-                    window.location.href = url;
-                    setTimeout(function () { Swal.close(); }, 3000);
-                }
-            });
-        } else {
-            window.location.href = url;
-        }
+        CargaSwal.exportar({
+            url: window.reporteConvData && window.reporteConvData.exportExcelUrl,
+            titulo: 'Exportando Excel',
+            texto: 'Generando el reporte...'
+        });
     };
 })();

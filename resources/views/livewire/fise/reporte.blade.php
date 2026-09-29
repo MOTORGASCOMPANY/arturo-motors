@@ -693,30 +693,13 @@
             window.renderChartFise();
         });
 
+        // Popups de reporte vía componente reutilizable: js/components/carga-swal.js
         Livewire.on('descargar-pdf', (params) => {
-            Swal.fire({
-                title: 'Próximamente',
-                text: 'La exportación PDF del reporte FISE está en desarrollo.',
-                icon: 'info',
-                timer: 3000,
-                showConfirmButton: false,
-                customClass: {
-                    popup: 'rounded-2xl'
-                }
-            });
+            CargaSwal.nota('Próximamente', 'La exportación PDF del reporte FISE está en desarrollo.');
         });
 
         Livewire.on('descargar-excel', (params) => {
-            Swal.fire({
-                title: 'Próximamente',
-                text: 'La exportación Excel del reporte FISE está en desarrollo.',
-                icon: 'info',
-                timer: 3000,
-                showConfirmButton: false,
-                customClass: {
-                    popup: 'rounded-2xl'
-                }
-            });
+            CargaSwal.nota('Próximamente', 'La exportación Excel del reporte FISE está en desarrollo.');
         });
     </script>
 

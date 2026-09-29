@@ -12,6 +12,8 @@
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        <!-- FASE 2: Inter para los reportes -->
+        <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 
         {{-- Agregue esto para date-picker --}}
@@ -53,6 +55,9 @@
 
         <!-- SweetAlert2 -->
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+        <!-- CargaSwal: componente reutilizable de carga para todos los reportes -->
+        <script src="{{ asset('js/components/carga-swal.js') }}"></script>
 
         <!-- Script para SweetAlert2 con Livewire -->
         <script>

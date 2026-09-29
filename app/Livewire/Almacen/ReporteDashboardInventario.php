@@ -27,7 +27,8 @@ class ReporteDashboardInventario extends Component
 
     public function updatedFiltroSede(?int $value): void
     {
-        $this->filtroSede = $value ?? 1; // al cambiar, si limpia -> Callao
+        // null = "Todas las sedes" (lo manda el botón "Todas" del selector).
+        $this->filtroSede = $value;
     }
 
     public function sedeFiltro(): ?int
@@ -64,7 +65,7 @@ class ReporteDashboardInventario extends Component
     // ── 2. ALERTAS DE STOCK ──────────────────────────────────────────
     public function alertasStock(): array
     {
-        $sedeId = $this->filtroSede ?? 1;
+        $sedeId = $this->filtroSede; // null = todas las sedes
 
         $productos = Producto::where('activo', true)
             ->whereHas('categoria', fn ($q) => $q->where('es_kit', false))
