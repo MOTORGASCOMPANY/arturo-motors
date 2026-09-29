@@ -458,6 +458,10 @@
                     $filasSeccion = [];
 
                     foreach ($movsDurante as $mov) {
+                        $motivo = strtolower($mov->motivo ?? '');
+                        if (str_contains($motivo, 'devoluci')) {
+                            continue;
+                        }
                         $mc = $clsMov($mov->motivo ?? '');
                         $filasSeccion[] = [
                             'producto_id' => (int) $mov->producto_id,
