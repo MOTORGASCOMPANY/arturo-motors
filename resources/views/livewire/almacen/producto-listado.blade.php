@@ -1,10 +1,6 @@
 <div>
     <div class="max-w-7xl mx-auto px-4 py-5 space-y-4">
 
-    @pushOnce('scripts')
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    @endPushOnce
-
         <div class="sticky top-0 z-20 bg-gray-50/95 backdrop-blur-sm -mx-4 px-4 pt-1.5 pb-2.5 space-y-2.5 border-b border-gray-200/70">
 
             <div class="flex items-center justify-between gap-3">
