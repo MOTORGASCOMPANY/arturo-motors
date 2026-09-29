@@ -235,6 +235,42 @@
                 }
             });
 
+            // ===== EVENTOS EXISTENTES DE COMPONENTES (compatibilidad total) =====
+            // asignar-equipos.blade.php
+            Livewire.on('asignacion-bloqueada', function(data) {
+                var d = Array.isArray(data) ? data[0] : data;
+                window.AppSwal.alerta(d.titulo || 'Atención', d.mensaje || '');
+            });
+            Livewire.on('asignacion-confirmar', function() {
+                window.AppSwal.confirmar('¿Confirmar asignación?', 'Esta acción no se puede deshacer')
+                    .then(function(r) { if (r.isConfirmed) Livewire.dispatch('confirmar-entrega'); });
+            });
+            Livewire.on('entrega-confirmada', function(data) {
+                var d = Array.isArray(data) ? data[0] : data;
+                window.AppSwal.exito('¡Componentes asignados!', 'La asignación se confirmó correctamente.')
+                    .then(function() { if (d && d.redirectUrl) window.location.href = d.redirectUrl; });
+            });
+            Livewire.on('entrega-error', function(data) {
+                var d = Array.isArray(data) ? data[0] : data;
+                window.AppSwal.error('Error', d.mensaje || 'Ocurrió un error');
+            });
+
+            // realizar.blade.php
+            Livewire.on('conversion-terminada', function(data) {
+                var d = Array.isArray(data) ? data[0] : data;
+                window.AppSwal.exito('¡Conversión terminada!', 'La orden está lista para entrega.')
+                    .then(function() { if (d && d.redirectUrl) window.location.href = d.redirectUrl; });
+            });
+
+            // fise/auditoria.blade.php
+            Livewire.on('registrarPago', function() {
+                window.AppSwal.cargar('Registrando pago', 'Procesando...');
+            });
+
+            // recepcion-alta (Alpine events via Livewire)
+            Livewire.on('swal-init', function(data) { /* handled by Alpine */ });
+            Livewire.on('swal-kit', function(data) { /* handled by Alpine */ });
+
             @if (session()->has('swal'))
                 (function() {
                     var swalData = @json(session('swal'));
