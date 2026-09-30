@@ -463,14 +463,33 @@
                             continue;
                         }
                         $mc = $clsMov($mov->motivo ?? '');
+                        $badge = $mc[6] ?: 'OTRO';
+
+                        // Cargar datos de reemplazo si es REEMPLAZO
+                        $reporte = null;
+                        $itemViejo = null;
+                        $itemNuevo = null;
+                        if ($badge === 'REEMPLAZO') {
+                            preg_match('/Reporte\s*#(\d+)/i', $mov->motivo ?? '', $matches);
+                            if (!empty($matches[1])) {
+                                $reporte = \App\Models\ReportePiezaNoEncajada::with(['itemNoEncajado.producto', 'itemNuevo.producto'])->find($matches[1]);
+                                if ($reporte) {
+                                    $itemViejo = $reporte->itemNoEncajado;
+                                    $itemNuevo = $reporte->itemNuevo;
+                                }
+                            }
+                        }
+
                         $filasSeccion[] = [
                             'producto_id' => (int) $mov->producto_id,
                             'nombre'      => $mov->producto->nombre ?? ('Producto #'.$mov->producto_id),
                             'cantidad'    => (int) $mov->cantidad,
-                            'badge'       => $mc[6] ?: 'OTRO',
+                            'badge'       => $badge,
                             'mc'          => $mc,
                             'motivo'      => $mov->motivo,
                             'momento'     => $mov->_momento ?? 'durante',
+                            'item_viejo'  => $itemViejo,
+                            'item_nuevo'  => $itemNuevo,
                         ];
                     }
 
@@ -701,31 +720,42 @@
                                         class="border-t border-gray-200 bg-gray-50/70">
                                         <div class="p-2 space-y-1">
                                             @foreach ($p['movs'] as $mv)
-                                                <div
-                                                    class="flex items-center justify-between gap-2 text-[11px] px-2 py-1 rounded border {{ $mv['mc'][0] }} {{ $mv['mc'][1] }}">
-                                                    <span class="min-w-0 flex items-center gap-1.5 flex-wrap">
-                                                        @if ($mv['mc'][6])
-                                                            <span
-                                                                class="text-[9px] font-black uppercase px-1 py-0.5 rounded {{ $mv['mc'][4] }} {{ $mv['mc'][5] }}">
-                                                                {{ $mv['mc'][6] }}
+                                                    <div
+                                                        class="flex items-center justify-between gap-2 text-[11px] px-2 py-1 rounded border {{ $mv['mc'][0] }} {{ $mv['mc'][1] }}">
+                                                        <span class="min-w-0 flex items-center gap-1.5 flex-wrap">
+                                                            @if ($mv['mc'][6])
+                                                                <span
+                                                                    class="text-[9px] font-black uppercase px-1 py-0.5 rounded {{ $mv['mc'][4] }} {{ $mv['mc'][5] }}">
+                                                                    {{ $mv['mc'][6] }}
+                                                                </span>
+                                                            @endif
+                                                            <span class="{{ $mv['mc'][3] }} truncate">
+                                                                {{ $mv['motivo'] }}
                                                             </span>
-                                                        @endif
-                                                        <span class="{{ $mv['mc'][3] }} truncate">
-                                                            {{ $mv['motivo'] }}
+                                                            @if (isset($mv['item_viejo']) && $mv['item_viejo'] && isset($mv['item_nuevo']) && $mv['item_nuevo'])
+                                                                <span class="flex items-center gap-1.5 ml-2">
+                                                                    <span class="text-[9px] line-through text-gray-500">
+                                                                        {{ $mv['item_viejo']->serie ?? 'S/N' }}
+                                                                    </span>
+                                                                    <i class="fas fa-long-arrow-alt-right text-emerald-500 text-[10px]"></i>
+                                                                    <span class="text-[10px] font-bold text-emerald-700">
+                                                                        {{ $mv['item_nuevo']->serie ?? 'S/N' }}
+                                                                    </span>
+                                                                </span>
+                                                            @endif
                                                         </span>
-                                                    </span>
 
-                                                    <span class="flex items-center gap-2 shrink-0">
-                                                        <span
-                                                            class="text-[9px] font-bold uppercase {{ ($mv['momento'] ?? 'durante') === 'antes' ? 'text-amber-600' : 'text-emerald-600' }}">
-                                                            {{ $mv['momento'] ?? 'durante' }}
+                                                        <span class="flex items-center gap-2 shrink-0">
+                                                            <span
+                                                                class="text-[9px] font-bold uppercase {{ ($mv['momento'] ?? 'durante') === 'antes' ? 'text-amber-600' : 'text-emerald-600' }}">
+                                                                {{ $mv['momento'] ?? 'durante' }}
+                                                            </span>
+                                                            <span class="font-black {{ $mv['mc'][2] }}">
+                                                                × {{ $mv['cantidad'] }}
+                                                            </span>
                                                         </span>
-                                                        <span class="font-black {{ $mv['mc'][2] }}">
-                                                            × {{ $mv['cantidad'] }}
-                                                        </span>
-                                                    </span>
-                                                </div>
-                                            @endforeach
+                                                    </div>
+                                                @endforeach
                                         </div>
                                     </div>
                                 </div>
