@@ -1,4 +1,6 @@
             {{-- ═══ Detalle de pieza serializada suelta (clon del modal de detalle de kit) ═══ --}}
+            {{-- Raíz obligatoria: la vista de un componente Livewire siempre debe renderizar un tag HTML. --}}
+            <div>
             @php
                 $pd = $piezaDetalle ?? null;
                 $estadoPieza = $pd ? (match($pd->estado) {
@@ -113,3 +115,4 @@
                 </x-slot>
             </x-dialog-modal>
             @endif
+            </div>
