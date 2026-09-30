@@ -15,11 +15,12 @@
                 $pctCompletado = ($k && $k->totalEsperado > 0) ? round($k->totalPresente / $k->totalEsperado * 100) : 0;
             @endphp
 
-            <x-modal wire:model.live="mostrarDetalleKit" maxWidth="xl">
-                @if ($k)
-                    <div class="flex items-center gap-3 px-5 py-4 border-b border-gray-200">
+            @if ($k)
+            <x-dialog-modal wire:model.live="mostrarDetalleKit" maxWidth="xl">
+                <x-slot name="title">
+                    <div class="flex items-center gap-3">
                         <button type="button" wire:click="volverListado"
-                            class="w-9 h-9 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
+                            class="w-9 h-9 flex items-center justify-center rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
                             <i class="fas fa-arrow-left"></i>
                         </button>
                         <div class="w-10 h-10 rounded-lg bg-{{ $tipoColor }}-100 flex items-center justify-center shrink-0">
@@ -27,25 +28,27 @@
                         </div>
                         <div class="min-w-0 flex-1">
                             <div class="flex flex-wrap items-center gap-2">
-                                <h3 class="text-base font-bold text-gray-800 truncate">{{ $k->producto?->nombre ?? 'Kit' }}</h3>
-                                <span class="px-1.5 py-0.5 bg-gray-900 text-white text-[10px] font-black rounded tabular-nums">#{{ $k->id }}</span>
+                                <h3 class="text-base font-bold text-white truncate">{{ $k->producto?->nombre ?? 'Kit' }}</h3>
+                                <span class="px-1.5 py-0.5 bg-white/20 text-white text-[10px] font-black rounded tabular-nums">#{{ $k->id }}</span>
                                 <span class="px-2 py-0.5 {{ $estadoKit['chip'] }} text-[10px] font-bold rounded-full">{{ $estadoKit['label'] }}</span>
                             </div>
-                            <p class="text-sm text-gray-500 mt-0.5">
+                            <p class="text-sm text-slate-300 mt-0.5">
                                 {{ $k->sede?->nombre ?? '—' }}
                                 @if ($k->serie)
-                                    <span class="text-gray-300 mx-1">|</span>
+                                    <span class="text-white/40 mx-1">|</span>
                                     <span class="font-mono">{{ $k->serie }}</span>
                                 @endif
                             </p>
                         </div>
                         <button type="button" wire:click="volverListado" aria-label="Cerrar"
-                            class="w-9 h-9 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
+                            class="w-9 h-9 flex items-center justify-center rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
+                </x-slot>
 
-                    <div class="max-h-[70vh] overflow-y-auto px-5 py-4 space-y-5">
+                <x-slot name="content">
+                    <div class="max-h-[70vh] overflow-y-auto space-y-5">
 
                             {{-- Progreso --}}
                             @if ($k->totalEsperado > 0)
@@ -246,8 +249,10 @@
                             </div>
 
                         </div>
+                </x-slot>
 
-                        <div class="flex items-center gap-3 px-5 py-3 border-t border-gray-200 bg-gray-50">
+                <x-slot name="footer">
+                    <div class="flex w-full items-center gap-3">
                             @if ($k->estado === 'abierto')
                                 <button type="button" wire:click="abrirEditarItem({{ $k->id }})"
                                     class="px-4 py-2 text-sm font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">
@@ -271,5 +276,6 @@
                                 </div>
                             @endif
                         </div>
-                    @endif
-                </x-modal>
+                </x-slot>
+            </x-dialog-modal>
+            @endif

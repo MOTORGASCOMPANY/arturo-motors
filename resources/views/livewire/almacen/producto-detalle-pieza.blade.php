@@ -11,11 +11,12 @@
                 }) : null;
             @endphp
 
-            <x-modal wire:model.live="modalDetallePiezaAbierto" maxWidth="xl">
-                @if ($pd)
-                    <div class="flex items-center gap-3 px-5 py-4 border-b border-gray-200">
+            @if ($pd)
+            <x-dialog-modal wire:model.live="modalDetallePiezaAbierto" maxWidth="xl">
+                <x-slot name="title">
+                    <div class="flex items-center gap-3">
                         <button type="button" wire:click="cerrarDetallePieza"
-                            class="w-9 h-9 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
+                            class="w-9 h-9 flex items-center justify-center rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
                             <i class="fas fa-arrow-left"></i>
                         </button>
                         <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center shrink-0">
@@ -23,21 +24,23 @@
                         </div>
                         <div class="min-w-0 flex-1">
                             <div class="flex flex-wrap items-center gap-2">
-                                <h3 class="text-base font-bold text-gray-800 truncate">{{ $pd->producto?->nombre ?? 'Pieza' }}</h3>
+                                <h3 class="text-base font-bold text-white truncate">{{ $pd->producto?->nombre ?? 'Pieza' }}</h3>
                                 @if ($pd->serie)
-                                    <span class="font-mono text-xs text-gray-600 bg-gray-100 px-2 py-0.5 rounded">{{ $pd->serie }}</span>
+                                    <span class="font-mono text-xs text-slate-200 bg-white/10 px-2 py-0.5 rounded">{{ $pd->serie }}</span>
                                 @endif
                                 <span class="px-2 py-0.5 {{ $estadoPieza['chip'] }} text-[10px] font-bold rounded-full">{{ $estadoPieza['label'] }}</span>
                             </div>
-                            <p class="text-sm text-gray-500 mt-0.5">{{ $pd->sede?->nombre ?? '—' }}</p>
+                            <p class="text-sm text-slate-300 mt-0.5">{{ $pd->sede?->nombre ?? '—' }}</p>
                         </div>
                         <button type="button" wire:click="cerrarDetallePieza" aria-label="Cerrar"
-                            class="w-9 h-9 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
+                            class="w-9 h-9 flex items-center justify-center rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
+                </x-slot>
 
-                    <div class="max-h-[70vh] overflow-y-auto px-5 py-4 space-y-5">
+                <x-slot name="content">
+                    <div class="max-h-[70vh] overflow-y-auto space-y-5">
 
                         {{-- Ingreso / registro (mapeo BD: atributos + ledger movimientos_stock) --}}
                         <div>
@@ -101,5 +104,12 @@
                         @endif
 
                     </div>
-                @endif
-            </x-modal>
+                </x-slot>
+
+                <x-slot name="footer">
+                    <x-secondary-button wire:click="cerrarDetallePieza">
+                        Cerrar
+                    </x-secondary-button>
+                </x-slot>
+            </x-dialog-modal>
+            @endif

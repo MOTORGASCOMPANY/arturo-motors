@@ -1305,54 +1305,9 @@
         </div>
 
         @if ($showUploadModal)
-            <div id="modal-subida-container"
-                class="fixed inset-0 z-[80] flex items-center justify-center p-3 sm:p-6"
-                wire:key="modal-subida">
-
-                <div class="fixed inset-0 bg-slate-900/75 backdrop-blur-md transition-opacity"
-                    wire:click="cerrarModalSubida"></div>
-
-                <div
-                    class="relative bg-white rounded-3xl shadow-2xl w-full max-w-7xl transition-all duration-300 overflow-hidden border border-white/20"
-                    x-data="modalSubidaPrevisualizador"
-                    x-transition:enter="transition ease-out duration-200"
-                    x-transition:enter-start="opacity-0 scale-95"
-                    x-transition:enter-end="opacity-100 scale-100">
-
-                    <div wire:loading wire:target="guardarDocumento"
-                        class="absolute inset-0 bg-slate-900/90 backdrop-blur-md z-50 flex flex-col items-center justify-center p-6 text-center text-white h-full w-full">
-
-                        <div class="relative mb-6">
-                            <div
-                                class="w-24 h-24 bg-indigo-500/20 rounded-full absolute -inset-3 animate-ping">
-                            </div>
-
-                            <div
-                                class="w-24 h-24 bg-gradient-to-tr from-indigo-600 to-violet-500 rounded-3xl flex items-center justify-center shadow-2xl relative z-10">
-                                <i class="fa-solid fa-cloud-arrow-up text-4xl animate-bounce"></i>
-                            </div>
-                        </div>
-
-                        <h4 class="text-xl font-black tracking-wide text-white">
-                            Guardando y procesando archivo...
-                        </h4>
-
-                        <p class="text-xs text-slate-300 mt-1.5 mb-6 max-w-sm">
-                            Estamos subiendo tu documento de manera segura al servidor para que esté disponible de inmediato.
-                        </p>
-
-                        <div
-                            class="w-56 bg-slate-800 rounded-full h-2.5 overflow-hidden p-0.5 border border-slate-700 shadow-inner">
-                            <div
-                                class="bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-400 h-full rounded-full animate-[progress_1.5s_infinite_ease-in-out]"
-                                style="width: 70%;">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div
-                        class="flex items-center justify-between px-8 py-5 bg-gradient-to-r from-indigo-900 via-indigo-800 to-indigo-900 text-white">
-
+            <x-dialog-modal wire:model="showUploadModal" maxWidth="7xl" id="modal-subida-container">
+                <x-slot name="title">
+                    <div class="bg-gradient-to-r from-indigo-900 via-indigo-800 to-indigo-900 -mx-4 -my-4 px-8 py-5 flex items-center justify-between gap-3">
                         <div class="flex items-center gap-3">
                             <div
                                 class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center border border-white/20 shadow-inner">
@@ -1370,11 +1325,45 @@
                             </div>
                         </div>
 
-                        <button wire:click="cerrarModalSubida"
+                        <button wire:click="cerrarModalSubida" aria-label="Cerrar"
                             class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition active:scale-95">
                             <i class="fa-solid fa-xmark text-lg"></i>
                         </button>
                     </div>
+                </x-slot>
+
+                <x-slot name="content">
+                    <div class="relative" x-data="modalSubidaPrevisualizador">
+                        <div wire:loading wire:target="guardarDocumento"
+                            class="absolute inset-0 bg-slate-900/90 backdrop-blur-md z-50 flex flex-col items-center justify-center p-6 text-center text-white h-full w-full">
+
+                            <div class="relative mb-6">
+                                <div
+                                    class="w-24 h-24 bg-indigo-500/20 rounded-full absolute -inset-3 animate-ping">
+                                </div>
+
+                                <div
+                                    class="w-24 h-24 bg-gradient-to-tr from-indigo-600 to-violet-500 rounded-3xl flex items-center justify-center shadow-2xl relative z-10">
+                                    <i class="fa-solid fa-cloud-arrow-up text-4xl animate-bounce"></i>
+                                </div>
+                            </div>
+
+                            <h4 class="text-xl font-black tracking-wide text-white">
+                                Guardando y procesando archivo...
+                            </h4>
+
+                            <p class="text-xs text-slate-300 mt-1.5 mb-6 max-w-sm">
+                                Estamos subiendo tu documento de manera segura al servidor para que esté disponible de inmediato.
+                            </p>
+
+                            <div
+                                class="w-56 bg-slate-800 rounded-full h-2.5 overflow-hidden p-0.5 border border-slate-700 shadow-inner">
+                                <div
+                                    class="bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-400 h-full rounded-full animate-[progress_1.5s_infinite_ease-in-out]"
+                                    style="width: 70%;">
+                                </div>
+                            </div>
+                        </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-12 gap-0 max-h-[82vh] overflow-y-auto">
 
@@ -1537,10 +1526,11 @@
                             </p>
                         </div>
                     </div>
+                </div>
+                </x-slot>
 
-                    <div
-                        class="flex items-center justify-end gap-3 px-8 py-5 border-t border-slate-100 bg-slate-50">
-
+                <x-slot name="footer">
+                    <div class="flex w-full items-center justify-end gap-3">
                         <button wire:click="cerrarModalSubida"
                             class="px-5 py-3 text-xs font-bold text-slate-600 bg-gray-200 hover:bg-gray-300 rounded-2xl transition">
                             Cancelar
@@ -1561,9 +1551,9 @@
                                 Subiendo...
                             </span>
                         </button>
-</div>
-        </div>
+                    </div>
+                </x-slot>
+            </x-dialog-modal>
+        @endif
     </div>
-</div>
-    @endif
 </div>

@@ -155,19 +155,22 @@
             </div>
 
             @if($detalleProductoId && $detalles->count() > 0)
-                <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" wire:click="cerrarDetalle"></div>
-                    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
-                        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
-                            <div>
-                                <h3 class="text-lg font-bold text-gray-900">{{ $detalles->first()->producto->nombre }}</h3>
-                                <p class="text-sm text-gray-500">{{ $detalles->count() }} unidad(es)</p>
+                <x-dialog-modal wire:model.live="detalleProductoId" maxWidth="2xl">
+                    <x-slot name="title">
+                        <div class="flex items-center justify-between gap-3">
+                            <div class="min-w-0">
+                                <h3 class="text-base font-bold text-white truncate">{{ $detalles->first()->producto->nombre }}</h3>
+                                <p class="text-sm text-slate-300">{{ $detalles->count() }} unidad(es)</p>
                             </div>
-                            <button wire:click="cerrarDetalle" class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition">
+                            <button wire:click="cerrarDetalle" aria-label="Cerrar"
+                                class="w-8 h-8 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition">
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
-                        <div class="flex-1 overflow-y-auto p-6">
+                    </x-slot>
+
+                    <x-slot name="content">
+                        <div class="max-h-[65vh] overflow-y-auto">
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
@@ -201,8 +204,17 @@
                                 </tbody>
                             </table>
                         </div>
-                    </div>
-                </div>
+                    </x-slot>
+
+                    <x-slot name="footer">
+                        <div class="flex w-full items-center gap-3">
+                            <button type="button" wire:click="cerrarDetalle"
+                                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
+                                Cerrar
+                            </button>
+                        </div>
+                    </x-slot>
+                </x-dialog-modal>
             @endif
         </div>
     </div>

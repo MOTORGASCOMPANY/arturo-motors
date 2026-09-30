@@ -28,21 +28,24 @@
         $pctElegidos = $totalFaltan > 0 ? round($totalElegidos / $totalFaltan * 100) : 100;
     @endphp
 
-    <x-modal wire:model.live="modalCompletarKitAbierto" maxWidth="xl">
-                <div class="px-5 pt-4 pb-3 border-b border-gray-200">
+    <x-dialog-modal wire:model.live="modalCompletarKitAbierto" maxWidth="xl">
+                <x-slot name="title">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0">
                             <i class="fas fa-puzzle-piece text-indigo-600"></i>
                         </div>
                         <div class="min-w-0 flex-1">
-                            <h3 class="text-base font-bold text-gray-800">Completar kit</h3>
-                            <p class="text-sm text-gray-500 truncate">{{ $completarKitNombre }}</p>
+                            <h3 class="text-base font-bold text-white">Completar kit</h3>
+                            <p class="text-sm text-slate-300 truncate">{{ $completarKitNombre }}</p>
                         </div>
                         <button type="button" wire:click="cerrarCompletarKit" aria-label="Cerrar"
-                            class="w-9 h-9 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
+                            class="w-9 h-9 flex items-center justify-center rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
+                </x-slot>
+
+                <x-slot name="content">
                     @if ($totalFaltan > 0)
                         <div class="mt-3">
                             <div class="flex items-center justify-between text-xs mb-1">
@@ -57,9 +60,8 @@
                             </div>
                         </div>
                     @endif
-                </div>
 
-                <div class="max-h-[65vh] overflow-y-auto px-5 py-4 space-y-4">
+                    <div class="max-h-[65vh] overflow-y-auto space-y-4">
                     @error('general')
                         <div class="p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">
                             <i class="fas fa-exclamation-triangle mr-1"></i> {{ $message }}
@@ -149,8 +151,10 @@
                         </div>
                     @endif
                 </div>
+                </x-slot>
 
-                <div class="flex items-center gap-3 px-5 py-3 border-t border-gray-200 bg-gray-50">
+                <x-slot name="footer">
+                    <div class="flex w-full items-center gap-3">
                     <button type="button" wire:click="cerrarCompletarKit"
                         class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
                         Cancelar
@@ -171,4 +175,5 @@
                         @endif
                     </div>
                 </div>
-        </x-modal>
+                </x-slot>
+        </x-dialog-modal>

@@ -1,28 +1,25 @@
     @if ($this->mostrarChecklist)
-        <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4" x-data>
-            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" wire:click="cerrarChecklist"></div>
-
-            <div class="relative bg-white sm:rounded-2xl rounded-t-2xl shadow-2xl border border-gray-200 w-full max-h-[88vh] sm:max-h-[85vh] sm:max-w-lg overflow-hidden flex flex-col">
-
-                <div class="px-4 sm:px-6 py-4 border-b border-gray-100 bg-gray-50 shrink-0">
-                    <div class="flex items-start justify-between gap-2">
-                        <div class="min-w-0">
-                            <h3 class="text-base sm:text-lg font-bold text-gray-800 flex items-center gap-2">
-                                <i class="fas fa-clipboard-check text-gray-600"></i> Confirmar envío
-                            </h3>
-                            <p class="text-xs sm:text-sm text-gray-500 mt-0.5 truncate">
-                                <i class="fas fa-location-dot mr-1"></i>{{ $this->sedes->firstWhere('id', $this->sedeDestinoId)?->nombre ?? '' }}
-                                <span class="text-gray-300 mx-1">·</span>
-                                {{ $this->seleccionCount }} items
-                            </p>
-                        </div>
-                        <button wire:click="cerrarChecklist" type="button" class="text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded-lg transition w-9 h-9 flex items-center justify-center shrink-0 -mr-1">
-                            <i class="fas fa-times text-lg sm:text-xl"></i>
-                        </button>
+        <x-dialog-modal wire:model="mostrarChecklist" maxWidth="lg">
+            <x-slot name="title">
+                <div class="flex items-start justify-between gap-2">
+                    <div class="min-w-0">
+                        <h3 class="text-base font-bold text-white flex items-center gap-2">
+                            <i class="fas fa-clipboard-check text-white/70"></i> Confirmar envío
+                        </h3>
+                        <p class="text-xs text-slate-300 mt-0.5 truncate">
+                            <i class="fas fa-location-dot mr-1"></i>{{ $this->sedes->firstWhere('id', $this->sedeDestinoId)?->nombre ?? '' }}
+                            <span class="text-white/40 mx-1">·</span>
+                            {{ $this->seleccionCount }} items
+                        </p>
                     </div>
+                    <button wire:click="cerrarChecklist" type="button" class="text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition w-9 h-9 flex items-center justify-center shrink-0 -mr-1">
+                        <i class="fas fa-times text-lg sm:text-xl"></i>
+                    </button>
                 </div>
+            </x-slot>
 
-                <div class="px-4 sm:px-6 py-4 flex-1 overflow-y-auto">
+            <x-slot name="content">
+                <div class="max-h-[65vh] overflow-y-auto">
                     <div class="space-y-3">
 
                         @forelse ($this->checklistData as $comp)
@@ -77,8 +74,10 @@
 
                     </div>
                 </div>
+            </x-slot>
 
-                <div class="px-4 sm:px-6 py-4 border-t border-gray-100 bg-gray-50 flex gap-3 shrink-0">
+            <x-slot name="footer">
+                <div class="flex w-full items-center gap-3">
                     <button wire:click="cerrarChecklist" type="button"
                         class="flex-1 px-4 py-3 sm:py-2.5 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 active:scale-[0.98] transition font-medium text-sm">
                         Volver
@@ -89,6 +88,6 @@
                         <span wire:loading wire:target="confirmarEnvio"><i class="fas fa-circle-notch fa-spin mr-1"></i> Enviando...</span>
                     </button>
                 </div>
-            </div>
-        </div>
+            </x-slot>
+        </x-dialog-modal>
     @endif

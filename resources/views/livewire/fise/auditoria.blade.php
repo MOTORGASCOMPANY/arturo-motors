@@ -212,21 +212,20 @@
 
     <!-- Modal Registrar Pago -->
     @if ($modalAbierto)
-        <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="$set('modalAbierto', false)"></div>
-                <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                    <div class="bg-white px-6 pt-6 pb-4">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
-                                <i class="fas fa-money-bill-wave text-emerald-600"></i> Registrar Pago FISE
-                            </h3>
-                            <button wire:click="$set('modalAbierto', false)" class="text-gray-400 hover:text-gray-600">
-                                <i class="fas fa-times text-lg"></i>
-                            </button>
-                        </div>
+        <x-dialog-modal wire:model="modalAbierto" maxWidth="lg">
+            <x-slot name="title">
+                <div class="flex items-center justify-between gap-3">
+                    <h3 class="text-base font-bold text-white flex items-center gap-2">
+                        <i class="fas fa-money-bill-wave text-emerald-400"></i> Registrar Pago FISE
+                    </h3>
+                    <button wire:click="$set('modalAbierto', false)" aria-label="Cerrar" class="text-white/70 hover:text-white">
+                        <i class="fas fa-times text-lg"></i>
+                    </button>
+                </div>
+            </x-slot>
 
-                        <div class="bg-gray-50 rounded-xl p-4 mb-4 space-y-2">
+            <x-slot name="content">
+                <div class="bg-gray-50 rounded-xl p-4 mb-4 space-y-2">
                             <div class="flex justify-between text-sm">
                                 <span class="text-gray-500">Monto Total:</span>
                                 <span class="font-bold text-gray-800">S/ {{ number_format($montoTotal, 2) }}</span>
@@ -260,21 +259,21 @@
                                     placeholder="Nota sobre el pago..."></textarea>
                             </div>
                         </div>
-                    </div>
+            </x-slot>
 
-                    <div class="bg-gray-50 px-6 py-4 flex justify-end gap-3">
-                        <button wire:click="$set('modalAbierto', false)"
-                            class="px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                            Cancelar
-                        </button>
-                        <button onclick="confirmarRegistrarPago()"
-                            class="px-4 py-2 text-sm font-semibold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-colors">
-                            <i class="fas fa-save mr-1"></i> Registrar Pago
-                        </button>
-                    </div>
+            <x-slot name="footer">
+                <div class="flex items-center justify-end gap-3">
+                    <button wire:click="$set('modalAbierto', false)"
+                        class="px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                        Cancelar
+                    </button>
+                    <button onclick="confirmarRegistrarPago()"
+                        class="px-4 py-2 text-sm font-semibold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-colors">
+                        <i class="fas fa-save mr-1"></i> Registrar Pago
+                    </button>
                 </div>
-            </div>
-        </div>
+            </x-slot>
+        </x-dialog-modal>
     @endif
 
     <!-- Scripts SweetAlert2 -->

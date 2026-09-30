@@ -90,31 +90,24 @@
     </div>
 
     @if ($modalAbierto)
-        <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <x-dialog-modal wire:model="modalAbierto" maxWidth="2xl">
+            <x-slot name="title">
+                <div class="flex items-center justify-between gap-3">
+                    <div class="min-w-0">
+                        <h3 class="text-base font-bold text-white flex items-center gap-2">
+                            <i class="fas fa-barcode"></i>
+                            Registrar Series
+                        </h3>
+                        <p class="text-sm text-indigo-200 mt-0.5">{{ $kitNombre }}</p>
+                    </div>
+                    <button wire:click="cerrarModal" aria-label="Cerrar" class="text-white/70 hover:text-white transition">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </x-slot>
 
-            <div class="fixed inset-0 bg-gray-500/75 transition-opacity" wire:click="cerrarModal"></div>
-
-            <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
-                <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-                    <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl"
-                         wire:click.away="cerrarModal">
-
-                        <div class="bg-gradient-to-r from-indigo-600 to-blue-600 px-6 py-4">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
-                                        <i class="fas fa-barcode"></i>
-                                        Registrar Series
-                                    </h3>
-                                    <p class="text-sm text-indigo-100 mt-0.5">{{ $kitNombre }}</p>
-                                </div>
-                                <button wire:click="cerrarModal" class="text-white/70 hover:text-white transition">
-                                    <i class="fas fa-times text-xl"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="px-6 py-4 max-h-[55vh] overflow-y-auto">
+            <x-slot name="content">
+                        <div class="max-h-[55vh] overflow-y-auto">
                             @php
                                 $serializados = collect($itemsPendientes)->where('es_serializado', true);
                                 $porCantidad = collect($itemsPendientes)->where('es_serializado', false);
@@ -183,24 +176,24 @@
                                 </div>
                             @endif
                         </div>
+            </x-slot>
 
-                        <div class="bg-gray-50 px-6 py-4 flex items-center justify-between border-t">
-                            <button wire:click="cerrarModal"
-                                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition">
-                                Cancelar
-                            </button>
-                            <button wire:click="guardarSeries"
-                                    wire:loading.attr="disabled"
-                                    class="px-6 py-2.5 text-sm font-bold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition shadow-sm disabled:opacity-50">
-                                <span wire:loading.remove wire:target="guardarSeries">
-                                    <i class="fas fa-save mr-1"></i> Guardar series
-                                </span>
-                                <span wire:loading wire:target="guardarSeries">Guardando...</span>
-                            </button>
-                        </div>
-                    </div>
+            <x-slot name="footer">
+                <div class="flex w-full items-center justify-between gap-3">
+                    <button wire:click="cerrarModal"
+                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                        Cancelar
+                    </button>
+                    <button wire:click="guardarSeries"
+                            wire:loading.attr="disabled"
+                            class="px-6 py-2.5 text-sm font-bold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition shadow-sm disabled:opacity-50">
+                        <span wire:loading.remove wire:target="guardarSeries">
+                            <i class="fas fa-save mr-1"></i> Guardar series
+                        </span>
+                        <span wire:loading wire:target="guardarSeries">Guardando...</span>
+                    </button>
                 </div>
-            </div>
-        </div>
+            </x-slot>
+        </x-dialog-modal>
     @endif
 </div>

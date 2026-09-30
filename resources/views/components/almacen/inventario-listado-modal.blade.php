@@ -9,26 +9,29 @@
                 $esKits = !in_array($this->filtroTipoInventario, ['sueltosSerializados', 'sueltosCantidad'], true);
             @endphp
 
-            <x-modal wire:model.live="modalListadoAbierto" maxWidth="xl">
-                <div class="flex items-center gap-3 px-5 py-4 border-b border-gray-200">
-                    <button type="button" wire:click="volverDashboard"
-                        class="w-9 h-9 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
-                        <i class="fas fa-arrow-left"></i>
-                    </button>
-                    <div class="w-10 h-10 rounded-lg bg-{{ $tipoColor }}-100 flex items-center justify-center shrink-0">
-                        <i class="fas {{ $this->listadoInventarioIcono }} text-{{ $tipoColor }}-600"></i>
+            <x-dialog-modal wire:model.live="modalListadoAbierto" maxWidth="xl">
+                <x-slot name="title">
+                    <div class="flex items-center gap-3">
+                        <button type="button" wire:click="volverDashboard"
+                            class="w-9 h-9 flex items-center justify-center rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <div class="w-10 h-10 rounded-lg bg-{{ $tipoColor }}-100 flex items-center justify-center shrink-0">
+                            <i class="fas {{ $this->listadoInventarioIcono }} text-{{ $tipoColor }}-600"></i>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <h3 class="text-base font-bold text-white">{{ $this->listadoInventarioTitulo }}</h3>
+                            <p class="text-sm text-slate-300 mt-0.5">{{ $listaItems->count() }} item{{ $listaItems->count() !== 1 ? 's' : '' }}</p>
+                        </div>
+                        <button type="button" wire:click="volverDashboard" aria-label="Cerrar"
+                            class="w-9 h-9 flex items-center justify-center rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
+                            <i class="fas fa-times"></i>
+                        </button>
                     </div>
-                    <div class="min-w-0 flex-1">
-                        <h3 class="text-base font-bold text-gray-800">{{ $this->listadoInventarioTitulo }}</h3>
-                        <p class="text-sm text-gray-500 mt-0.5">{{ $listaItems->count() }} item{{ $listaItems->count() !== 1 ? 's' : '' }}</p>
-                    </div>
-                    <button type="button" wire:click="volverDashboard" aria-label="Cerrar"
-                        class="w-9 h-9 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
+                </x-slot>
 
-                <div class="max-h-[70vh] overflow-y-auto px-1 py-1">
+                <x-slot name="content">
+                <div class="max-h-[70vh] overflow-y-auto">
                     @php
                         // Piezas con "produce" (lote de fabricación): se agrupan en bloques
                         // "Produce XXXX-AAAA". Solo se agrupa si al menos un item de la lista
@@ -137,4 +140,11 @@
                         @endforeach
                     @endif
                 </div>
-            </x-modal>
+                </x-slot>
+
+                <x-slot name="footer">
+                    <x-secondary-button wire:click="volverDashboard">
+                        Cerrar
+                    </x-secondary-button>
+                </x-slot>
+            </x-dialog-modal>

@@ -103,36 +103,34 @@
     </div>
 
     @if($mostrarDetalle && $trasladoSeleccionado)
-        <div class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center sm:p-4" role="dialog" aria-modal="true" x-data>
-            <div class="fixed inset-0 bg-gray-900/60" wire:click="cerrarDetalle"></div>
-
-            <div class="relative flex w-full max-w-xl max-h-[92vh] flex-col overflow-hidden rounded-t-2xl sm:rounded-xl bg-white shadow-2xl border border-gray-200 z-10"
-                 wire:click.away="cerrarDetalle">
-
-                <header class="flex items-center gap-3 px-5 py-4 border-b border-gray-200">
-                    <div class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0">
-                        <i class="fas fa-truck text-indigo-600"></i>
+        <x-dialog-modal wire:model="mostrarDetalle" maxWidth="xl">
+            <x-slot name="title">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-white/15 flex items-center justify-center shrink-0">
+                        <i class="fas fa-truck text-white"></i>
                     </div>
                     <div class="min-w-0 flex-1">
-                        <h3 class="text-base font-bold text-gray-800 truncate">→ {{ $trasladoSeleccionado->sedeDestino->nombre }}</h3>
-                        <p class="text-sm text-gray-500 mt-0.5">{{ $trasladoSeleccionado->created_at->format('d/m/Y H:i') }} — {{ $trasladoSeleccionado->enviadoPor->name }}</p>
+                        <h3 class="text-base font-bold text-white truncate">→ {{ $trasladoSeleccionado->sedeDestino->nombre }}</h3>
+                        <p class="text-sm text-slate-300 mt-0.5">{{ $trasladoSeleccionado->created_at->format('d/m/Y H:i') }} — {{ $trasladoSeleccionado->enviadoPor->name }}</p>
                     </div>
                     @if($trasladoSeleccionado->es_kit_completo)
-                        <span class="shrink-0 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full">
+                        <span class="shrink-0 px-2 py-0.5 bg-emerald-500/20 text-emerald-300 text-xs font-bold rounded-full">
                             <i class="fas fa-check-circle mr-0.5"></i> Completo
                         </span>
                     @else
-                        <span class="shrink-0 px-2 py-0.5 bg-amber-100 text-amber-700 text-xs font-bold rounded-full">
+                        <span class="shrink-0 px-2 py-0.5 bg-amber-500/20 text-amber-300 text-xs font-bold rounded-full">
                             <i class="fas fa-exclamation-triangle mr-0.5"></i> Incompleto
                         </span>
                     @endif
                     <button type="button" wire:click="cerrarDetalle" aria-label="Cerrar"
-                        class="w-9 h-9 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
+                        class="w-9 h-9 flex items-center justify-center rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
                         <i class="fas fa-times"></i>
                     </button>
-                </header>
+                </div>
+            </x-slot>
 
-                <div class="flex-1 overflow-y-auto px-5 py-4 space-y-3">
+            <x-slot name="content">
+                <div class="max-h-[65vh] overflow-y-auto space-y-3">
                     @php
                         $modalAgrupados = $trasladoSeleccionado->detalles->map(fn($d) => [
                             'nombre' => $d->producto->nombre ?? 'Producto',
@@ -178,14 +176,16 @@
                         </div>
                     @endif
                 </div>
+            </x-slot>
 
-                <footer class="flex items-center gap-3 px-5 py-3 border-t border-gray-200 bg-gray-50">
+            <x-slot name="footer">
+                <div class="flex w-full items-center gap-3">
                     <button type="button" wire:click="cerrarDetalle"
                         class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
                         Cerrar
                     </button>
-                </footer>
-            </div>
-        </div>
+                </div>
+            </x-slot>
+        </x-dialog-modal>
     @endif
 </div>
