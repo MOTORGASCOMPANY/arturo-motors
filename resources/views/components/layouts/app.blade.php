@@ -255,7 +255,15 @@
                 var icono = data.icono || data.icon || 'warning';
                 var titulo = data.titulo || data.title || 'Atención';
                 var texto = data.mensaje || data.text || '';
-                window.AppSwal.alerta(titulo, texto);
+                if (icono === 'success') {
+                    window.AppSwal.exito(titulo, texto);
+                } else if (icono === 'error') {
+                    window.AppSwal.error(titulo, texto);
+                } else if (icono === 'info') {
+                    window.AppSwal.nota(titulo, texto);
+                } else {
+                    window.AppSwal.alerta(titulo, texto);
+                }
             });
 
             @if (session()->has('swal'))
