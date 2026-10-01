@@ -15,6 +15,7 @@ use App\Http\Controllers\ReporteAlmacenPdfController;
 use App\Http\Controllers\ReporteAlmacenExcelController;
 use App\Http\Controllers\ReporteConversionesPdfController;
 use App\Http\Controllers\ReporteConversionesExcelController;
+use App\Http\Controllers\FiseReporteController;
 use App\Livewire\AdminPermisos;
 use App\Livewire\AdminRoles;
 use App\Livewire\Almacen\CategoriaAlta as CategoriasCrear;
@@ -175,6 +176,8 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::get('/almacen/reporte', ReporteAlmacen::class)->name('almacen.reporte');
     Route::get('/conversiones/reporte', ReporteConversiones::class)->name('conversiones.reporte');
     Route::get('/fise/reporte', \App\Livewire\Fise\Reporte::class)->name('fise.reporte');
+    Route::get('/fise/reporte/pdf', [FiseReporteController::class, 'pdf'])->name('fise.reporte.pdf');
+    Route::get('/fise/reporte/excel', [FiseReporteController::class, 'excel'])->name('fise.reporte.excel');
 
     // Diagrama Gantt
     Route::get('/diagrama-gantt', \App\Http\Controllers\GanttController::class)->name('diagrama-gantt');

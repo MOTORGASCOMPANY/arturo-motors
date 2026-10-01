@@ -38,21 +38,20 @@
 
                 {{-- Acciones --}}
                 <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
-                    <button
-                        wire:click="descargarPdf"
-                        class="bg-white hover:bg-red-50 border border-gray-200 text-gray-700 font-semibold rounded-xl py-2.5 px-4 shadow-sm transition-all duration-200 flex items-center justify-center gap-2 w-full sm:w-auto text-sm"
-                    >
+                    {{-- Exportaciones con el componente de carga reutilizable (js/components/carga-swal.js) --}}
+                    <a href="{{ route('fise.reporte.pdf', ['desde' => $desde, 'hasta' => $hasta]) }}"
+                       onclick="CargaSwal.exportar({ url: this.href, titulo: 'Exportando PDF', texto: 'Generando el reporte, por favor espera...', archivo: 'PDF' }); return false;"
+                       class="bg-white hover:bg-red-50 border border-gray-200 text-gray-700 font-semibold rounded-xl py-2.5 px-4 shadow-sm transition-all duration-200 flex items-center justify-center gap-2 w-full sm:w-auto text-sm">
                         <i class="fas fa-file-pdf text-red-500"></i>
                         PDF
-                    </button>
+                    </a>
 
-                    <button
-                        wire:click="descargarExcel"
-                        class="bg-white hover:bg-emerald-50 border border-gray-200 text-gray-700 font-semibold rounded-xl py-2.5 px-4 shadow-sm transition-all duration-200 flex items-center justify-center gap-2 w-full sm:w-auto text-sm"
-                    >
+                    <a href="{{ route('fise.reporte.excel', ['desde' => $desde, 'hasta' => $hasta]) }}"
+                       onclick="CargaSwal.exportar({ url: this.href, titulo: 'Exportando Excel', texto: 'Generando el reporte, por favor espera...', archivo: 'Excel' }); return false;"
+                       class="bg-white hover:bg-emerald-50 border border-gray-200 text-gray-700 font-semibold rounded-xl py-2.5 px-4 shadow-sm transition-all duration-200 flex items-center justify-center gap-2 w-full sm:w-auto text-sm">
                         <i class="fas fa-file-excel text-emerald-500"></i>
                         Excel
-                    </button>
+                    </a>
                 </div>
 
             </div>
@@ -513,14 +512,6 @@
             canvas.dataset.saldoPendiente = JSON.stringify(data.saldoPendiente || []);
 
             renderChartPagosFise();
-        });
-
-        Livewire.on('descargar-pdf', () => {
-            CargaSwal.nota('Próximamente', 'La exportación PDF del reporte FISE está en desarrollo.');
-        });
-
-        Livewire.on('descargar-excel', () => {
-            CargaSwal.nota('Próximamente', 'La exportación Excel del reporte FISE está en desarrollo.');
         });
     </script>
     @endscript
