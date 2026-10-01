@@ -12,7 +12,7 @@ class Reporte extends Component
 
     public function mount(): void
     {
-        $this->desde = now()->startOfMonth()->format('Y-m-d');
+        $this->desde = now()->subDays(29)->format('Y-m-d');
         $this->hasta = now()->format('Y-m-d');
     }
 
@@ -22,9 +22,10 @@ class Reporte extends Component
 
         $this->dispatch('chart-data-fise',
             labels: $datos['labels'],
-            aprobadas: $datos['aprobadasPorDia'],
-            rechazadas: $datos['rechazadasPorDia'],
-            pendientes: $datos['pendientesPorDia'],
+            pagados: $datos['pagosPagadosPorDia'],
+            parciales: $datos['pagosParcialesPorDia'],
+            pendientes: $datos['pagosPendientesPorDia'],
+            tasa: $datos['tasaPagoPorDia'],
         );
 
         $this->dispatch('chart-pagos-fise',

@@ -61,34 +61,34 @@
     {{-- KPIs Solicitudes --}}
     <div>
         <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4 px-1 flex items-center gap-2">
-            <i class="fas fa-file-signature text-slate-400"></i>
-            Solicitudes FISE
+            <i class="fas fa-wallet text-slate-400"></i>
+            Pagos FISE
         </h3>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
 
             <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-slate-200/80 p-5 flex flex-col justify-center">
                 <div class="flex items-center justify-between mb-2">
-                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total solicitudes</span>
-                    <i class="fas fa-folder-open text-slate-200 text-lg"></i>
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total pagos</span>
+                    <i class="fas fa-receipt text-slate-200 text-lg"></i>
                 </div>
-                <p class="text-3xl font-extrabold text-slate-800">{{ $totalSolicitudes }}</p>
+                <p class="text-3xl font-extrabold text-slate-800">{{ $totalPagos }}</p>
             </div>
 
             <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-slate-200/80 p-5 flex flex-col justify-center border-l-4 border-l-emerald-500">
                 <div class="flex items-center justify-between mb-2">
-                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Aprobadas</span>
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Pagados</span>
                     <i class="fas fa-check-circle text-emerald-100 text-lg"></i>
                 </div>
-                <p class="text-3xl font-extrabold text-emerald-600">{{ $solicitudesAprobadas }}</p>
+                <p class="text-3xl font-extrabold text-emerald-600">{{ $pagosPagados }}</p>
             </div>
 
-            <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-slate-200/80 p-5 flex flex-col justify-center border-l-4 border-l-red-500">
+            <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-slate-200/80 p-5 flex flex-col justify-center border-l-4 border-l-indigo-500">
                 <div class="flex items-center justify-between mb-2">
-                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Rechazadas</span>
-                    <i class="fas fa-times-circle text-red-100 text-lg"></i>
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Parciales</span>
+                    <i class="fas fa-hourglass-half text-indigo-100 text-lg"></i>
                 </div>
-                <p class="text-3xl font-extrabold text-red-600">{{ $solicitudesRechazadas }}</p>
+                <p class="text-3xl font-extrabold text-indigo-600">{{ $pagosParciales }}</p>
             </div>
 
             <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-slate-200/80 p-5 flex flex-col justify-center border-l-4 border-l-amber-500">
@@ -96,54 +96,59 @@
                     <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Pendientes</span>
                     <i class="fas fa-clock text-amber-100 text-lg"></i>
                 </div>
-                <p class="text-3xl font-extrabold text-amber-600">{{ $solicitudesPendientes }}</p>
+                <p class="text-3xl font-extrabold text-amber-600">{{ $pagosPendientes }}</p>
             </div>
 
-            <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-slate-200/80 p-5 flex flex-col justify-center border-l-4 border-l-indigo-500">
+            <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-slate-200/80 p-5 flex flex-col justify-center border-l-4 border-l-purple-500">
                 <div class="flex items-center justify-between mb-2">
-                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">% Aprobación</span>
-                    <i class="fas fa-percent text-indigo-100 text-lg"></i>
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Tasa de pago</span>
+                    <i class="fas fa-percent text-purple-100 text-lg"></i>
                 </div>
-                <p class="text-3xl font-extrabold text-indigo-600">{{ $tasaAprobacion }}%</p>
+                <p class="text-3xl font-extrabold text-purple-600">{{ $tasaPago }}%</p>
             </div>
 
         </div>
     </div>
 
-    {{-- Gráficos: Solicitudes y Pagos por día --}}
+    {{-- Gráficos: Pagos por día (estados y montos) --}}
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
 
-        {{-- Gráfico de solicitudes --}}
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 flex flex-col h-full" wire:ignore wire:key="chart-fise-container">
+        {{-- Gráfico de pagos por día (estados y tasa de pago) --}}
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 flex flex-col h-full" wire:ignore wire:key="chart-pagos-estados-container">
 
             <h3 class="text-sm font-bold text-slate-600 uppercase tracking-wider mb-6 flex items-center gap-2">
-                <i class="fas fa-chart-line text-slate-400"></i>
-                Solicitudes FISE por día
+                <i class="fas fa-chart-column text-slate-400"></i>
+                Pagos FISE por día
             </h3>
 
-            @if ($totalSolicitudes > 0)
+            @if ($totalPagos > 0)
                 <div class="relative w-full flex-grow" style="min-height: 280px;">
                     <canvas
-                        id="chartFise"
+                        id="chartPagosEstados"
                         data-labels='@json($labels)'
-                        data-aprobadas='@json($aprobadasPorDia ?? [])'
-                        data-rechazadas='@json($rechazadasPorDia ?? [])'
-                        data-pendientes='@json($pendientesPorDia ?? [])'
+                        data-pagados='@json($pagosPagadosPorDia ?? [])'
+                        data-parciales='@json($pagosParcialesPorDia ?? [])'
+                        data-pendientes='@json($pagosPendientesPorDia ?? [])'
+                        data-tasa='@json($tasaPagoPorDia ?? [])'
                     ></canvas>
                 </div>
 
                 <div class="flex flex-wrap gap-4 mt-6 justify-center">
                     <div class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-full border border-slate-100 text-xs font-semibold text-slate-600 shadow-sm">
                         <span class="w-3 h-3 rounded-full bg-emerald-500 shadow-inner"></span>
-                        Aprobadas
+                        Pagados
                     </div>
                     <div class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-full border border-slate-100 text-xs font-semibold text-slate-600 shadow-sm">
-                        <span class="w-3 h-3 rounded-full bg-red-500 shadow-inner"></span>
-                        Rechazadas
+                        <span class="w-3 h-3 rounded-full bg-indigo-500 shadow-inner"></span>
+                        Parciales
                     </div>
                     <div class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-full border border-slate-100 text-xs font-semibold text-slate-600 shadow-sm">
                         <span class="w-3 h-3 rounded-full bg-amber-500 shadow-inner"></span>
                         Pendientes
+                    </div>
+                    <div class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-full border border-slate-100 text-xs font-semibold text-slate-600 shadow-sm">
+                        <span class="w-3 h-3 rounded-full bg-purple-500 shadow-inner"></span>
+                        Tasa de pago
                     </div>
                 </div>
             @else
@@ -152,7 +157,7 @@
                         <i class="fas fa-file-circle-question text-slate-300 text-2xl"></i>
                     </div>
                     <p class="text-slate-600 font-semibold text-lg">Sin datos</p>
-                    <p class="text-slate-400 text-sm mt-1">No hay solicitudes FISE en este periodo</p>
+                    <p class="text-slate-400 text-sm mt-1">No hay pagos FISE en este periodo</p>
                 </div>
             @endif
 
@@ -163,7 +168,7 @@
 
             <h3 class="text-sm font-bold text-slate-600 uppercase tracking-wider mb-6 flex items-center gap-2">
                 <i class="fas fa-chart-area text-slate-400"></i>
-                Pagos FISE por día
+                Montos FISE por día
             </h3>
 
             @if ($totalPagos > 0)
@@ -255,74 +260,6 @@
         </div>
     @endif
 
-    {{-- Tabla solicitudes --}}
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden mb-6">
-        <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white">
-            <h3 class="font-bold text-slate-700 text-base flex items-center gap-2">
-                <i class="fas fa-list-check text-slate-400"></i>
-                Detalle de solicitudes
-            </h3>
-            <span class="bg-slate-100 text-slate-600 py-1 px-3 rounded-full text-xs font-bold shadow-sm">
-                {{ $totalSolicitudes }} registros
-            </span>
-        </div>
-
-        <div class="overflow-x-auto max-h-[400px] overflow-y-auto custom-scrollbar">
-            <table class="w-full text-sm text-left">
-                <thead class="bg-slate-50 text-slate-500 text-xs font-semibold uppercase tracking-wider sticky top-0 z-10 border-b border-slate-200 shadow-sm">
-                    <tr>
-                        <th class="px-5 py-3">Fecha</th>
-                        <th class="px-5 py-3">Cliente</th>
-                        <th class="px-5 py-3">Vehículo</th>
-                        <th class="px-5 py-3">Estado</th>
-                        <th class="px-5 py-3">Observaciones</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100 bg-white">
-                    @if (count($solicitudes) > 0)
-                        @foreach ($solicitudes as $sol)
-                            @php
-                                $colorSol = match ($sol->estado) {
-                                    'aprobado' => 'bg-emerald-50 text-emerald-700 border border-emerald-200',
-                                    'rechazado' => 'bg-red-50 text-red-700 border border-red-200',
-                                    default => 'bg-amber-50 text-amber-700 border border-amber-200',
-                                };
-                            @endphp
-                            <tr wire:key="solicitud-{{ $sol->id ?? $loop->index }}" class="hover:bg-slate-50/80 transition-colors">
-                                <td class="px-5 py-3.5 text-xs text-slate-500">
-                                    {{ $sol->created_at->format('d/m/Y H:i') }}
-                                </td>
-                                <td class="px-5 py-3.5 font-medium text-slate-800">
-                                    {{ trim(($sol->cliente->nombre ?? '') . ' ' . ($sol->cliente->apellido ?? '')) ?: 'N/A' }}
-                                </td>
-                                <td class="px-5 py-3.5 text-slate-600">
-                                    <span class="border border-slate-200 bg-slate-50 px-2 py-1 rounded text-xs font-mono font-bold">
-                                        {{ $sol->vehiculo->placa ?? 'N/A' }}
-                                    </span>
-                                </td>
-                                <td class="px-5 py-3.5">
-                                    <span class="inline-flex items-center rounded-md {{ $colorSol }} px-2.5 py-1 text-xs font-bold uppercase tracking-wider">
-                                        {{ ucfirst($sol->estado) }}
-                                    </span>
-                                </td>
-                                <td class="px-5 py-3.5 text-xs text-slate-500 max-w-[200px] truncate" title="{{ $sol->observaciones }}">
-                                    {{ $sol->observaciones ?: '---' }}
-                                </td>
-                            </tr>
-                        @endforeach
-                    @else
-                        <tr>
-                            <td colspan="5" class="px-5 py-12 text-center text-slate-400">
-                                <i class="fas fa-inbox text-3xl mb-3 block text-slate-300"></i>
-                                <span class="font-medium">Sin solicitudes en este periodo.</span>
-                            </td>
-                        </tr>
-                    @endif
-                </tbody>
-            </table>
-        </div>
-    </div>
-
     {{-- Tabla pagos --}}
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
         <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white">
@@ -410,40 +347,43 @@
 
     @script
     <script>
-        let chartFiseInstance = null;
+        let chartPagosEstadosInstance = null;
         let chartPagosFiseInstance = null;
 
-        const renderChartFise = () => {
-            const canvas = document.getElementById('chartFise');
+        const renderChartPagosEstados = () => {
+            const canvas = document.getElementById('chartPagosEstados');
             if (!canvas || typeof Chart === 'undefined') return;
 
             const labels = JSON.parse(canvas.dataset.labels || '[]');
-            const aprobadas = JSON.parse(canvas.dataset.aprobadas || '[]');
-            const rechazadas = JSON.parse(canvas.dataset.rechazadas || '[]');
+            const pagados = JSON.parse(canvas.dataset.pagados || '[]');
+            const parciales = JSON.parse(canvas.dataset.parciales || '[]');
             const pendientes = JSON.parse(canvas.dataset.pendientes || '[]');
+            const tasa = JSON.parse(canvas.dataset.tasa || '[]');
 
-            if (chartFiseInstance) chartFiseInstance.destroy();
+            if (chartPagosEstadosInstance) chartPagosEstadosInstance.destroy();
 
-            chartFiseInstance = new Chart(canvas, {
+            chartPagosEstadosInstance = new Chart(canvas, {
                 type: 'bar',
                 data: {
                     labels: labels,
                     datasets: [
-                        { label: 'Aprobadas', data: aprobadas, backgroundColor: '#10b981', borderRadius: 4, barPercentage: 0.6, categoryPercentage: 0.8 },
-                        { label: 'Rechazadas', data: rechazadas, backgroundColor: '#ef4444', borderRadius: 4, barPercentage: 0.6, categoryPercentage: 0.8 },
-                        { label: 'Pendientes', data: pendientes, backgroundColor: '#f59e0b', borderRadius: 4, barPercentage: 0.6, categoryPercentage: 0.8 }
+                        { label: 'Pagados', data: pagados, backgroundColor: '#10b981', borderRadius: 4, barPercentage: 0.6, categoryPercentage: 0.8 },
+                        { label: 'Parciales', data: parciales, backgroundColor: '#6366f1', borderRadius: 4, barPercentage: 0.6, categoryPercentage: 0.8 },
+                        { label: 'Pendientes', data: pendientes, backgroundColor: '#f59e0b', borderRadius: 4, barPercentage: 0.6, categoryPercentage: 0.8 },
+                        { label: 'Tasa de pago', data: tasa, type: 'line', yAxisID: 'yTasa', borderColor: '#8b5cf6', backgroundColor: 'transparent', borderWidth: 2, tension: 0.3, pointRadius: 2, pointBackgroundColor: '#8b5cf6', fill: false }
                     ]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     interaction: { mode: 'index', intersect: false },
-                    plugins: { 
+                    plugins: {
                         legend: { display: false },
-                        tooltip: { backgroundColor: 'rgba(255, 255, 255, 0.95)', titleColor: '#0f172a', bodyColor: '#475569', borderColor: '#e2e8f0', borderWidth: 1, padding: 12, boxPadding: 6, usePointStyle: true }
+                        tooltip: { backgroundColor: 'rgba(255, 255, 255, 0.95)', titleColor: '#0f172a', bodyColor: '#475569', borderColor: '#e2e8f0', borderWidth: 1, padding: 12, boxPadding: 6, usePointStyle: true, callbacks: { label: (ctx) => ctx.dataset.yAxisID === 'yTasa' ? `${ctx.dataset.label}: ${ctx.parsed.y}%` : `${ctx.dataset.label}: ${ctx.parsed.y}` } }
                     },
                     scales: {
                         x: { stacked: true, grid: { display: false, drawBorder: false }, ticks: { color: '#64748b' } },
-                        y: { stacked: true, beginAtZero: true, ticks: { stepSize: 1, color: '#94a3b8' }, grid: { color: '#f1f5f9', drawBorder: false, borderDash: [5, 5] } }
+                        y: { stacked: true, beginAtZero: true, ticks: { stepSize: 1, color: '#94a3b8' }, grid: { color: '#f1f5f9', drawBorder: false, borderDash: [5, 5] } },
+                        yTasa: { position: 'right', min: 0, max: 100, grid: { display: false, drawBorder: false }, ticks: { color: '#a78bfa', maxTicksLimit: 6, callback: (value) => value + '%' } }
                     }
                 }
             });
@@ -485,20 +425,21 @@
             });
         };
 
-        renderChartFise();
+        renderChartPagosEstados();
         renderChartPagosFise();
 
         $wire.on('chart-data-fise', (event) => {
             const data = Array.isArray(event) ? event[0] : event;
-            const canvas = document.getElementById('chartFise');
+            const canvas = document.getElementById('chartPagosEstados');
             if (!canvas) return;
 
             canvas.dataset.labels = JSON.stringify(data.labels || []);
-            canvas.dataset.aprobadas = JSON.stringify(data.aprobadas || []);
-            canvas.dataset.rechazadas = JSON.stringify(data.rechazadas || []);
+            canvas.dataset.pagados = JSON.stringify(data.pagados || []);
+            canvas.dataset.parciales = JSON.stringify(data.parciales || []);
             canvas.dataset.pendientes = JSON.stringify(data.pendientes || []);
+            canvas.dataset.tasa = JSON.stringify(data.tasa || []);
 
-            renderChartFise();
+            renderChartPagosEstados();
         });
 
         $wire.on('chart-pagos-fise', (event) => {

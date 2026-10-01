@@ -11,7 +11,7 @@ class FiseReporteService
 {
     public function datos(?string $desde = null, ?string $hasta = null): array
     {
-        $desde ??= now()->startOfMonth()->format('Y-m-d');
+        $desde ??= now()->subDays(29)->format('Y-m-d');
         $hasta ??= now()->format('Y-m-d');
 
         [$desde, $hasta] = $this->rangoValido($desde, $hasta);
@@ -29,7 +29,11 @@ class FiseReporteService
         $tasaAprobacion = $totalSolicitudes > 0 ? round(($solicitudesAprobadas / $totalSolicitudes) * 100, 1) : 0;
 
         // ─── Pagos FISE ───
-        $pagos = FisePago::whereBetween('created_at', [$desde, $hasta])
+        // Periodo + créditos con saldo abierto: la deuda viva no expira con el calendario (coincide con Control FISE)
+        $pagos = FisePago::where(function ($q) use ($desde, $hasta) {
+                $q->whereBetween('created_at', [$desde, $hasta])
+                  ->orWhereColumn('monto_pagado', '<', 'monto_total');
+            })
             ->with(['serviceOrder.cliente', 'serviceOrder.vehiculo', 'pagadoPor'])
             ->orderByDesc('created_at')
             ->get();
@@ -38,6 +42,7 @@ class FiseReporteService
         $montoTotalFise = (float) $pagos->sum('monto_total');
         $montoPagadoFise = (float) $pagos->sum('monto_pagado');
         $saldoPendiente = $montoTotalFise - $montoPagadoFise;
+        $tasaPago = $montoTotalFise > 0 ? round(($montoPagadoFise / $montoTotalFise) * 100, 1) : 0;
 
         $pagosPagados = $pagos->where('estado', 'pagado')->count();
         $pagosParciales = $pagos->where('estado', 'parcial')->count();
@@ -49,31 +54,33 @@ class FiseReporteService
             ->whereBetween('created_at', [$desde, $hasta])
             ->sum('monto');
 
-        // ─── Datos para gráfico de solicitudes por día ───
+        // ─── Datos para gráficos por día ───
         $dias = min((int) $desde->diffInDays($hasta) + 1, 90);
         $labels = [];
-        $aprobadasPorDia = [];
-        $rechazadasPorDia = [];
-        $pendientesPorDia = [];
+        $pagosPagadosPorDia = [];
+        $pagosParcialesPorDia = [];
+        $pagosPendientesPorDia = [];
+        $tasaPagoPorDia = [];
         $montoTotalPorDia = [];
         $montoPagadoPorDia = [];
         $saldoPendientePorDia = [];
 
         for ($i = 0; $i < $dias; $i++) {
-            $fecha = $desde->copy()->addDays($i)->format('Y-m-d');
+            $finDia = $desde->copy()->addDays($i)->endOfDay();
             $labels[] = $desde->copy()->addDays($i)->format('d/m');
 
-            // Solicitudes por día
-            $diaSol = $solicitudes->filter(fn ($s) => $s->created_at->format('Y-m-d') === $fecha);
-            $aprobadasPorDia[] = $diaSol->where('estado', 'aprobado')->count();
-            $rechazadasPorDia[] = $diaSol->where('estado', 'rechazado')->count();
-            $pendientesPorDia[] = $diaSol->where('estado', 'pendiente')->count();
+            // Estado del portafolio al cierre de cada día (con estado y montos actuales)
+            $hastaDia = $pagos->filter(fn ($p) => $p->created_at->lte($finDia));
+            $pagosPagadosPorDia[] = $hastaDia->where('estado', 'pagado')->count();
+            $pagosParcialesPorDia[] = $hastaDia->where('estado', 'parcial')->count();
+            $pagosPendientesPorDia[] = $hastaDia->where('estado', 'pendiente')->count();
 
-            // Pagos por día (montos)
-            $diaPag = $pagos->filter(fn ($p) => $p->created_at->format('Y-m-d') === $fecha);
-            $montoTotalPorDia[] = (float) $diaPag->sum('monto_total');
-            $montoPagadoPorDia[] = (float) $diaPag->sum('monto_pagado');
-            $saldoPendientePorDia[] = (float) $diaPag->sum('monto_total') - (float) $diaPag->sum('monto_pagado');
+            $diaMontoTotal = (float) $hastaDia->sum('monto_total');
+            $diaMontoPagado = (float) $hastaDia->sum('monto_pagado');
+            $montoTotalPorDia[] = $diaMontoTotal;
+            $montoPagadoPorDia[] = $diaMontoPagado;
+            $saldoPendientePorDia[] = $diaMontoTotal - $diaMontoPagado;
+            $tasaPagoPorDia[] = $diaMontoTotal > 0 ? round(($diaMontoPagado / $diaMontoTotal) * 100, 1) : 0;
         }
 
         // ─── Pagos por técnico ───
@@ -104,15 +111,17 @@ class FiseReporteService
             'pagosPagados' => $pagosPagados,
             'pagosParciales' => $pagosParciales,
             'pagosPendientes' => $pagosPendientes,
+            'tasaPago' => $tasaPago,
             // Caja
             'ingresosCajaFise' => $ingresosCajaFise,
             // Por técnico
             'pagosPorTecnico' => $pagosPorTecnico,
             // Charts
             'labels' => $labels,
-            'aprobadasPorDia' => $aprobadasPorDia,
-            'rechazadasPorDia' => $rechazadasPorDia,
-            'pendientesPorDia' => $pendientesPorDia,
+            'pagosPagadosPorDia' => $pagosPagadosPorDia,
+            'pagosParcialesPorDia' => $pagosParcialesPorDia,
+            'pagosPendientesPorDia' => $pagosPendientesPorDia,
+            'tasaPagoPorDia' => $tasaPagoPorDia,
             'montoTotalPorDia' => $montoTotalPorDia,
             'montoPagadoPorDia' => $montoPagadoPorDia,
             'saldoPendientePorDia' => $saldoPendientePorDia,
