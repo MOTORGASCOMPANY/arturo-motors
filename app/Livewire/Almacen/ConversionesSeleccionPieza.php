@@ -78,11 +78,22 @@ trait ConversionesSeleccionPieza
             
             $this->piezaReemplazarId = $itemId;
             $this->metodoReemplazo = 'buscando_kit';
-            $this->kitsDisponibles = $kits->map(function($k) use ($item) {
+
+            $piezasConSerie = ItemSerializado::whereIn('kit_padre_id', $kits->pluck('id'))
+                ->where('producto_id', $item->producto_id)
+                ->whereNotNull('serie')
+                ->whereNotIn('estado', ['defectuoso', 'devuelta_por_no_calzar'])
+                ->get()
+                ->keyBy('kit_padre_id');
+
+            $this->kitsDisponibles = $kits->map(function($k) use ($item, $piezasConSerie) {
+                $piezaConSerie = $piezasConSerie->get($k->id);
                 return [
                     'id' => $k->id,
                     'producto' => $k->producto->nombre,
                     'serie' => $k->serie,
+                    'pieza_con_serie_id' => $piezaConSerie?->id,
+                    'serie_disponible' => $piezaConSerie?->serie,
                     'componentes' => $k->producto->componentes->map(function($c) use ($item) {
                         $comp = $c->componente;
                         $attrs = $comp->atributos ?? [];
@@ -156,12 +167,50 @@ trait ConversionesSeleccionPieza
     public function seleccionarKit(int $kitId)
     {
         $this->kitSeleccionadoId = $kitId;
-        $this->metodoReemplazo = 'kit_seleccionado';
         $this->nuevaSerie = '';
+        $this->piezaKitConSerie = null;
+
+        $item = ItemSerializado::find($this->piezaReemplazarId);
+        if ($item) {
+            $hijo = ItemSerializado::where('kit_padre_id', $kitId)
+                ->where('producto_id', $item->producto_id)
+                ->whereNotNull('serie')
+                ->whereNotIn('estado', ['defectuoso', 'devuelta_por_no_calzar'])
+                ->first();
+
+            if ($hijo) {
+                $this->piezaKitConSerie = ['id' => $hijo->id, 'serie' => $hijo->serie];
+                $this->metodoReemplazo = 'kit_con_serie';
+                return;
+            }
+        }
+
+        $this->metodoReemplazo = 'kit_seleccionado';
     }
 
     public function confirmarReemplazoKit()
     {
+        // ── Caso A: el kit ya tiene el hijo con serie → reutilizar ese item ──
+        if ($this->piezaKitConSerie) {
+            try {
+                $reporte = $this->crearReporte($this->conversionSeleccionadaId, $this->piezaReemplazarId, $this->observacion);
+                $kitItem = ItemSerializado::find($this->kitSeleccionadoId);
+                $pieza = ItemSerializado::find($this->piezaKitConSerie['id']);
+
+                $this->cambioPiezaService->reemplazarUsandoHijoDeKit(
+                    $reporte, $kitItem, $pieza, $this->observacion
+                );
+
+                $this->dispatch('minToast', titulo: 'Reemplazado', mensaje: "Serie {$pieza->serie} asignada.", icono: 'success');
+                $this->resetReemplazo();
+            } catch (\Throwable $e) {
+                report($e);
+                $this->dispatch('minToast', titulo: 'Error', mensaje: $e->getMessage(), icono: 'error');
+            }
+            return;
+        }
+
+        // ── Caso B: el kit no tiene serie → flujo actual (crear item con serie nueva) ──
         $serie = trim($this->nuevaSerie);
         if (empty($serie)) {
             $this->dispatch('minToast', titulo: 'Error', mensaje: 'Ingrese la serie.', icono: 'error');

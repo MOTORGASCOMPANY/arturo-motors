@@ -148,10 +148,37 @@
                                                                             {{ $comp['nombre'] }}
                                                                         </span>
                                                                     @endforeach
+                                                                    @if(!empty($kit['serie_disponible']))
+                                                                        <span class="text-[10px] px-1.5 py-0.5 rounded bg-purple-600 text-white font-mono font-bold">
+                                                                            <i class="fas fa-barcode mr-1"></i>{{ $kit['serie_disponible'] }}
+                                                                        </span>
+                                                                    @endif
                                                                 </div>
                                                             </div>
                                                         @endforeach
                                                         <button wire:click="cancelarReemplazo" class="text-xs text-gray-400 hover:text-gray-700 py-2 sm:py-0"><i class="fas fa-times mr-1"></i>Cancelar</button>
+                                                    </div>
+                                                </div>
+                                            @endif
+
+                                            @if($seleccionada && $this->metodoReemplazo === 'kit_con_serie')
+                                                <div class="px-3 sm:px-4 pb-3 pt-0 border-t border-purple-200">
+                                                    <div class="sm:ml-11 mt-2 space-y-2">
+                                                        <p class="text-xs text-purple-700 font-semibold"><i class="fas fa-barcode mr-1"></i>El kit ya tiene serie — se usa esa pieza directamente:</p>
+                                                        <div class="flex flex-wrap items-center gap-2">
+                                                            <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs font-mono font-bold rounded-lg">{{ $this->piezaKitConSerie['serie'] ?? '' }}</span>
+                                                            <span class="text-[11px] text-gray-500">(la pieza se mueve al kit de la orden)</span>
+                                                        </div>
+                                                        <div>
+                                                            <label class="text-[11px] text-gray-500 font-medium block mb-1">Observaci&oacute;n (opcional)</label>
+                                                            <input type="text" wire:model.live="observacion" placeholder="Motivo del reemplazo..."
+                                                                   class="w-full px-3 py-2 sm:py-1.5 border border-gray-300 rounded-lg text-xs focus:ring-1 focus:ring-purple-500 outline-none">
+                                                        </div>
+                                                        <div class="flex flex-wrap items-center gap-2">
+                                                            <button wire:click="confirmarReemplazoKit" wire:loading.attr="disabled"
+                                                                    class="px-4 py-2 sm:py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition"><i class="fas fa-check mr-1"></i> Reemplazar</button>
+                                                            <button wire:click="cancelarReemplazo" class="text-xs text-gray-400 hover:text-gray-700 px-1 py-2 sm:py-0"><i class="fas fa-times"></i></button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             @endif

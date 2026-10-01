@@ -89,6 +89,7 @@ class CambioPiezaService
                 $itemADevolver->update([
                     'estado' => 'defectuoso',
                     'service_order_id' => null,
+                    'kit_padre_id' => null,
                     'atributos' => array_merge($itemADevolver->atributos ?? [], [
                         'defectuoso' => true,
                         'defectuoso_en' => now()->toDateTimeString(),
@@ -431,10 +432,13 @@ class CambioPiezaService
                 ->lockForUpdate()
                 ->first();
 
+            $kitPadreDelViejo = $itemViejo?->kit_padre_id;
+
             if ($itemViejo) {
                 $itemViejo->update([
                     'estado' => 'defectuoso',
                     'service_order_id' => null,
+                    'kit_padre_id' => null,
                     'atributos' => array_merge($itemViejo->atributos ?? [], [
                         'defectuoso' => true,
                         'defectuoso_en' => now()->toDateTimeString(),
@@ -466,7 +470,7 @@ class CambioPiezaService
             $updateData = [
                 'estado' => 'asignado',
                 'service_order_id' => $reporte->service_order_id,
-                'kit_padre_id' => $itemViejo->kit_padre_id ?? null,
+                'kit_padre_id' => $kitPadreDelViejo,
             ];
 
             // Guardar serie si se proporcionó
@@ -492,6 +496,137 @@ class CambioPiezaService
             // 3. Actualizar reporte
             $reporte->asignarAlmacen(Auth::id());
             $reporte->kitAbierto($itemNuevoId, $observaciones);
+
+            return true;
+        });
+    }
+
+    /**
+     * Reemplazar usando DIRECTAMENTE el hijo del kit fuente que ya tiene serie.
+     * No crea items nuevos ni pide serie: esa pieza se mueve al kit objetivo.
+     * El kit fuente queda "abierto" con su componente registrado como extraído.
+     */
+    public function reemplazarUsandoHijoDeKit(
+        ReportePiezaNoEncajada $reporte,
+        ItemSerializado $kitItem,
+        ItemSerializado $piezaDelKit,
+        ?string $observaciones = null
+    ): bool {
+        return DB::transaction(function () use ($reporte, $kitItem, $piezaDelKit, $observaciones) {
+            $productoId = $reporte->itemNoEncajado->producto_id;
+
+            // ── Validaciones ──
+            if ($piezaDelKit->kit_padre_id !== $kitItem->id) {
+                throw new \Exception('La pieza ya no pertenece a ese kit.');
+            }
+            if ($piezaDelKit->producto_id !== $productoId) {
+                throw new \Exception('La pieza del kit no coincide con el producto a reemplazar.');
+            }
+            if (empty($piezaDelKit->serie)) {
+                throw new \Exception('La pieza del kit no tiene serie registrada.');
+            }
+            if (in_array($piezaDelKit->estado, ['defectuoso', 'devuelta_por_no_calzar'])) {
+                throw new \Exception('La pieza del kit no está disponible.');
+            }
+
+            $kitProducto = $kitItem->producto;
+            $componente = $kitProducto->componentes
+                ->firstWhere('producto_componente_id', $productoId);
+            if (!$componente) {
+                throw new \Exception(
+                    "El producto #{$productoId} no es componente del kit '{$kitProducto->nombre}'."
+                );
+            }
+
+            $yaExtraida = KitPiezaExtraida::where('item_serializado_id', $kitItem->id)
+                ->where('producto_componente_id', $productoId)
+                ->exists();
+            if ($yaExtraida) {
+                throw new \Exception('El componente ya fue extraído de este kit anteriormente.');
+            }
+
+            // ── Kit fuente → abierto ──
+            if ($kitItem->estado !== 'abierto') {
+                $kitItem->update([
+                    'estado' => 'abierto',
+                    'atributos' => array_merge($kitItem->atributos ?? [], [
+                        'abierto_por' => Auth::id(),
+                        'abierto_en' => now()->toDateTimeString(),
+                        'motivo_apertura' => $observaciones ?? 'Extracción pieza para reemplazo',
+                    ]),
+                ]);
+            }
+
+            // ── Pieza vieja del kit objetivo → defectuosa y fuera del kit ──
+            $itemViejo = ItemSerializado::where('id', $reporte->item_no_encajado_id)
+                ->where('estado', 'asignado')
+                ->lockForUpdate()
+                ->first();
+
+            $kitPadreObjetivo = $itemViejo?->kit_padre_id;
+
+            if ($itemViejo) {
+                $itemViejo->update([
+                    'estado' => 'defectuoso',
+                    'service_order_id' => null,
+                    'kit_padre_id' => null,
+                    'atributos' => array_merge($itemViejo->atributos ?? [], [
+                        'defectuoso' => true,
+                        'defectuoso_en' => now()->toDateTimeString(),
+                        'motivo_defectuoso' => $reporte->motivo_no_encaja,
+                    ]),
+                ]);
+
+                MovimientoStock::registrar(
+                    $itemViejo->producto,
+                    'entrada',
+                    1,
+                    $reporte->service_order_id,
+                    Auth::id(),
+                    "Devolución pieza DEFECTUOSA - Reporte #{$reporte->id}"
+                );
+            }
+
+            // ── Pieza del kit → se mueve al kit objetivo / la orden ──
+            $piezaDelKit->update([
+                'estado' => 'asignado',
+                'service_order_id' => $reporte->service_order_id,
+                'kit_padre_id' => $kitPadreObjetivo,
+            ]);
+
+            MovimientoStock::registrar(
+                $piezaDelKit->producto,
+                'salida',
+                1,
+                $reporte->service_order_id,
+                Auth::id(),
+                "Asignación pieza reemplazo (del kit #{$kitItem->id}) - Reporte #{$reporte->id}"
+            );
+
+            // ── Registro de extracción en el kit fuente ──
+            KitPiezaExtraida::create([
+                'item_serializado_id' => $kitItem->id,
+                'producto_componente_id' => $productoId,
+                'cantidad_extraida' => 1,
+                'service_order_id' => $reporte->service_order_id,
+                'extraida_por' => Auth::id(),
+                'extraida_en' => now(),
+            ]);
+
+            $nombreComponente = $componente->componente->nombre ?? $kitProducto->nombre;
+            MovimientoStock::registrar(
+                $componente->componente ?? $kitItem->producto,
+                'salida',
+                1,
+                $reporte->service_order_id,
+                Auth::id(),
+                "Apertura kit #{$kitItem->id} — extracción {$nombreComponente}",
+                $kitItem->sede_id
+            );
+
+            // ── Reporte ──
+            $reporte->asignarAlmacen(Auth::id());
+            $reporte->kitAbierto($piezaDelKit->id, $observaciones);
 
             return true;
         });

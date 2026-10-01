@@ -30,6 +30,7 @@ class ReporteConversionesActivas extends Component
     public string $nuevaSerie = '';
     public ?string $metodoReemplazo = null;
     public ?int $kitSeleccionadoId = null;
+    public ?array $piezaKitConSerie = null;
     public string $busquedaKit = '';
     public array $kitsDisponibles = [];
     public string $cantidadAdicional = '1';
@@ -81,6 +82,7 @@ class ReporteConversionesActivas extends Component
         $this->nuevaSerie = '';
         $this->metodoReemplazo = null;
         $this->kitSeleccionadoId = null;
+        $this->piezaKitConSerie = null;
         $this->busquedaKit = '';
         $this->kitsDisponibles = [];
         $this->cantidadAdicional = '1';
