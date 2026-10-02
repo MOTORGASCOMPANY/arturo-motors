@@ -19,10 +19,11 @@ return new class extends Migration
             $table->foreignId('cita_id')->nullable()->constrained('citas');
 
             $table->string('estado')->default('creada');
-            // simples: creada, entregada, cancelada
-            // conversion: en_evaluacion, evaluacion_rechazada, aprobado_conversion,
+            // simples: creada, entregado, cancelada
+            // conversion: creada, en_evaluacion, evaluacion_rechazada, aprobado_conversion,
             //             en_conversion, conversion_completada, en_control_calidad,
-            //             listo_para_entrega, entregado, cancelado
+            //             listo_para_entrega, entregado, cancelada
+            // Nota: el estado de entrega es 'entregado' (nunca 'entregada').
 
             $table->decimal('precio_lista', 10, 2);
             $table->decimal('precio_final', 10, 2);

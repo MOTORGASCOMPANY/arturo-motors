@@ -52,9 +52,14 @@ class TestDataSeeder extends Seeder
 
             $creadoEn = $dia->copy()->addHours(rand(8, 16))->addMinutes(rand(0, 59));
 
-            // Estado:mayoría finalizadas/entregadas para que haya comprobantes
-            $estados = ['creada', 'evaluada', 'en_proceso', 'finalizada', 'entregada'];
-            $estado = $i < 5 ? 'creada' : ($i < 10 ? 'evaluada' : 'entregada');
+            // Estado: mayoría entregadas para que haya comprobantes.
+            // Se usan los estados reales del pipeline (no el vocabulario viejo
+            // evaluada/en_proceso/finalizada/entregada, que no existe en la BD).
+            $estado = match (true) {
+                $i < 5 => 'creada',
+                $i < 10 => $servicio->tipo === 'conversion' ? 'en_evaluacion' : 'creada',
+                default => ServiceOrder::ESTADO_ENTREGADO,
+            };
 
             $orden = ServiceOrder::create([
                 'cliente_id' => $cliente->id,
@@ -72,8 +77,8 @@ class TestDataSeeder extends Seeder
 
             $ordenes[] = $orden;
 
-            // Comprobante para finalizadas/entregadas
-            if (in_array($estado, ['finalizada', 'entregada'])) {
+            // Comprobante solo para órdenes efectivamente cobradas y entregadas
+            if ($estado === ServiceOrder::ESTADO_ENTREGADO) {
                 $folio++;
                 Comprobante::create([
                     'service_order_id' => $orden->id,

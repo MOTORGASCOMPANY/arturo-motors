@@ -10,12 +10,18 @@ class DetalleController extends Controller
 {
     public function show(SesionCaja $sesion)
     {
-        // Cargar movimientos SIN FISE
+        // Cargar movimientos SIN FISE.
+        // Los egresos tienen metodo_pago NULL (RegistrarEgreso no lo setea) y
+        // `metodo_pago != 'fise'` es NULL para NULL, no TRUE: los descartaba y
+        // $resumen['egresos'] terminaba en 0.00 siempre.
         $movimientos = $sesion->movimientos()
-            ->where('metodo_pago', '!=', 'fise')
+            ->where(function ($q) {
+                $q->where('metodo_pago', '!=', 'fise')
+                    ->orWhereNull('metodo_pago');
+            })
             ->where(function ($q) {
                 $q->where('tipo', 'ingreso')
-                  ->orWhere('tipo', 'egreso');
+                    ->orWhere('tipo', 'egreso');
             })
             ->with(['serviceOrder.vehiculo', 'serviceOrder.cliente', 'usuario'])
             ->orderBy('created_at')

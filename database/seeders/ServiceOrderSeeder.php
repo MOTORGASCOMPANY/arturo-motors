@@ -13,7 +13,23 @@ use Illuminate\Database\Seeder;
 class ServiceOrderSeeder extends Seeder
 {
     private array $metodosPago = ['efectivo', 'tarjeta', 'transferencia', 'fise'];
-    private array $estados = ['creada', 'evaluada', 'en_proceso', 'finalizada', 'entregada'];
+
+    /**
+     * Estados reales que escribe la aplicación. No inventar vocabulario:
+     * el reporte de servicios y los KPIs se leen de esta misma lista.
+     * (Antes usaba evaluada/en_proceso/finalizada/entregada, que no existen en el pipeline.)
+     */
+    private array $estadosConversion = [
+        'creada',
+        'en_evaluacion',
+        'evaluacion_rechazada',
+        'aprobado_conversion',
+        'en_conversion',
+        'conversion_completada',
+        ServiceOrder::ESTADO_ENTREGADO,
+    ];
+
+    private array $estadosSimple = ['creada', ServiceOrder::ESTADO_ENTREGADO, 'cancelada'];
 
     public function run(): void
     {
@@ -42,7 +58,8 @@ class ServiceOrderSeeder extends Seeder
             $servicio = $servicios->random();
             $creadoPor = $vendedores->random();
             $tecnico = $tecnicos->random();
-            $estado = $this->estados[array_rand($this->estados)];
+            $estados = $servicio->tipo === 'conversion' ? $this->estadosConversion : $this->estadosSimple;
+            $estado = $estados[array_rand($estados)];
 
             $precioLista = (float) $servicio->precio_base;
             $descuento = $i % 5 === 0 ? rand(10, 20) : 0;
@@ -65,8 +82,8 @@ class ServiceOrderSeeder extends Seeder
                 'updated_at' => $fechaCreacion,
             ]);
 
-            // Comprobante para órdenes finalizadas/entregadas
-            if (in_array($estado, ['finalizada', 'entregada'])) {
+            // Comprobante solo para órdenes efectivamente cobradas y entregadas
+            if ($estado === ServiceOrder::ESTADO_ENTREGADO) {
                 $metodo = $this->metodosPago[array_rand($this->metodosPago)];
                 $folio++;
 

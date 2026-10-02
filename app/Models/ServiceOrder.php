@@ -22,6 +22,24 @@ class ServiceOrder extends Model
         'entregado',
     ];
 
+    /**
+     * Estado de una orden cobrada y entregada.
+     * Es el único valor que escriben EntregarCobrar y CrearSimple; NO existe 'entregada'.
+     */
+    public const ESTADO_ENTREGADO = 'entregado';
+
+    /**
+     * Estados que cierran una orden: dejan de ser "pendientes".
+     * Se usan como lista negra para que un estado nuevo sin catalogar siga contando
+     * como pendiente en lugar de desaparecer en silencio de los KPIs.
+     */
+    public const ESTADOS_FINALES = [
+        self::ESTADO_ENTREGADO,
+        'cancelada',
+        'cancelado',
+        'evaluacion_rechazada',
+    ];
+
     protected $table = 'service_orders';
 
     protected $fillable = [
