@@ -1,44 +1,74 @@
-<div>
-    <div class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+<div wire:loading.class="opacity-50 pointer-events-none" class="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-6 font-sans">
 
-        {{-- Header --}}
-        <div class="flex items-center justify-between gap-3">
-            <div class="min-w-0 flex items-center gap-3">
-                <span class="hidden sm:flex w-11 h-11 rounded-xl bg-indigo-50 items-center justify-center shrink-0">
-                    <i class="fas fa-truck text-indigo-600"></i>
-                </span>
+    {{-- Encabezado --}}
+    <div class="bg-white border border-gray-200 p-6 sm:p-8 rounded-2xl shadow-sm">
+        <div class="flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
+            <div class="flex items-start gap-4 min-w-0">
+                <div class="w-11 h-11 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 border border-indigo-100">
+                    <i class="fas fa-truck"></i>
+                </div>
                 <div class="min-w-0">
-                    <h2 class="text-2xl font-bold text-gray-800 tracking-tight">Recepciones</h2>
+                    <h1 class="text-xl sm:text-2xl font-extrabold text-gray-800 tracking-tight">Recepciones</h1>
                     <p class="text-sm text-gray-500 mt-0.5">Historial de ingresos al almacén</p>
                 </div>
             </div>
-            <a href="{{ route('almacen.recepciones.crear') }}"
-               class="shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm shadow-indigo-600/10 transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
+
+            <a href="{{ route('almacen.recepciones.crear') }}" wire:navigate
+               class="inline-flex items-center gap-2 bg-indigo-500 px-5 py-3 rounded-lg text-white text-sm font-semibold hover:bg-indigo-600 transition shadow-sm shrink-0">
                 <i class="fas fa-plus text-xs"></i>
-                Nueva recepción
+                <span>Nueva recepción</span>
             </a>
         </div>
+    </div>
 
-        {{-- Filtros --}}
-        <div class="bg-white rounded-xl border border-gray-200 p-2.5 flex flex-wrap items-center gap-2.5">
-            @php
-                $tabs = [
-                    'todos'        => ['label' => 'Todos',        'icon' => 'fa-layer-group'],
-                    'kits'         => ['label' => 'Kits',         'icon' => 'fa-box'],
-                    'serializados' => ['label' => 'Serializados', 'icon' => 'fa-barcode'],
-                    'cantidad'     => ['label' => 'Por cantidad', 'icon' => 'fa-cubes'],
-                ];
-            @endphp
-            <nav class="flex gap-1 bg-gray-100 rounded-lg p-1" aria-label="Filtrar por tipo">
+    {{-- Indicadores --}}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-6 hover:shadow-md transition">
+            <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Total recepciones</p>
+            <p class="text-3xl font-extrabold text-gray-800 mt-2 tabular-nums">{{ $totalRecepciones }}</p>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-6 hover:shadow-md transition">
+            <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Últimos 30 días</p>
+            <p class="text-3xl font-extrabold text-indigo-600 mt-2 tabular-nums">{{ $ultimos30 }}</p>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-6 hover:shadow-md transition">
+            <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Kits recibidos</p>
+            <p class="text-3xl font-extrabold text-indigo-600 mt-2 tabular-nums">{{ $conteos['kits'] }}</p>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-6 hover:shadow-md transition">
+            <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Serializados + Cantidad</p>
+            <p class="text-3xl font-extrabold text-green-600 mt-2 tabular-nums">{{ $conteos['serializados'] + $conteos['cantidad'] }}</p>
+        </div>
+    </div>
+
+    {{-- Filtros --}}
+    <div class="bg-white border border-gray-200 p-4 rounded-2xl shadow-sm">
+        <div class="flex flex-wrap items-center gap-3">
+            <nav class="flex flex-wrap gap-1 bg-gray-100 rounded-lg p-1 flex-1 min-w-[280px]" aria-label="Filtrar por tipo">
+                @php
+                    $tabs = [
+                        'todos'        => ['label' => 'Todos',        'icon' => 'fa-layer-group'],
+                        'kits'         => ['label' => 'Kits',         'icon' => 'fa-box'],
+                        'serializados' => ['label' => 'Serializados', 'icon' => 'fa-barcode'],
+                        'cantidad'     => ['label' => 'Por cantidad', 'icon' => 'fa-cubes'],
+                    ];
+                @endphp
                 @foreach ($tabs as $key => $tab)
                     @php $activo = $filtroTipo === $key; @endphp
                     <button type="button" wire:click="$set('filtroTipo', '{{ $key }}')"
-                        class="flex items-center gap-1.5 px-3 h-9 text-sm font-semibold rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500
-                               {{ $activo ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700' }}">
+                        @class([
+                            'flex items-center gap-1.5 px-3 h-9 text-sm font-semibold rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500',
+                            'bg-white text-indigo-600 shadow-sm' => $activo,
+                            'text-gray-500 hover:text-gray-700' => ! $activo,
+                        ])">
                         <i class="fas {{ $tab['icon'] }} text-xs"></i>
                         <span class="hidden sm:inline">{{ $tab['label'] }}</span>
                         @if ($key !== 'todos')
-                            <span class="px-1.5 py-0.5 text-[10px] font-black rounded-full tabular-nums {{ $activo ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-200 text-gray-500' }}">
+                            <span @class([
+                                    'px-1.5 py-0.5 text-[10px] font-black rounded-full tabular-nums',
+                                    'bg-indigo-100 text-indigo-700' => $activo,
+                                    'bg-gray-200 text-gray-500' => ! $activo,
+                                ])">
                                 {{ $conteos[$key] ?? 0 }}
                             </span>
                         @endif
@@ -46,101 +76,121 @@
                 @endforeach
             </nav>
 
-            <label class="flex items-center h-10 bg-gray-50 border border-gray-200 rounded-lg px-3 w-full sm:w-64 sm:ml-auto transition-colors hover:border-gray-300 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500">
+            <label class="flex items-center h-10 bg-gray-50 border border-gray-200 rounded-lg px-3 w-full sm:w-64 sm:ml-auto transition-colors hover:border-gray-300 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 shrink-0">
                 <i class="fas fa-search text-gray-400 text-sm mr-2"></i>
                 <input class="bg-transparent outline-none text-sm w-full border-none focus:ring-0 p-0"
                     type="text" wire:model.live.debounce.400ms="search"
                     placeholder="Buscar por nombre...">
             </label>
         </div>
+    </div>
 
-        {{-- Tabla --}}
-        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">ID</th>
-                            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">N.°</th>
-                            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Recepción</th>
-                            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Sede</th>
-                            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Estado</th>
-                            <th class="px-5 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Fecha</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-100">
-                        @forelse ($recepciones as $r)
-                            <tr class="hover:bg-gray-50 transition-colors">
-                                <td class="px-5 py-3.5 whitespace-nowrap">
+    {{-- Listado con accordion --}}
+    <div class="space-y-3">
+        @forelse ($recepciones as $r)
+            @php $abierto = $recepcionExpandida === $r['id']; @endphp
+            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden transition duration-200 hover:shadow-md">
+
+                {{-- Fila principal (click para expandir) --}}
+                <div wire:click="toggleDetalle({{ $r['id'] }})"
+                     @class([
+                         'p-5 cursor-pointer flex flex-wrap justify-between items-center gap-x-3 gap-y-3',
+                         'bg-gray-50' => $abierto,
+                     ])
+                     style="user-select: none;">
+
+                    <div class="flex flex-wrap items-center gap-3 min-w-0 flex-1">
+                        <span class="px-2 py-0.5 text-[10px] font-bold text-gray-500 bg-gray-100 rounded-full shrink-0 tabular-nums">
+                            N.° {{ $r['nro'] }}
+                        </span>
+                        <span class="px-2 py-0.5 text-[10px] font-black rounded-full whitespace-nowrap shrink-0 {{ $r['tipo_color'] }}">
+                            <i class="fas {{ $r['tipo_icon'] }} mr-1"></i>{{ $r['tipo_label'] }}
+                        </span>
+                        <div class="min-w-0">
+                            <p class="text-sm font-bold text-gray-800 truncate">{{ $r['nombre'] }}</p>
+                            <p class="text-xs text-gray-500">
+                                <i class="far fa-clock mr-1"></i>{{ $r['fecha']->format('d/m/Y H:i') }}
+                                <span class="mx-1">&bull;</span>
+                                <i class="fas fa-map-marker-alt mr-1 text-gray-400"></i>{{ $r['sede'] }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3 shrink-0">
+                        @unless ($r['estado'])
+                            <span class="text-sm font-bold text-amber-600 tabular-nums shrink-0">&times;{{ $r['cantidad'] ?? 0 }}</span>
+                        @endunless
+
+                        <i @class([
+                                'fas fa-chevron-down text-gray-400 text-sm transition-transform duration-200',
+                                'rotate-180' => $abierto,
+                            ])
+                            aria-hidden="true"></i>
+                    </div>
+                </div>
+
+                {{-- Contenido expandible: una sola class por tag (dos class = el navegador ignora la 2da) --}}
+                <div @class([
+                        'grid transition-[grid-template-rows] duration-200 ease-out bg-gray-50/50',
+                        'grid-rows-[1fr]' => $abierto,
+                        'grid-rows-[0fr]' => ! $abierto,
+                    ])
+                     @unless($abierto) inert @endunless>
+                    <div class="overflow-hidden min-h-0">
+                        <div class="p-5 pt-0 border-t border-gray-100">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+                                <div class="bg-white p-3 rounded-lg border border-gray-100">
+                                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Referencia</p>
                                     @if (in_array($r['tipo'], ['kit', 'serializado'], true))
                                         <a href="{{ route('almacen.productos.listado') }}"
-                                           class="text-sm font-mono font-semibold text-indigo-600 hover:text-indigo-800 hover:underline"
+                                           class="font-mono font-semibold text-indigo-600 hover:text-indigo-800 hover:underline"
                                            title="Mismo ID que en Inventario ({{ $r['origen'] }})">
                                             #{{ $r['id'] }}
                                         </a>
                                     @else
-                                        <span class="text-sm font-mono text-gray-400" title="movimientos_stock">{{ $r['origen'] === 'movimientos_stock' ? '#' : '' }}{{ $r['id'] }}</span>
+                                        <span class="font-mono font-semibold text-gray-500" title="{{ $r['origen'] }}">#{{ $r['id'] }}</span>
                                     @endif
-                                </td>
-                                <td class="px-5 py-3.5 whitespace-nowrap">
-                                    <span class="text-xs font-semibold text-gray-400 tabular-nums">N.° {{ $r['nro'] }}</span>
-                                </td>
-                                <td class="px-5 py-3.5">
-                                    <div class="flex items-center gap-2.5 min-w-0">
-                                        <span class="px-2 py-0.5 text-[10px] font-black rounded-full whitespace-nowrap {{ $r['tipo_color'] }}">
-                                            {{ $r['tipo_label'] }}
-                                        </span>
-                                        <span class="text-sm font-bold text-gray-800 truncate">{{ $r['nombre'] }}</span>
-                                    </div>
-                                </td>
-                                <td class="px-5 py-3.5 text-sm text-gray-500 whitespace-nowrap">
-                                    {{ $r['sede'] }}
-                                </td>
-                                <td class="px-5 py-3.5 whitespace-nowrap">
-                                    @if ($r['estado'])
-                                        @php
-                                            $estadoMeta = match ($r['estado']) {
-                                                'en_stock'    => ['label' => 'En stock',    'chip' => 'bg-green-100 text-green-700'],
-                                                'asignado'    => ['label' => 'Asignado',    'chip' => 'bg-yellow-100 text-yellow-700'],
-                                                'instalado'   => ['label' => 'Instalado',   'chip' => 'bg-blue-100 text-blue-700'],
-                                                'completado'  => ['label' => 'Completado',  'chip' => 'bg-purple-100 text-purple-700'],
-                                                'consumido'   => ['label' => 'Consumido',   'chip' => 'bg-red-100 text-red-700'],
-                                                'reemplazado' => ['label' => 'Reemplazado', 'chip' => 'bg-gray-100 text-gray-700'],
-                                                default       => ['label' => $r['estado'],  'chip' => 'bg-gray-100 text-gray-700'],
-                                            };
-                                        @endphp
-                                        <span class="px-2 py-0.5 text-xs font-semibold rounded-full {{ $estadoMeta['chip'] }}">
-                                            {{ $estadoMeta['label'] }}
-                                        </span>
-                                    @else
-                                        <span class="text-sm font-bold text-amber-600 tabular-nums">×{{ $r['cantidad'] ?? 0 }}</span>
-                                    @endif
-                                </td>
-                                <td class="px-5 py-3.5 text-sm text-gray-500 whitespace-nowrap text-right tabular-nums">
-                                    {{ $r['fecha']->format('d/m/Y H:i') }}
-                                </td>
-                            </tr>
-                        @empty
-                        <tr>
-                            <td colspan="6" class="px-5 py-12 text-center">
-                                    <div class="flex flex-col items-center gap-2">
-                                        <i class="fas fa-inbox text-3xl text-gray-300"></i>
-                                        <p class="text-gray-500 text-sm">No hay recepciones registradas.</p>
-                                        <a href="{{ route('almacen.recepciones.crear') }}" class="text-indigo-600 text-sm font-medium hover:underline">
-                                            + Registrar primera recepción
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+                                </div>
+                                <div class="bg-white p-3 rounded-lg border border-gray-100">
+                                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Sede</p>
+                                    <p class="font-medium text-gray-700">{{ $r['sede'] }}</p>
+                                </div>
+                                <div class="bg-white p-3 rounded-lg border border-gray-100">
+                                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Fecha</p>
+                                    <p class="font-medium text-gray-700">{{ $r['fecha']->format('d/m/Y H:i') }}</p>
+                                </div>
+                                <div class="bg-white p-3 rounded-lg border border-gray-100">
+                                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Origen</p>
+                                    <p class="font-medium text-gray-700">{{ $r['origen'] === 'items_serializados' ? 'Ítem serializado' : 'Movimiento de stock' }}</p>
+                                </div>
+                            </div>
 
-            <div class="px-5 py-3 border-t border-gray-100">
-                {{ $recepciones->links('pagination::tailwind') }}
+                            @unless ($r['estado'])
+                                <div class="mt-3 p-3 bg-white rounded-lg border border-gray-100">
+                                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Cantidad recibida</p>
+                                    <p class="font-bold text-amber-600 text-lg">&times;{{ $r['cantidad'] ?? 0 }}</p>
+                                </div>
+                            @endunless
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
+        @empty
+            <div class="flex flex-col items-center justify-center py-14 px-4 bg-white rounded-2xl border border-dashed border-gray-300">
+                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                    <i class="fas fa-inbox text-gray-400 text-2xl"></i>
+                </div>
+                <p class="text-gray-500 font-medium">No hay recepciones registradas.</p>
+                <a href="{{ route('almacen.recepciones.crear') }}" wire:navigate
+                   class="mt-4 inline-flex items-center gap-2 bg-indigo-500 px-5 py-2.5 rounded-lg text-white text-sm font-semibold hover:bg-indigo-600 transition">
+                    <i class="fas fa-plus text-xs"></i> Registrar primera recepción
+                </a>
+            </div>
+        @endforelse
 
+        @if ($recepciones->hasPages())
+            <div class="mt-4">{{ $recepciones->links('pagination::tailwind') }}</div>
+        @endif
     </div>
+
 </div>

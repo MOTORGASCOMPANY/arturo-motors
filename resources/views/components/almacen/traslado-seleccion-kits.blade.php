@@ -2,22 +2,24 @@
                 @php $kits = $this->kitsDisponibles; @endphp
 
                 @if ($kits->isEmpty())
-                    <div class="text-center py-14 text-gray-400">
-                        <i class="fas fa-box-open text-4xl mb-3 text-gray-300"></i>
-                        <p class="text-sm font-medium text-gray-500">No hay kits disponibles en esta sede</p>
-                        <p class="text-xs mt-1">Prueba con otro filtro de búsqueda o revisa la pestaña de piezas sueltas</p>
-                    </div>
+                    <x-almacen.empty-state icon="fa-box-open" message="No hay kits disponibles en esta sede" />
                 @else
+                    <p class="text-[11px] text-gray-400 mb-3 flex items-start gap-1.5">
+                        <i class="fas fa-circle-info text-indigo-300 mt-0.5 shrink-0"></i>
+                        <span>Los kits abiertos piden confirmación antes de agregarse, porque van a viajar con piezas faltantes.</span>
+                    </p>
+
                     <div class="space-y-3 max-h-[500px] overflow-y-auto pr-1 -mr-1">
 
                         @foreach ($kits as $kit)
                             @php
                                 $isSelected = isset($this->itemsSeleccionados[$kit->id]);
                                 $isInspecting = $this->kitInspeccionId === $kit->id;
+                                $completo = $kit->es_sellado;
                             @endphp
 
                             <div class="border-2 rounded-xl transition-all duration-150
-                                {{ $isSelected ? 'border-indigo-500 bg-indigo-50/60 ring-1 ring-indigo-100' : 'border-gray-200 hover:border-gray-300' }}">
+                                {{ $isSelected ? 'border-indigo-500 bg-indigo-50/60 ring-1 ring-indigo-100' : ($completo ? 'border-gray-200 hover:border-gray-300' : 'border-amber-200 bg-amber-50/40 hover:border-amber-300') }}">
 
                                 <label class="flex items-center gap-3 p-3 cursor-pointer">
                                     <input type="checkbox"
@@ -30,13 +32,13 @@
                                             <p class="text-sm font-bold text-gray-800 truncate">
                                                 {{ $kit->producto->nombre }}
                                             </p>
-                                            @if ($kit->es_sellado)
+                                            @if ($completo)
                                                 <span class="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full shrink-0">
-                                                    Sellado
+                                                    <i class="fas fa-lock mr-0.5"></i> Sellado
                                                 </span>
                                             @else
                                                 <span class="px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full shrink-0">
-                                                    Abierto
+                                                    <i class="fas fa-unlock mr-0.5"></i> Abierto · {{ $kit->hijosCount }}/{{ $kit->totalEsperado }}
                                                 </span>
                                             @endif
                                         </div>
@@ -45,10 +47,10 @@
                                             <span>#{{ $kit->id }}</span>
                                             <span class="text-gray-300">·</span>
                                             <span>{{ $kit->totalEsperado }} piezas esperadas</span>
-                                            @if (! $kit->es_sellado)
+                                            @unless ($completo)
                                                 <span class="text-gray-300">·</span>
-                                                <span>{{ $kit->hijosCount }} presentes</span>
-                                            @endif
+                                                <span class="font-semibold text-amber-700">{{ $kit->totalEsperado - $kit->hijosCount }} faltantes</span>
+                                            @endunless
                                             <span class="text-gray-300">·</span>
                                             <span class="inline-flex items-center gap-1"><i class="fas fa-location-dot text-[9px]"></i>{{ $kit->sede?->nombre ?? '—' }}</span>
                                         </p>
@@ -57,7 +59,7 @@
                                     <button
                                         wire:click.stop="toggleInspeccion({{ $kit->id }})"
                                         type="button"
-                                        class="w-9 h-9 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition shrink-0"
+                                        class="w-9 h-9 flex items-center justify-center rounded-lg {{ $isSelected ? 'text-indigo-500 hover:bg-indigo-100' : ($completo ? 'text-gray-400 hover:text-gray-700 hover:bg-gray-100' : 'text-amber-500 hover:bg-amber-100') }} transition shrink-0"
                                         title="Ver componentes">
                                         <i class="fas {{ $isInspecting ? 'fa-chevron-up' : 'fa-chevron-down' }} text-xs transition-transform"></i>
                                     </button>
@@ -72,7 +74,7 @@
                                                 <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
                                                     Componentes
                                                 </p>
-                                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $insp['hijosSeleccionadosCount'] >= $insp['totalEsperado'] ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500' }}">
+                                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $insp['hijosSeleccionadosCount'] >= $insp['totalEsperado'] ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700' }}">
                                                     {{ $insp['hijosSeleccionadosCount'] }}/{{ $insp['totalEsperado'] }} para envío
                                                 </span>
                                             </div>
@@ -80,13 +82,13 @@
                                                 @foreach ($insp['receta'] as $r)
                                                     @php
                                                         $presente = $insp['hijos'][$r->producto_componente_id] ?? 0;
-                                                        $completo = $presente >= $r->cantidad_esperada;
-                                                        $hijosComponente = $insp['hijosItems']->filter(fn($h) => $h->producto_id === $r->producto_componente_id);
+                                                        $completoComp = $presente >= $r->cantidad_esperada;
+                                                        $hijosComponente = $insp['hijosItems']->filter(fn ($h) => $h->producto_id === $r->producto_componente_id);
                                                     @endphp
                                                     <div class="p-2 rounded-lg border
-                                                        {{ $completo ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200' }}">
+                                                        {{ $completoComp ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200' }}">
                                                         <div class="flex items-center gap-2 text-[11px]">
-                                                            <i class="fas {{ $completo ? 'fa-check-circle text-green-500' : 'fa-exclamation-circle text-red-500' }} text-[10px] shrink-0"></i>
+                                                            <i class="fas {{ $completoComp ? 'fa-check-circle text-green-500' : 'fa-exclamation-circle text-red-500' }} text-[10px] shrink-0"></i>
                                                             <span class="font-semibold text-gray-700 truncate">{{ $r->componente?->nombre ?? '—' }}</span>
                                                             <span class="text-gray-500 ml-auto shrink-0 font-medium">
                                                                 {{ $presente }}/{{ $r->cantidad_esperada }}

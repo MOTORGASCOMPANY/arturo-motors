@@ -20,6 +20,22 @@
 
             <x-slot name="content">
                 <div class="max-h-[65vh] overflow-y-auto">
+                    @php
+                        $kitsIncompletos = collect($this->checklistData)
+                            ->where('tipo', 'kit')
+                            ->where('es_completo', false);
+                    @endphp
+
+                    @if ($kitsIncompletos->isNotEmpty())
+                        <div class="flex items-start gap-2 rounded-xl bg-amber-50 border border-amber-200 px-3 py-2.5 mb-3 text-xs text-amber-800">
+                            <i class="fas fa-triangle-exclamation mt-0.5 shrink-0"></i>
+                            <span>
+                                <strong>{{ $kitsIncompletos->count() }} {{ \Illuminate\Support\Str::plural('kit', $kitsIncompletos->count()) }}</strong>
+                                viaja/n con piezas faltantes. Se despacha igual, pero queda marcado como incompleto.
+                            </span>
+                        </div>
+                    @endif
+
                     <div class="space-y-3">
 
                         @forelse ($this->checklistData as $comp)

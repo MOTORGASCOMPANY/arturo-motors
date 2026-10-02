@@ -48,9 +48,8 @@
     table.datos td.label { font-weight: bold; width: 25%; color: #46586b; text-transform: uppercase; font-size: 7px; letter-spacing: 0.3px; background: #f7f9fb; border-right: 1px solid #e2e6ea; }
 
     table.recepcion { width: 100%; border-collapse: collapse; }
-    table.recepcion td.esquema { width: 42%; border: 1px solid #d6dde5; vertical-align: top; padding: 4px; background: #fbfcfd; }
+    table.recepcion td.esquema { width: 42%; border: 1px solid #d6dde5; padding: 0; background-color: #ffffff; background-repeat: no-repeat; background-position: center center; background-size: contain; }
     table.recepcion td.accesorios { width: 58%; vertical-align: top; padding: 0 0 0 6px; }
-    .esquema-titulo { font-weight: bold; color: #46586b; font-size: 7.5px; text-transform: uppercase; letter-spacing: 0.3px; }
 
     table.acc-table { width: 100%; border-collapse: collapse; border: 1px solid #d6dde5; }
     table.acc-table th { background: #eef2f7; border: 1px solid #d6dde5; padding: 2px 3px; font-size: 7px; color: #46586b; text-transform: uppercase; }
@@ -158,34 +157,48 @@
         $altoCaja  = $altoCabecera + ($filasAcc * $altoFila);
 
         $imgPath = $fichaAbs ?? ($usarDiagrama ? public_path('images/Diagrama-vechiculos.png') : null);
-        $imgW = 0; $imgH = 0;
+        $imgFinal = null;
         if ($imgPath && file_exists($imgPath)) {
-            $sz = @getimagesize($imgPath);
-            if ($sz && $sz[0] > 0 && $sz[1] > 0) {
-                $maxW = 300;
-                $maxH = $altoCaja - 34;
-                $escala = min($maxW / $sz[0], $maxH / $sz[1]);
-                $imgW = (int) floor($sz[0] * $escala);
-                $imgH = (int) floor($sz[1] * $escala);
+            $imgFinal = $imgPath;
+            if (function_exists('imagecropauto')) {
+                try {
+                    $dirTmp = storage_path('app/tmp');
+                    if (!is_dir($dirTmp)) { @mkdir($dirTmp, 0775, true); }
+                    $destino = $dirTmp . '/esquema_' . md5($imgPath . filemtime($imgPath)) . '.png';
+                    if (!file_exists($destino)) {
+                        $src = @imagecreatefromstring(file_get_contents($imgPath));
+                        if ($src) {
+                            $w = imagesx($src); $h = imagesy($src);
+                            $lienzo = imagecreatetruecolor($w, $h);
+                            $blanco = imagecolorallocate($lienzo, 255, 255, 255);
+                            imagefill($lienzo, 0, 0, $blanco);
+                            imagecopy($lienzo, $src, 0, 0, 0, 0, $w, $h);
+                            $recorte = imagecropauto($lienzo, IMG_CROP_THRESHOLD, 0.15, $blanco);
+                            $base = $recorte !== false ? $recorte : $lienzo;
+                            $cw = imagesx($base); $ch = imagesy($base);
+                            $m = 6;
+                            $final = imagecreatetruecolor($cw + $m * 2, $ch + $m * 2);
+                            imagefill($final, 0, 0, imagecolorallocate($final, 255, 255, 255));
+                            imagecopy($final, $base, $m, $m, 0, 0, $cw, $ch);
+                            imagepng($final, $destino);
+                        }
+                    }
+                    if (file_exists($destino)) { $imgFinal = $destino; }
+                } catch (\Throwable $e) {
+                    $imgFinal = $imgPath;
+                }
             }
         }
     @endphp
     <table class="recepcion">
         <tr>
-            <td class="esquema" style="height: {{ $altoCaja }}px;">
-                <span class="esquema-titulo">Esquema de Da&ntilde;os</span>
-                @if($fichaAbs && $imgW)
-                    <div style="text-align: center; padding: 2px; margin-top: 2px;">
-                        <img src="{{ $fichaAbs }}" style="width: {{ $imgW }}px; height: {{ $imgH }}px;">
-                    </div>
-                @elseif($usarDiagrama && $imgW)
-                    <div style="text-align: center; padding: 2px; margin-top: 2px;">
-                        <img src="{{ public_path('images/Diagrama-vechiculos.png') }}" style="width: {{ $imgW }}px; height: {{ $imgH }}px;">
-                    </div>
-                @else
-                    <div style="text-align: center; padding: 8px; margin-top: 2px; color: #999; font-style: italic; font-size: 9px;">
+            <td class="esquema" style="{{ $imgFinal ? 'background-image: url(' . $imgFinal . ');' : '' }}">
+                @if(!$imgFinal)
+                    <div style="text-align: center; padding: 8px; color: #999; font-style: italic; font-size: 9px;">
                         No disponible
                     </div>
+                @else
+                    &nbsp;
                 @endif
             </td>
             <td class="accesorios">

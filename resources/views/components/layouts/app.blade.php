@@ -103,7 +103,7 @@
                 confirmar: function(titulo, texto, opts) {
                     opts = opts || {};
                     return Swal.fire({
-                        icon: 'question',
+                        icon: opts.icon || 'question',
                         title: titulo,
                         text: texto || '',
                         showCancelButton: true,
@@ -225,6 +225,19 @@
             Livewire.on('asignacion-confirmar', function() {
                 window.AppSwal.confirmar('¿Confirmar asignación?', 'Esta acción no se puede deshacer')
                     .then(function(r) { if (r.isConfirmed) Livewire.dispatch('confirmar-entrega'); });
+            });
+            // Traslados: seleccionar un kit INCOMPLETO pide confirmación antes de marcarlo.
+            // El componente no selecciona nada hasta que volvemos con kitId.
+            Livewire.on('traslado-kit-incompleto', function(data) {
+                var d = Array.isArray(data) ? data[0] : data;
+                window.AppSwal.confirmar(
+                    'Kit incompleto',
+                    (d.nombre || 'El kit') + ' tiene ' + (d.faltantes || 1) + ' pieza(s) faltante(s): ' +
+                        (d.presentes || 0) + ' de ' + (d.esperadas || 0) + ' presentes. ¿Transportarlo igual?',
+                    { icon: 'warning', confirmText: 'Sí, transportarlo', cancelText: 'Cancelar' }
+                ).then(function(r) {
+                    if (r.isConfirmed) Livewire.dispatch('traslado-kit-incompleto-ok', { kitId: d.kitId });
+                });
             });
             Livewire.on('entrega-confirmada', function(data) {
                 var d = Array.isArray(data) ? data[0] : data;

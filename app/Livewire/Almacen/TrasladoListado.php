@@ -10,27 +10,38 @@ class TrasladoListado extends Component
 {
     use WithPagination;
 
-    public ?Traslado $trasladoSeleccionado = null;
-    public bool $mostrarDetalle = false;
+    public int $trasladoExpandido = 0;
 
-    public function verDetalle(int $trasladoId)
+    public function toggleDetalle(int $trasladoId)
     {
-        $this->trasladoSeleccionado = Traslado::with(['sedeDestino', 'enviadoPor', 'detalles.producto', 'detalles.itemSerializado'])->find($trasladoId);
-        $this->mostrarDetalle = true;
-    }
-
-    public function cerrarDetalle()
-    {
-        $this->mostrarDetalle = false;
-        $this->trasladoSeleccionado = null;
+        $this->trasladoExpandido = $this->trasladoExpandido === $trasladoId ? 0 : $trasladoId;
     }
 
     public function render()
     {
+        $base = Traslado::query();
+
+        $totalTraslados = (clone $base)->count();
+        $ultimos30 = (clone $base)->where('created_at', '>=', now()->subDays(30))->count();
+        $kitsIncompletos = (clone $base)->where('es_kit_completo', false)->count();
+
         $traslados = Traslado::with(['sedeDestino', 'enviadoPor', 'detalles.producto', 'detalles.itemSerializado'])
             ->orderByDesc('created_at')
             ->paginate(10);
 
-        return view('livewire.almacen.traslado-listado', compact('traslados'));
+        // N.° correlativo global (1..N) teniendo en cuenta la página actual.
+        $primerNro = $traslados->firstItem() ?? 1;
+        $traslados->setCollection(
+            $traslados->getCollection()->map(fn ($t, $i) => tap($t, function ($t) use ($i, $primerNro) {
+                $t->nro = $primerNro + $i;
+            }))
+        );
+
+        return view('livewire.almacen.traslado-listado', compact(
+            'traslados',
+            'totalTraslados',
+            'ultimos30',
+            'kitsIncompletos'
+        ));
     }
 }

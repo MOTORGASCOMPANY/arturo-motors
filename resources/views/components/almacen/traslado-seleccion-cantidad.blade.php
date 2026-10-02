@@ -29,11 +29,12 @@
                 @if ($this->piezasCantidadCarrito->count())
                     <ul class="space-y-1.5">
                         @foreach ($this->piezasCantidadCarrito as $p)
-                            <li class="flex justify-between items-center gap-2 text-sm bg-white border border-gray-200 rounded-lg px-3 py-2.5 sm:py-2 shadow-sm">
+                            <li class="flex justify-between items-center gap-2 text-sm bg-white border-2 border-gray-200 rounded-xl px-3 py-2.5 sm:py-2 transition">
                                 <span class="flex items-center gap-2 text-gray-700 truncate">
                                     <span class="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span>
+                                    <i class="fas fa-cubes text-gray-300 text-xs shrink-0"></i>
                                     {{ $p->nombre }}
-                                    <span class="font-bold text-gray-900 shrink-0">×{{ $p->cantidad_solicitada }}</span>
+                                    <span class="font-bold text-gray-900 shrink-0 tabular-nums">×{{ $p->cantidad_solicitada }}</span>
                                 </span>
                                 <button wire:click="quitarPiezaCantidad({{ $p->id }})" type="button"
                                     class="text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg text-xs w-8 h-8 flex items-center justify-center shrink-0 transition"
@@ -44,10 +45,6 @@
                         @endforeach
                     </ul>
                 @else
-                    <div class="text-center py-10 text-gray-400">
-                        <i class="fas fa-cubes text-3xl mb-2 text-gray-300"></i>
-                        <p class="text-sm font-medium text-gray-500">Aún no agregaste piezas por cantidad</p>
-                        <p class="text-xs mt-1">Elige una pieza arriba, indica la cantidad y presiona "Agregar"</p>
-                    </div>
+                    <x-almacen.empty-state icon="fa-cubes" message="Aún no agregaste piezas por cantidad" />
                 @endif
             @endif

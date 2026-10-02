@@ -13,6 +13,7 @@ class RecepcionListado extends Component
 
     public string $search = '';
     public string $filtroTipo = 'todos';
+    public int $recepcionExpandida = 0;
 
     public function updatingSearch()
     {
@@ -22,6 +23,11 @@ class RecepcionListado extends Component
     public function updatedFiltroTipo(): void
     {
         $this->resetPage();
+    }
+
+    public function toggleDetalle(int $recepcionId)
+    {
+        $this->recepcionExpandida = $this->recepcionExpandida === $recepcionId ? 0 : $recepcionId;
     }
 
     private function queryItemsSerializados()
@@ -37,11 +43,11 @@ class RecepcionListado extends Component
                 'tipo' => $item->producto->categoria->es_kit ? 'kit' : 'serializado',
                 'tipo_label' => $item->producto->categoria->es_kit ? 'Kit' : 'Serializado',
                 'tipo_color' => $item->producto->categoria->es_kit ? 'bg-indigo-100 text-indigo-700' : 'bg-green-100 text-green-700',
+                'tipo_icon' => $item->producto->categoria->es_kit ? 'fa-box' : 'fa-barcode',
                 'nombre' => $item->producto->nombre,
                 'sede' => $item->sede?->nombre ?? '—',
                 'estado' => $item->estado,
                 'fecha' => $item->created_at,
-                // ID real de inventario (mismo #1033 de Productos)
                 'id' => $item->id,
                 'origen' => 'items_serializados',
             ]);
@@ -59,12 +65,12 @@ class RecepcionListado extends Component
                 'tipo' => 'cantidad',
                 'tipo_label' => 'Por cantidad',
                 'tipo_color' => 'bg-amber-100 text-amber-700',
+                'tipo_icon' => 'fa-cubes',
                 'nombre' => $mov->producto->nombre,
                 'sede' => $mov->sede?->nombre ?? '—',
                 'estado' => null,
                 'cantidad' => $mov->cantidad,
                 'fecha' => $mov->created_at,
-                // ID real del ledger de movimientos
                 'id' => $mov->id,
                 'origen' => 'movimientos_stock',
             ]);
@@ -76,18 +82,12 @@ class RecepcionListado extends Component
         $movimientos = $this->queryMovimientos();
         $all = $items->concat($movimientos)->sortByDesc('fecha')->values();
 
-        // Correlativo 1..N solo para orden visual (N.° de historial).
-        // El ID de columna SIEMPRE es el real de BD para casar con Inventario:
-        // kit/serializado → items_serializados.id (#1033), cantidad → movimientos_stock.id.
         $all = $all->map(fn ($row, $i) => array_merge($row, ['nro' => $i + 1]))->values();
 
         $perPage = 15;
         $total = $all->count();
         $lastPage = max(1, (int) ceil($total / $perPage));
 
-        // Clamp: evita página vacía cuando ?page=N queda fuera de rango
-        // (filtro redujo resultados, datos borrados, o URL tipeada a mano).
-        // Livewire 3 guarda el estado en paginators['page'], NO en $this->page.
         $page = (int) $this->getPage();
         if ($page < 1) {
             $page = 1;
@@ -116,13 +116,22 @@ class RecepcionListado extends Component
             ]
         );
 
+        // KPIs
+        $totalRecepciones = $items->count() + $movimientos->count();
+        $ultimos30 = (clone $all)->filter(fn ($r) => $r['fecha'] >= now()->subDays(30))->count();
+        $kitsRecibidos = $items->where('tipo', 'kit')->count();
+        $serializadosRecibidos = $items->where('tipo', 'serializado')->count();
+        $cantidadRecibida = $movimientos->count();
+
         return view('livewire.almacen.recepcion-listado', [
             'recepciones' => $paginator,
             'conteos' => [
-                'kits' => $items->where('tipo', 'kit')->count(),
-                'serializados' => $items->where('tipo', 'serializado')->count(),
-                'cantidad' => $movimientos->count(),
+                'kits' => $kitsRecibidos,
+                'serializados' => $serializadosRecibidos,
+                'cantidad' => $cantidadRecibida,
             ],
+            'totalRecepciones' => $totalRecepciones,
+            'ultimos30' => $ultimos30,
         ]);
     }
 }
