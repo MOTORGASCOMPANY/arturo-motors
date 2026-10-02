@@ -14,24 +14,43 @@ class ReporteCitas extends Component
     public string $sedeId = 'todos';
     public string $estado = 'todos';
 
+    /**
+     * Rango por defecto de todos los reportes: 1 del mes en curso -> hoy.
+     * La navegación semanal (lunes a viernes) sigue disponible como acción aparte.
+     */
     public function mount(): void
     {
-        $this->desde = now()->format('Y-m-d');
+        $this->mesActual();
+    }
+
+    public function mesActual(): void
+    {
+        $this->desde = now()->startOfMonth()->format('Y-m-d');
         $this->hasta = now()->format('Y-m-d');
     }
 
-    public function diaAnterior(): void
+    public function semanaActual(): void
     {
-        $nuevo = \Illuminate\Support\Carbon::parse($this->desde ?: now())->subDay()->toDateString();
-        $this->desde = $nuevo;
-        $this->hasta = $nuevo;
+        $lunes = \Illuminate\Support\Carbon::today()->startOfWeek(\Illuminate\Support\Carbon::MONDAY);
+
+        $this->desde = $lunes->format('Y-m-d');
+        $this->hasta = $lunes->copy()->addDays(4)->format('Y-m-d'); // viernes
     }
 
-    public function diaSiguiente(): void
+    public function semanaAnterior(): void
     {
-        $nuevo = \Illuminate\Support\Carbon::parse($this->desde ?: now())->addDay()->toDateString();
-        $this->desde = $nuevo;
-        $this->hasta = $nuevo;
+        $this->moverSemana(-7);
+    }
+
+    public function semanaSiguiente(): void
+    {
+        $this->moverSemana(7);
+    }
+
+    protected function moverSemana(int $dias): void
+    {
+        $this->desde = \Illuminate\Support\Carbon::parse($this->desde ?: now())->addDays($dias)->format('Y-m-d');
+        $this->hasta = \Illuminate\Support\Carbon::parse($this->hasta ?: now())->addDays($dias)->format('Y-m-d');
     }
 
     protected function rangoValido(): array
@@ -69,30 +88,36 @@ class ReporteCitas extends Component
         $conOrden = $citas->filter(fn ($c) => $c->serviceOrder !== null)->count();
         $porcentajeConversion = $total > 0 ? round(($conOrden / $total) * 100, 1) : 0;
 
-        // Gráfico SIEMPRE por horas del día seleccionado (fecha "desde")
-        $diaChart = $desde->copy()->startOfDay();
-        $labels = [];
+        // Gráfico semanal: X = lunes a viernes de la semana seleccionada.
+        // Se cuentan por día ISO (1 = lunes ... 5 = viernes), de modo que el
+        // sábado y domingo quedan fuera del gráfico (la semana laboral no los incluye).
+        $labels = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
         $aceptadasPorPeriodo = [];
         $noAceptadasPorPeriodo = [];
         $conversionPorPeriodo = [];
-        $granularity = 'hora';
+        $granularity = 'semana';
 
-        $citasDia = $citas->filter(fn ($c) => $c->fecha_cita->isSameDay($diaChart));
-        for ($h = 0; $h < 24; $h++) {
-            $labels[] = sprintf('%02d:00', $h);
-            $enHora = $citasDia->filter(fn ($c) => (int) $c->fecha_cita->format('G') === $h);
-            $aceptadasPorPeriodo[] = $enHora->where('estado', 'aceptada')->count();
-            $noAceptadasPorPeriodo[] = $enHora
+        foreach ($labels as $indice => $dia) {
+            $iso = $indice + 1;
+            $enDia = $citas->filter(fn ($c) => (int) $c->fecha_cita->isoWeekday() === $iso);
+
+            $aceptadasPorPeriodo[] = $enDia->where('estado', 'aceptada')->count();
+            $noAceptadasPorPeriodo[] = $enDia
                 ->filter(fn ($c) => in_array($c->estado, ['rechazada', 'cancelada'], true))
                 ->count();
-            $conversionPorPeriodo[] = $enHora->filter(fn ($c) => $c->serviceOrder !== null)->count();
+            $conversionPorPeriodo[] = $enDia->filter(fn ($c) => $c->serviceOrder !== null)->count();
         }
 
         $sumAceptadas = array_sum($aceptadasPorPeriodo);
         $sumNoAceptadas = array_sum($noAceptadasPorPeriodo);
         $sumConversion = array_sum($conversionPorPeriodo);
-        $periodoLabel = $diaChart->locale('es')->isoFormat('dddd DD/MM/YYYY');
-        $chartTitle = 'Citas por hora';
+        $diasRango = (int) $desde->diffInDays($hasta) + 1;
+        $esRangoSemanal = $diasRango <= 7;
+        $semanas = (int) ceil($diasRango / 7);
+        $periodoLabel = $esRangoSemanal
+            ? 'Semana del ' . $desde->format('d/m/Y') . ' al ' . $hasta->format('d/m/Y')
+            : 'Del ' . $desde->format('d/m/Y') . ' al ' . $hasta->format('d/m/Y') . ' · ' . $semanas . ($semanas === 1 ? ' semana' : ' semanas');
+        $chartTitle = 'Citas por semana';
         $sedeNombre = $this->sedeId === 'todos'
             ? null
             : optional(Sede::find($this->sedeId))->nombre;
@@ -150,6 +175,7 @@ class ReporteCitas extends Component
             'granularity' => $granularity,
             'chartTitle' => $chartTitle,
             'periodoLabel' => $periodoLabel,
+            'esRangoSemanal' => $esRangoSemanal,
             'sumAceptadas' => $sumAceptadas,
             'sumNoAceptadas' => $sumNoAceptadas,
             'sumConversion' => $sumConversion,
@@ -157,25 +183,33 @@ class ReporteCitas extends Component
                 ($sedeNombre ?: 'Todas las sedes')
                 . ' · ' . ($this->estado !== 'todos' ? ucfirst($this->estado) : 'Todos')
             ),
-            'citasDelDia' => $citasDia->count(),
+        ]);
+    }
+
+    /**
+     * Los controladores de export leen `fechaInicio`/`fechaFin`/`sede_id`, no
+     * `desde`/`hasta`. Sin este mapeo el rango se perdía y el PDF/Excel exportaba
+     * todas las citas de la historia sin aplicar ningún filtro de fecha.
+     */
+    protected function filtrosExport(): array
+    {
+        [$desde, $hasta] = $this->rangoValido();
+
+        return array_filter([
+            'fechaInicio' => $desde->format('Y-m-d'),
+            'fechaFin' => $hasta->format('Y-m-d'),
+            'estado' => $this->estado,
+            'sede_id' => $this->sedeId !== 'todos' ? $this->sedeId : null,
         ]);
     }
 
     public function descargarPdf(): void
     {
-        $this->dispatch('descargar-pdf', url: url('/rpta-citas/export-pdf?' . http_build_query(array_filter([
-            'desde' => $this->desde,
-            'hasta' => $this->hasta,
-            'estado' => $this->estado,
-        ]))));
+        $this->dispatch('descargar-pdf', url: url('/rpta-citas/export-pdf?' . http_build_query($this->filtrosExport())));
     }
 
     public function descargarExcel(): void
     {
-        $this->dispatch('descargar-excel', url: url('/rpta-citas/export-excel?' . http_build_query(array_filter([
-            'desde' => $this->desde,
-            'hasta' => $this->hasta,
-            'estado' => $this->estado,
-        ]))));
+        $this->dispatch('descargar-excel', url: url('/rpta-citas/export-excel?' . http_build_query($this->filtrosExport())));
     }
 }

@@ -11,11 +11,11 @@
 
 {{-- Filtros de sede / estado / rango de fechas --}}
 <div class="bg-white rounded-card shadow-card border border-gray-200 p-5 font-inter">
-    <div class="flex items-center gap-2 mb-4">
-        <i class="fas fa-sliders text-gray-400"></i>
+    <div class="flex flex-wrap items-center gap-x-2 gap-y-2 mb-4">
+        <i class="fas fa-sliders text-gray-400 shrink-0"></i>
         <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Filtros</span>
-        <span class="ml-auto inline-flex items-center gap-1.5 rounded-full bg-brand-50 border border-brand-200 text-brand-700 px-3 py-1 text-xs font-bold">
-            <i class="fas fa-filter text-[10px]"></i>
+        <span class="ml-auto max-w-full inline-flex items-center gap-1.5 rounded-full bg-brand-50 border border-brand-200 text-brand-700 px-3 py-1 text-xs font-bold break-words">
+            <i class="fas fa-filter text-[10px] shrink-0"></i>
             {{ $filtroBadge }}
         </span>
     </div>

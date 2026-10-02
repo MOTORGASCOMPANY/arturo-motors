@@ -18,15 +18,22 @@ class CitaExport implements FromCollection, WithHeadings, WithMapping, WithStyle
     protected ?string $estado;
     protected ?string $fechaInicio;
     protected ?string $fechaFin;
+    protected ?int $sedeId;
 
     protected ?Collection $cachedCollection = null;
 
-    public function __construct(?string $search = null, ?string $estado = 'todos', ?string $fechaInicio = null, ?string $fechaFin = null)
-    {
+    public function __construct(
+        ?string $search = null,
+        ?string $estado = 'todos',
+        ?string $fechaInicio = null,
+        ?string $fechaFin = null,
+        ?int $sedeId = null
+    ) {
         $this->search = $search;
         $this->estado = $estado;
         $this->fechaInicio = $fechaInicio;
         $this->fechaFin = $fechaFin;
+        $this->sedeId = $sedeId;
     }
 
     public function collection()
@@ -37,6 +44,7 @@ class CitaExport implements FromCollection, WithHeadings, WithMapping, WithStyle
                 ->estado($this->estado)
                 ->when($this->fechaInicio, fn ($q) => $q->whereDate('fecha_cita', '>=', $this->fechaInicio))
                 ->when($this->fechaFin, fn ($q) => $q->whereDate('fecha_cita', '<=', $this->fechaFin))
+                ->when($this->sedeId !== null, fn ($q) => $q->where('sede_id', $this->sedeId))
                 ->orderBy('fecha_cita', 'desc')
                 ->get();
         }

@@ -11,12 +11,12 @@
     {{-- Charts row 1 --}}
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-2 bg-white rounded-card shadow-card border border-gray-200 p-6">
-            <div class="flex items-center justify-between gap-2 mb-5">
-                <h3 class="text-sm font-bold text-gray-600 uppercase tracking-wider flex items-center gap-2">
-                    <i class="fas fa-chart-column text-gray-400"></i>
-                    Conversiones por mes
+            <div class="flex flex-wrap items-start justify-between gap-x-3 gap-y-2 mb-5">
+                <h3 class="min-w-0 flex items-start gap-2 text-sm font-bold text-gray-600 uppercase tracking-wider">
+                    <i class="fas fa-chart-column text-gray-400 shrink-0 mt-0.5"></i>
+                    <span>Conversiones por mes</span>
                 </h3>
-                <span class="text-[11px] font-bold text-brand-700 bg-brand-50 border border-brand-200 rounded-full px-2.5 py-1">{{ $filtroBadge }}</span>
+                <span class="max-w-full text-[11px] font-bold text-brand-700 bg-brand-50 border border-brand-200 rounded-full px-2.5 py-1 break-words">{{ $filtroBadge }}</span>
             </div>
             <div class="relative" style="height: 280px;" wire:ignore>
                 <canvas id="chartConvMes"></canvas>
@@ -24,12 +24,12 @@
         </div>
 
         <div class="bg-white rounded-card shadow-card border border-gray-200 p-6">
-            <div class="flex items-center justify-between gap-2 mb-5">
-                <h3 class="text-sm font-bold text-gray-600 uppercase tracking-wider flex items-center gap-2">
-                    <i class="fas fa-chart-pie text-gray-400"></i>
-                    Por estado
+            <div class="flex flex-wrap items-start justify-between gap-x-3 gap-y-2 mb-5">
+                <h3 class="min-w-0 flex items-start gap-2 text-sm font-bold text-gray-600 uppercase tracking-wider">
+                    <i class="fas fa-chart-pie text-gray-400 shrink-0 mt-0.5"></i>
+                    <span>Por estado</span>
                 </h3>
-                <span class="text-[11px] font-bold text-brand-700 bg-brand-50 border border-brand-200 rounded-full px-2.5 py-1 shrink-0">{{ $filtroBadge }}</span>
+                <span class="max-w-full text-[11px] font-bold text-brand-700 bg-brand-50 border border-brand-200 rounded-full px-2.5 py-1 break-words">{{ $filtroBadge }}</span>
             </div>
             <div class="relative" style="height: 280px;" wire:ignore>
                 <canvas id="chartConvEstado"></canvas>
@@ -40,12 +40,12 @@
     {{-- Charts row 2 --}}
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="bg-white rounded-card shadow-card border border-gray-200 p-6">
-            <div class="flex items-center justify-between gap-2 mb-2 flex-wrap">
-                <h3 class="text-sm font-bold text-gray-600 uppercase tracking-wider flex items-center gap-2">
-                    <i class="fas fa-box-open text-gray-400"></i>
-                    Kits en almacén
+            <div class="flex flex-wrap items-start justify-between gap-x-3 gap-y-2 mb-2">
+                <h3 class="min-w-0 flex items-start gap-2 text-sm font-bold text-gray-600 uppercase tracking-wider">
+                    <i class="fas fa-box-open text-gray-400 shrink-0 mt-0.5"></i>
+                    <span>Kits en almacén</span>
                 </h3>
-                <span class="text-[11px] font-bold text-brand-700 bg-brand-50 border border-brand-200 rounded-full px-2.5 py-1 shrink-0">{{ $filtroBadge }}</span>
+                <span class="max-w-full text-[11px] font-bold text-brand-700 bg-brand-50 border border-brand-200 rounded-full px-2.5 py-1 break-words">{{ $filtroBadge }}</span>
             </div>
             <p class="text-xs text-gray-500 mb-4">
                 Total <span class="font-extrabold text-gray-900">{{ number_format($kitsTotal) }}</span>
@@ -59,12 +59,12 @@
         </div>
 
         <div class="bg-white rounded-card shadow-card border border-gray-200 p-6">
-            <div class="flex items-center justify-between gap-2 mb-5">
-                <h3 class="text-sm font-bold text-gray-600 uppercase tracking-wider flex items-center gap-2">
-                    <i class="fas fa-gears text-gray-400"></i>
-                    Componentes instalados
+            <div class="flex flex-wrap items-start justify-between gap-x-3 gap-y-2 mb-5">
+                <h3 class="min-w-0 flex items-start gap-2 text-sm font-bold text-gray-600 uppercase tracking-wider">
+                    <i class="fas fa-gears text-gray-400 shrink-0 mt-0.5"></i>
+                    <span>Componentes instalados</span>
                 </h3>
-                <span class="text-[11px] font-bold text-brand-700 bg-brand-50 border border-brand-200 rounded-full px-2.5 py-1 shrink-0">{{ $filtroBadge }}</span>
+                <span class="max-w-full text-[11px] font-bold text-brand-700 bg-brand-50 border border-brand-200 rounded-full px-2.5 py-1 break-words">{{ $filtroBadge }}</span>
             </div>
             <div class="relative" style="height: 260px;" wire:ignore>
                 <canvas id="chartComponentes"></canvas>
@@ -72,12 +72,12 @@
         </div>
 
         <div class="bg-white rounded-card shadow-card border border-gray-200 p-6">
-            <div class="flex items-center justify-between gap-2 mb-5">
-                <h3 class="text-sm font-bold text-gray-600 uppercase tracking-wider flex items-center gap-2">
-                    <i class="fas fa-truck text-gray-400"></i>
-                    Despachados: serie vs cantidad
+            <div class="flex flex-wrap items-start justify-between gap-x-3 gap-y-2 mb-5">
+                <h3 class="min-w-0 flex items-start gap-2 text-sm font-bold text-gray-600 uppercase tracking-wider">
+                    <i class="fas fa-truck text-gray-400 shrink-0 mt-0.5"></i>
+                    <span>Despachados: serie vs cantidad</span>
                 </h3>
-                <span class="text-[11px] font-bold text-brand-700 bg-brand-50 border border-brand-200 rounded-full px-2.5 py-1 shrink-0">{{ $filtroBadge }}</span>
+                <span class="max-w-full text-[11px] font-bold text-brand-700 bg-brand-50 border border-brand-200 rounded-full px-2.5 py-1 break-words">{{ $filtroBadge }}</span>
             </div>
             <div class="relative" style="height: 260px;" wire:ignore>
                 <canvas id="chartDespachados"></canvas>
@@ -90,12 +90,12 @@
 
     {{-- Chart 5: balance --}}
     <div class="bg-white rounded-card shadow-card border border-gray-200 p-6">
-        <div class="flex items-center justify-between gap-2 mb-5">
-            <h3 class="text-sm font-bold text-gray-600 uppercase tracking-wider flex items-center gap-2">
-                <i class="fas fa-warehouse text-gray-400"></i>
-                Balance de almacén por sede
+        <div class="flex flex-wrap items-start justify-between gap-x-3 gap-y-2 mb-5">
+            <h3 class="min-w-0 flex items-start gap-2 text-sm font-bold text-gray-600 uppercase tracking-wider">
+                <i class="fas fa-warehouse text-gray-400 shrink-0 mt-0.5"></i>
+                <span>Balance de almacén por sede</span>
             </h3>
-            <span class="text-[11px] font-bold text-brand-700 bg-brand-50 border border-brand-200 rounded-full px-2.5 py-1">{{ $filtroBadge }}</span>
+            <span class="max-w-full text-[11px] font-bold text-brand-700 bg-brand-50 border border-brand-200 rounded-full px-2.5 py-1 break-words">{{ $filtroBadge }}</span>
         </div>
         <div class="relative" style="height: 280px;" wire:ignore>
             <canvas id="chartBalanceSedes"></canvas>

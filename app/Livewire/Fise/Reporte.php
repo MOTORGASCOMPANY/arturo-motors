@@ -12,7 +12,8 @@ class Reporte extends Component
 
     public function mount(): void
     {
-        $this->desde = now()->subDays(29)->format('Y-m-d');
+        // Rango por defecto de todos los reportes: 1 del mes en curso -> hoy.
+        $this->desde = now()->startOfMonth()->format('Y-m-d');
         $this->hasta = now()->format('Y-m-d');
     }
 

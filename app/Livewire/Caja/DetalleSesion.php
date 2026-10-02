@@ -36,9 +36,16 @@ class DetalleSesion extends Component
 
     public function render()
     {
+        // Se excluyen SOLO los cobros FISE de la lista.
+        // IMPORTANTE: los egresos tienen metodo_pago NULL (RegistrarEgreso no lo setea),
+        // y `metodo_pago != 'fise'` en SQL es NULL para NULL, no TRUE: el operador
+        // descartaba TODOS los egresos. Por eso el filtro necesita ->orWhereNull().
         $movimientos = $this->sesion->movimientos()
             ->with(['usuario', 'serviceOrder.service'])
-            ->where('metodo_pago', '!=', 'fise')
+            ->where(function ($q) {
+                $q->where('metodo_pago', '!=', 'fise')
+                    ->orWhereNull('metodo_pago');
+            })
             ->when($this->tipo !== 'todos', fn ($q) => $q->where('tipo', $this->tipo))
             ->when($this->metodoPago !== 'todos', fn ($q) => $q->where('metodo_pago', $this->metodoPago))
             ->orderByDesc('created_at')
@@ -52,10 +59,12 @@ class DetalleSesion extends Component
         $tarjeta      = $this->ingresosPorMetodo('tarjeta');
         $transferencia = $this->ingresosPorMetodo('transferencia');
         $otro         = $this->ingresosPorMetodo('otro');
+        // Sin la celda FISE el desglose no cierra contra $totalIngresos.
+        $fise         = $this->ingresosPorMetodo('fise');
 
         return view('livewire.caja.detalle-sesion', compact(
             'movimientos', 'totalIngresos', 'totalEgresos',
-            'efectivo', 'tarjeta', 'transferencia', 'otro'
+            'efectivo', 'tarjeta', 'transferencia', 'otro', 'fise'
         ));
     }
 }

@@ -3,14 +3,14 @@
 {{-- Encabezado: mismo patrón que /almacen/reporte (icono al lado del título + botones sólidos) --}}
 <div class="bg-white border border-gray-200 p-6 sm:p-8 rounded-card w-full shadow-card">
     <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-        <div class="flex items-center gap-4">
+        <div class="flex min-w-0 items-center gap-4">
             <div class="w-14 h-14 rounded-card bg-brand-600 border border-brand-700 flex items-center justify-center shrink-0">
                 <i class="fas fa-car text-white text-2xl"></i>
             </div>
-            <div>
+            <div class="min-w-0">
                 <h2 class="text-gray-800 font-bold text-2xl tracking-tight">Reporte de Conversiones GNV</h2>
                 <p class="text-gray-500 text-sm mt-1">Conversiones · kits · stock ·
-                    <span class="font-medium text-brand-600">{{ $filtroBadge }}</span>
+                    <span class="font-medium text-brand-600 break-words">{{ $filtroBadge }}</span>
                 </p>
             </div>
         </div>

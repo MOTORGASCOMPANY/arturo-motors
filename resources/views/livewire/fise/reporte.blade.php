@@ -68,7 +68,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
 
             <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-slate-200/80 p-5 flex flex-col justify-center">
-                <div class="flex items-center justify-between mb-2">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
                     <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total pagos</span>
                     <i class="fas fa-receipt text-slate-200 text-lg"></i>
                 </div>
@@ -76,7 +76,7 @@
             </div>
 
             <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-slate-200/80 p-5 flex flex-col justify-center border-l-4 border-l-emerald-500">
-                <div class="flex items-center justify-between mb-2">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
                     <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Pagados</span>
                     <i class="fas fa-check-circle text-emerald-100 text-lg"></i>
                 </div>
@@ -84,7 +84,7 @@
             </div>
 
             <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-slate-200/80 p-5 flex flex-col justify-center border-l-4 border-l-indigo-500">
-                <div class="flex items-center justify-between mb-2">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
                     <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Parciales</span>
                     <i class="fas fa-hourglass-half text-indigo-100 text-lg"></i>
                 </div>
@@ -92,7 +92,7 @@
             </div>
 
             <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-slate-200/80 p-5 flex flex-col justify-center border-l-4 border-l-amber-500">
-                <div class="flex items-center justify-between mb-2">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
                     <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Pendientes</span>
                     <i class="fas fa-clock text-amber-100 text-lg"></i>
                 </div>
@@ -100,7 +100,7 @@
             </div>
 
             <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-slate-200/80 p-5 flex flex-col justify-center border-l-4 border-l-purple-500">
-                <div class="flex items-center justify-between mb-2">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
                     <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Tasa de pago</span>
                     <i class="fas fa-percent text-purple-100 text-lg"></i>
                 </div>

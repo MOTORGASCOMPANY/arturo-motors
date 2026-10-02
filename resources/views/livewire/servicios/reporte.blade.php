@@ -1,11 +1,11 @@
 <div wire:loading.class="opacity-50 pointer-events-none transition-opacity duration-300" class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8 font-sans">
 
-    {{-- Cabecera y Filtros --}}
+    {{-- Cabecera: identificación a la izquierda, filtros y exportación a la derecha --}}
     <div class="bg-white border border-gray-200 p-6 sm:p-8 rounded-2xl w-full shadow-sm">
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
 
             {{-- Título --}}
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-4 shrink-0">
                 <div class="w-14 h-14 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center shrink-0">
                     <i class="fas fa-chart-simple text-indigo-600 text-2xl"></i>
                 </div>
@@ -15,35 +15,45 @@
                 </div>
             </div>
 
-            {{-- Controles y Botones --}}
-            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 lg:gap-6 w-full lg:w-auto">
-                
-                {{-- Filtros --}}
-                <div class="flex flex-wrap items-center gap-3 bg-white/50 p-2 rounded-xl border border-gray-300/50 w-full sm:w-auto">
-                    <div class="flex items-center gap-2">
-                        <input type="date" wire:model.live="desde" class="text-sm text-gray-700 rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm py-2">
-                        <span class="text-gray-500 text-sm font-medium">a</span>
-                        <input type="date" wire:model.live="hasta" class="text-sm text-gray-700 rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm py-2">
-                    </div>
-                    
-                    <div class="w-full sm:w-auto h-px sm:h-6 w-px bg-gray-300 sm:mx-1 hidden sm:block"></div>
+            {{-- Controles --}}
+            <div class="flex flex-col xl:flex-row xl:items-end gap-4 xl:gap-6">
 
-                    <select wire:model.live="tipoServicio" class="w-full sm:w-auto text-sm text-gray-700 rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm py-2 cursor-pointer">
-                        <option value="todos">Todos los servicios</option>
-                        <option value="simple">Solo simples</option>
-                        <option value="conversion">Solo conversión</option>
-                    </select>
+                {{-- Filtros con etiqueta, igual que el resto de reportes --}}
+                <div class="flex flex-wrap items-end gap-3 sm:gap-4">
+                    <div class="flex flex-col gap-1.5">
+                        <label for="rep-desde" class="text-xs font-semibold text-gray-500">Desde</label>
+                        <input id="rep-desde" type="date" wire:model.live="desde"
+                            class="text-sm text-gray-700 rounded-lg border border-gray-200 bg-gray-50 py-2 px-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors">
+                    </div>
+
+                    <div class="flex flex-col gap-1.5">
+                        <label for="rep-hasta" class="text-xs font-semibold text-gray-500">Hasta</label>
+                        <input id="rep-hasta" type="date" wire:model.live="hasta"
+                            class="text-sm text-gray-700 rounded-lg border border-gray-200 bg-gray-50 py-2 px-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors">
+                    </div>
+
+                    <div class="flex flex-col gap-1.5">
+                        <label for="rep-tipo" class="text-xs font-semibold text-gray-500">Servicio</label>
+                        <select id="rep-tipo" wire:model.live="tipoServicio"
+                            class="text-sm text-gray-700 rounded-lg border border-gray-200 bg-gray-50 py-2 px-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors cursor-pointer min-w-[11rem]">
+                            <option value="todos">Todos los servicios</option>
+                            <option value="simple">Solo simples</option>
+                            <option value="conversion">Solo conversión</option>
+                        </select>
+                    </div>
                 </div>
 
-                {{-- Acciones --}}
-                <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
-                    <button wire:click="descargarPdf" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl py-2.5 px-5 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-center gap-2 w-full sm:w-auto">
-                        <i class="fas fa-file-pdf"></i>
-                        <span>PDF</span>
+                {{-- Exportación --}}
+                <div class="flex items-center gap-2 xl:ml-auto">
+                    <button wire:click="descargarPdf" wire:loading.attr="disabled"
+                        class="flex-1 xl:flex-none inline-flex items-center justify-center gap-2 bg-white hover:bg-red-50 border border-gray-200 text-gray-700 font-semibold text-sm rounded-xl py-2.5 px-4 shadow-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fas fa-file-pdf text-red-500"></i>
+                        PDF
                     </button>
-                    <button wire:click="descargarExcel" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl py-2.5 px-5 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-center gap-2 w-full sm:w-auto">
-                        <i class="fas fa-file-excel"></i>
-                        <span>Excel</span>
+                    <button wire:click="descargarExcel" wire:loading.attr="disabled"
+                        class="flex-1 xl:flex-none inline-flex items-center justify-center gap-2 bg-white hover:bg-emerald-50 border border-gray-200 text-gray-700 font-semibold text-sm rounded-xl py-2.5 px-4 shadow-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fas fa-file-excel text-emerald-600"></i>
+                        Excel
                     </button>
                 </div>
             </div>
@@ -54,7 +64,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         
         <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-200/80 p-6 flex flex-col justify-center">
-            <div class="flex items-center justify-between mb-2">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
                 <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Total ventas</span>
                 <i class="fas fa-sack-dollar text-indigo-100 text-lg"></i>
             </div>
@@ -62,7 +72,7 @@
         </div>
 
         <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-200/80 p-6 flex flex-col justify-center">
-            <div class="flex items-center justify-between mb-2">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
                 <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Órdenes</span>
                 <i class="fas fa-file-invoice text-gray-200 text-lg"></i>
             </div>
@@ -70,7 +80,7 @@
         </div>
 
         <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-200/80 p-6 flex flex-col justify-center">
-            <div class="flex items-center justify-between mb-2">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
                 <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Ticket promedio</span>
                 <i class="fas fa-receipt text-gray-200 text-lg"></i>
             </div>
@@ -78,7 +88,7 @@
         </div>
 
         <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-200/80 p-6 flex flex-col justify-center">
-            <div class="flex items-center justify-between mb-2">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
                 <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Descuentos</span>
                 <i class="fas fa-tags text-red-100 text-lg"></i>
             </div>
@@ -86,7 +96,7 @@
         </div>
 
         <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-200/80 p-6 flex flex-col justify-center border-l-4 border-l-amber-500">
-            <div class="flex items-center justify-between mb-2">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
                 <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Conv. pendientes</span>
                 <i class="fas fa-clock text-amber-100 text-lg"></i>
             </div>
@@ -94,7 +104,7 @@
         </div>
 
         <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-200/80 p-6 flex flex-col justify-center border-l-4 border-l-emerald-500">
-            <div class="flex items-center justify-between mb-2">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
                 <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Conv. completadas</span>
                 <i class="fas fa-check-circle text-emerald-100 text-lg"></i>
             </div>
@@ -102,7 +112,7 @@
         </div>
 
         <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-200/80 p-6 flex flex-col justify-center border-l-4 border-l-gray-400">
-            <div class="flex items-center justify-between mb-2">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
                 <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Simples completados</span>
                 <i class="fas fa-wrench text-gray-200 text-lg"></i>
             </div>
@@ -110,7 +120,7 @@
         </div>
 
         <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-200/80 p-6 flex flex-col justify-center">
-            <div class="flex items-center justify-between mb-2">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
                 <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">T. Prom. Conversión</span>
                 <i class="fas fa-stopwatch text-amber-100 text-lg"></i>
             </div>
@@ -120,11 +130,12 @@
 
     {{-- Gráfico de servicios por día --}}
     <div class="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-6 lg:p-8" wire:ignore wire:key="reporte-servicios-chart">
-        <div class="flex items-center justify-between mb-6">
-            <h3 class="text-sm font-bold text-gray-600 uppercase tracking-wider flex items-center gap-2">
-                <i class="fas fa-chart-column text-gray-400"></i>
-                Órdenes por día (desglose)
+        <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 mb-6">
+            <h3 class="min-w-0 flex items-center gap-2 text-sm font-bold text-gray-600 uppercase tracking-wider">
+                <i class="fas fa-chart-column text-gray-400 shrink-0"></i>
+                <span>Órdenes por semana</span>
             </h3>
+            <span class="text-xs font-medium text-gray-400">Agrupadas en bloques de 7 días</span>
         </div>
 
         <div class="relative w-full" style="height: 360px;">
@@ -345,7 +356,6 @@
             canvas.dataset.labels = JSON.stringify(data.labels);
             canvas.dataset.conversionPendientes = JSON.stringify(data.conversionPendientes);
             canvas.dataset.conversionCompletadas = JSON.stringify(data.conversionCompletadas);
-            canvas.dataset.simplePendientes = JSON.stringify(data.simplePendientes);
             canvas.dataset.simpleCompletadas = JSON.stringify(data.simpleCompletadas);
             window.renderReporteServiciosChart();
         });

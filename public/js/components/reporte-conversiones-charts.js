@@ -132,13 +132,25 @@
         const d = window.reporteConvData;
         if (!d) return;
 
-        // 1. Conversiones por mes
+        // 1. Conversiones por mes — un dataset por estado que traiga el backend.
+        //    El servidor ya calcula labelsEstadosMes/coloresMesEstados/dataMesPorEstado
+        //    con el MISMO orden, así que el índice i mantiene color y etiqueta juntos.
         safe(function () {
-            renderBar('chartConvMes', 'chartConvMesInst', d.labelsMes, [
-                { label: 'Completadas', data: d.dataMesCompletadas, backgroundColor: '#10b981', borderRadius: 6, barPercentage: 0.6, categoryPercentage: 0.8 },
-                { label: 'En proceso', data: d.dataMesProceso, backgroundColor: '#f59e0b', borderRadius: 6, barPercentage: 0.6, categoryPercentage: 0.8 },
-                { label: 'Otras', data: d.dataMesOtras, backgroundColor: '#94a3b8', borderRadius: 6, barPercentage: 0.6, categoryPercentage: 0.8 }
-            ], { stacked: true });
+            const estados = d.estadosMes || [];
+            const dataPorEstado = d.dataMesPorEstado || {};
+            const colores = d.coloresMesEstados || [];
+            const etiquetas = d.labelsEstadosMes || {};
+
+            const datasets = estados.map((estado, i) => ({
+                label: etiquetas[estado] || estado,
+                data: dataPorEstado[estado] || [],
+                backgroundColor: colores[i] || palette[i % palette.length],
+                borderRadius: 6,
+                barPercentage: 0.6,
+                categoryPercentage: 0.8
+            }));
+
+            renderBar('chartConvMes', 'chartConvMesInst', d.labelsMes, datasets, { stacked: true });
         });
 
         // 2. Distribución por estado de conversión

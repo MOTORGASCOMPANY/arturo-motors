@@ -104,7 +104,8 @@
                 <h4 class="text-xs font-bold text-gray-600 uppercase tracking-wider mb-3">
                     <i class="fas fa-chart-pie mr-1 text-indigo-600"></i> Desglose de Ingresos
                 </h4>
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {{-- Las 5 casillas son las que suman $totalIngresos: si falta alguna, el desglose no cierra. --}}
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                     <div class="text-center p-2 bg-emerald-50 rounded-lg border border-emerald-200">
                         <p class="text-xs text-emerald-600 font-medium">Efectivo</p>
                         <p class="text-sm font-bold text-emerald-700">S/ {{ number_format($efectivo, 2) }}</p>
@@ -116,6 +117,14 @@
                     <div class="text-center p-2 bg-purple-50 rounded-lg border border-purple-200">
                         <p class="text-xs text-purple-600 font-medium">Transferencia</p>
                         <p class="text-sm font-bold text-purple-700">S/ {{ number_format($transferencia, 2) }}</p>
+                    </div>
+                    <div class="text-center p-2 bg-slate-50 rounded-lg border border-slate-200">
+                        <p class="text-xs text-slate-600 font-medium">Otro</p>
+                        <p class="text-sm font-bold text-slate-700">S/ {{ number_format($otro, 2) }}</p>
+                    </div>
+                    <div class="text-center p-2 bg-amber-50 rounded-lg border border-amber-200">
+                        <p class="text-xs text-amber-600 font-medium">FISE</p>
+                        <p class="text-sm font-bold text-amber-700">S/ {{ number_format($fise, 2) }}</p>
                     </div>
                 </div>
             </div>

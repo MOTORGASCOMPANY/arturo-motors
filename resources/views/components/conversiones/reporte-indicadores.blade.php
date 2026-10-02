@@ -17,10 +17,10 @@
 
 {{-- 4 tarjetas: número grande + franja inferior de celdas (valor + etiqueta) --}}
 <div class="font-inter">
-    <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-6 px-1 flex items-center gap-2">
-        <i class="fas fa-gauge-high text-gray-400"></i>
-        Indicadores de conversión
-        <span class="ml-auto inline-flex items-center gap-1.5 rounded-full bg-brand-50 border border-brand-200 text-brand-700 px-3 py-1 text-xs font-bold normal-case tracking-normal">
+    <h3 class="flex flex-wrap items-center gap-x-2 gap-y-2 mb-6 px-1 text-sm font-bold text-gray-500 uppercase tracking-wider">
+        <i class="fas fa-gauge-high text-gray-400 shrink-0"></i>
+        <span class="min-w-0">Indicadores de conversión</span>
+        <span class="ml-auto max-w-full inline-flex items-center gap-1.5 rounded-full bg-brand-50 border border-brand-200 text-brand-700 px-3 py-1 text-xs font-bold normal-case tracking-normal break-words">
             {{ $filtroBadge }}
         </span>
     </h3>

@@ -86,11 +86,11 @@
 
         {{-- 2. Flujo neto acumulado (línea) --}}
         <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6" wire:ignore wire:key="caja-c2">
-            <div class="flex items-start justify-between gap-2 mb-4">
-                <h3 class="text-sm font-bold text-gray-500 uppercase">
+            <div class="flex flex-wrap items-start justify-between gap-x-3 gap-y-2 mb-4">
+                <h3 class="min-w-0 text-sm font-bold text-gray-500 uppercase">
                     <i class="fas fa-chart-area mr-1.5 text-indigo-500"></i>Flujo neto acumulado
                 </h3>
-                <span class="text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-full px-2.5 py-1">
+                <span class="max-w-full text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-full px-2.5 py-1 break-words">
                     Inicia S/ {{ number_format($efectivoAnterior, 2) }}
                 </span>
             </div>
@@ -121,11 +121,11 @@
 
         {{-- 6. FISE vs no FISE por día --}}
         <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6" wire:ignore wire:key="caja-c6">
-            <div class="flex items-start justify-between gap-2 mb-4">
-                <h3 class="text-sm font-bold text-gray-500 uppercase">
+            <div class="flex flex-wrap items-start justify-between gap-x-3 gap-y-2 mb-4">
+                <h3 class="min-w-0 text-sm font-bold text-gray-500 uppercase">
                     <i class="fas fa-hand-holding-usd mr-1.5 text-amber-500"></i>Ingresos FISE vs. no FISE
                 </h3>
-                <span class="text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-1">
+                <span class="max-w-full text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-1 break-words">
                     FISE S/ {{ number_format($fiseTotal, 2) }} · Otros S/ {{ number_format($noFiseTotal, 2) }}
                 </span>
             </div>
@@ -145,7 +145,7 @@
         {{-- 4. Egresos por categoría (barras horizontales) --}}
         <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6" wire:ignore wire:key="caja-c4">
             <h3 class="text-sm font-bold text-gray-500 uppercase mb-4">
-                <i class="fas fa-file-invoice-dollar mr-1.5 text-red-500"></i>Egresos por categoría
+                <i class="fas fa-file-invoice-dollar mr-1.5 text-red-500"></i>Egresos
             </h3>
             <div class="relative w-full" style="height: 280px;">
                 <canvas id="chartEgresosCat"></canvas>

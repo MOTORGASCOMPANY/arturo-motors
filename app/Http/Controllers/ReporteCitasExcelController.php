@@ -15,7 +15,8 @@ class ReporteCitasExcelController extends Controller
                 $request->search,
                 $request->estado ?? 'todos',
                 $request->fechaInicio,
-                $request->fechaFin
+                $request->fechaFin,
+                $request->sede_id ? (int) $request->sede_id : null
             ),
             'reporte-citas-' . now()->format('Y-m-d-Hi') . '.xlsx'
         );

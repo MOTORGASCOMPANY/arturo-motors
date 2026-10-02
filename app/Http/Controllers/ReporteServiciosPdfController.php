@@ -13,12 +13,21 @@ class ReporteServiciosPdfController extends Controller
     {
         $desdeStr = $request->desde ?? now()->startOfMonth()->format('Y-m-d');
         $hastaStr = $request->hasta ?? now()->format('Y-m-d');
-        $desde = Carbon::parse($desdeStr);
-        $hasta = Carbon::parse($hastaStr);
+
+        // Mismo criterio que la pantalla: día completo e intercambio si el rango viene invertido.
+        $desde = Carbon::parse($desdeStr)->startOfDay();
+        $hasta = Carbon::parse($hastaStr)->endOfDay();
+
+        if ($desde->gt($hasta)) {
+            [$desde, $hasta] = [$hasta->copy()->startOfDay(), $desde->copy()->endOfDay()];
+        }
+
+        $desdeStr = $desde->format('Y-m-d');
+        $hastaStr = $hasta->format('Y-m-d');
 
         $tipoServicio = $request->input('tipoServicio', 'todos');
 
-        $comprobantes = Comprobante::whereBetween('created_at', [$desdeStr . ' 00:00:00', $hastaStr . ' 23:59:59'])
+        $comprobantes = Comprobante::whereBetween('created_at', [$desde, $hasta])
             ->when($tipoServicio !== 'todos', function ($q) use ($request) {
                 $q->whereHas('serviceOrder.service', fn ($s) => $s->where('tipo', $request->tipoServicio));
             })
@@ -26,7 +35,9 @@ class ReporteServiciosPdfController extends Controller
             ->get();
 
         $totalVentas = $comprobantes->sum('monto');
-        $totalOrdenes = $comprobantes->count();
+        // Órdenes distintas cobradas, igual que en pantalla: varios comprobantes
+        // de la misma orden no deben contar dos veces.
+        $totalOrdenes = $comprobantes->pluck('service_order_id')->filter()->unique()->count();
 
         $ventasPorServicio = $comprobantes
             ->groupBy(fn ($c) => $c->serviceOrder?->service?->nombre ?? 'Sin servicio')
@@ -46,8 +57,10 @@ class ReporteServiciosPdfController extends Controller
             ->sortByDesc('total');
 
         // Serie diaria para el gráfico
-        $dias = min(($desde->diffInDays($hasta) + 1), 90);
-        $ventasPorDia = Comprobante::whereBetween('created_at', [$desdeStr . ' 00:00:00', $hastaStr . ' 23:59:59'])
+        // Carbon 3 devuelve diffInDays() como FLOAT: sin el cast a int el bucle
+        // corre una iteración extra y agrega un día fantasma más allá de `hasta`.
+        $dias = (int) $desde->diffInDays($hasta) + 1;
+        $ventasPorDia = Comprobante::whereBetween('created_at', [$desde, $hasta])
             ->when($tipoServicio !== 'todos', function ($q) use ($request) {
                 $q->whereHas('serviceOrder.service', fn ($s) => $s->where('tipo', $request->tipoServicio));
             })

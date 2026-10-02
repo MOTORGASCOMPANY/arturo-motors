@@ -285,7 +285,7 @@
             </tr>
         </table>
 
-        @if($search || $estado !== 'todos' || $fechaInicio || $fechaFin)
+        @if($search || $estado !== 'todos' || $fechaInicio || $fechaFin || !empty($sede))
             <div class="spacer-sm">&nbsp;</div>
             <div class="filters-box">
                 <span class="filters-label">Filtros aplicados:</span>
@@ -295,6 +295,10 @@
                 @if($estado !== 'todos')
                     <span class="filters-sep">|</span>
                     <span class="filters-value">Estado: {{ ucfirst($estado) }}</span>
+                @endif
+                @if(!empty($sede))
+                    <span class="filters-sep">|</span>
+                    <span class="filters-value">Sede: {{ $sede }}</span>
                 @endif
                 @if($fechaInicio)
                     <span class="filters-sep">|</span>

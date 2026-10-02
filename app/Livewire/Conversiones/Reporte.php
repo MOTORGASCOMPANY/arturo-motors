@@ -49,6 +49,13 @@ class Reporte extends Component
     public ?string $filtroFechaHasta = null;
     public ?int $filtroTecnico = null;  // NUEVO: filtro técnico opcional
 
+    public function mount(): void
+    {
+        // Rango por defecto de todos los reportes: 1 del mes en curso -> hoy.
+        $this->filtroFechaDesde = now()->startOfMonth()->format('Y-m-d');
+        $this->filtroFechaHasta = now()->format('Y-m-d');
+    }
+
     public function updatedFiltroSede($value): void
     {
         $this->filtroSede = ($value === '' || $value === null) ? null : (int) $value;
@@ -72,23 +79,16 @@ class Reporte extends Component
         $this->filtroFechaHasta = null;
     }
 
+    /**
+     * Badge del reporte: SOLO la sede, en todos los gráficos y encabezados.
+     * El estado y el rango de fechas siguen aplicando a las consultas, pero se
+     * muestran en el bloque de Filtros — repetirlos en cada tarjeta era ruido.
+     */
     public function filtroBadge(): string
     {
-        $sede = $this->filtroSede
+        return $this->filtroSede
             ? (Sede::find($this->filtroSede)?->nombre ?? 'Sede')
             : 'Todas las sedes';
-
-        $estado = self::ESTADO_LABELS[$this->filtroEstado] ?? 'Todos estados';
-
-        $fechas = [];
-        if ($this->filtroFechaDesde) {
-            $fechas[] = 'desde ' . $this->filtroFechaDesde;
-        }
-        if ($this->filtroFechaHasta) {
-            $fechas[] = 'hasta ' . $this->filtroFechaHasta;
-        }
-
-        return $sede . ' · ' . $estado . ($fechas ? ' · ' . implode(' / ', $fechas) : '');
     }
 
     public function exportPdfUrl(): string
@@ -400,17 +400,32 @@ class Reporte extends Component
 
         // ─── Charts ───
 
-        // 1. Conversiones por mes (usa created_at como /ordenes)
-        $porMes = $ordenes->groupBy(
+        // 1. Conversiones por mes (usa created_at como /ordenes).
+        //    Un corte por CADA estado que aparezca en los datos, en el orden del
+        //    pipeline. Nada de estados vacíos en la leyenda: mismo criterio que
+        //    estadosDisponibles().
+        $gruposMes = $ordenes->groupBy(
             fn ($o) => $o->created_at?->format('Y-m') ?? ($o->fecha_inicio_conversion?->format('Y-m') ?? 'Sin fecha')
-        )->map(fn ($group) => [
+        )->sortKeys();
+
+        $mesEstados = collect($this->estadosConversion())
+            ->filter(fn ($e) => $ordenes->contains('estado', $e))
+            ->values()
+            ->all();
+
+        $porMes = $gruposMes->map(fn ($group) => [
             'total' => $group->count(),
-            'completadas' => $group->where('estado', 'conversion_completada')->count(),
-            'en_proceso' => $group->where('estado', 'en_conversion')->count(),
-            'otras' => $group->count()
-                - $group->where('estado', 'conversion_completada')->count()
-                - $group->where('estado', 'en_conversion')->count(),
-        ])->sortKeys()->toArray();
+            'porEstado' => collect($mesEstados)->mapWithKeys(
+                fn ($e) => [$e => $group->where('estado', $e)->count()]
+            )->all(),
+        ])->toArray();
+
+        // Conteo por estado, con los meses como eje: dataMesPorEstado[estado] = [...].
+        // array_values es obligatorio: con claves "2026-10" JSON sale objeto y Chart.js
+        // espera una lista alineada con labelsMes.
+        $dataMesPorEstado = collect($mesEstados)->mapWithKeys(
+            fn ($e) => [$e => array_values(array_map(fn ($m) => $m['porEstado'][$e] ?? 0, $porMes))]
+        )->all();
 
         // 2. Distribución por estado
         $porEstado = $ordenes->countBy('estado')->toArray();
@@ -548,9 +563,10 @@ class Reporte extends Component
 
         $charts = [
             'labelsMes' => array_keys($porMes),
-            'dataMesCompletadas' => array_column($porMes, 'completadas'),
-            'dataMesProceso' => array_column($porMes, 'en_proceso'),
-            'dataMesOtras' => array_column($porMes, 'otras'),
+            'estadosMes' => $mesEstados,
+            'labelsEstadosMes' => array_map(fn ($e) => self::ESTADO_LABELS[$e] ?? $e, $mesEstados),
+            'coloresMesEstados' => array_map(fn ($e) => self::ESTADO_COLORS[$e] ?? '#94a3b8', $mesEstados),
+            'dataMesPorEstado' => $dataMesPorEstado,
             'labelsEstado' => array_keys($porEstado),
             'dataEstado' => array_values($porEstado),
             // Color por estado, en el MISMO orden que labelsEstado (evita colores posicionales malos)

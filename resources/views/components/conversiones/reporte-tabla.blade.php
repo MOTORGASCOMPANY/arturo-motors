@@ -5,11 +5,11 @@
 
     {{-- Encabezado --}}
     <div class="px-6 py-5 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <h3 class="font-bold text-gray-700 text-base flex items-center gap-2">
-            <i class="fas fa-list-check text-gray-400"></i>
+        <h3 class="min-w-0 flex items-center gap-2 font-bold text-gray-700 text-base">
+            <i class="fas fa-list-check text-gray-400 shrink-0"></i>
             Detalle de conversiones
         </h3>
-        <span class="bg-gray-100 text-gray-600 py-1.5 px-3.5 rounded-full text-xs font-semibold">
+        <span class="max-w-full bg-gray-100 text-gray-600 py-1.5 px-3.5 rounded-full text-xs font-semibold break-words">
             {{ count($detalleOrdenes) }} órdenes · {{ $filtroBadge }}
         </span>
     </div>

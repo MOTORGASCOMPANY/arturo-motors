@@ -3,6 +3,7 @@
 namespace App\Livewire\Servicios;
 
 use App\Models\Comprobante;
+use App\Models\ServiceOrder;
 use Illuminate\Support\Carbon;
 use Livewire\Component;
 
@@ -18,6 +19,11 @@ class Reporte extends Component
         $this->hasta = now()->format('Y-m-d');
     }
 
+    /**
+     * Rango efectivo [00:00 del desde, 23:59:59 del hasta].
+     * Si el usuario invierte las fechas se intercambian, para que pantalla, PDF y Excel
+     * midan siempre el mismo período.
+     */
     protected function rangoValido(): array
     {
         $desde = Carbon::parse($this->desde)->startOfDay();
@@ -26,24 +32,33 @@ class Reporte extends Component
         return $desde->gt($hasta) ? [$hasta->copy()->startOfDay(), $desde->copy()->endOfDay()] : [$desde, $hasta];
     }
 
+    /**
+     * Filtros que viajan al PDF/Excel, ya con el rango corregido.
+     * Antes se enviaban `$this->desde/$this->hasta` crudos: con las fechas invertidas
+     * la pantalla mostraba datos y el export salía vacío.
+     */
+    private function filtrosExport(): array
+    {
+        [$desde, $hasta] = $this->rangoValido();
+
+        return [
+            'desde' => $desde->format('Y-m-d'),
+            'hasta' => $hasta->format('Y-m-d'),
+            'tipoServicio' => $this->tipoServicio,
+        ];
+    }
+
     public function descargarPdf(): void
     {
-        $this->dispatch('descargar-pdf', url: url('/reporte-servicios/pdf?' . http_build_query(array_filter([
-            'desde' => $this->desde,
-            'hasta' => $this->hasta,
-            'tipoServicio' => $this->tipoServicio,
-        ]))));
+        $this->dispatch('descargar-pdf', url: url('/reporte-servicios/pdf?' . http_build_query($this->filtrosExport())));
     }
 
     public function descargarExcel(): void
     {
-        $this->dispatch('descargar-excel', url: url('/reporte-servicios/excel?' . http_build_query(array_filter([
-            'desde' => $this->desde,
-            'hasta' => $this->hasta,
-            'tipoServicio' => $this->tipoServicio,
-        ]))));
+        $this->dispatch('descargar-excel', url: url('/reporte-servicios/excel?' . http_build_query($this->filtrosExport())));
     }
 
+    /** Comprobantes cobrados en el período, con los filtros de fecha y tipo aplicados. */
     protected function baseQuery($desde, $hasta)
     {
         return Comprobante::whereBetween('created_at', [$desde, $hasta])
@@ -52,19 +67,37 @@ class Reporte extends Component
             });
     }
 
+    /**
+     * Órdenes creadas en el período, con los MISMOS filtros que baseQuery().
+     * Es la única fuente del gráfico y de los KPIs: así leyenda, series y tarjetas
+     * siempre cuadran entre sí.
+     */
+    protected function ordenesQuery($desde, $hasta)
+    {
+        return ServiceOrder::whereBetween('created_at', [$desde, $hasta])
+            ->when($this->tipoServicio !== 'todos', function ($q) {
+                $q->whereHas('service', fn ($s) => $s->where('tipo', $this->tipoServicio));
+            });
+    }
+
     public function render()
     {
         [$desde, $hasta] = $this->rangoValido();
-
-        $totalVentas = $this->baseQuery($desde, $hasta)->sum('monto');
-        $totalOrdenes = $this->baseQuery($desde, $hasta)->count();
 
         $comprobantes = $this->baseQuery($desde, $hasta)
             ->with(['serviceOrder.service', 'serviceOrder.tecnico'])
             ->get();
 
+        $totalVentas = $comprobantes->sum('monto');
+
+        // Órdenes cobradas = órdenes distintas con comprobante en el período.
+        // Contar comprobantes directamente inflaría el dato si una orden tiene
+        // varios comprobantes (pagos parciales) y desinflaría el ticket promedio.
+        $idsOrdenesCobradas = $comprobantes->pluck('service_order_id')->filter()->unique();
+        $totalOrdenes = $idsOrdenesCobradas->count();
+
         $ventasPorServicio = $comprobantes
-            ->groupBy(fn ($c) => $c->serviceOrder->service->nombre)
+            ->groupBy(fn ($c) => $c->serviceOrder?->service?->nombre ?? 'Sin servicio')
             ->map(fn ($grupo) => [
                 'cantidad' => $grupo->count(),
                 'total' => $grupo->sum('monto'),
@@ -72,80 +105,114 @@ class Reporte extends Component
             ->sortByDesc('total');
 
         $ventasPorTecnico = $comprobantes
-            ->filter(fn ($c) => $c->serviceOrder->tecnico_id !== null)
-            ->groupBy(fn ($c) => $c->serviceOrder->tecnico->name)
+            ->filter(fn ($c) => $c->serviceOrder?->tecnico_id !== null)
+            ->groupBy(fn ($c) => $c->serviceOrder?->tecnico?->name ?? 'Sin técnico')
             ->map(fn ($grupo) => [
                 'cantidad' => $grupo->count(),
                 'total' => $grupo->sum('monto'),
             ])
             ->sortByDesc('total');
 
-        // ─── Datos para gráfico de servicios por día ─────────────────
-        $dias = min($desde->diffInDays($hasta) + 1, 90);
-
-        // Contar órdenes por día y categoría
-        $ordenesPorDia = \App\Models\ServiceOrder::whereBetween('created_at', [$desde, $hasta])
+        // ─── Órdenes del período: base única del gráfico y de los KPIs ───────
+        $ordenesDelPeriodo = $this->ordenesQuery($desde, $hasta)
             ->with('service:id,nombre,tipo')
             ->get();
 
+        // Índice por fecha: evita recorrer toda la colección en cada día del bucle.
+        $ordenesPorFecha = $ordenesDelPeriodo->groupBy(
+            fn ($o) => $o->created_at->format('Y-m-d')
+        );
+
+        // Carbon 3 devuelve diffInDays() como FLOAT (0.9999… para un solo día):
+        // el cast a int evita redondear hacia arriba y sumar un día fantasma.
+        $dias = (int) $desde->diffInDays($hasta) + 1;
+        $semanas = (int) ceil($dias / 7);
+
+        $labels = [];
         $conversionPendientes = [];
         $conversionCompletadas = [];
         $simpleCompletadas = [];
 
-        for ($i = 0; $i < $dias; $i++) {
-            $fecha = $desde->copy()->addDays($i)->format('Y-m-d');
-            $labels[] = $desde->copy()->addDays($i)->format('d/m');
+        // Gráfico semanal: bloques de 7 días contados desde `desde`, para que el
+        // último bloque nunca se salga del rango seleccionado.
+        for ($s = 0; $s < $semanas; $s++) {
+            $inicio = $desde->copy()->addDays($s * 7);
+            $fin = $inicio->copy()->addDays(6);
 
-            $diaOrdenes = $ordenesPorDia->filter(fn ($o) => $o->created_at->format('Y-m-d') === $fecha);
+            if ($fin->gt($hasta)) {
+                $fin = $hasta->copy();
+            }
 
-            // Conversión: pendiente = creada/evaluada/aprobado/en_conversion/completada (NO entregada)
-            $conversionPendientes[] = $diaOrdenes
-                ->filter(fn ($o) => $o->service && $o->service->tipo === 'conversion' && $o->estado !== 'entregada')
-                ->count();
+            $labels[] = $inicio->isSameDay($fin)
+                ? $inicio->format('d/m')
+                : $inicio->format('d/m') . '–' . $fin->format('d/m');
 
-            // Conversión: completada = entregada
-            $conversionCompletadas[] = $diaOrdenes
-                ->filter(fn ($o) => $o->service && $o->service->tipo === 'conversion' && $o->estado === 'entregada')
-                ->count();
+            $pendientes = 0;
+            $completadas = 0;
+            $simples = 0;
 
-            // Simple: completada = entregada (se resuelve al momento)
-            $simpleCompletadas[] = $diaOrdenes
-                ->filter(fn ($o) => $o->service && $o->service->tipo === 'simple' && $o->estado === 'entregada')
-                ->count();
+            for ($f = $inicio->copy(); $f->lte($fin); $f->addDay()) {
+                $diaOrdenes = $ordenesPorFecha->get($f->format('Y-m-d'), collect());
+
+                $pendientes += $diaOrdenes
+                    ->filter(fn ($o) => $o->service?->tipo === 'conversion' && ! $this->esFinal($o))
+                    ->count();
+
+                $completadas += $diaOrdenes
+                    ->filter(fn ($o) => $o->service?->tipo === 'conversion' && $o->estado === ServiceOrder::ESTADO_ENTREGADO)
+                    ->count();
+
+                $simples += $diaOrdenes
+                    ->filter(fn ($o) => $o->service?->tipo === 'simple' && $o->estado === ServiceOrder::ESTADO_ENTREGADO)
+                    ->count();
+            }
+
+            $conversionPendientes[] = $pendientes;
+            $conversionCompletadas[] = $completadas;
+            $simpleCompletadas[] = $simples;
         }
 
-        // Totales para KPIs
-        $totalConversionesPendientes = \App\Models\ServiceOrder::where('estado', '!=', 'entregada')
-            ->whereHas('service', fn ($s) => $s->where('tipo', 'conversion'))
-            ->count();
-        $totalConversionesCompletadas = \App\Models\ServiceOrder::where('estado', 'entregada')
-            ->whereHas('service', fn ($s) => $s->where('tipo', 'conversion'))
-            ->count();
+        // ─── KPIs: derivados del mismo conjunto que el gráfico ──────────────
+        $conversionesDelPeriodo = $ordenesDelPeriodo
+            ->filter(fn ($o) => $o->service?->tipo === 'conversion');
 
-        // Simple: completadas = entregada (se resuelven al momento)
-        $totalSimplesCompletadas = \App\Models\ServiceOrder::where('estado', 'entregada')
-            ->whereHas('service', fn ($s) => $s->where('tipo', 'simple'))
+        $totalConversionesPendientes = $conversionesDelPeriodo
+            ->filter(fn ($o) => ! $this->esFinal($o))
             ->count();
 
-        $hayDatos = $totalOrdenes > 0;
+        $totalConversionesCompletadas = $conversionesDelPeriodo
+            ->filter(fn ($o) => $o->estado === ServiceOrder::ESTADO_ENTREGADO)
+            ->count();
 
-        // Descuentos: precio_lista vs precio_final
-        $totalPrecioLista = $comprobantes->sum(fn ($c) => (float) ($c->serviceOrder->precio_lista ?? 0));
-        $totalPrecioFinal = $comprobantes->sum(fn ($c) => (float) ($c->serviceOrder->precio_final ?? 0));
-        $totalDescuentos = max(0, $totalPrecioLista - $totalPrecioFinal);
+        $totalSimplesCompletadas = $ordenesDelPeriodo
+            ->filter(fn ($o) => $o->service?->tipo === 'simple' && $o->estado === ServiceOrder::ESTADO_ENTREGADO)
+            ->count();
+
+        $hayDatos = $ordenesDelPeriodo->isNotEmpty() || $comprobantes->isNotEmpty();
+
+        // Descuentos: precio_lista - precio_final, por orden única (no por comprobante).
+        // Sin recorte: si precio_final > precio_lista el número tiene que verse,
+        // no enmascararse en 0.
+        $ordenesCobradas = ServiceOrder::whereIn('id', $idsOrdenesCobradas)
+            ->get(['id', 'precio_lista', 'precio_final']);
+
+        $totalDescuentos = $ordenesCobradas->sum(
+            fn ($o) => (float) $o->precio_lista - (float) $o->precio_final
+        );
 
         // Tiempo promedio de conversión
-        $ordenesConDuracion = \App\Models\ServiceOrder::whereIn('id', $comprobantes->pluck('service_order_id'))
+        $ordenesConDuracion = ServiceOrder::whereIn('id', $idsOrdenesCobradas)
             ->whereNotNull('fecha_inicio_conversion')
             ->whereNotNull('fecha_fin_conversion')
             ->get();
+
         $tiempoPromedio = $ordenesConDuracion->count() > 0
             ? round($ordenesConDuracion->avg(fn ($o) => $o->fecha_inicio_conversion->diffInHours($o->fecha_fin_conversion)), 1)
             : 0;
 
         // Dispatch chart data to JS (wire:ignore prevents morph from updating data-* attrs)
         $this->dispatch('chart-data-updated',
-            labels: $labels ?? [],
+            labels: $labels,
             conversionPendientes: $conversionPendientes,
             conversionCompletadas: $conversionCompletadas,
             simpleCompletadas: $simpleCompletadas
@@ -157,7 +224,7 @@ class Reporte extends Component
             'ticketPromedio' => $totalOrdenes > 0 ? $totalVentas / $totalOrdenes : 0,
             'ventasPorServicio' => $ventasPorServicio,
             'ventasPorTecnico' => $ventasPorTecnico,
-            'labels' => $labels ?? [],
+            'labels' => $labels,
             'conversionPendientes' => $conversionPendientes,
             'conversionCompletadas' => $conversionCompletadas,
             'simpleCompletadas' => $simpleCompletadas,
@@ -171,5 +238,14 @@ class Reporte extends Component
             'totalDescuentos' => $totalDescuentos,
             'tiempoPromedio' => $tiempoPromedio,
         ]);
+    }
+
+    /**
+     * Una orden dejó de ser pendiente cuando entra en un estado final
+     * (entregada, cancelada o evaluación rechazada).
+     */
+    private function esFinal(ServiceOrder $orden): bool
+    {
+        return in_array($orden->estado, ServiceOrder::ESTADOS_FINALES, true);
     }
 }
