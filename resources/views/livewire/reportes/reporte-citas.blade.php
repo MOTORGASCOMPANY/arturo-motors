@@ -144,7 +144,7 @@
             <div class="text-center min-w-[300px] px-5 py-2.5 rounded-xl bg-gray-50 border border-gray-200">
                 <div class="text-sm font-extrabold text-gray-800">{{ $periodoLabel }}</div>
                 <div class="text-[11px] text-gray-400 mt-0.5">
-                    @if($esRangoSemanal)Lunes a viernes · @endif{{ $total }} citas
+                    @if($modo === 'semana')Lunes a viernes · @endif{{ $total }} citas
                 </div>
             </div>
             <button type="button" wire:click="semanaSiguiente"
@@ -153,19 +153,30 @@
                 <i class="fas fa-chevron-right text-xs"></i>
             </button>
             <button type="button" wire:click="semanaActual"
-                class="rounded-xl border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold px-4 py-2 transition shadow-sm"
+                aria-pressed="{{ $modo === 'semana' ? 'true' : 'false' }}"
+                @class([
+                    'rounded-xl border text-xs font-semibold px-4 py-2 transition shadow-sm',
+                    'border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700' => $modo === 'semana',
+                    'border-gray-200 bg-white hover:bg-gray-50 text-gray-700' => $modo !== 'semana',
+                ])
                 title="Volver a la semana en curso (lunes a viernes)">
                 <i class="fas fa-calendar-week mr-1.5"></i>Esta semana
             </button>
             <button type="button" wire:click="mesActual"
-                class="rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 text-xs font-semibold px-4 py-2 transition shadow-sm"
-                title="Volver al rango por defecto: 1 del mes hasta hoy">
+                aria-pressed="{{ $modo === 'mes' ? 'true' : 'false' }}"
+                @class([
+                    'rounded-xl border text-xs font-semibold px-4 py-2 transition shadow-sm',
+                    'border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700' => $modo === 'mes',
+                    'border-gray-200 bg-white hover:bg-gray-50 text-gray-700' => $modo !== 'mes',
+                ])
+                title="Ver el mes completo (1 al último día)">
                 <i class="fas fa-calendar-days mr-1.5"></i>Este mes
             </button>
         </div>
 
         {{-- El gráfico se dibuja siempre: aunque el rango no tenga citas se mantienen
-             las 24 franjas horarias en pantalla en vez de ocultar el canvas. --}}
+             los puntos del período (un punto por día del mes, o lunes a viernes
+             en modo semana) en pantalla en vez de ocultar el canvas. --}}
         <div class="relative w-full" style="height: 300px;" wire:ignore>
             <canvas id="chartCitas"
                 data-labels='@json($labels)'
@@ -185,6 +196,90 @@
                 Sin citas en el rango seleccionado. Mové las fechas o usá
                 <span class="font-semibold text-indigo-600">Este mes</span> para cargar otro período.
             </div>
+        @endif
+    </div>
+
+    {{-- Ratios del rango seleccionado: aceptación y rechazo día a día,
+         enlazados al filtro de fechas (mismos labels que el gráfico principal) --}}
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-6 lg:p-8" wire:key="ratios-citas">
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-5">
+            <h3 class="min-w-0 flex items-center gap-2 text-sm font-bold text-gray-600 uppercase tracking-wider">
+                <i class="fas fa-percent text-gray-400 shrink-0"></i><span>Ratios del período</span>
+            </h3>
+            <span class="max-w-full text-[11px] font-bold text-gray-600 bg-gray-100 border border-gray-200 rounded-full px-3 py-1.5 break-words">
+                <i class="fas fa-calendar-day text-gray-400 mr-1"></i>{{ $periodoLabel }}
+            </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Ratio de aceptación</span>
+                    <span class="text-xs font-extrabold text-emerald-600">{{ $porcentajeAceptacion }}%</span>
+                </div>
+                <div class="relative w-full" style="height: 240px;" wire:ignore>
+                    <canvas id="chartRatioAceptadas"
+                        data-labels='@json($labels)'
+                        data-valores='@json($ratioAceptadas)'
+                        data-color="#10b981"
+                        data-fillcolor="rgba(16, 185, 129, 0.15)"></canvas>
+                </div>
+            </div>
+
+            <div>
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Ratio de rechazo</span>
+                    <span class="text-xs font-extrabold text-red-500">{{ $porcentajeRechazo }}%</span>
+                </div>
+                <div class="relative w-full" style="height: 240px;" wire:ignore>
+                    <canvas id="chartRatioRechazadas"
+                        data-labels='@json($labels)'
+                        data-valores='@json($ratioRechazadas)'
+                        data-color="#ef4444"
+                        data-fillcolor="rgba(239, 68, 68, 0.12)"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Citas por vendedor: barras apiladas por estado (versión visual de la
+         tabla de abajo). El gráfico ignora el filtro de asesor a propósito
+         (facet): siempre muestra todos los vendedores para poder cambiar de
+         selección; clic en una barra filtra el reporte completo por ese
+         vendedor y clic de nuevo quita el filtro. --}}
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-6 lg:p-8" wire:key="chart-vendedores">
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-5">
+            <h3 class="min-w-0 flex items-center gap-2 text-sm font-bold text-gray-600 uppercase tracking-wider">
+                <i class="fas fa-chart-column text-gray-400 shrink-0"></i><span>Citas por vendedor</span>
+                <span class="text-[11px] font-semibold text-gray-400 normal-case tracking-normal ml-1">Clic en una barra para filtrar</span>
+            </h3>
+            @if($asesorKey !== 'todos')
+                <button type="button" wire:click="limpiarAsesor"
+                    class="inline-flex items-center gap-2 max-w-full text-[11px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-full px-3 py-1.5 hover:bg-indigo-100 transition shadow-sm">
+                    <i class="fas fa-filter"></i>
+                    Vendedor: {{ $asesorSeleccionado ?? 'seleccionado' }}
+                    <i class="fas fa-times"></i>
+                </button>
+            @else
+                <span class="max-w-full text-[11px] font-bold text-gray-600 bg-gray-100 border border-gray-200 rounded-full px-3 py-1.5 break-words">
+                    <i class="fas fa-users text-gray-400 mr-1"></i>Todos los vendedores
+                </span>
+            @endif
+        </div>
+
+        <div class="relative w-full" style="height: 380px;" wire:ignore>
+            <canvas id="chartAsesores"
+                data-labels='@json($labelsAsesores)'
+                data-claves='@json($clavesAsesores)'
+                data-aceptadas='@json($asesorAceptadas)'
+                data-pendientes='@json($asesorPendientes)'
+                data-rechazadas='@json($asesorRechazadas)'
+                data-canceladas='@json($asesorCanceladas)'
+                data-seleccionado="{{ $asesorKey }}"></canvas>
+        </div>
+
+        @if($labelsAsesores->isEmpty())
+            <p class="text-xs text-gray-400 text-center mt-3">Sin citas con vendedor asignado en el rango seleccionado.</p>
         @endif
     </div>
 
@@ -365,20 +460,208 @@
             });
         };
 
-        window.renderChartCitas();
+        // Charts de ratio (línea con eje 0–100%): se leen de los data-* del
+        // canvas para que server y cliente compartan la misma fuente de datos.
+        window.renderRatioCitas = function (instanceKey, canvasId) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas || typeof Chart === 'undefined') return;
+
+            const labels = JSON.parse(canvas.dataset.labels || '[]');
+            const valores = JSON.parse(canvas.dataset.valores || '[]');
+            const color = canvas.dataset.color;
+            const fill = canvas.dataset.fillcolor;
+
+            if (window[instanceKey]) window[instanceKey].destroy();
+
+            window[instanceKey] = new Chart(canvas, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: valores,
+                        borderColor: color,
+                        backgroundColor: fill,
+                        borderWidth: 2.5,
+                        fill: true,
+                        tension: 0.4,
+                        spanGaps: true,
+                        pointRadius: 2,
+                        pointHoverRadius: 5,
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: color,
+                        pointBorderWidth: 2,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#0f172a',
+                            titleFont: { size: 12 },
+                            bodyFont: { size: 12 },
+                            padding: 10,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: (ctx) => ctx.parsed.y + '%'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { maxRotation: 45, autoSkip: true, font: { size: 10 }, color: '#94a3b8' },
+                            grid: { display: false },
+                            border: { display: false }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            min: 0,
+                            max: 100,
+                            ticks: { stepSize: 25, callback: (v) => v + '%', color: '#94a3b8', font: { size: 10 } },
+                            grid: { color: '#f1f5f9' },
+                            border: { display: false }
+                        }
+                    }
+                }
+            });
+        };
+
+        // Citas por vendedor: barras apiladas por estado, clic = filtrar.
+        window.renderChartAsesores = function () {
+            const canvas = document.getElementById('chartAsesores');
+            if (!canvas || typeof Chart === 'undefined') return;
+
+            const labels = JSON.parse(canvas.dataset.labels || '[]');
+            const claves = JSON.parse(canvas.dataset.claves || '[]');
+            const seleccionado = canvas.dataset.seleccionado || 'todos';
+
+            // Si hay un vendedor seleccionado, las demás barras se atenúan
+            // para que la selección se lea de un vistazo.
+            const alpha = (hex, a) => hex + Math.round(a * 255).toString(16).padStart(2, '0');
+            const filtro = seleccionado !== 'todos';
+            const colorBar = (hex) => labels.map((_, i) => {
+                const clave = claves[i];
+                if (!filtro || clave === seleccionado) return hex;
+                return alpha(hex, 0.35);
+            });
+
+            if (window.chartAsesoresInstance) window.chartAsesoresInstance.destroy();
+
+            window.chartAsesoresInstance = new Chart(canvas, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Aceptadas', data: JSON.parse(canvas.dataset.aceptadas || '[]'), backgroundColor: colorBar('#10b981'), borderWidth: 0, borderRadius: {topLeft: 4, topRight: 4} },
+                        { label: 'Pendientes', data: JSON.parse(canvas.dataset.pendientes || '[]'), backgroundColor: colorBar('#f59e0b'), borderWidth: 0 },
+                        { label: 'Rechazadas', data: JSON.parse(canvas.dataset.rechazadas || '[]'), backgroundColor: colorBar('#ef4444'), borderWidth: 0 },
+                        { label: 'Canceladas', data: JSON.parse(canvas.dataset.canceladas || '[]'), backgroundColor: colorBar('#9ca3af'), borderWidth: 0, borderRadius: {bottomLeft: 4, bottomRight: 4} },
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    onClick: (evt, elements) => {
+                        if (!elements.length) return;
+                        const clave = claves[elements[0].index];
+                        if (!clave) return;
+                        // Clic en la barra ya seleccionada => quitar el filtro.
+                        $wire.set('asesorKey', clave === seleccionado ? 'todos' : clave);
+                    },
+                    onHover: (evt, elements) => {
+                        const target = evt.native && evt.native.target;
+                        if (target) target.style.cursor = elements.length ? 'pointer' : 'default';
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: { boxWidth: 12, boxHeight: 12, usePointStyle: true, pointStyle: 'rectRounded', font: { size: 11, weight: 'bold' }, color: '#6b7280', padding: 16 }
+                        },
+                        tooltip: {
+                            backgroundColor: '#0f172a',
+                            titleFont: { size: 12 },
+                            bodyFont: { size: 12 },
+                            padding: 10,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: (ctx) => ctx.dataset.label + ': ' + ctx.parsed.y,
+                                footer: (items) => {
+                                    const total = items.reduce((sum, it) => sum + (it.parsed.y || 0), 0);
+                                    return 'Total: ' + total;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true,
+                            ticks: { autoSkip: false, font: { size: 10 }, color: '#94a3b8', maxRotation: 45, minRotation: 0 },
+                            grid: { display: false },
+                            border: { display: false }
+                        },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true,
+                            ticks: { stepSize: 1, precision: 0, color: '#94a3b8', font: { size: 10 } },
+                            grid: { color: '#f1f5f9' },
+                            border: { display: false }
+                        }
+                    }
+                }
+            });
+        };
+
+        window.renderTodosLosCharts = function () {
+            window.renderChartCitas();
+            window.renderRatioCitas('chartRatioAceptadasInstance', 'chartRatioAceptadas');
+            window.renderRatioCitas('chartRatioRechazadasInstance', 'chartRatioRechazadas');
+            window.renderChartAsesores();
+        };
+
+        window.renderTodosLosCharts();
 
         Livewire.hook('morph.updated', ({ component }) => {
-            if (component.name === 'reportes.reporte-citas') window.renderChartCitas();
+            if (component.name === 'reportes.reporte-citas') window.renderTodosLosCharts();
         });
 
         $wire.on('chart-data-citas', (data) => {
             const canvas = document.getElementById('chartCitas');
+            if (canvas) {
+                canvas.dataset.labels = JSON.stringify(data.labels);
+                canvas.dataset.aceptadas = JSON.stringify(data.aceptadas);
+                canvas.dataset.noaceptadas = JSON.stringify(data.noAceptadas);
+                canvas.dataset.conversion = JSON.stringify(data.conversion || []);
+            }
+
+            const ratioAceptadas = document.getElementById('chartRatioAceptadas');
+            if (ratioAceptadas) {
+                ratioAceptadas.dataset.labels = JSON.stringify(data.labels);
+                ratioAceptadas.dataset.valores = JSON.stringify(data.ratioAceptadas || []);
+            }
+
+            const ratioRechazadas = document.getElementById('chartRatioRechazadas');
+            if (ratioRechazadas) {
+                ratioRechazadas.dataset.labels = JSON.stringify(data.labels);
+                ratioRechazadas.dataset.valores = JSON.stringify(data.ratioRechazadas || []);
+            }
+
+            window.renderTodosLosCharts();
+        });
+
+        $wire.on('chart-data-asesores', (data) => {
+            const canvas = document.getElementById('chartAsesores');
             if (!canvas) return;
             canvas.dataset.labels = JSON.stringify(data.labels);
+            canvas.dataset.claves = JSON.stringify(data.claves);
             canvas.dataset.aceptadas = JSON.stringify(data.aceptadas);
-            canvas.dataset.noaceptadas = JSON.stringify(data.noAceptadas);
-            canvas.dataset.conversion = JSON.stringify(data.conversion || []);
-            window.renderChartCitas();
+            canvas.dataset.pendientes = JSON.stringify(data.pendientes);
+            canvas.dataset.rechazadas = JSON.stringify(data.rechazadas);
+            canvas.dataset.canceladas = JSON.stringify(data.canceladas);
+            canvas.dataset.seleccionado = data.seleccionado || 'todos';
+            window.renderChartAsesores();
         });
 
         // Carga reutilizable de todos los reportes: js/components/carga-swal.js
