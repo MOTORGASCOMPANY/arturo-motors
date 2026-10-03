@@ -84,24 +84,25 @@
             </div>
         </div>
 
-        {{-- 2. Flujo neto acumulado (línea) --}}
+        {{-- 2. Ticket promedio por día (reemplaza al flujo acumulado) --}}
         <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6" wire:ignore wire:key="caja-c2">
             <div class="flex flex-wrap items-start justify-between gap-x-3 gap-y-2 mb-4">
                 <h3 class="min-w-0 text-sm font-bold text-gray-500 uppercase">
-                    <i class="fas fa-chart-area mr-1.5 text-indigo-500"></i>Flujo neto acumulado
+                    <i class="fas fa-ticket-alt mr-1.5 text-indigo-500"></i>Ticket promedio por día
                 </h3>
                 <span class="max-w-full text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-full px-2.5 py-1 break-words">
-                    Inicia S/ {{ number_format($efectivoAnterior, 2) }}
+                    {{ $operacionesPeriodo > 0 ? 'Promedio S/ ' . number_format($ticketPeriodo, 2) : 'Sin operaciones' }}
                 </span>
             </div>
             <div class="relative w-full" style="height: 280px;">
-                <canvas id="chartFlujoAcum"></canvas>
+                <canvas id="chartTicketDia"></canvas>
             </div>
-            <div id="emptyFlujo" class="hidden flex flex-col items-center justify-center py-10 text-center">
-                <i class="fas fa-chart-area text-3xl text-gray-300 mb-2"></i>
+            <div id="emptyTicket" class="hidden flex flex-col items-center justify-center py-10 text-center">
+                <i class="fas fa-ticket-alt text-3xl text-gray-300 mb-2"></i>
                 <p class="text-sm text-gray-400 font-medium">No hay datos para este gráfico</p>
+                <p class="text-xs text-gray-300 mt-1">Sin operaciones en el período seleccionado</p>
             </div>
-            <p class="text-center text-xs text-gray-400 mt-2">Saldo de caja al cierre de cada día</p>
+            <p class="text-center text-xs text-gray-400 mt-2">Ingresos ÷ operaciones de cada día del período</p>
         </div>
 
         {{-- 3. Distribución por método de pago (dona) --}}
@@ -157,17 +158,18 @@
             </div>
         </div>
 
-        {{-- 5. Ingresos por hora del día --}}
+        {{-- 5. Ingresos de la semana (Lun–Sáb, se corta en el día actual) --}}
         <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6" wire:ignore wire:key="caja-c5">
             <h3 class="text-sm font-bold text-gray-500 uppercase mb-4">
-                <i class="fas fa-clock mr-1.5 text-sky-500"></i>Ingresos por hora del día
+                <i class="fas fa-calendar-day mr-1.5 text-sky-500"></i>Ingresos de la semana
             </h3>
             <div class="relative w-full" style="height: 280px;">
-                <canvas id="chartIngresosHora"></canvas>
+                <canvas id="chartIngresosSemana"></canvas>
             </div>
-            <div id="emptyHora" class="hidden flex flex-col items-center justify-center py-10 text-center">
-                <i class="fas fa-clock text-3xl text-gray-300 mb-2"></i>
+            <div id="emptySemana" class="hidden flex flex-col items-center justify-center py-10 text-center">
+                <i class="fas fa-calendar-day text-3xl text-gray-300 mb-2"></i>
                 <p class="text-sm text-gray-400 font-medium">No hay datos para este gráfico</p>
+                <p class="text-xs text-gray-300 mt-1">Aún no hay ingresos esta semana</p>
             </div>
         </div>
     </div>
@@ -365,30 +367,29 @@
                 }
             } catch (e) { console.error('[caja] chart1', e); }
 
-            // 2. Flujo acumulado
+            // 2. Ticket promedio por día (reemplaza al flujo acumulado)
             try {
-                cajaDestroy('chartFlujo');
-                const hasFlujo = (d.flujoAcumulado || []).some(v => Number(v) !== 0);
-                cajaToggle('chartFlujoAcum', 'emptyFlujo', !hasFlujo && !d.flujoAcumulado?.length);
-                const cF = document.getElementById('chartFlujoAcum');
-                if (cF && d.flujoAcumulado && d.flujoAcumulado.length) {
-                    window.chartFlujo = new Chart(cF, {
-                        type: 'line',
+                cajaDestroy('chartTicket');
+                const ticketDia = d.ticketDiaData || [];
+                const opsDia = d.operacionesDia || [];
+                const hasTicket = ticketDia.some(v => v !== null && v !== undefined);
+                cajaToggle('chartTicketDia', 'emptyTicket', !hasTicket);
+                const cT = document.getElementById('chartTicketDia');
+                if (cT && hasTicket) {
+                    window.chartTicket = new Chart(cT, {
+                        type: 'scatter',
                         data: {
                             labels: d.labels,
                             datasets: [{
-                                label: 'Saldo acumulado',
-                                data: d.flujoAcumulado,
-                                borderColor: '#4f46e5',
-                                backgroundColor: 'rgba(79, 70, 229, 0.12)',
-                                borderWidth: 2.5,
-                                fill: true,
-                                tension: 0.35,
-                                pointRadius: 3,
-                                pointHoverRadius: 6,
-                                pointBackgroundColor: '#fff',
-                                pointBorderColor: '#4f46e5',
-                                pointBorderWidth: 2
+                                label: 'Ticket promedio',
+                                // x = fecha (category scale resuelve el string contra data.labels), y = ticket o null
+                                data: ticketDia.map((v, i) => ({ x: d.labels[i], y: v })),
+                                backgroundColor: '#4f46e5',
+                                pointRadius: 5,
+                                pointHoverRadius: 7,
+                                pointBackgroundColor: '#4f46e5',
+                                pointBorderColor: '#fff',
+                                pointBorderWidth: 1.5
                             }]
                         },
                         options: {
@@ -396,9 +397,20 @@
                             interaction: { mode: 'index', intersect: false },
                             plugins: {
                                 legend: { display: false },
-                                tooltip: { callbacks: { label: ctx => 'Saldo: ' + cajaMoney(ctx.parsed.y) } }
+                                tooltip: { callbacks: {
+                                    label: ctx => {
+                                        const ops = opsDia[ctx.dataIndex];
+                                        if (ops === null || ops === undefined) return 'Día aún no ocurrido';
+                                        if (ops === 0 || ctx.parsed.y === null) return 'Sin operaciones';
+                                        return cajaMoney(ctx.parsed.y) + ' · ' + ops + ' operacion' + (ops === 1 ? '' : 'es');
+                                    }
+                                } }
                             },
-                            scales: { x: xTicks, y: moneyScale }
+                            scales: {
+                                // scatter trae x lineal por defecto: forzar category para las fechas
+                                x: { ...xTicks, type: 'category' },
+                                y: moneyScale
+                            }
                         }
                     });
                 }
@@ -499,32 +511,47 @@
                 }
             } catch (e) { console.error('[caja] chart4', e); }
 
-            // 5. Ingresos por hora
+            // 5. Ingresos de la semana (Lun–Sáb): los null cortan la línea en el día actual
             try {
-                cajaDestroy('chartHora');
-                const hasHora = (d.ingresosPorHoraData || []).some(v => Number(v) > 0);
-                cajaToggle('chartIngresosHora', 'emptyHora', !hasHora);
-                const cH = document.getElementById('chartIngresosHora');
-                if (cH && hasHora) {
-                    window.chartHora = new Chart(cH, {
-                        type: 'bar',
+                cajaDestroy('chartSemana');
+                const hasSemana = (d.ingresosSemanaData || []).some(v => v !== null && v !== undefined && Number(v) > 0);
+                cajaToggle('chartIngresosSemana', 'emptySemana', !hasSemana);
+                const cS = document.getElementById('chartIngresosSemana');
+                if (cS && hasSemana) {
+                    window.chartSemana = new Chart(cS, {
+                        type: 'line',
                         data: {
-                            labels: d.labelsHora,
+                            labels: d.labelsSemana,
                             datasets: [{
                                 label: 'Ingresos',
-                                data: d.ingresosPorHoraData,
-                                backgroundColor: '#0ea5e9',
-                                borderRadius: 4,
-                                barPercentage: 0.9
+                                data: d.ingresosSemanaData,
+                                borderColor: '#0ea5e9',
+                                backgroundColor: 'rgba(14, 165, 233, 0.12)',
+                                borderWidth: 2.5,
+                                fill: true,
+                                tension: 0.4,
+                                spanGaps: false,
+                                pointRadius: 4,
+                                pointHoverRadius: 6,
+                                pointBackgroundColor: '#fff',
+                                pointBorderColor: '#0ea5e9',
+                                pointBorderWidth: 2
                             }]
                         },
                         options: {
                             responsive: true, maintainAspectRatio: false, animation: false,
+                            interaction: { mode: 'index', intersect: false },
                             plugins: {
                                 legend: { display: false },
-                                tooltip: { callbacks: { title: items => (items[0]?.label || '') + ':00', label: ctx => cajaMoney(ctx.parsed.y) } }
+                                tooltip: {
+                                    callbacks: {
+                                        // Label a dos líneas (día encima de la fecha): unir para el tooltip
+                                        title: items => { const l = items[0]?.label; return Array.isArray(l) ? l.join(' ') : String(l ?? ''); },
+                                        label: ctx => ctx.parsed.y === null ? 'Día aún no ocurrido' : cajaMoney(ctx.parsed.y)
+                                    }
+                                }
                             },
-                            scales: { x: { ...xTicks, ticks: { ...xTicks.ticks, maxRotation: 0, autoSkip: false, font: { size: 9 } } }, y: moneyScale }
+                            scales: { x: xTicks, y: moneyScale }
                         }
                     });
                 }

@@ -121,6 +121,10 @@ class Reporte extends Component
         $totalIngresos = (clone $queryIngresos)->sum('monto');
         $totalEgresos = (clone $queryEgresos)->sum('monto');
 
+        // Ticket promedio del período (badge del gráfico de ticket por día)
+        $operacionesPeriodo = (clone $queryIngresos)->count();
+        $ticketPeriodo = $operacionesPeriodo > 0 ? (float) $totalIngresos / $operacionesPeriodo : null;
+
         $sesionesConDescuadre = $sesiones->filter(fn ($s) => $s->diferencia !== null && (float) $s->diferencia != 0);
 
         // Métodos de pago para gráfico
@@ -133,7 +137,9 @@ class Reporte extends Component
             'otro' => '#6b7280',
         ];
 
-        $dias = min($desde->diffInDays($hasta) + 1, 90);
+        // (int) porque diffInDays devuelve fracción con endOfDay: sin el cast el
+        // loop agregaba un día fantasma fuera del rango seleccionado.
+        $dias = (int) min($desde->diffInDays($hasta) + 1, 90);
         $labels = [];
         $ingresosData = [];
         $egresosData = [];
@@ -191,35 +197,55 @@ class Reporte extends Component
             ->orderByDesc('total')
             ->get();
 
-        // Flujo neto acumulado (saldo caja física: solo efectivo - egresos)
-        $efectivoPorDia = MovimientoCaja::where('tipo', 'ingreso')
-            ->where('metodo_pago', 'efectivo')
+        // Ticket promedio por día del período (reemplaza al flujo acumulado):
+        // ingresos ÷ operaciones de cada día; null en días futuros o sin operaciones
+        // (un ticket de S/0 mientería: no hubo movimientos ese día).
+        $hoy = Carbon::today();
+
+        $operacionesPorDia = MovimientoCaja::where('tipo', 'ingreso')
             ->whereBetween('created_at', [$desde, $hasta])
+            ->when($this->soloFise, fn ($q) => $q->where('metodo_pago', 'fise'))
+            ->selectRaw('DATE(created_at) as fecha, SUM(monto) as total, COUNT(*) as operaciones')
+            ->groupBy('fecha')
+            ->get()
+            ->keyBy('fecha');
+
+        $ticketDiaData = [];
+        $operacionesDia = [];
+        for ($i = 0; $i < $dias; $i++) {
+            $fecha = $desde->copy()->addDays($i);
+            if ($fecha->gt($hoy)) {
+                $ticketDiaData[] = null; // día aún no ocurrido
+                $operacionesDia[] = null;
+                continue;
+            }
+            $dia = $operacionesPorDia->get($fecha->format('Y-m-d'));
+            $ops = $dia ? (int) $dia->operaciones : 0;
+            $operacionesDia[] = $ops;
+            $ticketDiaData[] = $ops > 0 ? (float) $dia->total / $ops : null;
+        }
+
+        // Ingresos de la semana (Lun–Sáb) de la fecha "Hasta" seleccionada.
+        // El eje carga la semana entera; los días posteriores a hoy quedan en null
+        // para que la línea solo evolucione hasta el día actual (avanza día a día).
+        $inicioSemana = Carbon::parse($this->hasta)->startOfWeek(Carbon::MONDAY)->startOfDay();
+        $finSemana = $inicioSemana->copy()->addDays(5)->endOfDay(); // sábado
+
+        $ingresosPorDiaSemana = MovimientoCaja::where('tipo', 'ingreso')
+            ->whereBetween('created_at', [$inicioSemana, $finSemana])
+            ->when($this->soloFise, fn ($q) => $q->where('metodo_pago', 'fise'))
             ->selectRaw('DATE(created_at) as fecha, SUM(monto) as total')
             ->groupBy('fecha')->pluck('total', 'fecha');
 
-        $flujoAcumulado = [];
-        $saldo = (float) $this->efectivoAnterior;
-        for ($i = 0; $i < $dias; $i++) {
-            $fecha = $desde->copy()->addDays($i);
-            $clave = $fecha->format('Y-m-d');
-            $saldo += (float) ($efectivoPorDia[$clave] ?? 0) - (float) ($egresosPorDia[$clave] ?? 0);
-            $flujoAcumulado[] = round($saldo, 2);
-        }
-
-        // Ingresos por hora del día (0–23)
-        $ingresosPorHoraRaw = MovimientoCaja::where('tipo', 'ingreso')
-            ->whereBetween('created_at', [$desde, $hasta])
-            ->when($this->soloFise, fn ($q) => $q->where('metodo_pago', 'fise'))
-            ->selectRaw('HOUR(created_at) as hora, SUM(monto) as total')
-            ->groupBy('hora')
-            ->pluck('total', 'hora');
-
-        $labelsHora = [];
-        $ingresosPorHoraData = [];
-        for ($h = 0; $h < 24; $h++) {
-            $labelsHora[] = sprintf('%02d', $h);
-            $ingresosPorHoraData[] = (float) ($ingresosPorHoraRaw[$h] ?? 0);
+        $labelsSemana = [];
+        $ingresosSemanaData = [];
+        for ($i = 0; $i < 6; $i++) {
+            $fecha = $inicioSemana->copy()->addDays($i);
+            // Label a dos líneas: día de la semana encima de la fecha
+            $labelsSemana[] = [ucfirst($fecha->locale('es')->isoFormat('dddd')), $fecha->format('d/m')];
+            $ingresosSemanaData[] = $fecha->gt($hoy)
+                ? null
+                : (float) ($ingresosPorDiaSemana[$fecha->format('Y-m-d')] ?? 0);
         }
 
         // FISE vs no FISE por día
@@ -272,9 +298,10 @@ class Reporte extends Component
             'labels' => $labels,
             'ingresosData' => $ingresosData,
             'egresosData' => $egresosData,
-            'flujoAcumulado' => $flujoAcumulado,
-            'labelsHora' => $labelsHora,
-            'ingresosPorHoraData' => $ingresosPorHoraData,
+            'ticketDiaData' => $ticketDiaData,
+            'operacionesDia' => $operacionesDia,
+            'labelsSemana' => $labelsSemana,
+            'ingresosSemanaData' => $ingresosSemanaData,
             'fiseDiaData' => $fiseDiaData,
             'noFiseDiaData' => $noFiseDiaData,
             'metodos' => $metodosConDatos,
@@ -294,7 +321,8 @@ class Reporte extends Component
             'hasEgresos' => array_sum($egresosData) > 0,
             'hasMetodos' => count($metodosConDatos) > 0,
             'hasEgresosCat' => count($egresosLabelsChart) > 0,
-            'hasHora' => array_sum($ingresosPorHoraData) > 0,
+            'hasSemana' => array_sum($ingresosSemanaData) > 0,
+            'hasTicketDia' => count(array_filter($ticketDiaData, fn ($v) => $v !== null)) > 0,
             'hasFiseData' => array_sum($fiseDiaData) + array_sum($noFiseDiaData) > 0,
         ];
 
@@ -318,7 +346,8 @@ class Reporte extends Component
             'ticketPromedio' => $ticketPromedio,
             'charts' => $charts,
             'topIngresos' => $topIngresos,
-            'flujoFinal' => $flujoAcumulado[$dias - 1] ?? $this->efectivoAnterior,
+            'ticketPeriodo' => $ticketPeriodo,
+            'operacionesPeriodo' => $operacionesPeriodo,
             'fiseTotal' => array_sum($fiseDiaData),
             'noFiseTotal' => array_sum($noFiseDiaData),
         ]);
