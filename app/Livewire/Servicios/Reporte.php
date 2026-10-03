@@ -200,15 +200,30 @@ class Reporte extends Component
             fn ($o) => (float) $o->precio_lista - (float) $o->precio_final
         );
 
-        // Tiempo promedio de conversión
+        // Tiempo promedio de conversión: se promedia en MINUTOS enteros y se
+        // expresa como "X horas Y minutos" (o "Y minutos" si no llega a la hora),
+        // en vez del viejo float de horas con decimales ("2.5h").
         $ordenesConDuracion = ServiceOrder::whereIn('id', $idsOrdenesCobradas)
             ->whereNotNull('fecha_inicio_conversion')
             ->whereNotNull('fecha_fin_conversion')
             ->get();
 
-        $tiempoPromedio = $ordenesConDuracion->count() > 0
-            ? round($ordenesConDuracion->avg(fn ($o) => $o->fecha_inicio_conversion->diffInHours($o->fecha_fin_conversion)), 1)
+        $minutosPromedio = $ordenesConDuracion->count() > 0
+            ? (int) round($ordenesConDuracion->avg(
+                fn ($o) => $o->fecha_inicio_conversion->diffInMinutes($o->fecha_fin_conversion)
+            ))
             : 0;
+
+        $horas = intdiv($minutosPromedio, 60);
+        $minutos = $minutosPromedio % 60;
+
+        $tiempoPromedioTexto = match (true) {
+            $minutosPromedio <= 0 => '0 minutos',
+            $horas > 0 && $minutos > 0 => $horas . ($horas === 1 ? ' hora ' : ' horas ')
+                . $minutos . ($minutos === 1 ? ' minuto' : ' minutos'),
+            $horas > 0 => $horas . ($horas === 1 ? ' hora' : ' horas'),
+            default => $minutos . ($minutos === 1 ? ' minuto' : ' minutos'),
+        };
 
         // Dispatch chart data to JS (wire:ignore prevents morph from updating data-* attrs)
         $this->dispatch('chart-data-updated',
@@ -236,7 +251,7 @@ class Reporte extends Component
             'totalSimplesCompletadas' => $totalSimplesCompletadas,
             'hayDatos' => $hayDatos,
             'totalDescuentos' => $totalDescuentos,
-            'tiempoPromedio' => $tiempoPromedio,
+            'tiempoPromedioTexto' => $tiempoPromedioTexto,
         ]);
     }
 

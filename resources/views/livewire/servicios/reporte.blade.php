@@ -1,60 +1,58 @@
 <div wire:loading.class="opacity-50 pointer-events-none transition-opacity duration-300" class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8 font-sans">
 
-    {{-- Cabecera: identificación a la izquierda, filtros y exportación a la derecha --}}
+    {{-- Cabecera: identificación + exportación arriba, filtros debajo (mismo patrón que citas) --}}
     <div class="bg-white border border-gray-200 p-6 sm:p-8 rounded-2xl w-full shadow-sm">
-        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div class="flex flex-col gap-6">
 
-            {{-- Título --}}
-            <div class="flex items-center gap-4 shrink-0">
-                <div class="w-14 h-14 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center shrink-0">
-                    <i class="fas fa-chart-simple text-indigo-600 text-2xl"></i>
-                </div>
-                <div>
-                    <h2 class="text-gray-800 font-bold text-2xl tracking-tight">Reporte de servicios</h2>
-                    <p class="text-gray-500 text-sm mt-1">Conversiones, servicios simples y tendencia del período</p>
-                </div>
-            </div>
-
-            {{-- Controles --}}
-            <div class="flex flex-col xl:flex-row xl:items-end gap-4 xl:gap-6">
-
-                {{-- Filtros con etiqueta, igual que el resto de reportes --}}
-                <div class="flex flex-wrap items-end gap-3 sm:gap-4">
-                    <div class="flex flex-col gap-1.5">
-                        <label for="rep-desde" class="text-xs font-semibold text-gray-500">Desde</label>
-                        <input id="rep-desde" type="date" wire:model.live="desde"
-                            class="text-sm text-gray-700 rounded-lg border border-gray-200 bg-gray-50 py-2 px-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors">
+            {{-- Fila 1: identidad + exportación --}}
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-4 shrink-0">
+                    <div class="w-14 h-14 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center shrink-0">
+                        <i class="fas fa-chart-simple text-indigo-600 text-2xl"></i>
                     </div>
-
-                    <div class="flex flex-col gap-1.5">
-                        <label for="rep-hasta" class="text-xs font-semibold text-gray-500">Hasta</label>
-                        <input id="rep-hasta" type="date" wire:model.live="hasta"
-                            class="text-sm text-gray-700 rounded-lg border border-gray-200 bg-gray-50 py-2 px-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors">
-                    </div>
-
-                    <div class="flex flex-col gap-1.5">
-                        <label for="rep-tipo" class="text-xs font-semibold text-gray-500">Servicio</label>
-                        <select id="rep-tipo" wire:model.live="tipoServicio"
-                            class="text-sm text-gray-700 rounded-lg border border-gray-200 bg-gray-50 py-2 px-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors cursor-pointer min-w-[11rem]">
-                            <option value="todos">Todos los servicios</option>
-                            <option value="simple">Solo simples</option>
-                            <option value="conversion">Solo conversión</option>
-                        </select>
+                    <div>
+                        <h2 class="text-gray-800 font-bold text-2xl tracking-tight">Reporte de servicios</h2>
+                        <p class="text-gray-500 text-sm mt-1">Conversiones, servicios simples y tendencia del período</p>
                     </div>
                 </div>
-
-                {{-- Exportación --}}
-                <div class="flex items-center gap-2 xl:ml-auto">
+                <div class="flex items-center gap-2">
                     <button wire:click="descargarPdf" wire:loading.attr="disabled"
-                        class="flex-1 xl:flex-none inline-flex items-center justify-center gap-2 bg-white hover:bg-red-50 border border-gray-200 text-gray-700 font-semibold text-sm rounded-xl py-2.5 px-4 shadow-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                        class="inline-flex items-center justify-center gap-2 bg-white hover:bg-red-50 border border-gray-200 text-gray-700 font-semibold text-sm rounded-xl py-2.5 px-4 shadow-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
                         <i class="fas fa-file-pdf text-red-500"></i>
                         PDF
                     </button>
                     <button wire:click="descargarExcel" wire:loading.attr="disabled"
-                        class="flex-1 xl:flex-none inline-flex items-center justify-center gap-2 bg-white hover:bg-emerald-50 border border-gray-200 text-gray-700 font-semibold text-sm rounded-xl py-2.5 px-4 shadow-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                        class="inline-flex items-center justify-center gap-2 bg-white hover:bg-emerald-50 border border-gray-200 text-gray-700 font-semibold text-sm rounded-xl py-2.5 px-4 shadow-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
                         <i class="fas fa-file-excel text-emerald-600"></i>
                         Excel
                     </button>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-100"></div>
+
+            {{-- Fila 2: filtros con etiqueta, una columna por campo --}}
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="flex flex-col gap-1.5">
+                    <label for="rep-desde" class="text-xs font-semibold text-gray-500">Desde</label>
+                    <input id="rep-desde" type="date" wire:model.live="desde"
+                        class="w-full text-sm text-gray-700 rounded-lg border border-gray-200 bg-gray-50 py-2 px-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors">
+                </div>
+
+                <div class="flex flex-col gap-1.5">
+                    <label for="rep-hasta" class="text-xs font-semibold text-gray-500">Hasta</label>
+                    <input id="rep-hasta" type="date" wire:model.live="hasta"
+                        class="w-full text-sm text-gray-700 rounded-lg border border-gray-200 bg-gray-50 py-2 px-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors">
+                </div>
+
+                <div class="flex flex-col gap-1.5">
+                    <label for="rep-tipo" class="text-xs font-semibold text-gray-500">Servicio</label>
+                    <select id="rep-tipo" wire:model.live="tipoServicio"
+                        class="w-full text-sm text-gray-700 rounded-lg border border-gray-200 bg-gray-50 py-2 px-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors cursor-pointer">
+                        <option value="todos">Todos los servicios</option>
+                        <option value="simple">Solo simples</option>
+                        <option value="conversion">Solo conversión</option>
+                    </select>
                 </div>
             </div>
         </div>
@@ -124,7 +122,7 @@
                 <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">T. Prom. Conversión</span>
                 <i class="fas fa-stopwatch text-amber-100 text-lg"></i>
             </div>
-            <p class="text-3xl font-extrabold text-amber-600">{{ $tiempoPromedio }}h</p>
+                <p class="text-3xl font-extrabold text-amber-600">{{ $tiempoPromedioTexto }}</p>
         </div>
     </div>
 
