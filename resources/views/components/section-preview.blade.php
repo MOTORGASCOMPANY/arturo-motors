@@ -37,6 +37,7 @@
         <iframe
             src="{{ $iframeUrl }}"
             class="border-0 preview-iframe"
+            onload="var s = this.parentElement.parentElement.querySelector('.preview-skeleton'); if (s) s.style.display = 'none';"
             style="width: 200%; height: 200%; transform: scale(0.5); transform-origin: top left; pointer-events: none;"
             loading="eager"
             tabindex="-1"
