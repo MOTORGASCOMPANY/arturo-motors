@@ -271,7 +271,7 @@
 
     </div>
 
-    @script
+@script
     <script>
         window.renderReporteServiciosChart = function () {
             const canvas = document.getElementById('chartReporteServicios');
@@ -282,29 +282,18 @@
             const conversionCompletadas = JSON.parse(canvas.dataset.conversionCompletadas || '[]');
             const simpleCompletadas = JSON.parse(canvas.dataset.simpleCompletadas || '[]');
 
-            if (window.chartReporteServiciosInstance) window.chartReporteServiciosInstance.destroy();
+            if (!window.CHART_DEFS) return;
 
-            // Configuración visual mejorada para Chart.js
-            window.chartReporteServiciosInstance = new Chart(canvas, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        { label: 'Conversión pendiente', data: conversionPendientes, backgroundColor: '#d97706', borderRadius: 4, barPercentage: 0.6, categoryPercentage: 0.8 },
-                        { label: 'Conversión completada', data: conversionCompletadas, backgroundColor: '#059669', borderRadius: 4, barPercentage: 0.6, categoryPercentage: 0.8 },
-                        { label: 'Simple completado', data: simpleCompletadas, backgroundColor: '#6b7280', borderRadius: 4, barPercentage: 0.6, categoryPercentage: 0.8 },
-                    ]
-                },
+            window.CHART_DEFS.renderConvBar('chartReporteServicios', 'chartReporteServicios', labels, [
+                { label: 'Conversión pendiente', data: conversionPendientes, backgroundColor: '#d97706', borderRadius: 4, barPercentage: 0.6, categoryPercentage: 0.8 },
+                { label: 'Conversión completada', data: conversionCompletadas, backgroundColor: '#059669', borderRadius: 4, barPercentage: 0.6, categoryPercentage: 0.8 },
+                { label: 'Simple completado', data: simpleCompletadas, backgroundColor: '#6b7280', borderRadius: 4, barPercentage: 0.6, categoryPercentage: 0.8 },
+            ], {
+                stacked: true,
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    interaction: {
-                        mode: 'index',
-                        intersect: false,
-                    },
                     plugins: {
                         legend: { display: false },
-                        tooltip: { 
+                        tooltip: {
                             backgroundColor: 'rgba(255, 255, 255, 0.95)',
                             titleColor: '#1f2937',
                             bodyColor: '#4b5563',
@@ -315,23 +304,12 @@
                             usePointStyle: true,
                             titleFont: { size: 14, weight: 'bold' },
                             bodyFont: { size: 13 },
-                            callbacks: { 
-                                label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y}` 
-                            } 
+                            callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y}` }
                         }
                     },
                     scales: {
-                        x: { 
-                            stacked: true,
-                            grid: { display: false, drawBorder: false },
-                            ticks: { font: { family: "'Inter', sans-serif" }, color: '#6b7280' }
-                        },
-                        y: { 
-                            stacked: true, 
-                            beginAtZero: true, 
-                            ticks: { stepSize: 1, font: { family: "'Inter', sans-serif" }, color: '#9ca3af' },
-                            grid: { color: '#f3f4f6', drawBorder: false, borderDash: [5, 5] }
-                        }
+                        x: { stacked: true, grid: { display: false, drawBorder: false }, ticks: { font: { family: "'Inter', sans-serif" }, color: '#6b7280' } },
+                        y: { stacked: true, beginAtZero: true, ticks: { stepSize: 1, font: { family: "'Inter', sans-serif" }, color: '#9ca3af' }, grid: { color: '#f3f4f6', drawBorder: false, borderDash: [5, 5] } }
                     }
                 }
             });
@@ -347,7 +325,7 @@
             }
         });
 
-        // Update canvas data-* attrs when server dispatches new chart data
+        // Update canvas data-* attrs cuando servidor envía nuevos datos
         $wire.on('chart-data-updated', (data) => {
             const canvas = document.getElementById('chartReporteServicios');
             if (!canvas) return;
