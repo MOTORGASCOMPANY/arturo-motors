@@ -20,9 +20,12 @@ class DatabaseSeeder extends Seeder
         // Seeders de datos de prueba (nuevos)
         $this->call([
             SedeSeeder::class,
-            ClienteSeeder::class,
-            VehiculoSeeder::class,
-            ClienteVehiculoSeeder::class,
+            //permisos
+            //roles has permisos
+            //roles
+            //ClienteSeeder::class,
+            //VehiculoSeeder::class,
+            //ClienteVehiculoSeeder::class,
             //ServiceOrderSeeder::class,
             //SesionCajaSeeder::class,
             //ProductosGnvSeeder::class,
