@@ -122,20 +122,3 @@
         });
     </script>
 @endscript
-{{-- Script para escuchar el evento de la alerta y redirigir 
-@script
-    <script>
-        Livewire.on('solicitudGuardada', (params) => {
-            Swal.fire({
-                title: params.titulo,
-                text: params.mensaje,
-                icon: params.icono,
-                confirmButtonText: 'OK'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = "{{ route('ListaConversiones') }}";
-                }
-            });
-        });
-    </script>
-@endscript --}}

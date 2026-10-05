@@ -30,7 +30,7 @@ class KitRearmar extends Component
 
     protected function sedePrincipalId(): int
     {
-        return Sede::activas()->orderBy('id')->first()?->id ?? 1;
+        return Sede::primeraActivaId();
     }
 
     public function mount(int $kitItemId)

@@ -174,11 +174,7 @@ trait TrasladoConfirmacion
                         ->lockForUpdate()
                         ->first();
 
-                    $enKits = ItemSerializado::where('producto_id', $productoId)
-                        ->whereNotNull('kit_padre_id')
-                        ->whereIn('estado', ['en_stock', 'abierto', 'completado', 'asignado'])
-                        ->where('sede_id', $sedeOrigenId)
-                        ->count();
+                    $enKits = ItemSerializado::montadasEnKit($productoId, $sedeOrigenId);
 
                     $disponible = max(0, (int) ($stock->cantidad ?? 0) - $enKits);
                     if ($disponible < $cantidad) {

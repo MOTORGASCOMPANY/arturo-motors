@@ -64,19 +64,14 @@
                             @hasanyrole('Administrador del sistema|administrador')
                                 <button x-data
                                         @click="
-                                            Swal.fire({
-                                                title: '¿Estás seguro?',
-                                                text: '¿Eliminar este documento?',
+                                            Livewire.dispatch('swal:confirmar', {
+                                                titulo: '¿Estás seguro?',
+                                                mensaje: '¿Eliminar este documento?',
                                                 icon: 'warning',
-                                                showCancelButton: true,
+                                                confirmText: 'Sí, eliminar',
                                                 confirmButtonColor: '#dc2626',
                                                 cancelButtonColor: '#64748b',
-                                                confirmButtonText: 'Sí, eliminar',
-                                                cancelButtonText: 'Cancelar'
-                                            }).then((result) => {
-                                                if (result.isConfirmed) {
-                                                    $wire.eliminarDocumento({{ $docSubido->id }});
-                                                }
+                                                onConfirm: () => $wire.eliminarDocumento({{ $docSubido->id }})
                                             })
                                         "
                                         class="p-2 bg-red-100 text-red-600 rounded-md hover:bg-red-200" title="Eliminar">

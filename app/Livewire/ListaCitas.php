@@ -120,7 +120,7 @@ class ListaCitas extends Component
         $cita->estado = 'rechazada';
         $cita->save();
 
-        $this->dispatch('citaRechazada');
+        $this->dispatch('minAlert', titulo: '¡Cita Cancelada!', mensaje: 'La cita ha sido rechazada correctamente.', icono: 'success');
     }
 
     // Método para abrir el modal de Aceptar Cita
@@ -183,7 +183,7 @@ class ListaCitas extends Component
             });
 
             $this->openAceptarModal = false;
-            $this->dispatch('citaAceptada');
+            $this->dispatch('minAlert', titulo: '¡Cita aceptada!', mensaje: 'La cita se aceptó y se creó la orden de servicio exitosamente.', icono: 'success');
 
         } catch (\Throwable $e) {
             Log::error('Error al aceptar cita y generar la orden: ' . $e->getMessage(), [
@@ -228,7 +228,7 @@ class ListaCitas extends Component
                 }
             });
 
-            $this->dispatch('citaAceptada');
+            $this->dispatch('minAlert', titulo: '¡Cita aceptada!', mensaje: 'La cita se aceptó y se creó la orden de servicio exitosamente.', icono: 'success');
 
         } catch (\Throwable $e) {
             Log::error('Error al aceptar cita y generar la orden: ' . $e->getMessage(), [

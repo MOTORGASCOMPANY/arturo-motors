@@ -4,6 +4,7 @@ namespace App\Livewire\Almacen;
 
 use App\Models\CategoriaAlmacen;
 use App\Models\Producto;
+use App\Models\KitComponente;
 use Illuminate\Support\Facades\DB;
 
 trait CatalogoKits
@@ -48,7 +49,7 @@ trait CatalogoKits
                 return;
             }
 
-            DB::table('kit_componentes')->where('producto_kit_id', $kitId)->delete();
+            KitComponente::eliminarDe($kitId);
             $kit->update(['activo' => false]);
 
             unset($this->cantidades[$kitId]);
@@ -82,7 +83,7 @@ trait CatalogoKits
         }
 
         try {
-            if (Producto::where('nombre', 'LIKE', trim($this->nuevoKitNombre))->exists()) {
+            if (Producto::existeConNombre(trim($this->nuevoKitNombre))) {
                 $this->dispatch('swal-kit', tipo: 'error', titulo: 'Duplicado', mensaje: 'Ya existe un producto con ese nombre.');
                 return;
             }
@@ -153,7 +154,7 @@ trait CatalogoKits
                 return;
             }
 
-            if (Producto::where('nombre', 'LIKE', trim($nombre))->where('id', '!=', $kit->id)->exists()) {
+            if (Producto::existeConNombre(trim($nombre), $kit->id)) {
                 $this->dispatch('swal-kit', tipo: 'error', titulo: 'Duplicado', mensaje: 'Ya existe un producto con ese nombre.');
                 return;
             }
@@ -185,7 +186,7 @@ trait CatalogoKits
                 return;
             }
 
-            if (Producto::where('nombre', 'LIKE', trim($this->editarKitNombre))->where('id', '!=', $kit->id)->exists()) {
+            if (Producto::existeConNombre(trim($this->editarKitNombre), $kit->id)) {
                 $this->dispatch('swal-kit', tipo: 'error', titulo: 'Duplicado', mensaje: 'Ya existe un producto con ese nombre.');
                 return;
             }

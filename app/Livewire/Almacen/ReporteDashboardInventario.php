@@ -44,22 +44,7 @@ class ReporteDashboardInventario extends Component
     // ── 1. TASA DE CONSUMO ──────────────────────────────────────────
     public function tasaConsumo(): array
     {
-        $sedeId = $this->filtroSede;
-
-        $sellados = ItemSerializado::whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true))
-            ->whereIn('estado', ['en_stock', 'completado'])
-            ->when($sedeId, fn ($q) => $q->where('sede_id', $sedeId))
-            ->count();
-
-        $consumidos = ItemSerializado::whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true))
-            ->whereIn('estado', ['consumido', 'instalado'])
-            ->when($sedeId, fn ($q) => $q->where('sede_id', $sedeId))
-            ->count();
-
-        $total = $sellados + $consumidos;
-        $pct = $total > 0 ? round(($consumidos / $total) * 100) : 0;
-
-        return ['porcentaje' => $pct, 'sellados' => $sellados, 'consumidos' => $consumidos];
+        return ItemSerializado::tasaConsumoKits($this->filtroSede);
     }
 
     // ── 2. ALERTAS DE STOCK ──────────────────────────────────────────
@@ -67,10 +52,7 @@ class ReporteDashboardInventario extends Component
     {
         $sedeId = $this->filtroSede; // null = todas las sedes
 
-        $productos = Producto::where('activo', true)
-            ->whereHas('categoria', fn ($q) => $q->where('es_kit', false))
-            ->with('categoria')
-            ->get();
+        $productos = Producto::activo()->sinSerKit()->with('categoria')->get();
 
         $sinStock = collect();
         $stockBajo = collect();
@@ -106,12 +88,11 @@ class ReporteDashboardInventario extends Component
             if ($sedeFiltro && $s->id !== $sedeFiltro) continue;
 
             $labels[] = $s->nombre;
-            $base = ItemSerializado::whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true))
-                ->where('sede_id', $s->id);
+            $conteo = ItemSerializado::contarKitsDeSede($s->id);
 
-            $sellados[] = (int) $base->clone()->where('estado', 'en_stock')->count();
-            $completados[] = (int) $base->clone()->where('estado', 'completado')->count();
-            $consumidos[] = (int) $base->clone()->whereIn('estado', ['consumido', 'instalado'])->count();
+            $sellados[] = $conteo['sellados'];
+            $completados[] = $conteo['completados'];
+            $consumidos[] = $conteo['consumidos'];
         }
 
         return compact('labels', 'sellados', 'completados', 'consumidos', 'sedeFiltro');
@@ -123,8 +104,8 @@ class ReporteDashboardInventario extends Component
         $sedeId = $this->filtroSede;
 
         $query = Producto::with('categoria')
-            ->where('activo', true)
-            ->whereHas('categoria', fn ($q) => $q->where('es_kit', false))
+            ->activo()
+            ->sinSerKit()
             ->orderBy('nombre');
 
         $productos = $query->get();

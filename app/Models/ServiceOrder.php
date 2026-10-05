@@ -153,4 +153,19 @@ class ServiceOrder extends Model
             $query->where('estado', $estado);
         }
     }
+
+    /** Órdenes en conversión con un kit armado, con búsqueda opcional. */
+    public function scopeEnConversion($query, ?string $buscar = null)
+    {
+        return $query
+            ->where('estado', 'en_conversion')
+            ->whereHas('items', fn ($q) => $q->whereNull('kit_padre_id')->whereHas('piezasEnKit'))
+            ->when($buscar, fn ($q) => $q->where(function ($q) use ($buscar) {
+                $q->where('id', 'like', "%{$buscar}%")
+                    ->orWhereHas('cliente', fn ($cq) => $cq->where('nombre', 'like', "%{$buscar}%"))
+                    ->orWhereHas('vehiculo', fn ($vq) => $vq->where('placa', 'like', "%{$buscar}%"))
+                    ->orWhereHas('tecnico', fn ($tq) => $tq->where('name', 'like', "%{$buscar}%"));
+            }))
+            ->orderBy('fecha_inicio_conversion', 'asc');
+    }
 }

@@ -147,7 +147,7 @@
                                         </div>
 
                                         <div class="flex justify-end pt-0.5">
-                                            <button type="button" class="w-full sm:w-auto px-4 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 text-xs font-semibold transition-all flex items-center justify-center gap-2" onclick="confirmSaveSection({{ $section['id'] }})">
+                                            <button type="button" class="w-full sm:w-auto px-4 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 text-xs font-semibold transition-all flex items-center justify-center gap-2" onclick="Livewire.dispatch('swal:confirmar', { titulo: '¿Guardar cambios?', mensaje: 'Se actualizará el contenido de esta sección en el sitio.', icon: 'question', confirmText: 'Sí, guardar', confirmButtonColor: '#2563eb', onConfirm: () => @this.call('saveSection', {{ $section['id'] }}) })">
                                                 <i class="fa-solid fa-check"></i> Guardar Cambios
                                             </button>
                                         </div>
@@ -167,28 +167,6 @@
         </div>
 
         <script>
-            function confirmSaveSection(sectionId) {
-                Swal.fire({
-                    title: '¿Guardar cambios?',
-                    text: 'Se actualizará el contenido de esta sección en el sitio.',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#2563eb',
-                    cancelButtonColor: '#6b7280',
-                    confirmButtonText: 'Sí, guardar',
-                    cancelButtonText: 'Cancelar',
-                    customClass: {
-                        popup: 'rounded-xl shadow-xl border border-gray-200',
-                        confirmButton: 'rounded-lg px-5 py-2 font-semibold text-sm',
-                        cancelButton: 'rounded-lg px-5 py-2 font-semibold text-sm'
-                    }
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        @this.call('saveSection', sectionId);
-                    }
-                });
-            }
-
             Livewire.on('refresh-preview', function() {
                 document.querySelectorAll('.preview-iframe').forEach(function(iframe) {
                     var src = iframe.getAttribute('src');

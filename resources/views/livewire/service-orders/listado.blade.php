@@ -154,12 +154,15 @@
                                                 <div class="relative inline-block group">
                                                     <button x-data
                                                         @click="
-                                                            Swal.fire({
-                                                                icon: 'warning', title: '¿Cancelar orden?',
-                                                                text: 'La orden #{{ $orden->id }} será cancelada y se revertirá el cobro.',
-                                                                showCancelButton: true, confirmButtonText: 'Sí, cancelar',
-                                                                cancelButtonText: 'No, volver', confirmButtonColor: '#dc2626'
-                                                            }).then(r => { if (r.isConfirmed) { $wire.call('cancelar', {{ $orden->id }}); } })
+                                                            Livewire.dispatch('swal:confirmar', {
+                                                                titulo: '¿Cancelar orden?',
+                                                                mensaje: 'La orden #{{ $orden->id }} será cancelada y se revertirá el cobro.',
+                                                                icon: 'warning',
+                                                                confirmText: 'Sí, cancelar',
+                                                                cancelText: 'No, volver',
+                                                                confirmButtonColor: '#dc2626',
+                                                                onConfirm: () => $wire.call('cancelar', {{ $orden->id }})
+                                                            })
                                                         "
                                                         class="inline-flex items-center justify-center w-8 h-8 text-red-700 bg-red-50 hover:bg-red-100 hover:text-red-900 rounded-lg transition-colors duration-150">
                                                         <i class="fa-solid fa-ban text-xs"></i>

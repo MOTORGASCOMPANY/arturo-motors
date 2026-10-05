@@ -217,8 +217,8 @@
     document.addEventListener('livewire:init', registerHooks);
 
     window.exportarPDF = function () {
-        // Componente reutilizable de carga (ver js/components/carga-swal.js)
-        CargaSwal.exportar({
+        // Alerta de exportación.
+        AppSwal.exportar({
             url: window.reporteConvData && window.reporteConvData.exportPdfUrl,
             titulo: 'Exportando PDF',
             texto: 'Generando el reporte...'
@@ -226,7 +226,7 @@
     };
 
     window.exportarExcel = function () {
-        CargaSwal.exportar({
+        AppSwal.exportar({
             url: window.reporteConvData && window.reporteConvData.exportExcelUrl,
             titulo: 'Exportando Excel',
             texto: 'Generando el reporte...'

@@ -8,6 +8,7 @@ use App\Models\MovimientoStock;
 use App\Models\ReportePiezaNoEncajada;
 use App\Models\ServiceOrder;
 use App\Models\Sede;
+use App\Models\Producto;
 use App\Services\CambioPiezaService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -93,23 +94,9 @@ class ReporteConversionesActivas extends Component
         $this->piezaSueltaSeleccionadaId = null;
     }
 
-    private function esSerializable($producto): bool
-    {
-        if (is_int($producto)) {
-            $producto = \App\Models\Producto::with('categoria')->find($producto);
-        }
-        if (is_string($producto)) {
-            $producto = \App\Models\Producto::where('nombre', $producto)->first();
-        }
-        if (!$producto instanceof \App\Models\Producto) {
-            return false;
-        }
-        return $producto->categoria->es_serializado ?? false;
-    }
-
     private function sedeOperativa(): int
     {
-        return Sede::activas()->orderBy('id')->first()?->id ?? 1;
+        return Sede::primeraActivaId();
     }
 
     public function abrirPartesGenerales() { $this->modalPartesAbierto = true; }

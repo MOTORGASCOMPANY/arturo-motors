@@ -5,6 +5,7 @@ namespace App\Livewire\Almacen;
 use App\Models\ItemSerializado;
 use App\Models\MovimientoStock;
 use App\Models\Producto;
+use App\Models\KitComponente;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -53,7 +54,7 @@ trait ConfirmacionKit
                         return;
                     }
 
-                    if (ItemSerializado::where('serie', $serie)->exists()) {
+                    if (ItemSerializado::existeSerie($serie)) {
                         $this->dispatch('swal-kit', tipo: 'error', titulo: 'Serie duplicada', mensaje: "La serie \"{$serie}\" ya está registrada.");
                         return;
                     }
@@ -90,17 +91,16 @@ trait ConfirmacionKit
 
     private function guardarRecetaKit(): void
     {
-        DB::table('kit_componentes')->where('producto_kit_id', $this->modalKitId)->delete();
-
-        foreach ($this->modalComponentes as $componente) {
-            DB::table('kit_componentes')->insert([
-                'producto_kit_id' => $this->modalKitId,
-                'producto_componente_id' => $componente['producto_id'],
-                'cantidad_esperada' => $componente['es_serializado'] ? 1 : $componente['cantidad'],
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
+        KitComponente::reemplazarReceta(
+            $this->modalKitId,
+            array_map(
+                fn ($componente) => [
+                    'producto_componente_id' => $componente['producto_id'],
+                    'cantidad_esperada' => $componente['es_serializado'] ? 1 : $componente['cantidad'],
+                ],
+                $this->modalComponentes
+            )
+        );
     }
 
     private function crearKitsConComponentes(): void

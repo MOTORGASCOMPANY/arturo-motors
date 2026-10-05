@@ -184,19 +184,13 @@
             <button @click="
                         const url = $wire.get('fichaDanoUrl');
                         if (!url) {
-                            Swal.fire({
+                            Livewire.dispatch('swal:confirmar', {
+                                titulo: 'Sin ficha de daño',
+                                mensaje: 'No dibujaste ningún daño. ¿Estás seguro de continuar?',
                                 icon: 'warning',
-                                title: 'Sin ficha de daño',
-                                text: 'No dibujaste ningún daño. ¿Estás seguro de continuar?',
-                                showCancelButton: true,
+                                confirmText: 'Sí, guardar sin ficha',
                                 confirmButtonColor: '#dc2626',
-                                cancelButtonColor: '#6b7280',
-                                confirmButtonText: 'Sí, guardar sin ficha',
-                                cancelButtonText: 'Cancelar'
-                            }).then((result) => {
-                                if (result.isConfirmed) {
-                                    $wire.call('guardarEvaluacion', false, true);
-                                }
+                                onConfirm: () => $wire.call('guardarEvaluacion', false, true)
                             });
                         } else {
                             $wire.call('guardarEvaluacion', false);
@@ -212,19 +206,13 @@
             <button @click="
                         const url = $wire.get('fichaDanoUrl');
                         if (!url) {
-                            Swal.fire({
+                            Livewire.dispatch('swal:confirmar', {
+                                titulo: 'Sin ficha de daño',
+                                mensaje: 'No dibujaste ningún daño. ¿Estás seguro de continuar?',
                                 icon: 'warning',
-                                title: 'Sin ficha de daño',
-                                text: 'No dibujaste ningún daño. ¿Estás seguro de continuar?',
-                                showCancelButton: true,
+                                confirmText: 'Sí, continuar',
                                 confirmButtonColor: '#059669',
-                                cancelButtonColor: '#6b7280',
-                                confirmButtonText: 'Sí, continuar',
-                                cancelButtonText: 'Cancelar'
-                            }).then((result) => {
-                                if (result.isConfirmed) {
-                                    $wire.call('guardarEvaluacion', true, true);
-                                }
+                                onConfirm: () => $wire.call('guardarEvaluacion', true, true)
                             });
                         } else {
                             $wire.call('guardarEvaluacion', true);
@@ -431,16 +419,10 @@ document.addEventListener('alpine:init', () => {
                     this.fichaUrl = this.$wire.get('fichaDanoUrl');
                     this.fichaGuardada = true;
                     this.drawStarted = false;
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Ficha guardada',
-                        text: 'La imagen se guardó correctamente',
-                        confirmButtonColor: '#059669',
-                        confirmButtonText: 'OK'
-                    });
+                    AppSwal.exito('Ficha guardada', 'La imagen se guardó correctamente', { confirmButtonColor: '#059669' });
                 }
             } catch (error) {
-                Swal.fire('Error', 'Error de conexión al guardar la ficha', 'error');
+                AppSwal.error('Error', 'Error de conexión al guardar la ficha');
             } finally {
                 this.saving = false;
             }

@@ -11,6 +11,7 @@ use App\Models\CategoriaAlmacen;
 use App\Models\ItemSerializado;
 use App\Models\Producto;
 use App\Models\Sede;
+use App\Models\KitComponente;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
@@ -105,7 +106,7 @@ class RecepcionAlta extends Component
 
                 $nombre = $categoria->nombre;
 
-                if (Producto::where('nombre', 'LIKE', $nombre)->exists()) {
+                if (Producto::existeConNombre($nombre)) {
                     $this->dispatch('swal-kit', tipo: 'error', titulo: 'Duplicado', mensaje: 'Ya existe un producto con ese nombre.');
                     return;
                 }
@@ -117,7 +118,7 @@ class RecepcionAlta extends Component
 
                 $serieUpper = strtoupper(trim($this->nuevoSerie));
 
-                if (ItemSerializado::where('serie', $serieUpper)->exists()) {
+                if (ItemSerializado::existeSerie($serieUpper)) {
                     $this->dispatch('swal-kit', tipo: 'error', titulo: 'Duplicado', mensaje: "La serie \"{$serieUpper}\" ya está registrada.");
                     return;
                 }
@@ -138,7 +139,7 @@ class RecepcionAlta extends Component
                     return;
                 }
 
-                if (Producto::where('nombre', 'LIKE', $nombre)->exists()) {
+                if (Producto::existeConNombre($nombre)) {
                     $this->dispatch('swal-kit', tipo: 'error', titulo: 'Duplicado', mensaje: 'Ya existe un producto con ese nombre.');
                     return;
                 }
@@ -165,13 +166,11 @@ class RecepcionAlta extends Component
                 'activo' => true,
             ]);
 
-            DB::table('kit_componentes')->insert([
-                'producto_kit_id' => $this->modalKitId,
-                'producto_componente_id' => $producto->id,
-                'cantidad_esperada' => $this->nuevoTipo === 'serializado' ? 1 : $this->nuevaCantidad,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            KitComponente::agregarComponente(
+                $this->modalKitId,
+                $producto->id,
+                $this->nuevoTipo === 'serializado' ? 1 : $this->nuevaCantidad
+            );
 
             $esquema = $categoria->esquema_atributos ?? ['serie'];
             $camposEsquema = is_string($esquema) ? (json_decode($esquema, true) ?? ['serie']) : $esquema;
@@ -221,7 +220,7 @@ class RecepcionAlta extends Component
 
     public function mount(): void
     {
-        $this->sedeId = Sede::activas()->orderBy('id')->first()?->id ?? 1;
+        $this->sedeId = Sede::primeraActivaId();
 
         foreach ($this->kitsDisponibles as $kit) {
             $this->cantidades[$kit->id] = 0;
@@ -235,19 +234,12 @@ class RecepcionAlta extends Component
 
     public function getKitsDisponiblesProperty()
     {
-        return Producto::whereHas('categoria', fn ($q) => $q->where('es_kit', true))
-            ->where('activo', true)
-            ->get();
+        return Producto::kitsActivos();
     }
 
     public function getProductosSerializadosProperty()
     {
-        return Producto::with('categoria')
-            ->whereHas('categoria', fn ($q) => $q->where('es_serializado', true)->where('es_kit', false))
-            ->where('activo', true)
-            ->orderBy('categoria_id')
-            ->orderBy('nombre')
-            ->get();
+        return Producto::serializadosActivos();
     }
 
     public function getProductosPorCategoriaProperty(): \Illuminate\Support\Collection

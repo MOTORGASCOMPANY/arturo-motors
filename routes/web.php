@@ -16,12 +16,17 @@ use App\Http\Controllers\ReporteAlmacenExcelController;
 use App\Http\Controllers\ReporteConversionesPdfController;
 use App\Http\Controllers\ReporteConversionesExcelController;
 use App\Http\Controllers\FiseReporteController;
+use App\Http\Controllers\KitComponentesController;
 use App\Livewire\AdminPermisos;
 use App\Livewire\AdminRoles;
-use App\Livewire\Almacen\CategoriaAlta as CategoriasCrear;
 use App\Livewire\Almacen\CategoriaListado as CategoriasListado;
-use App\Livewire\Almacen\ProductoAlta as ProductosCrear;
 use App\Livewire\Almacen\ProductoListado as ProductosListado;
+
+use App\Livewire\Almacen\RecepcionListado;
+use App\Livewire\Almacen\RecepcionAlta;
+use App\Livewire\Almacen\ReporteConversionesActivas;
+use App\Livewire\Almacen\TrasladoAlta;
+use App\Livewire\Fise\Reporte as FiseReporte;
 
 use App\Livewire\Almacen\TrasladoListado as TrasladosListado;
 use App\Livewire\Caja\AbrirCaja;
@@ -35,7 +40,6 @@ use App\Livewire\Caja\Reporte as ReporteCaja;
 use App\Livewire\Servicios\Reporte as ReporteServicios;
 use App\Livewire\Almacen\ReporteDashboardInventario as ReporteAlmacen;
 use App\Livewire\Conversiones\Reporte as ReporteConversiones;
-use App\Livewire\CrearCitas;
 use App\Livewire\Conversiones\AlmacenPendientes;
 use App\Livewire\Conversiones\AsignarEquipos;
 use App\Livewire\Conversiones\AsignarTecnico;
@@ -45,16 +49,11 @@ use App\Livewire\Conversiones\EntregarCobrar;
 use App\Livewire\Conversiones\Evaluar;
 use App\Livewire\Conversiones\MisAsignadas;
 use App\Livewire\Conversiones\Realizar;
-use App\Livewire\ExpedienteModal;
 
 use App\Livewire\Inicio;
 use App\Livewire\ListaCitas;
 use App\Livewire\ListaClientes;
-use App\Livewire\ListaConversiones;
-use App\Livewire\ListaExpedientes;
-use App\Livewire\ListaServicios;
 use App\Livewire\ListaVehiculos;
-use App\Livewire\ProcesarCobro;
 use App\Livewire\Reportes\ReporteCitas;
 use App\Livewire\RRHH\Contratos;
 use App\Http\Controllers\CmsController;
@@ -75,9 +74,6 @@ use App\Livewire\ServiceOrders\Detalle;
 use App\Livewire\ServiceOrders\Listado;
 use App\Livewire\SolicitudRepuestos;
 use App\Livewire\Usuarios;
-use App\Models\Media;
-use App\Models\PageMedia;
-use App\Models\PageSection;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -90,8 +86,6 @@ Route::get('/', [LandingController::class, 'index'])->name('landing');
 Route::get('/home', function () {
     return redirect()->route('landing');
 });
-
-Route::get('index', [LandingController::class, 'index'])->name('landing.index');
 
 Route::get('phpmyinfo', function () {
     phpinfo();
@@ -108,14 +102,8 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         return view('dashboard');
     })->name('dashboard');
 
-    Route::get('/inicio', Inicio::class)->name('inicio');
-
     // Citas
     Route::get('/lista-citas', ListaCitas::class)->name('ListaCitas');
-
-    Route::get('/rpta-citas', ReporteCitas::class)->name('Rpta.Citas');
-    Route::get('/rpta-citas/export-pdf', ReporteCitasPdfController::class)->name('Rpta.Citas.Pdf');
-    Route::get('/rpta-citas/export-excel', ReporteCitasExcelController::class)->name('Rpta.Citas.Excel');
 
     Route::get('/lista-vehiculos', ListaVehiculos::class)->name('ListaVehiculos');
     Route::get('/lista-clientes', ListaClientes::class)->name('ListaClientes');
@@ -144,9 +132,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::get('/conversiones/{ordenId}/evaluar', Evaluar::class)->name('conversiones.evaluar'); // P4: Evaluación (Técnico) — checklist + apto/no apto
     Route::get('/conversiones/almacen/pendientes', AlmacenPendientes::class)->name('conversiones.almacen-pendientes'); // P5: Asignar equipos (Almacenero) — vincula items_serializados a la orden
     Route::get('/conversiones/{ordenId}/asignar-equipos', AsignarEquipos::class)->name('conversiones.asignar-equipos'); // P5: Asignar equipos (Almacenero) — vincula items_serializados a la orden
-    Route::get('/conversiones/{ordenId}/registrar-items-kit', \App\Livewire\Conversiones\RegistrarItemsKit::class)->name('conversiones.registrar-items-kit'); // P5.5: Registrar items del kit (Técnico) — antes de iniciar
     Route::get('/conversiones/{ordenId}/realizar', Realizar::class)->name('conversiones.realizar'); // P6: Realizar conversión (Técnico) — inicia, marca instalado, finaliza
-    Route::get('/conversiones/{ordenId}/registrar-series', \App\Livewire\Conversiones\RegistrarSeries::class)->name('conversiones.registrar-series'); // Registrar series instaladas
     Route::get('/conversiones/entregas/pendientes', EntregaPendientes::class)->name('conversiones.entregas-pendientes'); // P7: Entrega y cobro (Cajero) — reutiliza la lógica de cobro que ya armamos en CrearSimple
     Route::get('/conversiones/{ordenId}/entregar', EntregarCobrar::class)->name('conversiones.entregar'); // P7: Entrega y cobro (Cajero) — reutiliza la lógica de cobro que ya armamos en CrearSimple
     Route::get('/conversiones/{conversionId}/solicitud-repuestos', SolicitudRepuestos::class)->name('SolicitudRepuestos'); // Solicitud de repuestos para conversión
@@ -158,32 +144,26 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::get('/almacen/productos', ProductosListado::class)->name('almacen.productos.listado');
 
     // Recepciones de kits
-    Route::get('/almacen/recepciones', \App\Livewire\Almacen\RecepcionListado::class)->name('almacen.recepciones.listado');
-    Route::get('/almacen/recepciones/crear', \App\Livewire\Almacen\RecepcionAlta::class)->name('almacen.recepciones.crear');
+    Route::get('/almacen/recepciones', RecepcionListado::class)->name('almacen.recepciones.listado');
+    Route::get('/almacen/recepciones/crear', RecepcionAlta::class)->name('almacen.recepciones.crear');
 
 
 
     // Monitoreo de conversiones activas (dashboard en tiempo real)
-    Route::get('/almacen/reportes-piezas', \App\Livewire\Almacen\ReporteConversionesActivas::class)->name('almacen.reportes-piezas');
+    Route::get('/almacen/reportes-piezas', ReporteConversionesActivas::class)->name('almacen.reportes-piezas');
 
     // Traslados
     Route::get('/almacen/traslados', TrasladosListado::class)->name('almacen.traslados.listado');
-    Route::get('/almacen/traslados/crear', \App\Livewire\Almacen\TrasladoAlta::class)->name('almacen.traslados.crear');
+    Route::get('/almacen/traslados/crear', TrasladoAlta::class)->name('almacen.traslados.crear');
 
     Route::get('/citas/reporte', ReporteCitas::class)->name('citas.reporte');
     Route::get('/caja/reporte', ReporteCaja::class)->name('caja.reporte');
     Route::get('/servicios/reporte', ReporteServicios::class)->name('servicios.reporte');
     Route::get('/almacen/reporte', ReporteAlmacen::class)->name('almacen.reporte');
     Route::get('/conversiones/reporte', ReporteConversiones::class)->name('conversiones.reporte');
-    Route::get('/fise/reporte', \App\Livewire\Fise\Reporte::class)->name('fise.reporte');
+    Route::get('/fise/reporte', FiseReporte::class)->name('fise.reporte');
     Route::get('/fise/reporte/pdf', [FiseReporteController::class, 'pdf'])->name('fise.reporte.pdf');
     Route::get('/fise/reporte/excel', [FiseReporteController::class, 'excel'])->name('fise.reporte.excel');
-
-    // Diagrama Gantt
-    Route::get('/diagrama-gantt', \App\Http\Controllers\GanttController::class)->name('diagrama-gantt');
-
-    Route::get('/reporte-servicios/pdf', [ReporteServiciosPdfController::class, '__invoke'])->name('ReporteServicios.Pdf');
-    Route::get('/reporte-servicios/excel', [ReporteServiciosExcelController::class, '__invoke'])->name('ReporteServicios.Excel');
 
     Route::get('/reporte-almacen/pdf', [ReporteAlmacenPdfController::class, '__invoke'])->name('ReporteAlmacen.Pdf');
     Route::get('/reporte-almacen/excel', [ReporteAlmacenExcelController::class, '__invoke'])->name('ReporteAlmacen.Excel');
@@ -191,38 +171,9 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::get('/reporte-conversiones/pdf', [ReporteConversionesPdfController::class, '__invoke'])->name('ReporteConversiones.Pdf');
     Route::get('/reporte-conversiones/excel', [ReporteConversionesExcelController::class, '__invoke'])->name('ReporteConversiones.Excel');
 
-    Route::get('/reporte-caja/pdf', [ReporteCajaPdfController::class, '__invoke'])->name('ReporteCaja.Pdf');
-    Route::get('/reporte-caja/excel', [ReporteCajaExcelController::class, '__invoke'])->name('ReporteCaja.Excel');
-
     // Componentes hijos
-    Route::get('/selector', SelectorClienteVehiculo::class)->name('selector');
-    Route::get('/procesarcobro', ProcesarCobro::class)->name('procesar');
-
-    // Rutas modulo de recursos humanos
-    Route::get('/rrhh/contratos', Contratos::class)->middleware('can:rrhh.contratos')->name('rrhh.contratos');
-    Route::get('/rrhh/vacaciones/contrato/{idContrato}', GestionarVacaciones::class)->name('rrhh.vacaciones.index');
-    Route::get('/rrhh/documentos/{id?}', GestionDocumentos::class)->name('rrhh.documentos');
-    Route::get('/rrhh/planillas', ListaPlanilla::class)->middleware('can:rrhh.planillas')->name('rrhh.planillas');
-    Route::get('/rrhh/mis-planillas', MisPlanillas::class)->name('rrhh.mis-planillas');
-
-    // Rutas modulo de Usuarios y Roles
-    Route::get('/Usuarios', Usuarios::class)->name('usuarios');
-    Route::get('/Roles', AdminRoles::class)->name('usuarios.roles');
-    Route::get('/Permisos', AdminPermisos::class)->name('usuarios.permisos');
-
-    // PDF Routes
-    Route::get('/garantia/pdf/{id}', [PdfController::class, 'generaPdfCartaGarantia'])->name('vehiculo.pdf');
-    Route::get('/manual/pdf/{id}', [PdfController::class, 'generaPdfManual'])->name('manual.pdf');
-    Route::get('/ordenRepuestos/pdf/{id}', [PdfController::class, 'generaPdfOrdenRepuestos'])->name('ordenRepuestos.pdf');
-    Route::get('/evaluacion/pdf/{id}', [PdfController::class, 'generaPdfEvaluacion'])->name('expedientesEvaluacion.pdf');
-
-    Route::get('/rrhh/contrato/{id}/pdf', [PdfController::class, 'generarContrato'])->name('rrhh.contrato.pdf');
-
     Route::get('/comprobantes/{ordenId}/pdf', [ComprobanteController::class, 'pdf'])->name('comprobantes.pdf');
 
-    Route::get('/ordenes/{ordenId}/pdf/evaluacion', [DocumentosConversionController::class, 'evaluacion'])->name('conversiones.pdf.evaluacion');
-    Route::get('/ordenes/{ordenId}/pdf/ficha-tecnica', [DocumentosConversionController::class, 'fichaTecnica'])->name('conversiones.pdf.ficha-tecnica');
-    Route::get('/ordenes/{ordenId}/pdf/garantia', [DocumentosConversionController::class, 'garantia'])->name('conversiones.pdf.garantia');
     Route::get('/ordenes/{ordenId}/pdf/carta-garantia', [DocumentosConversionController::class, 'cartaGarantia'])->name('conversiones.pdf.carta-garantia');
     Route::get('/ordenes/{ordenId}/pdf/hoja-recepcion', [DocumentosConversionController::class, 'hojaRecepcion'])->name('conversiones.pdf.hoja-recepcion');
     Route::get('/ordenes/{ordenId}/pdf/constancia-entrega', [DocumentosConversionController::class, 'constanciaEntrega'])->name('conversiones.pdf.constancia-entrega');
@@ -235,78 +186,8 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         Route::get('/porque', GestionarPorQue::class)->name('porque');
         Route::get('/contacto', GestionarContacto::class)->name('contacto');
         Route::get('/redes', GestionarRedes::class)->name('redes');
-        Route::post('/upload-media', [CmsController::class, 'uploadMedia'])->name('upload-media');
     });
 
-    // API para componentes de kit — agrupado por kit individual
-    Route::get('/api/kit-componentes/{productoId}', function (int $productoId) {
-        $producto = \App\Models\Producto::find($productoId);
-        if (!$producto || !$producto->categoria->es_kit) {
-            return response()->json(['producto' => null, 'receta' => [], 'kits' => []]);
-        }
-
-        // Receta del kit (qué debería tener)
-        $receta = \Illuminate\Support\Facades\DB::table('kit_componentes')
-            ->join('productos', 'producto_componente_id', '=', 'productos.id')
-            ->join('categorias_almacen', 'productos.categoria_id', '=', 'categorias_almacen.id')
-            ->where('producto_kit_id', $productoId)
-            ->select(
-                'productos.id as producto_id',
-                'productos.nombre',
-                'categorias_almacen.es_serializado',
-                'kit_componentes.cantidad_esperada as cantidad'
-            )
-            ->orderBy('productos.nombre')
-            ->get();
-
-        // Obtener items que SON kits (no componentes sueltos)
-        $kitsItems = \App\Models\ItemSerializado::with(['sede', 'serviceOrder.tecnico'])
-            ->where('producto_id', $productoId)
-            ->whereNull('kit_padre_id') // solo kits padre, no componentes
-            ->orderByDesc('created_at')
-            ->get();
-
-        // Para cada kit, traer sus piezas internas
-        $kitsData = $kitsItems->map(function ($kit) {
-            $piezas = \App\Models\ItemSerializado::with(['producto', 'producto.categoria'])
-                ->where('kit_padre_id', $kit->id)
-                ->get();
-
-            // Separar serializados de cantidad
-            $serializados = $piezas->filter(fn($p) => !str_starts_with($p->serie ?? '', 'CANT-'))
-                ->map(fn($p) => [
-                    'id' => $p->id,
-                    'nombre' => $p->producto?->nombre ?? '—',
-                    'serie' => $p->serie ?? '—',
-                    'estado' => $p->estado,
-                    'atributos' => $p->atributos ?? [],
-                ])->values();
-
-            $cantidad = $piezas->filter(fn($p) => str_starts_with($p->serie ?? '', 'CANT-'))
-                ->map(fn($p) => [
-                    'id' => $p->id,
-                    'nombre' => $p->producto?->nombre ?? '—',
-                    'serie' => $p->serie ?? '—',
-                    'cantidad' => $p->atributos['cantidad'] ?? 1,
-                ])->values();
-
-            return [
-                'id' => $kit->id,
-                'estado' => $kit->estado,
-                'sede' => $kit->sede?->nombre ?? '—',
-                'created_at' => $kit->created_at?->format('d/m/Y H:i'),
-                'service_order_id' => $kit->service_order_id,
-                'tecnico' => $kit->serviceOrder?->tecnico?->name ?? null,
-                'serializados' => $serializados,
-                'cantidad' => $cantidad,
-            ];
-        });
-
-        return response()->json([
-            'producto' => ['id' => $producto->id, 'nombre' => $producto->nombre],
-            'receta' => $receta,
-            'kits' => $kitsData,
-        ]);
-    })->middleware('auth');
+    Route::get('/api/kit-componentes/{productoId}', [KitComponentesController::class, 'index'])->middleware('auth')->name('api.kit-componentes');
 
 });

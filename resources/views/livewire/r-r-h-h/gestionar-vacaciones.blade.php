@@ -83,19 +83,14 @@
                                     </button>
                                     <button x-data
                                             @click="
-                                                Swal.fire({
-                                                    title: '¿Estás seguro?',
-                                                    text: '¿Eliminar esta asignación? El saldo será devuelto al empleado.',
+                                                Livewire.dispatch('swal:confirmar', {
+                                                    titulo: '¿Estás seguro?',
+                                                    mensaje: '¿Eliminar esta asignación? El saldo será devuelto al empleado.',
                                                     icon: 'warning',
-                                                    showCancelButton: true,
+                                                    confirmText: 'Sí, eliminar',
                                                     confirmButtonColor: '#dc2626',
                                                     cancelButtonColor: '#64748b',
-                                                    confirmButtonText: 'Sí, eliminar',
-                                                    cancelButtonText: 'Cancelar'
-                                                }).then((result) => {
-                                                    if (result.isConfirmed) {
-                                                        $wire.eliminarAsignacion({{ $asig->id }});
-                                                    }
+                                                    onConfirm: () => $wire.eliminarAsignacion({{ $asig->id }})
                                                 })
                                             "
                                             class="py-2 px-3 rounded-lg bg-red-500 font-bold text-white hover:bg-red-600 transition" title="Eliminar">

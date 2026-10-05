@@ -10,6 +10,7 @@ use App\Livewire\Almacen\ListadoInventario;
 use App\Livewire\Almacen\ResumenInventario;
 use App\Livewire\Almacen\StockSuelto;
 use App\Models\Sede;
+use App\Models\KitComponente;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -47,7 +48,7 @@ class ProductoListado extends Component
 
     public function mount()
     {
-        $this->filtroSedeId = Sede::activas()->orderBy('id')->first()?->id ?? 1;
+        $this->filtroSedeId = Sede::primeraActivaId();
     }
 
     public function updatedFiltroSedeId($value): void
@@ -187,17 +188,7 @@ class ProductoListado extends Component
 
         if (!$kit) return null;
 
-        $receta = DB::table('kit_componentes')
-            ->join('productos', 'producto_componente_id', '=', 'productos.id')
-            ->join('categorias_almacen', 'productos.categoria_id', '=', 'categorias_almacen.id')
-            ->where('producto_kit_id', $kit->producto_id)
-            ->select(
-                'productos.id as producto_id',
-                'productos.nombre',
-                'categorias_almacen.es_serializado',
-                'kit_componentes.cantidad_esperada as cantidad'
-            )
-            ->get();
+        $receta = KitComponente::recetaDe($kit->producto_id);
 
         $piezasTodas = $kit->piezasEnKit;
 
@@ -281,7 +272,7 @@ class ProductoListado extends Component
             foreach ($componentes as $r) {
                 if (!$r['completo'] && $r['presente'] < $r['cantidad_esperada']) {
                     $faltan = $r['cantidad_esperada'] - $r['presente'];
-                    $productoId = \App\Models\Producto::where('nombre', $r['nombre'])->first()?->id ?? 0;
+                    $productoId = Producto::porNombre($r['nombre'])?->id ?? 0;
                     
                     if ($r['es_serializado']) {
                         $disponibles = \App\Models\ItemSerializado::where('producto_id', $productoId)
@@ -327,7 +318,7 @@ class ProductoListado extends Component
                 fn ($q) => $q->buscar($this->buscar)
             )
             ->when(in_array($this->filterStock, ['bajo', 'sin'], true), function ($q) {
-                $sedeId = (int) (Sede::activas()->orderBy('id')->first()?->id ?? 1);
+                $sedeId = (int) (Sede::primeraActivaId());
 
                 // Disponible REAL según modelo dual (mismo criterio que Producto::stockSueltoEnSede):
                 // kit = unidades disponibles (en_stock o completado); serializado = items sueltos;

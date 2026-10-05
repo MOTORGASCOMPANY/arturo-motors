@@ -35,27 +35,13 @@ class AsignarEquipos extends Component
 
     protected function sedePrincipalId(): int
     {
-        return $this->orden->sede_id ?? (Sede::activas()->orderBy('id')->first()?->id ?? 1);
+        return $this->orden->sede_id ?? (Sede::primeraActivaId());
     }
 
     public function updatedFiltroGeneracion(): void
     {
         $this->kitItemId = null;
         $this->seriesKit = [];
-    }
-
-    private function esSerializable($producto): bool
-    {
-        if (is_int($producto)) {
-            $producto = \App\Models\Producto::with('categoria')->find($producto);
-        }
-        if (is_string($producto)) {
-            $producto = \App\Models\Producto::where('nombre', $producto)->first();
-        }
-        if (!$producto instanceof \App\Models\Producto) {
-            return false;
-        }
-        return $producto->categoria->es_serializado ?? false;
     }
 
     public function mount(int $ordenId)
@@ -120,7 +106,7 @@ class AsignarEquipos extends Component
         $itemsExistentes = ItemSerializado::where('kit_padre_id', $kit->id)->get();
 
         return $kit->producto->componentes
-            ->filter(fn($kc) => $this->esSerializable($kc->componente->nombre))
+            ->filter(fn($kc) => Producto::esSerializable($kc->componente->nombre))
             ->filter(function ($kc) use ($itemsExistentes) {
                 // Solo mostrar si NO tiene serie ya registrada
                 $itemDelKit = $itemsExistentes->firstWhere('producto_id', $kc->producto_componente_id);
@@ -153,7 +139,7 @@ class AsignarEquipos extends Component
             $producto = $kc->componente;
             $itemsComp = $itemsExistentes->where('producto_id', $kc->producto_componente_id);
 
-            if ($this->esSerializable($producto->nombre)) {
+            if (Producto::esSerializable($producto->nombre)) {
                 $listado = false;
 
                 foreach ($itemsComp as $item) {
@@ -212,11 +198,7 @@ class AsignarEquipos extends Component
                 $stockTotal = $p->stockPorSede->where('sede_id', $sedeId)->sum('cantidad');
 
                 // Restar componentes de cantidad reservados dentro de kits
-                $enKits = ItemSerializado::where('producto_id', $p->id)
-                    ->whereNotNull('kit_padre_id')
-                    ->whereIn('estado', ['en_stock', 'abierto', 'completado', 'asignado'])
-                    ->where('sede_id', $sedeId)
-                    ->count();
+                $enKits = ItemSerializado::montadasEnKit($p->id, $sedeId);
 
                 return (object) [
                     'producto_id' => $p->id,
@@ -246,11 +228,7 @@ class AsignarEquipos extends Component
 
         // Para productos por CANTIDAD (es_serializado=false), validar contra stock suelto REAL
         $stockSede = $producto->stockPorSede()->where('sede_id', $sedeId)->first();
-        $enKits = ItemSerializado::where('producto_id', $producto->id)
-            ->whereNotNull('kit_padre_id')
-            ->whereIn('estado', ['en_stock', 'abierto', 'completado', 'asignado'])
-            ->where('sede_id', $sedeId)
-            ->count();
+        $enKits = ItemSerializado::montadasEnKit($producto->id, $sedeId);
         $disponible = ($stockSede->cantidad ?? 0) - $enKits;
 
         if ($this->cantidadRepuesto > $disponible) {
@@ -337,7 +315,7 @@ class AsignarEquipos extends Component
             $seriesIngresadas[] = $serieUpper;
 
             // El serie no puede existir en OTRO item (no en el de este kit)
-            $existeEnOtro = ItemSerializado::where('serie', $serie)
+            $existeEnOtro = ItemSerializado::porSerie($serie)
                 ->where('kit_padre_id', '!=', $this->kitItemId)
                 ->exists();
             if ($existeEnOtro) {
@@ -374,7 +352,11 @@ class AsignarEquipos extends Component
             return;
         }
 
-        $this->dispatch('asignacion-confirmar');
+        $this->dispatch(
+            'asignacion-confirmar',
+            titulo: '¿Confirmar asignación?',
+            mensaje: 'Esta acción no se puede deshacer'
+        );
     }
 
     #[On('confirmar-entrega')]
@@ -419,7 +401,7 @@ class AsignarEquipos extends Component
 
                     foreach ($componentes as $kc) {
                         $producto = $kc->componente;
-                        $esSerializable = $this->esSerializable($producto->nombre);
+                        $esSerializable = Producto::esSerializable($producto->nombre);
 
                         if ($esSerializable) {
                             // Buscar item existente de este kit
@@ -507,11 +489,7 @@ class AsignarEquipos extends Component
                         ->where('sede_id', $sedeId)
                         ->first();
 
-                    $enKits = ItemSerializado::where('producto_id', $producto->id)
-                        ->whereNotNull('kit_padre_id')
-                        ->whereIn('estado', ['en_stock', 'abierto', 'completado', 'asignado'])
-                        ->where('sede_id', $sedeId)
-                        ->count();
+                    $enKits = ItemSerializado::montadasEnKit($producto->id, $sedeId);
 
                     $disponible = ($stockSede->cantidad ?? 0) - $enKits;
 
@@ -556,6 +534,8 @@ class AsignarEquipos extends Component
 
         // Mostrar alerta con resumen del kit asignado
         $this->dispatch('entrega-confirmada', [
+            'titulo' => '¡Componentes asignados!',
+            'mensaje' => 'La asignación se confirmó correctamente.',
             'redirectUrl' => route('conversiones.almacen-pendientes'),
             'resumen' => $resumenKit,
         ]);

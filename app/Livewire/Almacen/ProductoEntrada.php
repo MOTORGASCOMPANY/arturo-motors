@@ -26,7 +26,7 @@ class ProductoEntrada extends Component
 
     protected function sedePrincipalId(): int
     {
-        return Sede::activas()->orderBy('id')->first()?->id ?? 1;
+        return Sede::primeraActivaId();
     }
 
     public function mount(?int $productoId = null)
@@ -57,7 +57,7 @@ class ProductoEntrada extends Component
 
         $serie = trim($this->nuevaSerie);
 
-        if (in_array($serie, $this->seriesPendientes) || ItemSerializado::where('serie', $serie)->exists()) {
+        if (in_array($serie, $this->seriesPendientes) || ItemSerializado::existeSerie($serie)) {
             $this->addError('nuevaSerie', 'Esta serie ya existe o ya fue agregada a la lista.');
             return;
         }
@@ -95,7 +95,7 @@ class ProductoEntrada extends Component
                     // igual que en Recepciones (modelo canónico entrada + item).
                     MovimientoStock::registrar(
                         $this->producto, 'entrada', 1, null, Auth::id(),
-                        "Entrada de serie {$serie}", $sedeId
+                        MovimientoStock::motivoEntradaDeSerie($serie), $sedeId
                     );
                 }
             });

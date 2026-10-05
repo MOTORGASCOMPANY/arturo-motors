@@ -22,7 +22,7 @@
             @else
                 <div x-data="{
                     submitting: false,
-                    async handleSubmit(event) {
+                    handleSubmit(event) {
                         event.preventDefault();
                         if (this.submitting) return;
 
@@ -33,16 +33,16 @@
 
                         if (diff > 10) {
                             const label = (montoCierre - montoEsperado) < 0 ? 'falta' : 'sobra';
-                            const result = await Swal.fire({
-                                title: '¡Atención!',
-                                text: 'La diferencia es S/ ' + diff.toFixed(2) + ' (' + label + '). ¿Estás seguro de que el monto es correcto?',
+                            Livewire.dispatch('swal:confirmar', {
+                                titulo: '¡Atención!',
+                                mensaje: 'La diferencia es S/ ' + diff.toFixed(2) + ' (' + label + '). ¿Estás seguro de que el monto es correcto?',
                                 icon: 'warning',
-                                showCancelButton: true,
-                                confirmButtonText: 'Sí, cerrar',
-                                cancelButtonText: 'Cancelar',
-                                confirmButtonColor: '#dc2626'
+                                confirmText: 'Sí, cerrar',
+                                cancelText: 'Cancelar',
+                                confirmButtonColor: '#dc2626',
+                                onConfirm: () => { this.submitting = true; $wire.cerrar(); }
                             });
-                            if (!result.isConfirmed) return;
+                            return;
                         }
 
                         this.submitting = true;

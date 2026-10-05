@@ -137,6 +137,4 @@
             @endif
         </div>
     </div>
-
-    <script src="{{ asset('js/components/livewire-swal-listener.js') }}"></script>
 </div>

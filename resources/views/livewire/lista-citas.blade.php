@@ -147,7 +147,7 @@
                                                     Aceptar
                                                 </span>
                                             </button>
-                                            <button onclick="confirmarRechazo({{ $cita->id }})" type="button"
+                                            <button onclick="Livewire.dispatch('swal:confirmar', { titulo: '¿Estás seguro de cancelar esta cita?', mensaje: '¡Esta acción no se puede revertir!', icon: 'warning', confirmText: 'Sí, cancelar cita', cancelText: 'No, mantener', confirmButtonColor: '#d33', onConfirm: () => Livewire.dispatch('marcarCitaComoRechazada', { id: {{ $cita->id }} }) })" type="button"
                                                 class="group relative flex p-2 items-center justify-center rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors">
                                                 <i class="fa-solid fa-ban text-sm"></i>
                                                 <span class="group-hover:opacity-100 transition-opacity bg-gray-800 px-2 py-1 text-xs text-gray-100 rounded-md absolute translate-y-full opacity-0 z-50 whitespace-nowrap">
@@ -425,62 +425,5 @@
             </x-button>
         </x-slot>
     </x-dialog-modal>
-
-    {{-- JS --}}
-    @push('js')
-        <script>
-            function confirmarRechazo(id) {
-                Swal.fire({
-                    title: '¿Estás seguro de cancelar esta cita?',
-                    text: '¡Esta acción no se puede revertir!',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Sí, cancelar cita',
-                    cancelButtonText: 'No, mantener'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        Livewire.dispatch('marcarCitaComoRechazada', { id: id });
-                    }
-                });
-            }
-
-            function confirmarAceptacion(id) {
-                Swal.fire({
-                    title: '¿Aceptar esta cita?',
-                    text: 'Se creará automáticamente un expediente asociado.',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#28a745',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Sí, aceptar',
-                    cancelButtonText: 'No, cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        Livewire.dispatch('marcarCitaComoAceptada', { id: id });
-                    }
-                });
-            }
-
-            document.addEventListener('livewire:initialized', () => {
-                Livewire.on('citaRechazada', () => {
-                    Swal.fire(
-                        '¡Cita Cancelada!',
-                        'La cita ha sido rechazada correctamente.',
-                        'success'
-                    );
-                });
-
-                Livewire.on('citaAceptada', () => {
-                    Swal.fire(
-                        '¡Cita aceptada!',
-                        'La cita se aceptó y se creó la orden de servicio exitosamente.',
-                        'success'
-                    );
-                });
-            });
-        </script>
-    @endpush
 
 </div>

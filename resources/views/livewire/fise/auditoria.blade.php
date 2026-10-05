@@ -179,7 +179,8 @@
                                                 title="Registrar pago parcial">
                                                 <i class="fas fa-money-bill-wave mr-0.5"></i>Pago
                                             </button>
-                                            <button onclick="confirmarMarcarPagado({{ $fp->id }}, '{{ $fp->serviceOrder->vehiculo->placa ?? 'N/A' }}')"
+                                            <button data-placa="{{ $fp->serviceOrder->vehiculo->placa ?? 'N/A' }}"
+                                                onclick="Livewire.dispatch('swal:confirmar', { titulo: '¿Marcar como pagado?', mensaje: 'Se marcará la placa ' + this.dataset.placa + ' como pagado completo.', icon: 'question', confirmText: 'Sí, marcar pagado', confirmButtonColor: '#059669', onConfirm: () => @this.call('marcarPagado', {{ $fp->id }}) })"
                                                 class="px-2.5 py-1 text-[11px] font-semibold bg-emerald-100 text-emerald-700 hover:bg-emerald-200 rounded-lg transition-colors"
                                                 title="Marcar pagado completo">
                                                 <i class="fas fa-check-double mr-0.5"></i>Pagado
@@ -267,7 +268,7 @@
                         class="px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
                         Cancelar
                     </button>
-                    <button onclick="confirmarRegistrarPago()"
+                    <button onclick="Livewire.dispatch('swal:confirmar', { titulo: '¿Registrar este pago?', icon: 'info', confirmText: 'Sí, registrar', confirmButtonColor: '#059669', onConfirm: () => @this.call('registrarPago') })"
                         class="px-4 py-2 text-sm font-semibold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-colors">
                         <i class="fas fa-save mr-1"></i> Registrar Pago
                     </button>
@@ -275,40 +276,4 @@
             </x-slot>
         </x-dialog-modal>
     @endif
-
-    <!-- Scripts SweetAlert2 -->
-    <script>
-        function confirmarMarcarPagado(id, placa) {
-            Swal.fire({
-                title: '¿Marcar como pagado?',
-                html: `Se marcará la placa <strong>${placa}</strong> como pagado completo.`,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#059669',
-                cancelButtonColor: '#6b7280',
-                confirmButtonText: 'Sí, marcar pagado',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    @this.call('marcarPagado', id);
-                }
-            });
-        }
-
-        function confirmarRegistrarPago() {
-            Swal.fire({
-                title: '¿Registrar este pago?',
-                icon: 'info',
-                showCancelButton: true,
-                confirmButtonColor: '#059669',
-                cancelButtonColor: '#6b7280',
-                confirmButtonText: 'Sí, registrar',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    @this.call('registrarPago');
-                }
-            });
-        }
-    </script>
 </div>

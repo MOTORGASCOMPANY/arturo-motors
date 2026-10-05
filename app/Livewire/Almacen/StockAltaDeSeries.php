@@ -34,16 +34,12 @@ class StockAltaDeSeries extends Component
     
     public function getKitsPendientesProperty()
     {
-        $sedeId = $this->filtroSedeId;
-
-        
-        return ItemSerializado::with('producto.categoria', 'sede')
-            ->whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true))
+        return ItemSerializado::query()
+            ->esKit()
             ->whereHas('piezasEnKit', fn ($q) => $q->whereNull('serie'))
-            ->when($sedeId, fn ($q) => $q->where('sede_id', $sedeId))
-            ->when($this->busqueda, function ($q) {
-                $q->whereHas('producto', fn ($p) => $p->where('nombre', 'like', "%{$this->busqueda}%"));
-            })
+            ->enSede($this->filtroSedeId)
+            ->buscarProducto($this->busqueda)
+            ->with(['producto.categoria', 'sede'])
             ->withCount(['piezasEnKit as total_piezas' => fn ($q) => $q])
             ->withCount(['piezasEnKit as piezas_con_serie' => fn ($q) => $q->whereNotNull('serie')])
             ->orderByDesc('created_at')
@@ -116,9 +112,7 @@ class StockAltaDeSeries extends Component
 
         
         foreach ($itemsARegistrar as $item) {
-            $existe = ItemSerializado::where('id', '!=', $item['item_id'])
-                ->where('serie', trim($item['serie_nueva']))
-                ->exists();
+            $existe = ItemSerializado::existeSerie(trim($item['serie_nueva']), $item['item_id']);
             if ($existe) {
                 $this->dispatch('minToast', titulo: 'Serie ya existe', mensaje: "El serie \"{$item['serie_nueva']}\" ya está registrado.", icono: 'error');
                 return;

@@ -33,4 +33,16 @@ class Sede extends Model
     {
         return $query->where('estado', true);
     }
+
+    /** Id de la primera sede activa; fallback por defecto. */
+    public static function primeraActivaId(): int
+    {
+        return (int) (static::activas()->orderBy('id')->value('id') ?? 1);
+    }
+
+    /** Sedes activas distintas de una (destinos de traslado). */
+    public function scopeExcepto($query, int $sedeId)
+    {
+        return $query->activas()->where('id', '!=', $sedeId)->orderBy('nombre');
+    }
 }

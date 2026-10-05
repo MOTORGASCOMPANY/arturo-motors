@@ -28,8 +28,8 @@
                         </div>
                         <div class="border-t border-gray-100 bg-gray-50/80 px-6 py-3.5 flex items-center justify-center gap-1">
                             <x-cms.action-button icon="fa-solid fa-pen" variant="warning" wireClick="$dispatch('abrir-editar-paso', { id: {{ $step->id }} })" title="Editar" />
-                            <x-cms.action-button icon="fa-solid fa-{{ $step->is_active ? 'eye-slash' : 'eye' }}" variant="{{ $step->is_active ? 'ghost' : 'success' }}" onclick="confirmToggleStep({{ $step->id }})" title="{{ $step->is_active ? 'Desactivar' : 'Activar' }}" />
-                            <x-cms.action-button icon="fa-solid fa-trash" variant="danger" onclick="confirmDeleteStep({{ $step->id }})" title="Eliminar" />
+                                <x-cms.action-button icon="fa-solid fa-{{ $step->is_active ? 'eye-slash' : 'eye' }}" variant="{{ $step->is_active ? 'ghost' : 'success' }}" onclick="Livewire.dispatch('swal:confirmar', { titulo: '¿Cambiar estado?', mensaje: 'Se activará o desactivará este paso.', icon: 'question', confirmText: 'Sí, cambiar', confirmButtonColor: '#2563eb', onConfirm: () => @this.call('toggleActive', {{ $step->id }}) })" title="{{ $step->is_active ? 'Desactivar' : 'Activar' }}" />
+                                <x-cms.action-button icon="fa-solid fa-trash" variant="danger" onclick="Livewire.dispatch('swal:confirmar', { titulo: '¿Eliminar paso?', mensaje: 'Esta acción no se puede deshacer.', icon: 'warning', confirmText: 'Sí, eliminar', confirmButtonColor: '#dc2626', onConfirm: () => @this.call('delete', {{ $step->id }}) })" title="Eliminar" />
                         </div>
                     </x-cms.card>
                 @empty
@@ -48,38 +48,7 @@
                 @keyframes emptyPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
             </style>
 
-            <script>
-                function confirmDeleteStep(id) {
-                    Swal.fire({
-                        title: '¿Eliminar paso?',
-                        text: 'Esta acción no se puede deshacer.',
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#dc2626',
-                        cancelButtonColor: '#6b7280',
-                        confirmButtonText: 'Sí, eliminar',
-                        cancelButtonText: 'Cancelar',
-                        customClass: { popup: 'rounded-xl shadow-xl border border-gray-200', confirmButton: 'rounded-lg px-5 py-2 font-semibold text-sm', cancelButton: 'rounded-lg px-5 py-2 font-semibold text-sm' }
-                    }).then((result) => {
-                        if (result.isConfirmed) { @this.call('delete', id) }
-                    });
-                }
-                function confirmToggleStep(id) {
-                    Swal.fire({
-                        title: '¿Cambiar estado?',
-                        text: 'Se activará o desactivará este paso.',
-                        icon: 'question',
-                        showCancelButton: true,
-                        confirmButtonColor: '#2563eb',
-                        cancelButtonColor: '#6b7280',
-                        confirmButtonText: 'Sí, cambiar',
-                        cancelButtonText: 'Cancelar',
-                        customClass: { popup: 'rounded-xl shadow-xl border border-gray-200', confirmButton: 'rounded-lg px-5 py-2 font-semibold text-sm', cancelButton: 'rounded-lg px-5 py-2 font-semibold text-sm' }
-                    }).then((result) => {
-                        if (result.isConfirmed) { @this.call('toggleActive', id) }
-                    });
-                }
-            </script>
+        
         </div>
     </x-cms.layout>
 

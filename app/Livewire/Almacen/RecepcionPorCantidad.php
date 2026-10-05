@@ -39,20 +39,12 @@ trait RecepcionPorCantidad
 
     public function getCategoriasCantidadProperty()
     {
-        return CategoriaAlmacen::where('es_serializado', false)
-            ->where('es_kit', false)
-            ->orderBy('nombre')
-            ->get();
+        return CategoriaAlmacen::porCantidadOrdenadas();
     }
 
     public function getProductosCantidadDisponiblesProperty()
     {
-        return Producto::with('categoria')
-            ->whereHas('categoria', fn ($q) => $q->where('es_serializado', false)->where('es_kit', false))
-            ->where('activo', true)
-            ->orderBy('categoria_id')
-            ->orderBy('nombre')
-            ->get();
+        return Producto::porCantidadActivos();
     }
 
     public function getFiltradosCantidadProperty()
@@ -81,7 +73,7 @@ trait RecepcionPorCantidad
         }
 
         try {
-            if (Producto::where('nombre', 'LIKE', trim($this->nuevoCantidadNombre))->exists()) {
+            if (Producto::existeConNombre(trim($this->nuevoCantidadNombre))) {
                 $this->dispatch('swal-init', tipo: 'error', titulo: 'Duplicado', mensaje: 'Ya existe un producto con ese nombre.');
                 return;
             }

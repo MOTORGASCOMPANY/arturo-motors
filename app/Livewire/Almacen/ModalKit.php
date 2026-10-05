@@ -4,6 +4,7 @@ namespace App\Livewire\Almacen;
 
 use App\Models\CategoriaAlmacen;
 use App\Models\Producto;
+use App\Models\KitComponente;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -44,10 +45,7 @@ trait ModalKit
             $this->kitProduce = '';
             $this->mostrandoFormNuevo = false;
 
-            $cantidadesGuardadas = DB::table('kit_componentes')
-                ->where('producto_kit_id', $kitId)
-                ->pluck('cantidad_esperada', 'producto_componente_id')
-                ->toArray();
+            $cantidadesGuardadas = KitComponente::cantidadesDe($kitId);
 
             if (!empty($cantidadesGuardadas)) {
                 $productos = Producto::with('categoria')
@@ -119,11 +117,7 @@ trait ModalKit
 
     public function getCategoriasSerializadasProperty()
     {
-        return CategoriaAlmacen::where('es_serializado', true)
-            ->whereNotNull('esquema_atributos')
-            ->where('es_kit', false)
-            ->orderBy('nombre')
-            ->get();
+        return CategoriaAlmacen::serializadasConEsquema();
     }
 
     public function agregarComponenteExistente(): void
@@ -159,13 +153,7 @@ trait ModalKit
                 ? array_values(array_diff($camposEsquema, self::$camposCompartidos))
                 : [];
 
-            DB::table('kit_componentes')->insert([
-                'producto_kit_id' => $this->modalKitId,
-                'producto_componente_id' => $producto->id,
-                'cantidad_esperada' => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            KitComponente::agregarComponente($this->modalKitId, $producto->id, 1);
 
             $entry = [
                 'producto_id' => $producto->id,
@@ -203,10 +191,7 @@ trait ModalKit
         $componente = $this->modalComponentes[$index];
 
         try {
-            DB::table('kit_componentes')
-                ->where('producto_kit_id', $this->modalKitId)
-                ->where('producto_componente_id', $componente['producto_id'])
-                ->delete();
+            KitComponente::quitarComponente($this->modalKitId, $componente['producto_id']);
 
             array_splice($this->modalComponentes, $index, 1);
         } catch (\Throwable $e) {

@@ -664,9 +664,9 @@
             window.renderChartAsesores();
         });
 
-        // Carga reutilizable de todos los reportes: js/components/carga-swal.js
+        // Alertas de exportación.
         Livewire.on('descargar-pdf', (params) => {
-            CargaSwal.exportar({
+            AppSwal.exportar({
                 url: params.url,
                 titulo: 'Exportando PDF',
                 texto: 'Generando el reporte...',
@@ -675,7 +675,7 @@
         });
 
         Livewire.on('descargar-excel', (params) => {
-            CargaSwal.exportar({
+            AppSwal.exportar({
                 url: params.url,
                 titulo: 'Exportando Excel',
                 texto: 'Generando el reporte...',

@@ -32,7 +32,7 @@ trait TrasladoSeleccion
             return;
         }
 
-        $receta = KitComponente::where('producto_kit_id', $kit->producto_id)->sum('cantidad_esperada');
+        $receta = KitComponente::deKit($kit->producto_id)->sum('cantidad_esperada');
         $presentes = ItemSerializado::where('kit_padre_id', $kit->id)
             ->where('estado', 'en_stock')
             ->count();
@@ -45,13 +45,20 @@ trait TrasladoSeleccion
             return;
         }
 
+        $nombre = $kit->producto?->nombre ?? "Kit #{$kitId}";
+        $esperadas = (int) $receta;
+        $faltantes = $esperadas - $presentes;
+
         $this->dispatch(
             'traslado-kit-incompleto',
             kitId: $kitId,
-            nombre: $kit->producto?->nombre ?? "Kit #{$kitId}",
+            titulo: 'Kit incompleto',
+            mensaje: "{$nombre} tiene {$faltantes} pieza(s) faltante(s): {$presentes} de {$esperadas} presentes. ¿Transportarlo igual?",
+            opts: ['icon' => 'warning', 'confirmText' => 'Sí, transportarlo', 'cancelText' => 'Cancelar'],
+            nombre: $nombre,
             presentes: $presentes,
-            esperadas: (int) $receta,
-            faltantes: (int) $receta - $presentes,
+            esperadas: $esperadas,
+            faltantes: $faltantes,
         );
     }
 
@@ -130,13 +137,9 @@ trait TrasladoSeleccion
             return null;
         }
 
-        $receta = KitComponente::with('componente')
-            ->where('producto_kit_id', $kit->producto_id)
-            ->get();
+        $receta = KitComponente::deKit($kit->producto_id)->with('componente')->get();
 
-        $hijos = ItemSerializado::where('kit_padre_id', $kit->id)
-            ->where('estado', 'en_stock')
-            ->get();
+        $hijos = ItemSerializado::hijosDe($kit->id)->enStock()->get();
 
         $hijosPorProducto = $hijos->pluck('producto_id')->countBy()->toArray();
         $hijosSeleccionados = $hijos->filter(fn ($h) => isset($this->itemsSeleccionados[$h->id]));

@@ -14,11 +14,7 @@ trait StockSuelto
             ->where('sede_id', $sedeId)
             ->sum('cantidad');
 
-        $enKits = ItemSerializado::where('producto_id', $productoId)
-            ->whereNotNull('kit_padre_id')
-            ->whereIn('estado', ['en_stock', 'abierto', 'completado', 'asignado'])
-            ->where('sede_id', $sedeId)
-            ->count();
+        $enKits = ItemSerializado::montadasEnKit($productoId, $sedeId);
 
         return max(0, (int) $cantidad - $enKits);
     }

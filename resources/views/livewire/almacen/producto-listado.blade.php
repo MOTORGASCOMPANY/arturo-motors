@@ -158,8 +158,6 @@
 
     <livewire:almacen.producto-completar-kit />
 
-    <script src="{{ asset('js/components/livewire-swal-listener.js') }}"></script>
-
     <livewire:almacen.producto-modificacion-item />
 
 

@@ -35,4 +35,32 @@ class CategoriaAlmacen extends Model
     {
         return $query->where('es_serializado', true);
     }
+
+    public function scopeSinKits($query)
+    {
+        return $query->where('es_kit', false);
+    }
+
+    /** Categorías por cantidad: ni kit ni serializadas. */
+    public function scopePorCantidad($query)
+    {
+        return $query->where('es_serializado', false)->where('es_kit', false);
+    }
+
+    public function scopeConEsquema($query)
+    {
+        return $query->whereNotNull('esquema_atributos');
+    }
+
+    // Consultas de listado
+
+    public static function porCantidadOrdenadas(): \Illuminate\Support\Collection
+    {
+        return static::query()->porCantidad()->orderBy('nombre')->get();
+    }
+
+    public static function serializadasConEsquema(): \Illuminate\Support\Collection
+    {
+        return static::query()->serializadas()->sinKits()->conEsquema()->orderBy('nombre')->get();
+    }
 }

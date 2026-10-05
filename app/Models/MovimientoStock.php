@@ -53,10 +53,26 @@ class MovimientoStock extends Model
         return $query->where('tipo', 'salida');
     }
 
+    /** Motivo canónico del ledger de entrada de una serie. */
+    public static function motivoEntradaDeSerie(string $serie): string
+    {
+        return "Entrada de serie {$serie}";
+    }
+
+    /** Movimiento de entrada de una serie (ledger de trazabilidad). */
+    public static function entradaDeSerie(string $serie): ?self
+    {
+        return static::query()
+            ->entradas()
+            ->where('motivo', static::motivoEntradaDeSerie($serie))
+            ->orderBy('id')
+            ->first();
+    }
+
     // Registrar movimiento y actualizar el stock del producto en un solo paso
     public static function registrar(Producto $producto, string $tipo, int $cantidad, ?int $serviceOrderId, int $usuarioId, ?string $motivo = null, ?int $sedeId = null): self
     {
-        $sedeId = $sedeId ?? Sede::activas()->orderBy('id')->first()?->id ?? 1;
+        $sedeId = $sedeId ?? Sede::primeraActivaId();
 
         $movimiento = static::create([
             'producto_id' => $producto->id,

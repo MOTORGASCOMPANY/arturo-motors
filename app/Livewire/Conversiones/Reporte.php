@@ -385,11 +385,7 @@ class Reporte extends Component
             ->where('cantidad', '>', 0)
             ->get()
             ->map(function ($stock) use ($sedeId) {
-                $enKits = ItemSerializado::where('producto_id', $stock->producto_id)
-                    ->whereNotNull('kit_padre_id')
-                    ->whereIn('estado', ['en_stock', 'abierto', 'completado', 'asignado'])
-                    ->where('sede_id', $stock->sede_id)
-                    ->count();
+                $enKits = ItemSerializado::montadasEnKit($stock->producto_id, $stock->sede_id);
                 $stock->cantidad_suelta_real = max(0, $stock->cantidad - $enKits);
                 return $stock;
             })
@@ -497,11 +493,7 @@ class Reporte extends Component
                 ->where('cantidad', '>', 0)
                 ->get()
                 ->map(function ($stock) {
-                    $enKits = ItemSerializado::where('producto_id', $stock->producto_id)
-                        ->whereNotNull('kit_padre_id')
-                        ->whereIn('estado', ['en_stock', 'abierto', 'completado', 'asignado'])
-                        ->where('sede_id', $stock->sede_id)
-                        ->count();
+                    $enKits = ItemSerializado::montadasEnKit($stock->producto_id, $stock->sede_id);
                     return max(0, $stock->cantidad - $enKits);
                 })
                 ->sum();

@@ -195,7 +195,7 @@
                                                     <i class="fas fa-pencil-alt w-5 mr-3 text-lime-600"></i> Editar Datos
                                                 </button>
                                                 <button
-                                                    onclick="Swal.fire({ title: '¿Estás seguro?', text: 'Este contrato será eliminado permanentemente.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', cancelButtonColor: '#6c757d', confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) { @this.call('delete', {{ $item->id }}) } })"
+                                                    onclick="Livewire.dispatch('swal:confirmar', { titulo: '¿Estás seguro?', mensaje: 'Este contrato será eliminado permanentemente.', icon: 'warning', confirmText: 'Sí, eliminar', confirmButtonColor: '#d33', cancelButtonColor: '#6c757d', onConfirm: () => @this.call('delete', {{ $item->id }}) })"
                                                     class="w-full text-left flex items-center px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 hover:text-red-700 transition rounded-lg mx-2">
                                                     <i class="fas fa-trash-alt w-5 mr-3"></i> Eliminar
                                                 </button>

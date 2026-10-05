@@ -71,8 +71,8 @@
                             </div>
                             <div class="flex gap-1">
                                 <x-cms.action-button icon="fa-solid fa-pen" variant="warning" wireClick="$dispatch('abrir-editar-servicio', { id: {{ $service['id'] }} })" title="Editar" />
-                                <x-cms.action-button icon="fa-solid fa-{{ $service['is_active'] ? 'eye-slash' : 'eye' }}" variant="{{ $service['is_active'] ? 'ghost' : 'success' }}" onclick="confirmToggleService({{ $service['id'] }})" title="{{ $service['is_active'] ? 'Desactivar' : 'Activar' }}" />
-                                <x-cms.action-button icon="fa-solid fa-trash" variant="danger" onclick="confirmDeleteService({{ $service['id'] }})" title="Eliminar" />
+                                <x-cms.action-button icon="fa-solid fa-{{ $service['is_active'] ? 'eye-slash' : 'eye' }}" variant="{{ $service['is_active'] ? 'ghost' : 'success' }}" onclick="Livewire.dispatch('swal:confirmar', { titulo: '¿Cambiar estado?', mensaje: 'Se activará o desactivará este servicio.', icon: 'question', confirmText: 'Sí, cambiar', confirmButtonColor: '#2563eb', onConfirm: () => @this.call('toggleActive', {{ $service['id'] }}) })" title="{{ $service['is_active'] ? 'Desactivar' : 'Activar' }}" />
+                                <x-cms.action-button icon="fa-solid fa-trash" variant="danger" onclick="Livewire.dispatch('swal:confirmar', { titulo: '¿Eliminar servicio?', mensaje: 'Esta acción no se puede deshacer.', icon: 'warning', confirmText: 'Sí, eliminar', confirmButtonColor: '#dc2626', onConfirm: () => @this.call('delete', {{ $service['id'] }}) })" title="Eliminar" />
                             </div>
                         </div>
                     </x-cms.card>
@@ -93,38 +93,7 @@
                 @keyframes emptyPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
             </style>
 
-            <script>
-                function confirmDeleteService(id) {
-                    Swal.fire({
-                        title: '¿Eliminar servicio?',
-                        text: 'Esta acción no se puede deshacer.',
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#dc2626',
-                        cancelButtonColor: '#6b7280',
-                        confirmButtonText: 'Sí, eliminar',
-                        cancelButtonText: 'Cancelar',
-                        customClass: { popup: 'rounded-xl shadow-xl border border-gray-200', confirmButton: 'rounded-lg px-5 py-2 font-semibold text-sm', cancelButton: 'rounded-lg px-5 py-2 font-semibold text-sm' }
-                    }).then((result) => {
-                        if (result.isConfirmed) { @this.call('delete', id) }
-                    });
-                }
-                function confirmToggleService(id) {
-                    Swal.fire({
-                        title: '¿Cambiar estado?',
-                        text: 'Se activará o desactivará este servicio.',
-                        icon: 'question',
-                        showCancelButton: true,
-                        confirmButtonColor: '#2563eb',
-                        cancelButtonColor: '#6b7280',
-                        confirmButtonText: 'Sí, cambiar',
-                        cancelButtonText: 'Cancelar',
-                        customClass: { popup: 'rounded-xl shadow-xl border border-gray-200', confirmButton: 'rounded-lg px-5 py-2 font-semibold text-sm', cancelButton: 'rounded-lg px-5 py-2 font-semibold text-sm' }
-                    }).then((result) => {
-                        if (result.isConfirmed) { @this.call('toggleActive', id) }
-                    });
-                }
-            </script>
+        
 
         </div>
     </x-cms.layout>

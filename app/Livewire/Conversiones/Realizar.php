@@ -8,6 +8,7 @@ use App\Models\MovimientoStock;
 use App\Models\ReportePiezaNoEncajada;
 use App\Models\ServiceOrder;
 use App\Models\Sede;
+use App\Models\Producto;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
@@ -21,7 +22,7 @@ class Realizar extends Component
 
     protected function sedePrincipalId(): int
     {
-        return Sede::activas()->orderBy('id')->first()?->id ?? 1;
+        return Sede::primeraActivaId();
     }
 
     public function mount(int $ordenId)
@@ -91,23 +92,9 @@ class Realizar extends Component
                 'producto_id' => $kc->producto_componente_id,
                 'nombre' => $kc->componente->nombre,
                 'categoria' => $kc->componente->categoria->nombre,
-                'es_serializado' => $this->esSerializable($kc->componente->nombre),
+                'es_serializado' => Producto::esSerializable($kc->componente->nombre),
                 'cantidad_esperada' => $kc->cantidad_esperada,
             ]);
-    }
-
-    private function esSerializable($producto): bool
-    {
-        if (is_int($producto)) {
-            $producto = \App\Models\Producto::with('categoria')->find($producto);
-        }
-        if (is_string($producto)) {
-            $producto = \App\Models\Producto::where('nombre', $producto)->first();
-        }
-        if (!$producto instanceof \App\Models\Producto) {
-            return false;
-        }
-        return $producto->categoria->es_serializado ?? false;
     }
 
     public function getItemsReportadosProperty(): array
@@ -254,6 +241,8 @@ class Realizar extends Component
 
                         $this->orden->refresh();
             $this->dispatch('conversion-terminada',
+                titulo: '¡Conversión terminada!',
+                mensaje: 'La orden está lista para entrega.',
                 redirectUrl: route('conversiones.mis-asignadas')
             );
             return;

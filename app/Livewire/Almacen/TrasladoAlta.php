@@ -41,7 +41,7 @@ class TrasladoAlta extends Component
 
     public function sedeOrigenId(): int
     {
-        return Sede::activas()->orderBy('id')->first()?->id ?? 1;
+        return Sede::primeraActivaId();
     }
 
     public function getSedeOrigenProperty()

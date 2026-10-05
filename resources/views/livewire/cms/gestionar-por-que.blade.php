@@ -32,8 +32,8 @@
                         <div class="border-t border-gray-50 bg-gray-50/30 px-6 py-3.5 flex items-center justify-between">
                             <div class="flex gap-1">
                                 <x-cms.action-button icon="fa-solid fa-pen" variant="warning" wireClick="$dispatch('abrir-editar-por-que', { id: {{ $card->id }} })" title="Editar" />
-                                <x-cms.action-button icon="fa-solid fa-{{ $card->is_active ? 'eye-slash' : 'eye' }}" variant="{{ $card->is_active ? 'ghost' : 'success' }}" onclick="confirmToggleCard({{ $card->id }})" title="{{ $card->is_active ? 'Desactivar' : 'Activar' }}" />
-                                <x-cms.action-button icon="fa-solid fa-trash" variant="danger" onclick="confirmDeleteCard({{ $card->id }})" title="Eliminar" />
+                                <x-cms.action-button icon="fa-solid fa-{{ $card->is_active ? 'eye-slash' : 'eye' }}" variant="{{ $card->is_active ? 'ghost' : 'success' }}" onclick="Livewire.dispatch('swal:confirmar', { titulo: '¿Cambiar estado?', mensaje: 'Se activará o desactivará esta tarjeta.', icon: 'question', confirmText: 'Sí, cambiar', confirmButtonColor: '#2563eb', onConfirm: () => @this.call('toggleActive', {{ $card->id }}) })" title="{{ $card->is_active ? 'Desactivar' : 'Activar' }}" />
+                                <x-cms.action-button icon="fa-solid fa-trash" variant="danger" onclick="Livewire.dispatch('swal:confirmar', { titulo: '¿Eliminar tarjeta?', mensaje: 'Esta acción no se puede deshacer.', icon: 'warning', confirmText: 'Sí, eliminar', confirmButtonColor: '#dc2626', onConfirm: () => @this.call('delete', {{ $card->id }}) })" title="Eliminar" />
                             </div>
                         </div>
                     </x-cms.card>
@@ -53,38 +53,7 @@
                 @keyframes emptyPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
             </style>
 
-            <script>
-                function confirmDeleteCard(id) {
-                    Swal.fire({
-                        title: '¿Eliminar tarjeta?',
-                        text: 'Esta acción no se puede deshacer.',
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#dc2626',
-                        cancelButtonColor: '#6b7280',
-                        confirmButtonText: 'Sí, eliminar',
-                        cancelButtonText: 'Cancelar',
-                        customClass: { popup: 'rounded-xl shadow-xl border border-gray-200', confirmButton: 'rounded-lg px-5 py-2 font-semibold text-sm', cancelButton: 'rounded-lg px-5 py-2 font-semibold text-sm' }
-                    }).then((result) => {
-                        if (result.isConfirmed) { @this.call('delete', id) }
-                    });
-                }
-                function confirmToggleCard(id) {
-                    Swal.fire({
-                        title: '¿Cambiar estado?',
-                        text: 'Se activará o desactivará esta tarjeta.',
-                        icon: 'question',
-                        showCancelButton: true,
-                        confirmButtonColor: '#2563eb',
-                        cancelButtonColor: '#6b7280',
-                        confirmButtonText: 'Sí, cambiar',
-                        cancelButtonText: 'Cancelar',
-                        customClass: { popup: 'rounded-xl shadow-xl border border-gray-200', confirmButton: 'rounded-lg px-5 py-2 font-semibold text-sm', cancelButton: 'rounded-lg px-5 py-2 font-semibold text-sm' }
-                    }).then((result) => {
-                        if (result.isConfirmed) { @this.call('toggleActive', id) }
-                    });
-                }
-            </script>
+        
         </div>
     </x-cms.layout>
 

@@ -1,8 +1,8 @@
 <div>
     <div x-data="{ showUpload: false }" x-init="$watch('$wire.showUploadModal', v => showUpload = v)"
-        @documento-subido.window="showUpload = false; Swal.fire({icon:'success', title:'¡Listo!', text: $event.detail.mensaje || 'Documento subido correctamente.', timer:2200, showConfirmButton:false})"
-        @documento-eliminado.window="Swal.fire({icon:'success', title:'Eliminado', text: $event.detail.mensaje || 'Documento eliminado.', timer:2200, showConfirmButton:false})"
-        @documento-error.window="Swal.fire({icon:'error', title:'Ups', text: $event.detail.mensaje || 'Ocurrió un error.'})">
+        @documento-subido.window="showUpload = false; AppSwal.exito('¡Listo!', $event.detail.mensaje || 'Documento subido correctamente.', { timer: 2200, showConfirmButton: false })"
+        @documento-eliminado.window="AppSwal.exito('Eliminado', $event.detail.mensaje || 'Documento eliminado.', { timer: 2200, showConfirmButton: false })"
+        @documento-error.window="AppSwal.error('Ups', $event.detail.mensaje || 'Ocurrió un error.')">
 
             <script>
                 document.addEventListener('alpine:init', () => {
@@ -1074,18 +1074,14 @@
 
                                     <button type="button"
                                         @click="
-                                            Swal.fire({
+                                            Livewire.dispatch('swal:confirmar', {
+                                                titulo: '¿Eliminar?',
+                                                mensaje: 'Acción irreversible.',
                                                 icon: 'warning',
-                                                title: '¿Eliminar?',
-                                                text: 'Acción irreversible.',
-                                                showCancelButton: true,
-                                                confirmButtonText: 'Sí',
-                                                cancelButtonText: 'Cancelar',
-                                                confirmButtonColor: '#dc2626'
-                                            }).then(r => {
-                                                if (r.isConfirmed) {
-                                                    $wire.eliminarDocumento({{ $doc['id'] }});
-                                                }
+                                                confirmText: 'Sí',
+                                                cancelText: 'Cancelar',
+                                                confirmButtonColor: '#dc2626',
+                                                onConfirm: () => $wire.eliminarDocumento({{ $doc['id'] }})
                                             })
                                         "
                                         class="shrink-0 w-8 h-8 flex items-center justify-center rounded-md text-gray-300 hover:text-red-500 hover:bg-red-50 transition ml-2">

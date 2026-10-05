@@ -7,6 +7,7 @@ use App\Models\Producto;
 use App\Models\MovimientoStock;
 use App\Models\ProductoStockSede;
 use App\Models\Sede;
+use App\Models\KitComponente;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -26,7 +27,7 @@ class KitCompletar extends Component
 
     protected function sedePrincipalId(): int
     {
-        return Sede::activas()->orderBy('id')->first()?->id ?? 1;
+        return Sede::primeraActivaId();
     }
 
     public function mount(int $kitItemId)
@@ -46,20 +47,8 @@ class KitCompletar extends Component
     {
         if (!$this->kit) return;
 
-        
-        $componentesEsperados = DB::table('kit_componentes')
-            ->join('productos', 'producto_componente_id', '=', 'productos.id')
-            ->join('categorias_almacen', 'productos.categoria_id', '=', 'categorias_almacen.id')
-            ->where('producto_kit_id', $this->kit->producto_id)
-            ->select(
-                'productos.id as producto_id',
-                'productos.nombre',
-                'categorias_almacen.es_serializado',
-                'kit_componentes.cantidad_esperada'
-            )
-            ->get();
+        $componentesEsperados = KitComponente::recetaDe($this->kit->producto_id);
 
-        
         $componentesActuales = ItemSerializado::where('kit_padre_id', $this->kit->id)
             ->whereNotIn('estado', ['defectuoso', 'devuelta_por_no_calzar'])
             ->pluck('producto_id')
@@ -72,7 +61,7 @@ class KitCompletar extends Component
         $this->faltantes = [];
         foreach ($componentesEsperados as $comp) {
             $presentes = $componentesActuales[$comp->producto_id] ?? 0;
-            $faltan = max(0, (int) $comp->cantidad_esperada - $presentes);
+            $faltan = max(0, (int) $comp->cantidad - $presentes);
 
             if ($faltan > 0) {
                 $this->faltantes[] = [
@@ -172,7 +161,7 @@ class KitCompletar extends Component
 
                     if ($faltante['es_serializado']) {
                         $serie = trim($faltante['serie']);
-                        $existente = ItemSerializado::where('serie', $serie)
+                        $existente = ItemSerializado::porSerie($serie)
                             ->lockForUpdate()
                             ->first();
 
@@ -222,11 +211,7 @@ class KitCompletar extends Component
                             ->first();
 
                         $total = $stock ? (int) $stock->cantidad : 0;
-                        $enKits = ItemSerializado::where('producto_id', $productoId)
-                            ->whereNotNull('kit_padre_id')
-                            ->whereIn('estado', ['en_stock', 'abierto', 'completado', 'asignado'])
-                            ->where('sede_id', $sedeId)
-                            ->count();
+                        $enKits = ItemSerializado::montadasEnKit($productoId, $sedeId);
                         $suelto = max(0, $total - $enKits);
 
                         if ($suelto < $cantidad) {

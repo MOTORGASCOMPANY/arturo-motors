@@ -3,6 +3,7 @@
 namespace App\Livewire\Almacen;
 
 use App\Models\ItemSerializado;
+use App\Models\KitComponente;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
@@ -40,16 +41,7 @@ class ProductoModificacionItem extends Component
         if ($item->kit_padre_id) {
             $kitPadre = $item->kitPadre;
             if ($kitPadre) {
-                $receta = \Illuminate\Support\Facades\DB::table('kit_componentes')
-                    ->join('productos', 'producto_componente_id', '=', 'productos.id')
-                    ->join('categorias_almacen', 'productos.categoria_id', '=', 'categorias_almacen.id')
-                    ->where('producto_kit_id', $kitPadre->producto_id)
-                    ->select(
-                        'productos.id as producto_id',
-                        'productos.nombre',
-                        'kit_componentes.cantidad_esperada as cantidad'
-                    )
-                    ->get();
+                $receta = KitComponente::recetaDe($kitPadre->producto_id);
 
                 $piezasActuales = $kitPadre->piezasEnKit->pluck('producto_id')->countBy()->toArray();
                 

@@ -39,10 +39,10 @@
         <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        <script src="{{ asset('js/components/carga-swal.js') }}"></script>
 
-        <!-- AppSwal: API unificada SweetAlert2 para toda la aplicación -->
+        <!-- Alertas SweetAlert2 de la aplicación -->
         <script>
+            // Alerta de carga: spinner de SweetAlert2 (exportaciones).
             window.AppSwal = {
                 cargar: function(titulo, texto) {
                     titulo = titulo || 'Cargando';
@@ -50,9 +50,11 @@
                     Swal.fire({
                         title: titulo,
                         text: texto,
+                        icon: 'info',
                         allowOutsideClick: false,
                         allowEscapeKey: false,
                         showConfirmButton: false,
+                        customClass: { popup: 'rounded-2xl' },
                         didOpen: function() { Swal.showLoading(); }
                     });
                 },
@@ -61,45 +63,49 @@
                     Swal.close();
                 },
 
+                // Alerta de éxito.
                 exito: function(titulo, texto, opts) {
                     opts = opts || {};
                     return Swal.fire({
                         icon: 'success',
                         title: titulo,
                         text: texto || '',
-                        confirmButtonColor: '#16a34a',
+                        confirmButtonColor: opts.confirmButtonColor || '#16a34a',
                         confirmButtonText: opts.confirmText || 'OK',
                         allowOutsideClick: false,
                         allowEscapeKey: false
                     });
                 },
 
+                // Alerta de error.
                 error: function(titulo, texto, opts) {
                     opts = opts || {};
                     return Swal.fire({
                         icon: 'error',
                         title: titulo,
                         text: texto || '',
-                        confirmButtonColor: '#dc2626',
+                        confirmButtonColor: opts.confirmButtonColor || '#dc2626',
                         confirmButtonText: opts.confirmText || 'OK',
                         allowOutsideClick: false,
                         allowEscapeKey: false
                     });
                 },
 
+                // Alerta de advertencia.
                 alerta: function(titulo, texto, opts) {
                     opts = opts || {};
                     return Swal.fire({
                         icon: 'warning',
                         title: titulo,
                         text: texto || '',
-                        confirmButtonColor: '#f59e0b',
+                        confirmButtonColor: opts.confirmButtonColor || '#f59e0b',
                         confirmButtonText: opts.confirmText || 'OK',
                         allowOutsideClick: false,
                         allowEscapeKey: false
                     });
                 },
 
+                // Alerta de confirmación.
                 confirmar: function(titulo, texto, opts) {
                     opts = opts || {};
                     return Swal.fire({
@@ -107,8 +113,8 @@
                         title: titulo,
                         text: texto || '',
                         showCancelButton: true,
-                        confirmButtonColor: '#16a34a',
-                        cancelButtonColor: '#6b7280',
+                        confirmButtonColor: opts.confirmButtonColor || '#16a34a',
+                        cancelButtonColor: opts.cancelButtonColor || '#6b7280',
                         confirmButtonText: opts.confirmText || 'Sí, confirmar',
                         cancelButtonText: opts.cancelText || 'Cancelar',
                         allowOutsideClick: false,
@@ -149,134 +155,172 @@
                     Toast.fire({ icon: icono, title: titulo });
                 },
 
-                nota: function(titulo, texto) {
+                // Alerta informativa.
+                nota: function(titulo, texto, opts) {
+                    opts = opts || {};
                     return Swal.fire({
                         title: titulo,
                         text: texto || '',
                         icon: 'info',
-                        confirmButtonText: 'Entendido',
-                        confirmButtonColor: '#2563eb',
+                        confirmButtonText: opts.confirmText || 'Entendido',
+                        confirmButtonColor: opts.confirmButtonColor || '#2563eb',
                         allowOutsideClick: false,
                         allowEscapeKey: false
                     });
+                },
+
+              
+                // Alerta de exportación: spinner y toast de descarga.
+                exportar: function(o) {
+                    o = o || {};
+
+                    if (!o.url || o.url === '#') {
+                        return window.AppSwal.alerta('Sin datos', 'No hay datos para exportar en este período.');
+                    }
+
+                    if (typeof Swal === 'undefined') {
+                        if (o.nuevaVentana) { window.open(o.url, '_blank'); } else { window.location.href = o.url; }
+                        return;
+                    }
+
+                    var okTexto = o.okTexto || (o.archivo
+                        ? 'El archivo ' + o.archivo + ' se está descargando.'
+                        : 'El archivo se está descargando.');
+
+                    window.AppSwal.cargar(o.titulo, o.texto);
+                    if (o.nuevaVentana) {
+                        window.open(o.url, '_blank');
+                    } else {
+                        window.location.href = o.url;
+                    }
+
+                    setTimeout(function() {
+                        window.AppSwal.cerrar();
+                        window.AppSwal.toast('success', (o.okTitulo || 'Descarga iniciada') + ': ' + okTexto);
+                    }, 3000);
                 }
             };
 
-            var metodos = ['cargar', 'cerrar', 'exito', 'alerta', 'nota', 'toast'];
+            // Alerta desde payload { tipo, titulo, mensaje }.
+            window.AppSwal.mostrar = function(data) {
+                data = data || {};
+                var icono = data.tipo || data.icono || data.icon || 'warning';
+                var titulo = data.titulo || data.title || 'Atención';
+                var texto = data.mensaje || data.text || '';
+                if (icono === 'success') return window.AppSwal.exito(titulo, texto, data);
+                if (icono === 'error') return window.AppSwal.error(titulo, texto, data);
+                if (icono === 'info') return window.AppSwal.nota(titulo, texto, data);
+                return window.AppSwal.alerta(titulo, texto, data);
+            };
+
+            // Alerta de swal:<método> → AppSwal.<método>(...).
+            var metodos = ['cargar', 'cerrar', 'exito', 'error', 'alerta', 'nota', 'toast'];
             for (var i = 0; i < metodos.length; i++) {
                 (function(m) {
                     Livewire.on('swal:' + m, function(data) {
-                        var args = Array.isArray(data) ? data : [data];
-                        window.AppSwal[m].apply(window.AppSwal, args);
+                        if (Array.isArray(data)) return window.AppSwal[m].apply(window.AppSwal, data);
+                        if (data && typeof data === 'object') {
+                            return window.AppSwal[m](data.titulo, data.mensaje, data);
+                        }
+                        window.AppSwal[m](data);
                     });
                 })(metodos[i]);
             }
 
+            // Alertas de minAlert, swal-kit, swal-init y swal.
+            ['minAlert', 'swal-kit', 'swal-init', 'swal'].forEach(function(ev) {
+                Livewire.on(ev, function(data) {
+                    window.AppSwal.mostrar(Array.isArray(data) ? data[0] : data);
+                });
+            });
+
             Livewire.on('swal:confirmar', function(data) {
-                var titulo = data.titulo || data.titulo;
-                var texto = data.texto || data.mensaje || data.text;
+                var d = Array.isArray(data) ? data[0] : data;
                 var opts = {};
-                for (var k in data) {
-                    if (k !== 'titulo' && k !== 'texto' && k !== 'mensaje' && k !== 'text' && k !== 'onConfirm') {
-                        opts[k] = data[k];
+                for (var k in d) {
+                    if (k !== 'titulo' && k !== 'texto' && k !== 'mensaje' && k !== 'text' &&
+                        k !== 'onConfirm' && k !== 'callbackParams') {
+                        opts[k] = d[k];
                     }
                 }
-                window.AppSwal.confirmar(titulo, texto, opts).then(function(result) {
-                    if (result.isConfirmed && data.onConfirm && typeof data.onConfirm === 'function') {
-                        var params = data.callbackParams || [];
-                        data.onConfirm.apply(null, params);
-                    }
-                });
+                window.AppSwal.confirmar(d.titulo, d.mensaje || d.texto || d.text, opts)
+                    .then(function(result) {
+                        if (result.isConfirmed && d.onConfirm && typeof d.onConfirm === 'function') {
+                            d.onConfirm.apply(null, d.callbackParams || []);
+                        }
+                    });
             });
 
             Livewire.on('swal:input', function(data) {
-                var titulo = data.titulo || data.titulo;
-                var tipo = data.tipo || 'text';
+                var d = Array.isArray(data) ? data[0] : data;
                 var opts = {};
-                for (var k in data) {
+                for (var k in d) {
                     if (k !== 'titulo' && k !== 'tipo' && k !== 'onConfirm') {
-                        opts[k] = data[k];
+                        opts[k] = d[k];
                     }
                 }
-                window.AppSwal.input(titulo, tipo, opts).then(function(result) {
-                    if (result.isConfirmed && data.onConfirm && typeof data.onConfirm === 'function') {
+                window.AppSwal.input(d.titulo, d.tipo || 'text', opts).then(function(result) {
+                    if (result.isConfirmed && d.onConfirm && typeof d.onConfirm === 'function') {
                         var params = { value: result.value };
-                        if (data.callbackParams) {
-                            for (var pk in data.callbackParams) {
-                                params[pk] = data.callbackParams[pk];
+                        if (d.callbackParams) {
+                            for (var pk in d.callbackParams) {
+                                params[pk] = d.callbackParams[pk];
                             }
                         }
-                        data.onConfirm(params);
+                        d.onConfirm(params);
                     }
                 });
             });
 
-            Livewire.on('swal', function(data) {
-                if (data && data.icon && !data.custom) {
-                    Swal.fire(data);
-                }
-            });
+            // Eventos que solo orquestan el flujo (redirect, siguiente evento).
 
-            // Eventos existentes de componentes
             Livewire.on('asignacion-bloqueada', function(data) {
                 var d = Array.isArray(data) ? data[0] : data;
-                window.AppSwal.alerta(d.titulo || 'Atención', d.mensaje || '');
+                window.AppSwal.mostrar({ tipo: 'warning', titulo: d.titulo, mensaje: d.mensaje });
             });
-            Livewire.on('asignacion-confirmar', function() {
-                window.AppSwal.confirmar('¿Confirmar asignación?', 'Esta acción no se puede deshacer')
+
+            Livewire.on('asignacion-confirmar', function(data) {
+                var d = Array.isArray(data) ? data[0] : data;
+                window.AppSwal.confirmar(d.titulo, d.mensaje)
                     .then(function(r) { if (r.isConfirmed) Livewire.dispatch('confirmar-entrega'); });
             });
-            // Traslados: seleccionar un kit INCOMPLETO pide confirmación antes de marcarlo.
-            // El componente no selecciona nada hasta que volvemos con kitId.
+
+            // Confirmación de traslado con kit incompleto.
             Livewire.on('traslado-kit-incompleto', function(data) {
                 var d = Array.isArray(data) ? data[0] : data;
-                window.AppSwal.confirmar(
-                    'Kit incompleto',
-                    (d.nombre || 'El kit') + ' tiene ' + (d.faltantes || 1) + ' pieza(s) faltante(s): ' +
-                        (d.presentes || 0) + ' de ' + (d.esperadas || 0) + ' presentes. ¿Transportarlo igual?',
-                    { icon: 'warning', confirmText: 'Sí, transportarlo', cancelText: 'Cancelar' }
-                ).then(function(r) {
-                    if (r.isConfirmed) Livewire.dispatch('traslado-kit-incompleto-ok', { kitId: d.kitId });
-                });
+                window.AppSwal.confirmar(d.titulo, d.mensaje, d.opts)
+                    .then(function(r) {
+                        if (r.isConfirmed) Livewire.dispatch('traslado-kit-incompleto-ok', { kitId: d.kitId });
+                    });
             });
+
             Livewire.on('entrega-confirmada', function(data) {
                 var d = Array.isArray(data) ? data[0] : data;
-                window.AppSwal.exito('¡Componentes asignados!', 'La asignación se confirmó correctamente.')
-                    .then(function() { if (d && d.redirectUrl) window.location.href = d.redirectUrl; });
+                window.AppSwal.exito(d.titulo, d.mensaje)
+                    .then(function() { if (d.redirectUrl) window.location.href = d.redirectUrl; });
             });
+
             Livewire.on('entrega-error', function(data) {
                 var d = Array.isArray(data) ? data[0] : data;
-                window.AppSwal.error('Error', d.mensaje || 'Ocurrió un error');
+                window.AppSwal.error(d.titulo || 'Error', d.mensaje);
             });
+
             Livewire.on('conversion-terminada', function(data) {
                 var d = Array.isArray(data) ? data[0] : data;
-                window.AppSwal.exito('¡Conversión terminada!', 'La orden está lista para entrega.')
-                    .then(function() { if (d && d.redirectUrl) window.location.href = d.redirectUrl; });
+                window.AppSwal.exito(d.titulo, d.mensaje)
+                    .then(function() { if (d.redirectUrl) window.location.href = d.redirectUrl; });
             });
+
+            // Alerta de carga durante el pago.
             Livewire.on('registrarPago', function() {
                 window.AppSwal.cargar('Registrando pago', 'Procesando...');
             });
-            Livewire.on('swal-init', function(data) {});
-            Livewire.on('swal-kit', function(data) {});
+
             Livewire.on('minToast', function(data) {
                 var icono = data.icono || data.icon || 'success';
                 var titulo = data.titulo || data.title || '';
                 var texto = data.mensaje || data.text || '';
                 window.AppSwal.toast(icono, (titulo ? titulo + ': ' : '') + texto);
-            });
-            Livewire.on('minAlert', function(data) {
-                var icono = data.icono || data.icon || 'warning';
-                var titulo = data.titulo || data.title || 'Atención';
-                var texto = data.mensaje || data.text || '';
-                if (icono === 'success') {
-                    window.AppSwal.exito(titulo, texto);
-                } else if (icono === 'error') {
-                    window.AppSwal.error(titulo, texto);
-                } else if (icono === 'info') {
-                    window.AppSwal.nota(titulo, texto);
-                } else {
-                    window.AppSwal.alerta(titulo, texto);
-                }
             });
 
             @if (session()->has('swal'))

@@ -4,6 +4,7 @@ namespace App\Livewire\Almacen;
 
 use App\Models\ItemSerializado;
 use App\Models\KitComponente;
+use App\Models\Producto;
 use App\Models\ReportePiezaNoEncajada;
 use App\Models\ServiceOrder;
 
@@ -11,20 +12,9 @@ trait ConversionesConsulta
 {
     public function getConversionesProperty()
     {
-        $query = ServiceOrder::with(['cliente', 'vehiculo', 'service', 'tecnico'])
-            ->where('estado', 'en_conversion')
-            ->whereHas('items', fn($q) => $q->whereNull('kit_padre_id')->whereHas('piezasEnKit'));
-
-        if (!empty($this->busqueda)) {
-            $query->where(function ($q) {
-                $q->where('id', 'like', "%{$this->busqueda}%")
-                  ->orWhereHas('cliente', fn($cq) => $cq->where('nombre', 'like', "%{$this->busqueda}%"))
-                  ->orWhereHas('vehiculo', fn($vq) => $vq->where('placa', 'like', "%{$this->busqueda}%"))
-                  ->orWhereHas('tecnico', fn($tq) => $tq->where('name', 'like', "%{$this->busqueda}%"));
-            });
-        }
-
-        return $query->orderBy('fecha_inicio_conversion', 'asc')->paginate($this->perPage);
+        return ServiceOrder::with(['cliente', 'vehiculo', 'service', 'tecnico'])
+            ->enConversion($this->busqueda)
+            ->paginate($this->perPage);
     }
 
     public function nombreKit(ServiceOrder $orden): string
@@ -34,10 +24,8 @@ trait ConversionesConsulta
 
     public function resumenConversion(ServiceOrder $orden): array
     {
-        $pendientes = ReportePiezaNoEncajada::where('service_order_id', $orden->id)
-            ->whereIn('estado', ['pendiente', 'buscando_pieza', 'solicitando_almacen'])->count();
-        $despachadas = ReportePiezaNoEncajada::where('service_order_id', $orden->id)
-            ->whereIn('estado', ['kit_abierto', 'resuelto'])->count();
+        $pendientes = ReportePiezaNoEncajada::deOrden($orden->id)->enSeguimiento()->count();
+        $despachadas = ReportePiezaNoEncajada::deOrden($orden->id)->resuelto()->count();
 
         return compact('pendientes', 'despachadas');
     }
@@ -52,7 +40,8 @@ trait ConversionesConsulta
     {
         $orden = $this->conversionSeleccionada;
         if (!$orden) return null;
-        return $orden->items()->whereNull('kit_padre_id')->whereHas('piezasEnKit')->with('producto.categoria')->first();
+
+        return ItemSerializado::kitPadreDe($orden->id)->with('producto.categoria')->first();
     }
 
     public function getGeneracionKitProperty(): string
@@ -64,34 +53,41 @@ trait ConversionesConsulta
 
     public function getKitItemsProperty()
     {
-        $padre = $this->kitPadre;
-        if (!$padre) return collect();
-        $ids = $padre->producto->componentes->pluck('producto_componente_id')->toArray();
-        return $this->conversionSeleccionada->items()->where('estado', 'asignado')->whereNotNull('kit_padre_id')
-            ->whereIn('producto_id', $ids)->get()
-            ->filter(fn($i) => $this->esSerializable($i->producto->nombre))->values();
+        return $this->itemsDeKit(true);
     }
 
     public function getItemsCantidadProperty()
     {
-        $padre = $this->kitPadre;
-        if (!$padre) return collect();
-        $ids = $padre->producto->componentes->pluck('producto_componente_id')->toArray();
-        return $this->conversionSeleccionada->items()->where('estado', 'asignado')->whereNotNull('kit_padre_id')
-            ->whereIn('producto_id', $ids)->get()
-            ->filter(fn($i) => !$this->esSerializable($i->producto->nombre))->values();
+        return $this->itemsDeKit(false);
     }
 
+    /** Piezas ya asignadas al kit de la conversión seleccionada. */
+    private function itemsDeKit(bool $serializables)
+    {
+        $padre = $this->kitPadre;
+        if (!$padre) return collect();
+
+        $ids = $padre->producto->componentes->pluck('producto_componente_id')->toArray();
+
+        return $this->conversionSeleccionada->items()
+            ->componentesDeKit($ids)
+            ->get()
+            ->filter(fn ($i) => Producto::esSerializable($i->producto->nombre) === $serializables)
+            ->values();
+    }
+
+    /** Receta completa del kit, incluidas las piezas aún no montadas. */
     public function getTodasPiezasKitProperty()
     {
         $padre = $this->kitPadre;
         if (!$padre) return collect();
-        return KitComponente::where('producto_kit_id', $padre->producto_id)->with('componente.categoria')->get()
-            ->map(fn($kc) => (object) [
+
+        return KitComponente::deKit($padre->producto_id)->with('componente.categoria')->get()
+            ->map(fn ($kc) => (object) [
                 'producto_id' => $kc->producto_componente_id,
                 'nombre' => $kc->componente->nombre,
                 'categoria' => $kc->componente->categoria->nombre,
-                'es_serializado' => $this->esSerializable($kc->componente->nombre),
+                'es_serializado' => Producto::esSerializable($kc->componente->nombre),
                 'cantidad_esperada' => $kc->cantidad_esperada,
             ]);
     }
@@ -100,27 +96,35 @@ trait ConversionesConsulta
     {
         $orden = $this->conversionSeleccionada;
         if (!$orden) return [];
-        return ReportePiezaNoEncajada::where('service_order_id', $orden->id)
-            ->whereIn('estado', ['pendiente', 'buscando_pieza', 'solicitando_almacen'])->pluck('item_no_encajado_id')->toArray();
+
+        return ReportePiezaNoEncajada::deOrden($orden->id)
+            ->enSeguimiento()
+            ->pluck('item_no_encajado_id')
+            ->toArray();
     }
 
     public function getItemsReemplazadosProperty(): array
     {
         $orden = $this->conversionSeleccionada;
         if (!$orden) return [];
-        return ReportePiezaNoEncajada::where('service_order_id', $orden->id)
-            ->whereIn('estado', ['kit_abierto', 'resuelto'])->pluck('item_no_encajado_id')->toArray();
+
+        return ReportePiezaNoEncajada::deOrden($orden->id)
+            ->resuelto()
+            ->pluck('item_no_encajado_id')
+            ->toArray();
     }
 
     public function getHistorialProperty()
     {
         $orden = $this->conversionSeleccionada;
         if (!$orden) return collect();
-        return ReportePiezaNoEncajada::where('service_order_id', $orden->id)
-            ->whereIn('estado', ['kit_abierto', 'resuelto'])
+
+        return ReportePiezaNoEncajada::deOrden($orden->id)
+            ->resuelto()
             ->with('itemNoEncajado.producto')
-            ->orderBy('created_at', 'desc')->get()
-            ->map(fn($r) => (object) [
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(fn ($r) => (object) [
                 'id' => $r->id,
                 'pieza' => $r->itemNoEncajado->producto->nombre ?? 'Pieza',
                 'serie_vieja' => $r->itemNoEncajado->serie ?? '—',
@@ -134,8 +138,9 @@ trait ConversionesConsulta
     {
         $orden = $this->conversionSeleccionada;
         if (!$orden) return collect();
+
         return $orden->historialEstados()->with('usuario')->latest()->get()
-            ->map(fn($h) => (object) [
+            ->map(fn ($h) => (object) [
                 'estado_nuevo' => $h->estado_nuevo,
                 'estado_anterior' => $h->estado_anterior,
                 'fecha' => $h->created_at->format('d/m/Y H:i'),

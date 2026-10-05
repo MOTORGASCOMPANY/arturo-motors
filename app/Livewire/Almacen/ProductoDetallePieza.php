@@ -3,6 +3,7 @@
 namespace App\Livewire\Almacen;
 
 use App\Models\ItemSerializado;
+use App\Models\MovimientoStock;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
@@ -59,13 +60,7 @@ class ProductoDetallePieza extends Component
         $atr = $item->atributos ?? [];
 
         // Ledger de entrada de ESTA serie (RegistrarEntrada).
-        $movEntrada = null;
-        if ($item->serie) {
-            $movEntrada = \App\Models\MovimientoStock::where('tipo', 'entrada')
-                ->where('motivo', "Entrada de serie {$item->serie}")
-                ->orderBy('id')
-                ->first();
-        }
+        $movEntrada = $item->serie ? MovimientoStock::entradaDeSerie($item->serie) : null;
 
         $origen = match (true) {
             !empty($atr['recepcion_fecha'])   => 'Recepción',

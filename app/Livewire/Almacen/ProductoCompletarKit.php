@@ -5,6 +5,7 @@ namespace App\Livewire\Almacen;
 use App\Livewire\Almacen\StockSuelto;
 use App\Models\ItemSerializado;
 use App\Models\ProductoStockSede;
+use App\Models\KitComponente;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -50,17 +51,7 @@ class ProductoCompletarKit extends Component
 
         $sedeId = $kit->sede_id;
 
-        $receta = \Illuminate\Support\Facades\DB::table('kit_componentes')
-            ->join('productos', 'producto_componente_id', '=', 'productos.id')
-            ->join('categorias_almacen', 'productos.categoria_id', '=', 'categorias_almacen.id')
-            ->where('producto_kit_id', $kit->producto_id)
-            ->select(
-                'productos.id as producto_id',
-                'productos.nombre',
-                'categorias_almacen.es_serializado',
-                'kit_componentes.cantidad_esperada as cantidad'
-            )
-            ->get();
+        $receta = KitComponente::recetaDe($kit->producto_id);
 
         foreach ($receta as $comp) {
             $this->completarKitSeleccion[$comp->producto_id] = [];
@@ -232,11 +223,7 @@ class ProductoCompletarKit extends Component
                             ->first();
 
                         $cantidad = $stock ? (int) $stock->cantidad : 0;
-                        $enKits = ItemSerializado::where('producto_id', $productoId)
-                            ->whereNotNull('kit_padre_id')
-                            ->whereIn('estado', ['en_stock', 'abierto', 'completado', 'asignado'])
-                            ->where('sede_id', $sedeId)
-                            ->count();
+                        $enKits = ItemSerializado::montadasEnKit($productoId, $sedeId);
                         $suelto = max(0, $cantidad - $enKits);
 
                         if ($suelto < $faltan) {

@@ -572,9 +572,9 @@
             window.renderReporteCajaCharts();
         });
 
-        // Carga reutilizable de todos los reportes: js/components/carga-swal.js
+        // Alertas de exportación.
         $wire.on('descargar-pdf', (params) => {
-            CargaSwal.exportar({
+            AppSwal.exportar({
                 url: params.url,
                 titulo: 'Exportando PDF',
                 texto: 'Generando el reporte, por favor espera...',
@@ -583,7 +583,7 @@
         });
 
         $wire.on('descargar-excel', (params) => {
-            CargaSwal.exportar({
+            AppSwal.exportar({
                 url: params.url,
                 titulo: 'Exportando Excel',
                 texto: 'Generando el reporte, por favor espera...',

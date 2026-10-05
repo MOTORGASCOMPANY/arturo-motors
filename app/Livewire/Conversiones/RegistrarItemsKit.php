@@ -40,7 +40,7 @@ class RegistrarItemsKit extends Component
      */
     public function cargarItems()
     {
-        $sedeId = $this->orden->sede_id ?? Sede::activas()->orderBy('id')->first()?->id ?? 1;
+        $sedeId = $this->orden->sede_id ?? Sede::primeraActivaId();
 
         // Buscar kit asignado a esta orden
         $kitItem = $this->orden->items()
@@ -64,7 +64,7 @@ class RegistrarItemsKit extends Component
         // Solo productos serializables que sean componentes de ESTE kit
         $productosSerializables = Producto::with('categoria')->where(function ($q) use ($componenteIds) {
             $q->whereIn('id', $componenteIds);
-        })->get()->filter(fn($p) => $this->esSerializable($p->nombre));
+        })->get()->filter(fn($p) => Producto::esSerializable($p->nombre));
 
         foreach ($productosSerializables as $producto) {
             // Buscar si ya existe un item para este producto en esta orden
@@ -119,20 +119,6 @@ class RegistrarItemsKit extends Component
     /**
      * Verificar si un producto es serializable (por categoría en BD)
      */
-    private function esSerializable($producto): bool
-    {
-        if (is_int($producto)) {
-            $producto = Producto::with('categoria')->find($producto);
-        }
-        if (is_string($producto)) {
-            $producto = Producto::where('nombre', $producto)->first();
-        }
-        if (!$producto instanceof Producto) {
-            return false;
-        }
-        return $producto->categoria->es_serializado ?? false;
-    }
-
     /**
      * Obtener IDs de productos serializables (por categoría en BD)
      */

@@ -70,6 +70,23 @@ class ReportePiezaNoEncajada extends Model
         return $query->whereIn('estado', ['pendiente', 'solicitando_almacen']);
     }
 
+    public function scopeDeOrden($query, int $serviceOrderId)
+    {
+        return $query->where('service_order_id', $serviceOrderId);
+    }
+
+    /** Conversión en seguimiento: la pieza aún no fue reemplazada. */
+    public function scopeEnSeguimiento($query)
+    {
+        return $query->whereIn('estado', ['pendiente', 'buscando_pieza', 'solicitando_almacen']);
+    }
+
+    /** Estados en los que la pieza ya fue reemplazada. */
+    public function scopeResuelto($query)
+    {
+        return $query->whereIn('estado', ['kit_abierto', 'resuelto']);
+    }
+
     // ═══════════════════════════════════════════════
     // ACCIONES
     // ═══════════════════════════════════════════════

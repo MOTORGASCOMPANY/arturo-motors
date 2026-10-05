@@ -3,6 +3,7 @@
 namespace App\Livewire\Almacen;
 
 use App\Models\ItemSerializado;
+use App\Models\Producto;
 use App\Models\ReportePiezaNoEncajada;
 use App\Models\ServiceOrder;
 
@@ -39,7 +40,7 @@ trait ConversionesSeleccionPieza
         $item = ItemSerializado::with('producto')->find($itemId);
         if (!$item) return;
 
-        $esSerial = $this->esSerializable($item->producto);
+        $esSerial = Producto::esSerializable($item->producto);
         $sedeId = $this->sedeOperativa();
 
         if ($esSerial) {
@@ -216,7 +217,7 @@ trait ConversionesSeleccionPieza
             $this->dispatch('minToast', titulo: 'Error', mensaje: 'Ingrese la serie.', icono: 'error');
             return;
         }
-        if (ItemSerializado::where('serie', $serie)->exists()) {
+        if (ItemSerializado::existeSerie($serie)) {
             $this->dispatch('minToast', titulo: 'Error', mensaje: "La serie \"{$serie}\" ya existe.", icono: 'error');
             return;
         }

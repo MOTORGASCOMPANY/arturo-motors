@@ -8,6 +8,9 @@ use Livewire\Component;
 
 class StockDetalle extends Component
 {
+    /** Productos que agrupan la sección "piezas sueltas" del resumen. */
+    private const PRODUCTOS_SUELTOS = ['Vaporizador', 'Computadora', 'Tanque'];
+
     public ?int $filtroSedeId = null;
     public ?string $filtroEstado = null;
     public string $busqueda = '';
@@ -24,32 +27,20 @@ class StockDetalle extends Component
         $sedeId = $this->filtroSedeId;
         $estado = $this->filtroEstado;
 
-        
-        $kits = ItemSerializado::with('producto.categoria', 'sede')
-            ->whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true))
-            ->when($sedeId, fn ($q) => $q->where('sede_id', $sedeId))
-            ->when($estado, fn ($q) => $q->where('estado', $estado))
-            ->when($this->busqueda, function ($q) {
-                $q->whereHas('producto', fn ($p) => $p->where('nombre', 'like', "%{$this->busqueda}%"));
-            })
+        $kits = ItemSerializado::esKit()
+            ->enSede($sedeId)
+            ->enEstado($estado)
+            ->buscarProducto($this->busqueda)
+            ->with(['producto.categoria', 'sede'])
             ->orderByDesc('created_at')
             ->get()
             ->groupBy('producto_id');
 
-        
-        $sueltos = ItemSerializado::with('producto.categoria', 'sede')
-            ->whereHas('producto', function ($q) {
-                $q->where(function ($qx) {
-                    $qx->where('nombre', 'LIKE', '%Vaporizador%')
-                       ->orWhere('nombre', 'LIKE', '%Computadora%')
-                       ->orWhere('nombre', 'LIKE', '%Tanque%');
-                });
-            })
-            ->when($sedeId, fn ($q) => $q->where('sede_id', $sedeId))
-            ->when($estado, fn ($q) => $q->where('estado', $estado))
-            ->when($this->busqueda, function ($q) {
-                $q->whereHas('producto', fn ($p) => $p->where('nombre', 'like', "%{$this->busqueda}%"));
-            })
+        $sueltos = ItemSerializado::conProductoEn(self::PRODUCTOS_SUELTOS)
+            ->enSede($sedeId)
+            ->enEstado($estado)
+            ->buscarProducto($this->busqueda)
+            ->with(['producto.categoria', 'sede'])
             ->orderByDesc('created_at')
             ->get()
             ->groupBy('producto_id');
@@ -64,13 +55,10 @@ class StockDetalle extends Component
     {
         if (!$this->detalleProductoId) return collect();
 
-        $sedeId = $this->filtroSedeId;
-        $estado = $this->filtroEstado;
-
-        return ItemSerializado::with('producto', 'sede')
-            ->where('producto_id', $this->detalleProductoId)
-            ->when($sedeId, fn ($q) => $q->where('sede_id', $sedeId))
-            ->when($estado, fn ($q) => $q->where('estado', $estado))
+        return ItemSerializado::deProducto($this->detalleProductoId)
+            ->enSede($this->filtroSedeId)
+            ->enEstado($this->filtroEstado)
+            ->with('producto', 'sede')
             ->orderByDesc('created_at')
             ->get();
     }
