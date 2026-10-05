@@ -218,6 +218,159 @@
         });
     }
 
+    // ====== CAJA REPORT (6 gráficos específicos) ======
+    // Utilidad para formatear moneda en tooltips
+    function cajaMoney(v) {
+        return 'S/ ' + Number(v || 0).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    // 1. Ingresos vs Egresos (barra agrupada/apilada)
+    function renderCajaIngresosEgresos(id, key, labels, ingresosData, egresosData, opts) {
+        const ctx = document.getElementById(id);
+        if (!ctx || !labels || !labels.length) return;
+        destroyChart(key);
+        window[key] = new Chart(ctx.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'Ingresos', data: ingresosData, backgroundColor: '#10b981', borderRadius: 4, barPercentage: 0.85, categoryPercentage: 0.7 },
+                    { label: 'Egresos', data: egresosData, backgroundColor: '#ef4444', borderRadius: 4, barPercentage: 0.85, categoryPercentage: 0.7 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, animation: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': S/ ' + Number(ctx.parsed.y || 0).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) } }
+                },
+                scales: {
+                    x: { grid: { display: false, drawBorder: false }, ticks: { color: '#94a3b8', font: { size: 10 }, maxRotation: 45, autoSkip: true }, border: { display: false } },
+                    y: { beginAtZero: true, stacked: true, ticks: { callback: v => 'S/ ' + v.toLocaleString(), color: '#94a3b8', font: { size: 10 } }, grid: { color: '#f1f5f9' }, border: { display: false } }
+                }
+            }
+        });
+    }
+
+    // 2. Ticket promedio por día (scatter)
+    function renderCajaTicketDia(id, key, labels, ticketData, opsData, opts) {
+        const ctx = document.getElementById(id);
+        if (!ctx || !labels || !labels.length) return;
+        destroyChart(key);
+        const has = ticketData.some(v => v !== null && v !== undefined);
+        if (!has) return;
+        const cajaMoney = v => 'S/ ' + Number(v || 0).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const opsDia = Array.isArray(opts.opsDia) ? opts.opsDia : [];
+        window[key] = new Chart(document.getElementById(id).getContext('2d'), {
+            type: 'scatter',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Ticket promedio',
+                    data: Array.from({length: ticketData.length}, (_, i) => ({ x: i, y: ticketData[i] })),
+                    backgroundColor: '#4f46e5',
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    pointBackgroundColor: '#4f46e5',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 1.5
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, animation: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { callbacks: {
+                        label: ctx => {
+                            const ops = Array.isArray(opts.opsDia) ? opts.opsDia[ctx.dataIndex] : undefined;
+                            if (ops === null || ops === undefined) return 'Día aún no ocurrido';
+                            if (ops === 0) return 'Sin operaciones';
+                            return 'S/ ' + Number(ctx.parsed.y || 0).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' · ' + (ops || 0) + ' operación' + (ops === 1 ? '' : 'es');
+                        }
+                    } }
+                },
+                scales: {
+                    x: { type: 'category', grid: { display: false, drawBorder: false }, ticks: { color: '#94a3b8', font: { size: 10 }, maxRotation: 45, autoSkip: true }, border: { display: false } },
+                    y: { beginAtZero: true, ticks: { callback: v => 'S/ ' + v.toLocaleString(), color: '#94a3b8', font: { size: 10 } }, grid: { color: '#f1f5f9' }, border: { display: false } }
+                }
+            }
+        });
+    }
+
+    // 3. Métodos de pago (dona)
+    function renderCajaMetodosPago(id, key, labels, data, colors, opts) {
+        const ctx = document.getElementById(id);
+        if (!ctx || !labels || !labels.length) return;
+        destroyChart(key);
+        window[key] = new Chart(ctx.getContext('2d'), {
+            type: 'doughnut',
+            data: { labels: labels, datasets: [{ data: data, backgroundColor: colors, borderWidth: 2, borderColor: '#fff' }] },
+            options: {
+                responsive: true, maintainAspectRatio: false, animation: false, cutout: '58%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 10, padding: 12, font: { size: 11, family: "'Inter', sans-serif" } } },
+                    tooltip: { callbacks: { label: ctx => ctx.label + ': ' + 'S/ ' + Number(ctx.parsed || 0).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) } }
+                }
+            }
+        });
+    }
+
+    // 6. FISE vs No FISE (barras apiladas)
+    function renderCajaFiseNoFise(id, key, labels, fiseData, noFiseData, opts) {
+        const ctx = document.getElementById(id);
+        if (!ctx || !labels || !labels.length) return;
+        destroyChart(key);
+        window[key] = new Chart(ctx.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'FISE', data: fiseData, backgroundColor: '#f59e0b', borderRadius: 3, barPercentage: 0.9, categoryPercentage: 0.75 },
+                    { label: 'No FISE', data: noFiseData, backgroundColor: '#10b981', borderRadius: 3, barPercentage: 0.9, categoryPercentage: 0.75 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, animation: false,
+                plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': S/ ' + Number(ctx.parsed.y || 0).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) } } },
+                scales: { x: { stacked: true, grid: { display: false, drawBorder: false }, ticks: { color: '#94a3b8', font: { size: 10 } }, border: { display: false } }, y: { beginAtZero: true, stacked: true, ticks: { callback: v => 'S/ ' + v.toLocaleString(), color: '#94a3b8', font: { size: 10 } }, grid: { color: '#f1f5f9' }, border: { display: false } } }
+            }
+        });
+    }
+
+    // 4. Egresos por categoría (barras horizontales)
+    function renderCajaEgresosCat(id, key, labels, data, opts) {
+        const ctx = document.getElementById(id);
+        if (!ctx || !labels || !labels.length) return;
+        destroyChart(key);
+        window[key] = new Chart(ctx.getContext('2d'), {
+            type: 'bar',
+            data: { labels: labels, datasets: [{ label: 'Egresos', data: data, backgroundColor: '#ef4444', borderRadius: 6, maxBarThickness: 28 }] },
+            options: {
+                responsive: true, maintainAspectRatio: false, animation: false, indexAxis: 'y',
+                plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => 'S/ ' + Number(ctx.parsed.x || 0).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) } } },
+                scales: { x: { beginAtZero: true, ticks: { callback: v => 'S/ ' + v.toLocaleString(), color: '#94a3b8', font: { size: 10 } }, grid: { color: '#f1f5f9' }, border: { display: false } }, y: { ticks: { color: '#64748b', font: { size: 11 } }, grid: { display: false }, border: { display: false } } }
+            }
+        });
+    }
+
+    // 5. Ingresos de la semana (line con spanGaps)
+    function renderCajaIngresosSemana(id, key, labels, data, opts) {
+        const ctx = document.getElementById(id);
+        if (!ctx || !labels || !labels.length) return;
+        destroyChart(key);
+        window[key] = new Chart(ctx.getContext('2d'), {
+            type: 'line',
+            data: { labels: labels, datasets: [{ label: 'Ingresos', data: data, borderColor: '#0ea5e9', backgroundColor: 'rgba(14, 165, 233, 0.12)', borderWidth: 2.5, fill: true, tension: 0.4, spanGaps: false, pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: '#fff', pointBorderColor: '#0ea5e9', pointBorderWidth: 2 }] },
+            options: {
+                responsive: true, maintainAspectRatio: false, animation: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: { legend: { display: false }, tooltip: { callbacks: { title: items => { const l = items[0]?.label; return Array.isArray(l) ? l.join(' ') : String(l ?? ''); }, label: ctx => ctx.parsed.y === null ? 'Día aún no ocurrido' : 'S/ ' + Number(ctx.parsed.y || 0).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) } } },
+                scales: { x: { grid: { display: false, drawBorder: false }, ticks: { color: '#94a3b8', font: { size: 10 }, maxRotation: 45, autoSkip: true }, border: { display: false } }, y: { beginAtZero: true, ticks: { callback: v => 'S/ ' + v.toLocaleString(), color: '#94a3b8', font: { size: 10 } }, grid: { color: '#f1f5f9' }, border: { display: false } } }
+            }
+        });
+    }
+
     // ====== REGISTRO GLOBAL ======
     window.CHART_DEFS = {
         // Reportes almacen
@@ -228,6 +381,13 @@
         renderConvBar: renderConvBar,
         renderConvDoughnut: renderConvDoughnut,
         renderConvLine: renderConvLine,
+        // Reportes caja (6 gráficos específicos)
+        renderCajaIngresosEgresos: renderCajaIngresosEgresos,
+        renderCajaTicketDia: renderCajaTicketDia,
+        renderCajaMetodosPago: renderCajaMetodosPago,
+        renderCajaFiseNoFise: renderCajaFiseNoFise,
+        renderCajaEgresosCat: renderCajaEgresosCat,
+        renderCajaIngresosSemana: renderCajaIngresosSemana,
         // Utilidades
         destroyChart: destroyChart
     };

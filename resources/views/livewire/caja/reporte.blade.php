@@ -296,14 +296,10 @@
     </div>
     @endif
 
-    @script
+@script
     <script>
         function cajaMoney(v) {
             return 'S/ ' + Number(v || 0).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
-
-        function cajaDestroy(key) {
-            if (window[key]) { window[key].destroy(); window[key] = null; }
         }
 
         function cajaReadPayload() {
@@ -321,98 +317,34 @@
             if (empty) empty.classList.toggle('flex', !!showEmpty);
         }
 
+        function cajaDestroy(key) {
+            if (window[key]) { window[key].destroy(); window[key] = null; }
+        }
+
         window.renderReporteCajaCharts = function () {
-            if (typeof Chart === 'undefined') return;
+            if (!window.CHART_DEFS) return;
             const d = cajaReadPayload();
             if (!d || !d.labels) return;
 
-            const moneyScale = {
-                beginAtZero: true,
-                ticks: { callback: v => 'S/ ' + v.toLocaleString(), color: '#94a3b8', font: { size: 10 } },
-                grid: { color: '#f1f5f9' },
-                border: { display: false }
-            };
-            const xTicks = { ticks: { color: '#94a3b8', font: { size: 10 }, maxRotation: 45, autoSkip: true }, grid: { display: false }, border: { display: false } };
-            const legendBottom = {
-                display: true,
-                position: 'bottom',
-                labels: { boxWidth: 10, padding: 12, font: { size: 11, family: "'Inter', sans-serif" } }
-            };
-
-            // 1. Ingresos vs egresos
+            // 1. Ingresos vs Egresos (barras apiladas)
             try {
                 cajaDestroy('chartIE');
                 const hasIE = (d.ingresosData || []).some(v => Number(v) > 0) || (d.egresosData || []).some(v => Number(v) > 0);
                 cajaToggle('chartIngresosEgresos', 'emptyIE', !hasIE);
-                const cIE = document.getElementById('chartIngresosEgresos');
-                if (cIE && hasIE) {
-                    window.chartIE = new Chart(cIE, {
-                        type: 'bar',
-                        data: {
-                            labels: d.labels,
-                            datasets: [
-                                { label: 'Ingresos', data: d.ingresosData, backgroundColor: '#10b981', borderRadius: 4, barPercentage: 0.85, categoryPercentage: 0.7 },
-                                { label: 'Egresos', data: d.egresosData, backgroundColor: '#ef4444', borderRadius: 4, barPercentage: 0.85, categoryPercentage: 0.7 }
-                            ]
-                        },
-                        options: {
-                            responsive: true, maintainAspectRatio: false, animation: false,
-                            plugins: {
-                                legend: { display: false },
-                                tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + cajaMoney(ctx.parsed.y) } }
-                            },
-                            scales: { x: xTicks, y: moneyScale }
-                        }
-                    });
+                if (hasIE) {
+                    window.CHART_DEFS.renderCajaIngresosEgresos('chartIngresosEgresos', 'chartIE', d.labels, d.ingresosData, d.egresosData);
                 }
             } catch (e) { console.error('[caja] chart1', e); }
 
-            // 2. Ticket promedio por día (reemplaza al flujo acumulado)
+            // 2. Ticket promedio por día (scatter)
             try {
                 cajaDestroy('chartTicket');
                 const ticketDia = d.ticketDiaData || [];
                 const opsDia = d.operacionesDia || [];
                 const hasTicket = ticketDia.some(v => v !== null && v !== undefined);
                 cajaToggle('chartTicketDia', 'emptyTicket', !hasTicket);
-                const cT = document.getElementById('chartTicketDia');
-                if (cT && hasTicket) {
-                    window.chartTicket = new Chart(cT, {
-                        type: 'scatter',
-                        data: {
-                            labels: d.labels,
-                            datasets: [{
-                                label: 'Ticket promedio',
-                                // x = fecha (category scale resuelve el string contra data.labels), y = ticket o null
-                                data: ticketDia.map((v, i) => ({ x: d.labels[i], y: v })),
-                                backgroundColor: '#4f46e5',
-                                pointRadius: 5,
-                                pointHoverRadius: 7,
-                                pointBackgroundColor: '#4f46e5',
-                                pointBorderColor: '#fff',
-                                pointBorderWidth: 1.5
-                            }]
-                        },
-                        options: {
-                            responsive: true, maintainAspectRatio: false, animation: false,
-                            interaction: { mode: 'index', intersect: false },
-                            plugins: {
-                                legend: { display: false },
-                                tooltip: { callbacks: {
-                                    label: ctx => {
-                                        const ops = opsDia[ctx.dataIndex];
-                                        if (ops === null || ops === undefined) return 'Día aún no ocurrido';
-                                        if (ops === 0 || ctx.parsed.y === null) return 'Sin operaciones';
-                                        return cajaMoney(ctx.parsed.y) + ' · ' + ops + ' operacion' + (ops === 1 ? '' : 'es');
-                                    }
-                                } }
-                            },
-                            scales: {
-                                // scatter trae x lineal por defecto: forzar category para las fechas
-                                x: { ...xTicks, type: 'category' },
-                                y: moneyScale
-                            }
-                        }
-                    });
+                if (hasTicket) {
+                    window.CHART_DEFS.renderCajaTicketDia('chartTicketDia', 'chartTicket', d.labels, ticketDia, opsDia);
                 }
             } catch (e) { console.error('[caja] chart2', e); }
 
@@ -423,137 +355,41 @@
                 const metodos = (d.metodos || []).filter(m => Number(totals[m]) > 0);
                 const labelsM = metodos.map(m => (d.metodosLabels && d.metodosLabels[m]) || m);
                 const dataM = metodos.map(m => Number(totals[m]) || 0);
+                const colorsM = metodos.map(m => (d.colores && d.colores[m]) || '#6b7280');
                 const hasMetodos = dataM.length > 0;
                 cajaToggle('chartMetodosPago', 'emptyMetodos', !hasMetodos);
-                const cM = document.getElementById('chartMetodosPago');
-                if (cM && hasMetodos) {
-                    window.chartMetodos = new Chart(cM, {
-                        type: 'doughnut',
-                        data: {
-                            labels: labelsM,
-                            datasets: [{
-                                data: dataM,
-                                backgroundColor: metodos.map(m => (d.colores && d.colores[m]) || '#6b7280'),
-                                borderWidth: 2,
-                                borderColor: '#fff'
-                            }]
-                        },
-                        options: {
-                            responsive: true, maintainAspectRatio: false, animation: false, cutout: '58%',
-                            plugins: {
-                                legend: legendBottom,
-                                tooltip: { callbacks: { label: ctx => ctx.label + ': ' + cajaMoney(ctx.parsed) } }
-                            }
-                        }
-                    });
+                if (hasMetodos) {
+                    window.CHART_DEFS.renderCajaMetodosPago('chartMetodosPago', 'chartMetodos', labelsM, dataM, colorsM);
                 }
             } catch (e) { console.error('[caja] chart3', e); }
 
-            // 6. FISE vs no FISE
+            // 6. FISE vs no FISE (barras apiladas)
             try {
                 cajaDestroy('chartFise');
                 const hasFise = (d.fiseDiaData || []).some(v => Number(v) > 0) || (d.noFiseDiaData || []).some(v => Number(v) > 0);
                 cajaToggle('chartFiseNoFise', 'emptyFise', !hasFise);
-                const cFi = document.getElementById('chartFiseNoFise');
-                if (cFi && hasFise) {
-                    window.chartFise = new Chart(cFi, {
-                        type: 'bar',
-                        data: {
-                            labels: d.labels,
-                            datasets: [
-                                { label: 'FISE', data: d.fiseDiaData, backgroundColor: '#f59e0b', borderRadius: 3, barPercentage: 0.9, categoryPercentage: 0.75 },
-                                { label: 'No FISE', data: d.noFiseDiaData, backgroundColor: '#10b981', borderRadius: 3, barPercentage: 0.9, categoryPercentage: 0.75 }
-                            ]
-                        },
-                        options: {
-                            responsive: true, maintainAspectRatio: false, animation: false,
-                            plugins: {
-                                legend: { display: false },
-                                tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + cajaMoney(ctx.parsed.y) } }
-                            },
-                            scales: { x: { ...xTicks, stacked: true }, y: { ...moneyScale, stacked: true } }
-                        }
-                    });
+                if (hasFise) {
+                    window.CHART_DEFS.renderCajaFiseNoFise('chartFiseNoFise', 'chartFise', d.labels, d.fiseDiaData, d.noFiseDiaData);
                 }
             } catch (e) { console.error('[caja] chart6', e); }
 
-            // 4. Egresos por categoría
+            // 4. Egresos por categoría (barras horizontales)
             try {
                 cajaDestroy('chartEgCat');
                 const hasCat = (d.egresosLabels || []).length > 0 && (d.egresosDataCat || []).some(v => Number(v) > 0);
                 cajaToggle('chartEgresosCat', 'emptyEgresosCat', !hasCat);
-                const cE = document.getElementById('chartEgresosCat');
-                if (cE && hasCat) {
-                    window.chartEgCat = new Chart(cE, {
-                        type: 'bar',
-                        data: {
-                            labels: d.egresosLabels,
-                            datasets: [{
-                                label: 'Egresos',
-                                data: d.egresosDataCat,
-                                backgroundColor: '#ef4444',
-                                borderRadius: 6,
-                                maxBarThickness: 28
-                            }]
-                        },
-                        options: {
-                            responsive: true, maintainAspectRatio: false, animation: false, indexAxis: 'y',
-                            plugins: {
-                                legend: { display: false },
-                                tooltip: { callbacks: { label: ctx => cajaMoney(ctx.parsed.x) } }
-                            },
-                            scales: {
-                                x: { beginAtZero: true, ticks: { callback: v => 'S/ ' + v.toLocaleString(), color: '#94a3b8', font: { size: 10 } }, grid: { color: '#f1f5f9' }, border: { display: false } },
-                                y: { ticks: { color: '#64748b', font: { size: 11 } }, grid: { display: false }, border: { display: false } }
-                            }
-                        }
-                    });
+                if (hasCat) {
+                    window.CHART_DEFS.renderCajaEgresosCat('chartEgresosCat', 'chartEgCat', d.egresosLabels, d.egresosDataCat);
                 }
             } catch (e) { console.error('[caja] chart4', e); }
 
-            // 5. Ingresos de la semana (Lun–Sáb): los null cortan la línea en el día actual
+            // 5. Ingresos de la semana (line con spanGaps)
             try {
                 cajaDestroy('chartSemana');
                 const hasSemana = (d.ingresosSemanaData || []).some(v => v !== null && v !== undefined && Number(v) > 0);
                 cajaToggle('chartIngresosSemana', 'emptySemana', !hasSemana);
-                const cS = document.getElementById('chartIngresosSemana');
-                if (cS && hasSemana) {
-                    window.chartSemana = new Chart(cS, {
-                        type: 'line',
-                        data: {
-                            labels: d.labelsSemana,
-                            datasets: [{
-                                label: 'Ingresos',
-                                data: d.ingresosSemanaData,
-                                borderColor: '#0ea5e9',
-                                backgroundColor: 'rgba(14, 165, 233, 0.12)',
-                                borderWidth: 2.5,
-                                fill: true,
-                                tension: 0.4,
-                                spanGaps: false,
-                                pointRadius: 4,
-                                pointHoverRadius: 6,
-                                pointBackgroundColor: '#fff',
-                                pointBorderColor: '#0ea5e9',
-                                pointBorderWidth: 2
-                            }]
-                        },
-                        options: {
-                            responsive: true, maintainAspectRatio: false, animation: false,
-                            interaction: { mode: 'index', intersect: false },
-                            plugins: {
-                                legend: { display: false },
-                                tooltip: {
-                                    callbacks: {
-                                        // Label a dos líneas (día encima de la fecha): unir para el tooltip
-                                        title: items => { const l = items[0]?.label; return Array.isArray(l) ? l.join(' ') : String(l ?? ''); },
-                                        label: ctx => ctx.parsed.y === null ? 'Día aún no ocurrido' : cajaMoney(ctx.parsed.y)
-                                    }
-                                }
-                            },
-                            scales: { x: xTicks, y: moneyScale }
-                        }
-                    });
+                if (hasSemana) {
+                    window.CHART_DEFS.renderCajaIngresosSemana('chartIngresosSemana', 'chartSemana', d.labelsSemana, d.ingresosSemanaData);
                 }
             } catch (e) { console.error('[caja] chart5', e); }
         };
