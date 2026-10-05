@@ -101,6 +101,16 @@ class Reporte extends Component
         return route('ReporteConversiones.Excel', $this->getFiltros());
     }
 
+    public function descargarPdf(): void
+    {
+        $this->dispatch('descargar-pdf', url: $this->exportPdfUrl());
+    }
+
+    public function descargarExcel(): void
+    {
+        $this->dispatch('descargar-excel', url: $this->exportExcelUrl());
+    }
+
     private function getFiltros(): array
     {
         return array_filter([

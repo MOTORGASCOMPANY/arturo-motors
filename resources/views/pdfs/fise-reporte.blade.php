@@ -2,122 +2,349 @@
 <html lang="es">
 <head>
     <meta charset="utf-8">
-    <title>Reporte FISE</title>
+    <title>Reporte FISE — Arturo Motors</title>
     <style>
-        * { box-sizing: border-box; }
-        body { font-family: 'DejaVu Sans', sans-serif; font-size: 9px; color: #333; margin: 0; padding: 16px; }
+        @page { margin: 10px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+        html, body {
+            font-family: 'DejaVu Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 8.5px; color: #1c2d42; line-height: 1.35;
+        }
+        .page-wrap { padding: 26px 34px 40px 34px; }
+        table { width: 100%; border-collapse: collapse; }
+        .w-100 { width: 100%; }
+        .spacer-sm { height: 6px; line-height: 6px; font-size: 1px; }
+        .spacer-md { height: 10px; line-height: 10px; font-size: 1px; }
+        .spacer-lg { height: 16px; line-height: 16px; font-size: 1px; }
 
-        table.header { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
-        table.header td { vertical-align: middle; }
-        .header img { height: 46px; }
-        .header h1 { font-size: 16px; color: #1565c0; margin: 0; }
-        .header p { font-size: 8px; color: #666; margin: 2px 0 0 0; }
-        .rango { text-align: right; font-size: 9px; color: #46586b; }
-        .rango strong { color: #1565c0; }
+        .header-table td { vertical-align: middle; }
+        .logo-cell { width: 46%; padding-right: 16px; }
+        .title-cell { width: 54%; }
+        .logo { max-height: 36px; width: auto; display: block; }
+        .company-title { font-family: 'Georgia', serif; font-size: 13px; font-weight: 700; color: #1e3a5f; letter-spacing: 0.4px; margin-top: 5px; }
+        .company-subtitle { font-size: 7.3px; color: #3b82f6; font-weight: 700; letter-spacing: 0.6px; margin-top: 2px; }
+        .company-info { font-size: 7px; color: #64748b; line-height: 1.5; margin-top: 4px; }
+        .report-title-box { background-color: #2563eb; color: #ffffff; padding: 10px 16px; text-align: center; }
+        .report-title { font-family: 'Georgia', serif; font-size: 11.5px; font-weight: 700; letter-spacing: 1.2px; }
+        .report-subtitle { font-size: 7px; color: #bfdbfe; margin-top: 3px; }
+        .header-rule { border-top: 2px solid #2563eb; font-size: 1px; line-height: 1px; }
 
-        h2 { font-size: 10px; text-transform: uppercase; letter-spacing: .5px; color: #2c3e50; border-left: 3px solid #1565c0; padding-left: 6px; margin: 14px 0 5px; }
+        .meta-table td { font-size: 7.3px; padding: 7px 11px; background-color: #f7f9fc; border: 1px solid #e2e8f0; }
+        .meta-label { display: block; font-size: 6.5px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 2px; }
+        .meta-value { font-size: 8px; color: #0d1b30; font-weight: 700; }
 
-        table.datos { width: 100%; border-collapse: collapse; }
-        table.datos th { background: #BDD6EE; color: #1f2937; font-size: 8px; text-transform: uppercase; padding: 4px 6px; border: 1px solid #c7d7ee; text-align: left; }
-        table.datos td { padding: 3px 6px; border: 1px solid #dfe6ee; font-size: 9px; }
-        table.datos tr { page-break-inside: avoid; }
-        table.datos td.num, table.datos th.num { text-align: right; }
+        .kpi-box { text-align: center; padding: 10px; background-color: #f7f9fc; border: 1px solid #e2e8f0; border-radius: 4px; }
+        .kpi-box .value { font-size: 16px; font-weight: 700; }
+        .kpi-box .label { font-size: 6.5px; color: #64748b; text-transform: uppercase; margin-top: 3px; letter-spacing: 0.3px; }
+        .kpi-green .value { color: #059669; }
+        .kpi-blue .value { color: #2563eb; }
+        .kpi-amber .value { color: #d97706; }
+        .kpi-navy .value { color: #2563eb; }
+        .kpi-cyan .value { color: #06b6d4; }
+        .kpi-red .value { color: #dc2626; }
 
-        .vacio { color: #999; font-style: italic; padding: 6px; }
-        .est-aprobado, .est-pagado { color: #059669; font-weight: bold; }
-        .est-rechazado { color: #dc2626; font-weight: bold; }
-        .est-pendiente, .est-parcial { color: #d97706; font-weight: bold; }
+        .data-table { border: 1px solid #94a3b8; }
+        .data-table thead th {
+            background-color: #2563eb; color: #ffffff; font-size: 7px; font-weight: 700;
+            padding: 7px 8px; text-transform: uppercase; letter-spacing: 0.3px;
+            border-right: 1px solid #3b82f6; text-align: left;
+        }
+        .data-table thead th:last-child { border-right: none; }
+        .data-table tbody td {
+            padding: 6px 8px; font-size: 7.5px; border-bottom: 1px solid #e2e8f0;
+            border-right: 1px solid #e2e8f0; vertical-align: middle; color: #1c2d42;
+        }
+        .data-table tbody td:last-child { border-right: none; }
+        .data-table tbody tr:nth-child(even) { background-color: #f7f9fc; }
+        .cell-strong { font-weight: 700; color: #0d1b30; }
+        .cell-muted { color: #64748b; }
+        .cell-right { text-align: right; }
+        .cell-center { text-align: center; }
 
-        .footer { margin-top: 16px; text-align: center; font-size: 7px; color: #b3b3b3; border-top: 1px solid #e5e7eb; padding-top: 6px; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 8px; font-size: 6.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
+        .badge-aprobado { background-color: #dcfce7; color: #166534; border: 1px solid #86efac; }
+        .badge-rechazado { background-color: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
+        .badge-pendiente { background-color: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+        .badge-pagado { background-color: #dcfce7; color: #166534; border: 1px solid #86efac; }
+        .badge-parcial { background-color: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+        .badge-pendiente-pago { background-color: #dbeafe; color: #1d4ed8; border: 1px solid #93c5fd; }
+
+        .empty-state { text-align: center; padding: 40px 20px; color: #94a3b8; border: 1px dashed #cbd5e1; background-color: #f7f9fc; }
+        .empty-state p { font-size: 10px; font-weight: 600; }
+
+        .closing-rule { border-top: 1px solid #cbd5e1; font-size: 1px; line-height: 1px; }
+        .closing-text { text-align: center; font-size: 6.5px; color: #94a3b8; letter-spacing: 0.4px; text-transform: uppercase; }
+
+        .page-footer { position: fixed; bottom: -32px; left: 34px; right: 34px; }
+        .page-footer table td { border-top: 1px solid #cbd5e1; padding-top: 5px; font-size: 6.5px; color: #94a3b8; }
+        .fright { text-align: right; }
+
+        .section-title { font-size: 8px; font-weight: 700; color: #0d1b30; text-transform: uppercase; letter-spacing: 0.5px; margin: 12px 0 6px 0; padding-bottom: 4px; border-bottom: 2px solid #2563eb; }
     </style>
 </head>
 <body>
-    <table class="header">
-        <tr>
-            <td style="width: 18%;"><img src="{{ public_path('images/LOGOFINAL.jpg') }}"></td>
-            <td>
-                <h1>Reporte FISE</h1>
-                <p>Solicitudes, pagos y rendimiento del programa</p>
-            </td>
-            <td class="rango">
-                <strong>Del {{ $desde->format('d/m/Y') }} al {{ $hasta->format('d/m/Y') }}</strong><br>
-                Generado: {{ now()->format('d/m/Y H:i') }}
-            </td>
-        </tr>
-    </table>
 
-    <h2>Indicadores</h2>
-    <table class="datos">
-        <tr><th style="width: 65%;">Indicador</th><th class="num">Valor</th></tr>
-        <tr><td>Solicitudes totales (aprobadas / rechazadas / pendientes)</td><td class="num">{{ $totalSolicitudes }} ({{ $solicitudesAprobadas }} / {{ $solicitudesRechazadas }} / {{ $solicitudesPendientes }})</td></tr>
-        <tr><td>Tasa de aprobación</td><td class="num">{{ $tasaAprobacion }}%</td></tr>
-        <tr><td>Pagos registrados (pagados / parciales / pendientes)</td><td class="num">{{ $totalPagos }} ({{ $pagosPagados }} / {{ $pagosParciales }} / {{ $pagosPendientes }})</td></tr>
-        <tr><td>Monto total FISE</td><td class="num">S/ {{ number_format((float) $montoTotalFise, 2) }}</td></tr>
-        <tr><td>Monto pagado FISE</td><td class="num">S/ {{ number_format((float) $montoPagadoFise, 2) }}</td></tr>
-        <tr><td>Saldo pendiente FISE</td><td class="num">S/ {{ number_format((float) $saldoPendiente, 2) }}</td></tr>
-        <tr><td>Ingresos en caja (FISE)</td><td class="num">S/ {{ number_format((float) $ingresosCajaFise, 2) }}</td></tr>
-    </table>
-
-    <h2>Solicitudes del período</h2>
-    @if($solicitudes->isEmpty())
-        <p class="vacio">Sin solicitudes en el rango seleccionado.</p>
-    @else
-        <table class="datos">
-            <tr><th>Fecha</th><th>Cliente</th><th>Vehículo</th><th>Estado</th></tr>
-            @foreach($solicitudes as $s)
-                <tr>
-                    <td>{{ $s->created_at->format('d/m/Y') }}</td>
-                    <td>{{ $s->cliente ? ($s->cliente->nombre_completo ?? trim(($s->cliente->nombre ?? '') . ' ' . ($s->cliente->apellido ?? ''))) : '—' }}</td>
-                    <td>{{ $s->vehiculo?->placa ?? '—' }}</td>
-                    <td class="est-{{ $s->estado ?? '' }}">{{ strtoupper($s->estado ?? '—') }}</td>
-                </tr>
-            @endforeach
-        </table>
-    @endif
-
-    <h2>Pagos del período</h2>
-    @if($pagos->isEmpty())
-        <p class="vacio">Sin pagos en el rango seleccionado.</p>
-    @else
-        <table class="datos">
-            <tr><th>Fecha</th><th>Orden</th><th>Cliente</th><th>Técnico</th><th class="num">Total</th><th class="num">Pagado</th><th>Estado</th></tr>
-            @foreach($pagos as $p)
-                <tr>
-                    <td>{{ $p->created_at->format('d/m/Y') }}</td>
-                    <td>#{{ $p->service_order_id }}</td>
-                    <td>{{ $p->serviceOrder?->cliente ? ($p->serviceOrder->cliente->nombre_completo ?? trim(($p->serviceOrder->cliente->nombre ?? '') . ' ' . ($p->serviceOrder->cliente->apellido ?? ''))) : '—' }}</td>
-                    <td>{{ $p->pagadoPor?->name ?? '—' }}</td>
-                    <td class="num">S/ {{ number_format((float) $p->monto_total, 2) }}</td>
-                    <td class="num">S/ {{ number_format((float) $p->monto_pagado, 2) }}</td>
-                    <td class="est-{{ $p->estado ?? '' }}">{{ strtoupper($p->estado ?? '—') }}</td>
-                </tr>
-            @endforeach
-        </table>
-    @endif
-
-    <h2>Pagos por técnico</h2>
-    @if($pagosPorTecnico->isEmpty())
-        <p class="vacio">Sin pagos con técnico asignado en el rango.</p>
-    @else
-        <table class="datos">
-            <tr><th>Técnico</th><th class="num">Operaciones</th><th class="num">Monto total</th><th class="num">Monto pagado</th></tr>
-            @foreach($pagosPorTecnico as $tecnico => $row)
-                <tr>
-                    <td>{{ $tecnico }}</td>
-                    <td class="num">{{ $row['cantidad'] }}</td>
-                    <td class="num">S/ {{ number_format((float) $row['monto_total'], 2) }}</td>
-                    <td class="num">S/ {{ number_format((float) $row['monto_pagado'], 2) }}</td>
-                </tr>
-            @endforeach
+    <div class="page-footer">
+        <table class="w-100">
             <tr>
-                <td style="font-weight: bold;">Total</td>
-                <td class="num" style="font-weight: bold;">{{ $pagosPorTecnico->sum('cantidad') }}</td>
-                <td class="num" style="font-weight: bold;">S/ {{ number_format((float) $pagosPorTecnico->sum('monto_total'), 2) }}</td>
-                <td class="num" style="font-weight: bold;">S/ {{ number_format((float) $pagosPorTecnico->sum('monto_pagado'), 2) }}</td>
+                <td>Arturo Motors &mdash; Documento generado automáticamente por el sistema</td>
+                <td class="fright">Página <script type="text/php">
+                    if (isset($pdf)) {
+                        $text = "{PAGE_NUM} de {PAGE_COUNT}";
+                        $font = $fontMetrics->get_font("Helvetica", "normal");
+                        $pdf->page_text(520, 800, $text, $font, 6.5, array(0.58, 0.64, 0.72));
+                    }
+                </script></td>
             </tr>
         </table>
-    @endif
+    </div>
 
-    <div class="footer">Arturo Motors — Sistema de Control Interno · Reporte FISE · Generado {{ now()->format('d/m/Y H:i') }}</div>
+    <div class="page-wrap">
+
+        <table class="header-table w-100">
+            <tr>
+                <td class="logo-cell">
+                    <img src="{{ public_path('images/LOGOFINAL.jpg') }}" class="logo">
+                    <div class="company-title">ARTURO MOTORS</div>
+                    <div class="company-subtitle">ASESOR AUTOMOTRIZ — CENTRO DE INSPECCIÓN TÉCNICA VEHICULAR</div>
+                    <div class="company-info">
+                        Av. Perú N.° 5176, Callao, Perú<br>
+                        Tel: 987 288 504 / 943 694 464&nbsp;&nbsp;·&nbsp;&nbsp;contacto@empresa.com.pe
+                    </div>
+                </td>
+                <td class="title-cell">
+                    <div class="report-title-box">
+                        <div class="report-title">REPORTE FISE</div>
+                        <div class="report-subtitle">Solicitudes, pagos y rendimiento del programa  ·  Del {{ $desde->format('d/m/Y') }} al {{ $hasta->format('d/m/Y') }}</div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <div class="spacer-md">&nbsp;</div>
+        <div class="header-rule">&nbsp;</div>
+        <div class="spacer-md">&nbsp;</div>
+
+        <table class="meta-table w-100">
+            <tr>
+                <td style="width: 25%;">
+                    <span class="meta-label">Fecha de emisión</span>
+                    <span class="meta-value">{{ now()->format('d/m/Y') }}</span>
+                </td>
+                <td style="width: 25%;">
+                    <span class="meta-label">Hora de emisión</span>
+                    <span class="meta-value">{{ now()->format('H:i') }} hrs.</span>
+                </td>
+                <td style="width: 25%;">
+                    <span class="meta-label">Período</span>
+                    <span class="meta-value">{{ $desde->format('d/m/Y') }} al {{ $hasta->format('d/m/Y') }}</span>
+                </td>
+                <td style="width: 25%;">
+                    <span class="meta-label">Emitido por</span>
+                    <span class="meta-value">Sistema Arturo Motors</span>
+                </td>
+            </tr>
+        </table>
+
+        <div class="spacer-lg">&nbsp;</div>
+
+        {{-- KPIs: 4 cajas principales --}}
+        <table class="w-100" style="margin-bottom: 8px;">
+            <tr>
+                <td style="width: 25%; padding: 0 4px;">
+                    <div class="kpi-box kpi-blue">
+                        <div class="value">{{ number_format($totalSolicitudes) }}</div>
+                        <div class="label">Solicitudes totales</div>
+                    </div>
+                </td>
+                <td style="width: 25%; padding: 0 4px;">
+                    <div class="kpi-box kpi-green">
+                        <div class="value">{{ $tasaAprobacion }}%</div>
+                        <div class="label">Tasa aprobación</div>
+                    </div>
+                </td>
+                <td style="width: 25%; padding: 0 4px;">
+                    <div class="kpi-box kpi-cyan">
+                        <div class="value">S/ {{ number_format($montoTotalFise, 2) }}</div>
+                        <div class="label">Monto total FISE</div>
+                    </div>
+                </td>
+                <td style="width: 25%; padding: 0 4px;">
+                    <div class="kpi-box kpi-amber">
+                        <div class="value">S/ {{ number_format($saldoPendiente, 2) }}</div>
+                        <div class="label">Saldo pendiente</div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <div class="spacer-md">&nbsp;</div>
+
+        {{-- KPIs secundarios: pagos e ingresos caja --}}
+        <table class="w-100" style="margin-bottom: 8px;">
+            <tr>
+                <td style="width: 20%; padding: 0 4px;">
+                    <div class="kpi-box kpi-navy">
+                        <div class="value">{{ number_format($totalPagos) }}</div>
+                        <div class="label">Pagos registrados</div>
+                    </div>
+                </td>
+                <td style="width: 20%; padding: 0 4px;">
+                    <div class="kpi-box kpi-green">
+                        <div class="value">{{ number_format($pagosPagados) }}</div>
+                        <div class="label">Pagados</div>
+                    </div>
+                </td>
+                <td style="width: 20%; padding: 0 4px;">
+                    <div class="kpi-box kpi-amber">
+                        <div class="value">{{ number_format($pagosParciales) }}</div>
+                        <div class="label">Parciales</div>
+                    </div>
+                </td>
+                <td style="width: 20%; padding: 0 4px;">
+                    <div class="kpi-box kpi-blue">
+                        <div class="value">{{ number_format($pagosPendientes) }}</div>
+                        <div class="label">Pendientes</div>
+                    </div>
+                </td>
+                <td style="width: 20%; padding: 0 4px;">
+                    <div class="kpi-box kpi-cyan">
+                        <div class="value">S/ {{ number_format($ingresosCajaFise, 2) }}</div>
+                        <div class="label">Ingresos en caja</div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <div class="spacer-md">&nbsp;</div>
+
+        {{-- Solicitudes del período --}}
+        @if($solicitudes->isEmpty())
+        <div class="empty-state" style="margin-bottom: 14px;">
+            <p>Sin solicitudes en el rango seleccionado.</p>
+        </div>
+        @else
+        <div class="section-title">Solicitudes del período</div>
+        <table class="data-table w-100" style="margin-bottom: 14px;">
+            <thead>
+                <tr>
+                    <th style="width: 12%;">Fecha</th>
+                    <th style="width: 28%;">Cliente</th>
+                    <th style="width: 20%;">Vehículo</th>
+                    <th style="width: 20%; text-align: center;">Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($solicitudes as $s)
+                <tr>
+                    <td>{{ $s->created_at->format('d/m/Y') }}</td>
+                    <td class="cell-strong">{{ $s->cliente ? ($s->cliente->nombre_completo ?? trim(($s->cliente->nombre ?? '') . ' ' . ($s->cliente->apellido ?? ''))) : '—' }}</td>
+                    <td>{{ $s->vehiculo?->placa ?? '—' }}</td>
+                    <td class="cell-center">
+                        @php
+                            $estado = $s->estado ?? '';
+                            $badgeClass = match($estado) {
+                                'aprobado' => 'badge-aprobado',
+                                'rechazado' => 'badge-rechazado',
+                                'pendiente' => 'badge-pendiente',
+                                default => 'badge-pendiente',
+                            };
+                        @endphp
+                        <span class="badge {{ $badgeClass }}">{{ strtoupper($estado) }}</span>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+        @endif
+
+        {{-- Pagos del período --}}
+        @if($pagos->isEmpty())
+        <div class="empty-state" style="margin-bottom: 14px;">
+            <p>Sin pagos en el rango seleccionado.</p>
+        </div>
+        @else
+        <div class="section-title">Pagos del período</div>
+        <table class="data-table w-100" style="margin-bottom: 14px;">
+            <thead>
+                <tr>
+                    <th style="width: 10%;">Fecha</th>
+                    <th style="width: 8%;">Orden</th>
+                    <th style="width: 25%;">Cliente</th>
+                    <th style="width: 15%;">Técnico</th>
+                    <th style="width: 12%; text-align: right;">Total (S/)</th>
+                    <th style="width: 12%; text-align: right;">Pagado (S/)</th>
+                    <th style="width: 18%; text-align: center;">Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($pagos as $p)
+                <tr>
+                    <td>{{ $p->created_at->format('d/m/Y') }}</td>
+                    <td class="cell-strong">#{{ $p->service_order_id }}</td>
+                    <td>{{ $p->serviceOrder?->cliente ? ($p->serviceOrder->cliente->nombre_completo ?? trim(($p->serviceOrder->cliente->nombre ?? '') . ' ' . ($p->serviceOrder->cliente->apellido ?? ''))) : '—' }}</td>
+                    <td>{{ $p->pagadoPor?->name ?? '—' }}</td>
+                    <td class="cell-right">S/ {{ number_format((float) $p->monto_total, 2) }}</td>
+                    <td class="cell-right">S/ {{ number_format((float) $p->monto_pagado, 2) }}</td>
+                    <td class="cell-center">
+                        @php
+                            $estado = $p->estado ?? '';
+                            $badgeClass = match($estado) {
+                                'pagado' => 'badge-pagado',
+                                'parcial' => 'badge-parcial',
+                                'pendiente' => 'badge-pendiente-pago',
+                                default => 'badge-pendiente-pago',
+                            };
+                        @endphp
+                        <span class="badge {{ $badgeClass }}">{{ strtoupper($estado) }}</span>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+        @endif
+
+        {{-- Pagos por técnico --}}
+        @if($pagosPorTecnico->isEmpty())
+        <div class="empty-state" style="margin-bottom: 14px;">
+            <p>Sin pagos con técnico asignado en el rango.</p>
+        </div>
+        @else
+        <div class="section-title">Pagos por técnico</div>
+        <table class="data-table w-100" style="margin-bottom: 14px;">
+            <thead>
+                <tr>
+                    <th style="width: 40%;">Técnico</th>
+                    <th style="width: 20%; text-align: right;">Operaciones</th>
+                    <th style="width: 20%; text-align: right;">Monto total (S/)</th>
+                    <th style="width: 20%; text-align: right;">Monto pagado (S/)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($pagosPorTecnico as $tecnico => $row)
+                <tr>
+                    <td class="cell-strong">{{ $tecnico }}</td>
+                    <td class="cell-right">{{ number_format($row['cantidad']) }}</td>
+                    <td class="cell-right">S/ {{ number_format((float) $row['monto_total'], 2) }}</td>
+                    <td class="cell-right">S/ {{ number_format((float) $row['monto_pagado'], 2) }}</td>
+                </tr>
+                @endforeach
+                <tr style="background-color: #eef2f8; font-weight: 700;">
+                    <td class="cell-strong">Total</td>
+                    <td class="cell-right cell-strong">{{ number_format($pagosPorTecnico->sum('cantidad')) }}</td>
+                    <td class="cell-right cell-strong">S/ {{ number_format((float) $pagosPorTecnico->sum('monto_total'), 2) }}</td>
+                    <td class="cell-right cell-strong">S/ {{ number_format((float) $pagosPorTecnico->sum('monto_pagado'), 2) }}</td>
+                </tr>
+            </tbody>
+        </table>
+        @endif
+
+        <div class="spacer-lg">&nbsp;</div>
+        <div class="closing-rule">&nbsp;</div>
+        <div class="spacer-sm">&nbsp;</div>
+        <div class="closing-text">Fin del reporte &mdash; Arturo Motors · Documento de uso interno</div>
+
+    </div>
+
 </body>
 </html>

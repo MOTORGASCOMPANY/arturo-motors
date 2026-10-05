@@ -21,12 +21,12 @@
 
         .header-table td { vertical-align: middle; }
         .logo { max-height: 32px; width: auto; display: block; }
-        .company-title { font-family: 'Georgia', serif; font-size: 12px; font-weight: 700; color: #0d1b30; letter-spacing: 0.4px; margin-top: 4px; }
-        .company-subtitle { font-size: 6.5px; color: #2e5286; font-weight: 700; letter-spacing: 0.5px; margin-top: 1px; }
-        .report-title-box { background-color: #14233f; color: #fff; padding: 8px 14px; text-align: center; }
+        .company-title { font-family: 'Georgia', serif; font-size: 12px; font-weight: 700; color: #1e3a5f; letter-spacing: 0.4px; margin-top: 4px; }
+        .company-subtitle { font-size: 6.5px; color: #3b82f6; font-weight: 700; letter-spacing: 0.5px; margin-top: 1px; }
+        .report-title-box { background-color: #2563eb; color: #fff; padding: 8px 14px; text-align: center; }
         .report-title { font-family: 'Georgia', serif; font-size: 11px; font-weight: 700; letter-spacing: 1px; }
-        .report-subtitle { font-size: 6.5px; color: #c7d2e0; margin-top: 2px; }
-        .header-rule { border-top: 2px solid #14233f; font-size: 1px; line-height: 1px; }
+        .report-subtitle { font-size: 6.5px; color: #bfdbfe; margin-top: 2px; }
+        .header-rule { border-top: 2px solid #2563eb; font-size: 1px; line-height: 1px; }
 
         .kpi-box { text-align: center; padding: 8px 4px; background: #f7f9fc; border: 1px solid #e2e8f0; border-radius: 3px; }
         .kpi-box .value { font-size: 13px; font-weight: 700; }
@@ -34,13 +34,13 @@
         .kpi-green .value { color: #059669; }
         .kpi-red .value { color: #dc2626; }
         .kpi-blue .value { color: #2563eb; }
-        .kpi-navy .value { color: #14233f; }
+        .kpi-navy .value { color: #2563eb; }
 
         .data-table { border: 1px solid #94a3b8; }
         .data-table thead th {
-            background: #14233f; color: #fff; font-size: 6.5px; font-weight: 700;
+            background: #2563eb; color: #fff; font-size: 6.5px; font-weight: 700;
             padding: 5px 6px; text-transform: uppercase; letter-spacing: 0.3px;
-            border-right: 1px solid #2c3e5c; text-align: left;
+            border-right: 1px solid #3b82f6; text-align: left;
         }
         .data-table thead th:last-child { border-right: none; }
         .data-table tbody td {

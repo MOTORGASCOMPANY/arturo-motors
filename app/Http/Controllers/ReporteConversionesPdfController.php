@@ -22,12 +22,16 @@ class ReporteConversionesPdfController extends Controller
         ])->tipoConversion()
             ->whereIn('estado', ServiceOrder::ESTADOS_CONVERSION);
 
+        $filtroSede = null;
         if ($request->filled('sede_id')) {
-            $query->whereHas('items', fn ($q) => $q->where('sede_id', (int) $request->input('sede_id')));
+            $filtroSede = (int) $request->input('sede_id');
+            $query->whereHas('items', fn ($q) => $q->where('sede_id', $filtroSede));
         }
 
+        $filtroEstado = 'todos';
         if ($request->filled('estado') && $request->input('estado') !== 'todos') {
-            $query->where('estado', $request->input('estado'));
+            $filtroEstado = $request->input('estado');
+            $query->where('estado', $filtroEstado);
         }
 
         if ($request->filled('tecnico_id')) {
@@ -51,25 +55,25 @@ class ReporteConversionesPdfController extends Controller
 
         // Mismo orden que la tabla de la vista.
         $ordenes = $query->orderByDesc('created_at')->get();
+        $ordenIds = $ordenes->pluck('id');
 
         $totalConversiones = $ordenes->count();
         $completadas = $ordenes->where('estado', 'conversion_completada')->count();
         $enProceso = $ordenes->where('estado', 'en_conversion')->count();
+
+        // Items instalados en órdenes filtradas (incluye hijos de kit)
         $itemsInstalados = ItemSerializado::where('estado', 'instalado')
-            ->whereNotNull('kit_padre_id')
+            ->where(function ($q) use ($ordenIds) {
+                $q->whereIn('service_order_id', $ordenIds)
+                    ->orWhereHas('kitPadre', fn ($qq) => $qq->whereIn('service_order_id', $ordenIds));
+            })
+            ->when($filtroSede, fn ($q) => $q->where(function ($qq) use ($filtroSede) {
+                $qq->where('sede_id', $filtroSede)
+                    ->orWhereHas('kitPadre', fn ($qqq) => $qqq->where('sede_id', $filtroSede));
+            }))
             ->count();
 
-        // Stock (kits sellados o completados a mano)
-        $kitsEnStock = ItemSerializado::kitDisponible()
-            ->whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true))
-            ->count();
-
-        $stockPiezasSueltas = ItemSerializado::where('estado', 'en_stock')
-            ->whereNull('kit_padre_id')
-            ->whereHas('producto.categoria', fn ($q) => $q->where('es_kit', false))
-            ->count();
-
-        // Detalle por orden
+        // Detalle por orden (mismo formato que la vista Livewire)
         $detalleOrdenes = $ordenes->map(function ($o) {
             $kitPadre = $o->items->first(fn ($i) => $i->kit_padre_id === null && ($i->producto->categoria->es_kit ?? false));
             $hijos = $o->items->where('kit_padre_id', '!=', null);
@@ -81,21 +85,28 @@ class ReporteConversionesPdfController extends Controller
                 'placa' => $o->vehiculo->placa ?? 'N/A',
                 'vehiculo' => trim(($o->vehiculo->marca ?? '') . ' ' . ($o->vehiculo->modelo ?? '')),
                 'tecnico' => $o->tecnico->name ?? 'N/A',
-                'kit' => $kitPadre?->producto->nombre ?? 'N/A',
-                'generacion' => $kitPadre?->producto->atributos['generacion'] ?? '',
-                'total_componentes' => $hijos->count(),
-                'instalados' => $instalados->count(),
+                'kit_nombre' => $kitPadre?->producto->nombre ?? 'N/A',
+                'kit_generacion' => $kitPadre?->producto->atributos['generacion'] ?? '',
                 'items_serializados' => $instalados
                     ->filter(fn ($i) => ($i->atributos['tipo'] ?? '') !== 'cantidad' && !empty($i->serie))
                     ->map(fn ($i) => [
                         'nombre' => $i->producto->nombre,
                         'serie' => $i->serie,
                     ])->values()->toArray(),
-                'reportes' => $o->reportesPendientes()->count(),
+                'total_componentes' => $hijos->count(),
+                'instalados' => $instalados->count(),
                 'fecha_inicio' => $o->fecha_inicio_conversion?->format('d/m/Y H:i'),
                 'fecha_fin' => $o->fecha_fin_conversion?->format('d/m/Y H:i'),
             ];
         });
+
+        $sedeNombre = null;
+        if ($filtroSede) {
+            $sedeNombre = Sede::find($filtroSede)?->nombre;
+        }
+
+        $desde = $request->input('desde') ?? now()->startOfMonth()->format('Y-m-d');
+        $hasta = $request->input('hasta') ?? now()->format('Y-m-d');
 
         $pdf = Pdf::loadView('pdfs.reporte-conversiones', [
             'ordenes' => $ordenes,
@@ -104,8 +115,11 @@ class ReporteConversionesPdfController extends Controller
             'completadas' => $completadas,
             'enProceso' => $enProceso,
             'itemsInstalados' => $itemsInstalados,
-            'kitsEnStock' => $kitsEnStock,
-            'stockPiezasSueltas' => $stockPiezasSueltas,
+            'filtroEstado' => $filtroEstado,
+            'filtroSede' => $filtroSede,
+            'sedeNombre' => $sedeNombre,
+            'desde' => $desde,
+            'hasta' => $hasta,
         ])->setPaper('a4', 'landscape');
 
         return $pdf->download('reporte-conversiones-' . now()->format('Y-m-d-Hi') . '.pdf');

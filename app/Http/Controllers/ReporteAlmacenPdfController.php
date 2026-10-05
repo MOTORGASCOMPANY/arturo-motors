@@ -74,7 +74,6 @@ class ReporteAlmacenPdfController extends Controller
             'porcentaje' => $totalSerie > 0 ? round(($conProduce / $totalSerie) * 100) : 0,
             'conProduce' => $conProduce,
             'total' => $totalSerie,
-            'pendientes' => $conSerie->filter(fn ($i) => empty($i->atributos['produce']))->take(10)->values(),
         ];
 
         // ── 4. Alertas de stock ───────────────────────────────────
@@ -95,11 +94,15 @@ class ReporteAlmacenPdfController extends Controller
         }
 
         // Los totales se calculan ANTES de limitar, para que el KPI no quede capado en 8.
+        $totalSinStock = $sinStock->count();
+        $totalStockBajo = $stockBajo->count();
+        $totalAlertas = $totalSinStock + $totalStockBajo;
+
         $alertas = [
             'sinStock' => $sinStock->take(8)->values(),
             'stockBajo' => $stockBajo->take(8)->values(),
-            'totalSinStock' => $sinStock->count(),
-            'totalStockBajo' => $stockBajo->count(),
+            'totalSinStock' => $totalSinStock,
+            'totalStockBajo' => $totalStockBajo,
             'umbral' => 2,
         ];
 
@@ -135,6 +138,8 @@ class ReporteAlmacenPdfController extends Controller
             ->map(fn ($grupo) => $grupo->sum('total'))
             ->sortByDesc(fn ($v) => $v);
 
+        $sedeLabel = $filtroSede ? ($sedes->firstWhere('id', $filtroSede)?->nombre ?? 'Todas') : 'Todas';
+
         $pdf = Pdf::loadView('pdfs.reporte-almacen', [
             'sedes' => $sedes,
             'filtroSede' => $filtroSede,
@@ -149,7 +154,10 @@ class ReporteAlmacenPdfController extends Controller
             'tasa' => $tasa,
             'trazabilidad' => $trazabilidad,
             'alertas' => $alertas,
-            'sedeLabel' => $filtroSede ? ($sedes->firstWhere('id', $filtroSede)?->nombre ?? 'Todas') : 'Todas',
+            'sedeLabel' => $sedeLabel,
+            'totalSinStock' => $totalSinStock,
+            'totalStockBajo' => $totalStockBajo,
+            'totalAlertas' => $totalAlertas,
         ])->setPaper('a4', 'landscape');
 
         return $pdf->download('reporte-almacen-' . now()->format('Y-m-d-Hi') . '.pdf');

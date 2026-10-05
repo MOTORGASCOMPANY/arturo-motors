@@ -1,271 +1,354 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Reporte de Almacén - Arturo Motors</title>
+    <meta charset="utf-8">
+    <title>Reporte de Almacén — Arturo Motors</title>
     <style>
-        @page { margin: 28px 30px 50px 30px; }
-        body { font-family: 'DejaVu Sans', sans-serif; margin: 0; color: #1e293b; font-size: 11px; }
+        @page { margin: 10px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+        html, body {
+            font-family: 'DejaVu Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 8.5px; color: #1c2d42; line-height: 1.35;
+        }
+        .page-wrap { padding: 26px 34px 40px 34px; }
+        table { width: 100%; border-collapse: collapse; }
+        .w-100 { width: 100%; }
+        .spacer-sm { height: 6px; line-height: 6px; font-size: 1px; }
+        .spacer-md { height: 10px; line-height: 10px; font-size: 1px; }
+        .spacer-lg { height: 16px; line-height: 16px; font-size: 1px; }
 
-        /* ── Header ─────────────────────────────── */
-        .header { background: #1e40af; color: #ffffff; padding: 18px 24px; border-radius: 6px; margin-bottom: 18px; }
-        .header-table { width: 100%; border-collapse: collapse; }
-        .header-table td { border: none; padding: 0; background: transparent; color: #ffffff; vertical-align: middle; }
-        .header h1 { font-size: 20px; margin: 0 0 4px 0; color: #ffffff; letter-spacing: 0.5px; }
-        .header .sub { font-size: 11px; color: #bfdbfe; }
-        .header .meta { text-align: right; font-size: 10px; color: #dbeafe; line-height: 1.6; }
-        .header .meta strong { color: #ffffff; }
+        .header-table td { vertical-align: middle; }
+        .logo-cell { width: 46%; padding-right: 16px; }
+        .title-cell { width: 54%; }
+        .logo { max-height: 36px; width: auto; display: block; }
+        .company-title { font-family: 'Georgia', serif; font-size: 13px; font-weight: 700; color: #1e3a5f; letter-spacing: 0.4px; margin-top: 5px; }
+        .company-subtitle { font-size: 7.3px; color: #3b82f6; font-weight: 700; letter-spacing: 0.6px; margin-top: 2px; }
+        .company-info { font-size: 7px; color: #64748b; line-height: 1.5; margin-top: 4px; }
+        .report-title-box { background-color: #2563eb; color: #ffffff; padding: 10px 16px; text-align: center; }
+        .report-title { font-family: 'Georgia', serif; font-size: 11.5px; font-weight: 700; letter-spacing: 1.2px; }
+        .report-subtitle { font-size: 7px; color: #bfdbfe; margin-top: 3px; }
+        .header-rule { border-top: 2px solid #2563eb; font-size: 1px; line-height: 1px; }
 
-        /* ── KPIs ───────────────────────────────── */
-        .kpi-table { width: 100%; border-collapse: separate; border-spacing: 8px 0; margin: 0 -8px 20px -8px; width: 103%; }
-        .kpi-table td { width: 25%; text-align: center; padding: 14px 8px; background: #ffffff; border: 1px solid #e2e8f0; border-top: 3px solid #1e40af; vertical-align: top; }
-        .kpi-table td.k-blue    { border-top-color: #2563eb; }
-        .kpi-table td.k-emerald { border-top-color: #10b981; }
-        .kpi-table td.k-cyan    { border-top-color: #06b6d4; }
-        .kpi-table td.k-red     { border-top-color: #dc2626; }
-        .kpi-table td.k-amber   { border-top-color: #f59e0b; }
-        .kpi-value { font-size: 26px; font-weight: bold; color: #1e293b; }
-        .kpi-value-blue { color: #2563eb; }
-        .kpi-value-red { color: #dc2626; }
-        .kpi-value-emerald { color: #10b981; }
-        .kpi-value-amber { color: #f59e0b; }
-        .kpi-value-cyan { color: #06b6d4; }
-        .kpi-label { font-size: 9px; color: #64748b; text-transform: uppercase; letter-spacing: 0.6px; margin-top: 4px; }
-        .kpi-detail { font-size: 9px; color: #64748b; margin-top: 4px; }
-        .kpi-detail strong { color: #1e293b; }
+        .meta-table td { font-size: 7.3px; padding: 7px 11px; background-color: #f7f9fc; border: 1px solid #e2e8f0; }
+        .meta-label { display: block; font-size: 6.5px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 2px; }
+        .meta-value { font-size: 8px; color: #0d1b30; font-weight: 700; }
 
-        /* ── Secciones y tablas ─────────────────── */
-        .section-title { font-size: 12px; font-weight: bold; color: #1e40af; text-transform: uppercase; letter-spacing: 0.6px;
-                         margin: 4px 0 8px 0; padding-bottom: 5px; border-bottom: 2px solid #1e40af; }
-        table.data { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        table.data thead { display: table-header-group; }
-        table.data tr { page-break-inside: avoid; }
-        table.data th { background: #f1f5f9; padding: 7px 10px; text-align: left; font-size: 9px; font-weight: bold; color: #475569;
-                        text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 2px solid #cbd5e1; }
-        table.data td { padding: 7px 10px; font-size: 10.5px; border-bottom: 1px solid #e2e8f0; }
-        table.data tbody tr:nth-child(even) { background: #f8fafc; }
-        table.data tfoot td { background: #eff6ff; font-weight: bold; color: #1e40af; border-top: 2px solid #1e40af; border-bottom: none; }
+        .kpi-box { text-align: center; padding: 10px; background-color: #f7f9fc; border: 1px solid #e2e8f0; border-radius: 4px; }
+        .kpi-box .value { font-size: 16px; font-weight: 700; }
+        .kpi-box .label { font-size: 6.5px; color: #64748b; text-transform: uppercase; margin-top: 3px; letter-spacing: 0.3px; }
+        .kpi-green .value { color: #059669; }
+        .kpi-blue .value { color: #2563eb; }
+        .kpi-amber .value { color: #d97706; }
+        .kpi-navy .value { color: #2563eb; }
+        .kpi-cyan .value { color: #06b6d4; }
+        .kpi-red .value { color: #dc2626; }
 
-        .text-right { text-align: right; }
-        .text-center { text-align: center; }
-        .font-bold { font-weight: bold; }
-        .text-red { color: #dc2626; }
-        .text-amber { color: #f59e0b; }
-        .text-emerald { color: #10b981; }
-        .text-gray { color: #94a3b8; }
+        .data-table { border: 1px solid #94a3b8; }
+        .data-table thead th {
+            background-color: #2563eb; color: #ffffff; font-size: 7px; font-weight: 700;
+            padding: 7px 8px; text-transform: uppercase; letter-spacing: 0.3px;
+            border-right: 1px solid #3b82f6; text-align: left;
+        }
+        .data-table thead th:last-child { border-right: none; }
+        .data-table tbody td {
+            padding: 6px 8px; font-size: 7.5px; border-bottom: 1px solid #e2e8f0;
+            border-right: 1px solid #e2e8f0; vertical-align: middle; color: #1c2d42;
+        }
+        .data-table tbody td:last-child { border-right: none; }
+        .data-table tbody tr:nth-child(even) { background-color: #f7f9fc; }
+        .cell-strong { font-weight: 700; color: #0d1b30; }
+        .cell-muted { color: #64748b; }
+        .cell-right { text-align: right; }
+        .cell-center { text-align: center; }
 
-        /* ── Resumen (2 columnas) ───────────────── */
-        .two-col { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
-        .two-col > tbody > tr > td { width: 50%; vertical-align: top; padding: 0; border: none; }
-        .two-col .left  { padding-right: 10px; }
-        .two-col .right { padding-left: 10px; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 8px; font-size: 6.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
+        .badge-red { background-color: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
+        .badge-amber { background-color: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+        .badge-green { background-color: #dcfce7; color: #166534; border: 1px solid #86efac; }
+        .badge-blue { background-color: #dbeafe; color: #1d4ed8; border: 1px solid #93c5fd; }
 
-        /* ── Capacidad de armado (barras) ───────── */
-        table.bars { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        table.bars td { padding: 4px 6px; font-size: 10px; border: none; background: transparent; vertical-align: middle; }
         .bar-track { background: #e2e8f0; height: 8px; border-radius: 4px; width: 100%; }
         .bar-fill { background: #2563eb; height: 8px; border-radius: 4px; }
         .bar-fill.cuello { background: #dc2626; }
 
-        /* ── Badges ─────────────────────────────── */
-        .badge { padding: 2px 7px; border-radius: 8px; font-size: 9px; font-weight: bold; }
-        .badge-red { background: #fee2e2; color: #dc2626; }
-        .badge-amber { background: #fef3c7; color: #b45309; }
+        .empty-state { text-align: center; padding: 40px 20px; color: #94a3b8; border: 1px dashed #cbd5e1; background-color: #f7f9fc; }
+        .empty-state p { font-size: 10px; font-weight: 600; }
 
-        /* ── Footer (se repite en cada página) ──── */
-        .footer { position: fixed; bottom: -32px; left: 0; right: 0; text-align: center; color: #94a3b8; font-size: 9px;
-                  border-top: 1px solid #e2e8f0; padding-top: 8px; }
+        .closing-rule { border-top: 1px solid #cbd5e1; font-size: 1px; line-height: 1px; }
+        .closing-text { text-align: center; font-size: 6.5px; color: #94a3b8; letter-spacing: 0.4px; text-transform: uppercase; }
+
+        .page-footer { position: fixed; bottom: -32px; left: 34px; right: 34px; }
+        .page-footer table td { border-top: 1px solid #cbd5e1; padding-top: 5px; font-size: 6.5px; color: #94a3b8; }
+        .fright { text-align: right; }
+
+        .section-title { font-size: 8px; font-weight: 700; color: #0d1b30; text-transform: uppercase; letter-spacing: 0.5px; margin: 12px 0 6px 0; padding-bottom: 4px; border-bottom: 2px solid #2563eb; }
     </style>
 </head>
 <body>
 
-    @php
-        $filtroStockLabel = match ($filtroStock) {
-            'con_stock'  => 'Con stock',
-            'sin_stock'  => 'Sin stock',
-            'stock_bajo' => 'Stock bajo',
-            default      => 'Todos',
-        };
-        $totalSinStock = $alertas['totalSinStock'] ?? $alertas['sinStock']->count();
-        $totalStockBajo = $alertas['totalStockBajo'] ?? $alertas['stockBajo']->count();
-        $totalAlertas = $totalSinStock + $totalStockBajo;
-    @endphp
-
-    {{-- Header --}}
-    <div class="header">
-        <table class="header-table">
+    <div class="page-footer">
+        <table class="w-100">
             <tr>
-                <td>
-                    <h1>Reporte de Almacén</h1>
-                    <div class="sub">Arturo Motors — Stock actual en tiempo real</div>
-                </td>
-                <td class="meta">
-                    Sede: <strong>{{ $sedeLabel }}</strong><br>
-                    Filtro de stock: <strong>{{ $filtroStockLabel }}</strong><br>
-                    Emitido: <strong>{{ now()->format('d/m/Y H:i') }}</strong>
-                </td>
+                <td>Arturo Motors &mdash; Documento generado automáticamente por el sistema</td>
+                <td class="fright">Página <script type="text/php">
+                    if (isset($pdf)) {
+                        $text = "{PAGE_NUM} de {PAGE_COUNT}";
+                        $font = $fontMetrics->get_font("Helvetica", "normal");
+                        $pdf->page_text(520, 800, $text, $font, 6.5, array(0.58, 0.64, 0.72));
+                    }
+                </script></td>
             </tr>
         </table>
     </div>
 
-    {{-- KPIs --}}
-    <table class="kpi-table">
-        <tr>
-            <td class="k-blue">
-                <div class="kpi-value kpi-value-blue">{{ $capacidad['kitsArmables'] }}</div>
-                <div class="kpi-label">Kits armables</div>
-                @if ($capacidad['kitsArmables'] === 0 && $capacidad['cuello'] !== 'Sin receta')
-                    <div class="kpi-detail text-red">Limita: <strong>{{ $capacidad['cuello'] }}</strong></div>
-                @elseif ($capacidad['kitsArmables'] > 0)
-                    <div class="kpi-detail text-emerald">Stock suficiente</div>
-                @else
-                    <div class="kpi-detail">Sin receta definida</div>
-                @endif
-            </td>
+    <div class="page-wrap">
 
-            <td class="k-emerald">
-                <div class="kpi-value kpi-value-emerald">{{ $tasa['porcentaje'] }}%</div>
-                <div class="kpi-label">Tasa de consumo</div>
-                <div class="kpi-detail"><strong>{{ $tasa['sellados'] }}</strong> sellados · <strong>{{ $tasa['consumidos'] }}</strong> consumidos</div>
-            </td>
-
-            <td class="k-cyan">
-                <div class="kpi-value kpi-value-cyan">{{ $trazabilidad['porcentaje'] }}%</div>
-                <div class="kpi-label">Trazabilidad de serie</div>
-                <div class="kpi-detail"><strong>{{ $trazabilidad['conProduce'] }}</strong> de <strong>{{ $trazabilidad['total'] }}</strong> con lote</div>
-            </td>
-
-            <td class="{{ $totalSinStock > 0 ? 'k-red' : ($totalStockBajo > 0 ? 'k-amber' : 'k-emerald') }}">
-                <div class="kpi-value {{ $totalSinStock > 0 ? 'kpi-value-red' : ($totalStockBajo > 0 ? 'kpi-value-amber' : 'kpi-value-emerald') }}">{{ $totalAlertas }}</div>
-                <div class="kpi-label">Alertas de stock</div>
-                <div class="kpi-detail">
-                    <span class="text-red font-bold">{{ $totalSinStock }}</span> sin stock ·
-                    <span class="text-amber font-bold">{{ $totalStockBajo }}</span> bajo
-                </div>
-            </td>
-        </tr>
-    </table>
-
-    {{-- Resumen por sede y categoría --}}
-    <table class="two-col">
-        <tr>
-            <td class="left">
-                <div class="section-title">Stock por sede</div>
-                <table class="data">
-                    <thead><tr><th>Sede</th><th class="text-right">Unidades</th></tr></thead>
-                    <tbody>
-                    @forelse ($stockPorSede as $nombre => $total)
-                        <tr>
-                            <td class="font-bold">{{ $nombre }}</td>
-                            <td class="text-right {{ $total > 0 ? 'font-bold' : 'text-gray' }}">{{ $total }}</td>
-                        </tr>
-                    @empty
-                        <tr><td colspan="2" class="text-center text-gray">Sin datos.</td></tr>
-                    @endforelse
-                    </tbody>
-                    <tfoot><tr><td>Total</td><td class="text-right">{{ $stockPorSede->sum() }}</td></tr></tfoot>
-                </table>
-            </td>
-            <td class="right">
-                <div class="section-title">Stock por categoría</div>
-                <table class="data">
-                    <thead><tr><th>Categoría</th><th class="text-right">Unidades</th></tr></thead>
-                    <tbody>
-                    @forelse ($stockPorCategoria as $nombre => $total)
-                        <tr>
-                            <td class="font-bold">{{ $nombre }}</td>
-                            <td class="text-right font-bold">{{ $total }}</td>
-                        </tr>
-                    @empty
-                        <tr><td colspan="2" class="text-center text-gray">Sin datos.</td></tr>
-                    @endforelse
-                    </tbody>
-                    <tfoot><tr><td>{{ $productosConStock }} productos</td><td class="text-right">{{ $totalItems }}</td></tr></tfoot>
-                </table>
-            </td>
-        </tr>
-    </table>
-
-    {{-- Distribución --}}
-    <div class="section-title">Distribución de stock por sede</div>
-    <table class="data">
-        <thead>
+        <table class="header-table w-100">
             <tr>
-                <th>Producto</th>
-                <th>Categoría</th>
-                @foreach ($sedes as $s)
-                    @if (!$filtroSede || $s->id === $filtroSede)
-                        <th class="text-right">{{ $s->nombre }}</th>
-                    @endif
-                @endforeach
-                <th class="text-right">Total</th>
+                <td class="logo-cell">
+                    <img src="{{ public_path('images/LOGOFINAL.jpg') }}" class="logo">
+                    <div class="company-title">ARTURO MOTORS</div>
+                    <div class="company-subtitle">ASESOR AUTOMOTRIZ — CENTRO DE INSPECCIÓN TÉCNICA VEHICULAR</div>
+                    <div class="company-info">
+                        Av. Perú N.° 5176, Callao, Perú<br>
+                        Tel: 987 288 504 / 943 694 464&nbsp;&nbsp;·&nbsp;&nbsp;contacto@empresa.com.pe
+                    </div>
+                </td>
+                <td class="title-cell">
+                    <div class="report-title-box">
+                        <div class="report-title">REPORTE DE ALMACÉN</div>
+                        <div class="report-subtitle">Documento generado el {{ now()->format('d/m/Y') }} a las {{ now()->format('H:i') }} hrs.  ·  Sede: {{ $sedeLabel }}{{ $filtroStock !== 'todos' ? '  ·  Filtro: ' . ucfirst(str_replace('_', ' ', $filtroStock)) : '' }}</div>
+                    </div>
+                </td>
             </tr>
-        </thead>
-        <tbody>
-        @forelse ($distribucion as $row)
-            <tr>
-                <td class="font-bold">{{ $row['producto']->nombre }}</td>
-                <td class="text-gray">{{ $row['producto']->categoria->nombre }}</td>
-                @foreach ($sedes as $s)
-                    @if (!$filtroSede || $s->id === $filtroSede)
-                        <td class="text-right {{ $row['por_sede'][$s->id] > 0 ? 'font-bold' : 'text-gray' }}">{{ $row['por_sede'][$s->id] }}</td>
-                    @endif
-                @endforeach
-                <td class="text-right font-bold">{{ $row['total'] }}</td>
-            </tr>
-        @empty
-            <tr><td colspan="{{ ($filtroSede ? 1 : $sedes->count()) + 3 }}" class="text-center text-gray">Sin stock registrado.</td></tr>
-        @endforelse
-        </tbody>
-    </table>
-
-    {{-- Sin stock --}}
-    @if ($alertas['sinStock']->count())
-        <div class="section-title">Productos sin stock</div>
-        <table class="data">
-            <thead><tr><th>Producto</th><th class="text-right">Estado</th></tr></thead>
-            <tbody>
-            @foreach ($alertas['sinStock'] as $item)
-                <tr>
-                    <td class="font-bold">{{ $item['nombre'] }}</td>
-                    <td class="text-right"><span class="badge badge-red">SIN STOCK</span></td>
-                </tr>
-            @endforeach
-            @if ($totalSinStock > $alertas['sinStock']->count())
-                <tr><td colspan="2" class="text-center text-gray">y {{ $totalSinStock - $alertas['sinStock']->count() }} más…</td></tr>
-            @endif
-            </tbody>
         </table>
-    @endif
 
-    {{-- Stock bajo --}}
-    @if ($stockBajo->count())
-        <div class="section-title">Stock bajo · Sede: {{ $sedeLabel }}</div>
-        <table class="data">
+        <div class="spacer-md">&nbsp;</div>
+        <div class="header-rule">&nbsp;</div>
+        <div class="spacer-md">&nbsp;</div>
+
+        <table class="meta-table w-100">
+            <tr>
+                <td style="width: 25%;">
+                    <span class="meta-label">Fecha de emisión</span>
+                    <span class="meta-value">{{ now()->format('d/m/Y') }}</span>
+                </td>
+                <td style="width: 25%;">
+                    <span class="meta-label">Hora de emisión</span>
+                    <span class="meta-value">{{ now()->format('H:i') }} hrs.</span>
+                </td>
+                <td style="width: 25%;">
+                    <span class="meta-label">Sede</span>
+                    <span class="meta-value">{{ $sedeLabel }}</span>
+                </td>
+                <td style="width: 25%;">
+                    <span class="meta-label">Emitido por</span>
+                    <span class="meta-value">Sistema Arturo Motors</span>
+                </td>
+            </tr>
+        </table>
+
+        <div class="spacer-lg">&nbsp;</div>
+
+        {{-- KPIs: 4 cajas (Kits armables, Tasa consumo %, Trazabilidad %, Alertas stock) --}}
+        <table class="w-100" style="margin-bottom: 8px;">
+            <tr>
+                <td style="width: 25%; padding: 0 4px;">
+                    <div class="kpi-box kpi-blue">
+                        <div class="value">{{ $capacidad['kitsArmables'] ?? 0 }}</div>
+                        <div class="label">Kits armables</div>
+                    </div>
+                </td>
+                <td style="width: 25%; padding: 0 4px;">
+                    <div class="kpi-box kpi-green">
+                        <div class="value">{{ $tasa['porcentaje'] ?? 0 }}%</div>
+                        <div class="label">Tasa de consumo</div>
+                    </div>
+                </td>
+                <td style="width: 25%; padding: 0 4px;">
+                    <div class="kpi-box kpi-cyan">
+                        <div class="value">{{ $trazabilidad['porcentaje'] ?? 0 }}%</div>
+                        <div class="label">Trazabilidad serie</div>
+                    </div>
+                </td>
+                <td style="width: 25%; padding: 0 4px;">
+                    <div class="kpi-box {{ ($totalSinStock ?? 0) > 0 ? 'kpi-red' : (($totalStockBajo ?? 0) > 0 ? 'kpi-amber' : 'kpi-green') }}">
+                        <div class="value">{{ ($totalAlertas ?? ($totalSinStock + $totalStockBajo)) }}</div>
+                        <div class="label">Alertas de stock</div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <div class="spacer-md">&nbsp;</div>
+
+        {{-- Detalle: Kits armables (cuello de botella) --}}
+        @if(($capacidad['kitsArmables'] ?? 0) === 0 && ($capacidad['cuello'] ?? '') !== 'Sin receta' && ($capacidad['cuello'] ?? ''))
+        <div class="section-title">Capacidad de armado — Cuello de botella</div>
+        <table class="data-table w-100" style="margin-bottom: 14px;">
             <thead>
                 <tr>
-                    <th>Producto</th>
-                    <th class="text-right">Disponible</th>
-                    <th class="text-right">Mínimo</th>
-                    <th class="text-right">Estado</th>
+                    <th style="width: 60%;">Componente</th>
+                    <th style="width: 20%; text-align: right;">Stock suelto</th>
+                    <th style="width: 20%; text-align: center;">Estado</th>
                 </tr>
             </thead>
             <tbody>
-            @foreach ($stockBajo as $p)
+                @foreach($capacidad['barras'] ?? [] as $barra)
                 <tr>
-                    <td class="font-bold">{{ $p->nombre }}</td>
-                    <td class="text-right text-red font-bold">{{ $p->stockSueltoEnSede($filtroSede) }}</td>
-                    <td class="text-right text-gray">{{ $p->stock_minimo }}</td>
-                    <td class="text-right"><span class="badge badge-amber">STOCK BAJO</span></td>
+                    <td class="cell-strong">{{ $barra['nombre'] }}</td>
+                    <td class="cell-right">{{ $barra['cantidad'] }}</td>
+                    <td class="cell-center">
+                        @if($barra['esCuello'])
+                            <span class="badge badge-red">Límite</span>
+                        @else
+                            <span class="badge badge-green">OK</span>
+                        @endif
+                    </td>
                 </tr>
-            @endforeach
+                @endforeach
             </tbody>
         </table>
-    @endif
+        @endif
 
-    {{-- Footer --}}
-    <div class="footer">
-        Arturo Motors · Reporte de Almacén · Generado el {{ now()->format('d/m/Y H:i') }} · Documento de uso interno
+        {{-- Stock por sede --}}
+        @if($stockPorSede && $stockPorSede->count())
+        <div class="section-title">Stock por sede</div>
+        <table class="data-table w-100" style="margin-bottom: 14px;">
+            <thead>
+                <tr>
+                    <th style="width: 60%;">Sede</th>
+                    <th style="width: 40%; text-align: right;">Unidades totales</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($stockPorSede as $nombre => $total)
+                <tr>
+                    <td class="cell-strong">{{ $nombre }}</td>
+                    <td class="cell-right cell-strong">{{ number_format($total) }}</td>
+                </tr>
+                @endforeach
+                <tr style="background-color: #eef2f8; font-weight: 700;">
+                    <td class="cell-strong">Total</td>
+                    <td class="cell-right cell-strong">{{ number_format($stockPorSede->sum()) }}</td>
+                </tr>
+            </tbody>
+        </table>
+        @endif
+
+        {{-- Stock por categoría --}}
+        @if($stockPorCategoria && $stockPorCategoria->count())
+        <div class="section-title">Stock por categoría</div>
+        <table class="data-table w-100" style="margin-bottom: 14px;">
+            <thead>
+                <tr>
+                    <th style="width: 60%;">Categoría</th>
+                    <th style="width: 40%; text-align: right;">Unidades</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($stockPorCategoria as $nombre => $total)
+                <tr>
+                    <td class="cell-strong">{{ $nombre }}</td>
+                    <td class="cell-right cell-strong">{{ number_format($total) }}</td>
+                </tr>
+                @endforeach
+                <tr style="background-color: #eef2f8; font-weight: 700;">
+                    <td class="cell-strong">{{ $productosConStock ?? 0 }} productos</td>
+                    <td class="cell-right cell-strong">{{ number_format($totalItems ?? 0) }}</td>
+                </tr>
+            </tbody>
+        </table>
+        @endif
+
+        {{-- Distribución (tabla principal) --}}
+        @if($distribucion && $distribucion->count())
+        <div class="section-title">Distribución de stock por producto</div>
+        <table class="data-table w-100" style="margin-bottom: 14px;">
+            <thead>
+                <tr>
+                    <th style="width: 35%;">Producto</th>
+                    <th style="width: 15%;">Categoría</th>
+                    @foreach ($sedes as $s)
+                        @if (!$filtroSede || $s->id === $filtroSede)
+                            <th style="width: 15%; text-align: right;">{{ $s->nombre }}</th>
+                        @endif
+                    @endforeach
+                    <th style="width: 15%; text-align: right;">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($distribucion as $row)
+                <tr>
+                    <td class="cell-strong">{{ $row['producto']->nombre }}</td>
+                    <td class="cell-muted">{{ $row['producto']->categoria->nombre }}</td>
+                    @foreach ($sedes as $s)
+                        @if (!$filtroSede || $s->id === $filtroSede)
+                            <td class="cell-right {{ $row['por_sede'][$s->id] > 0 ? 'cell-strong' : 'cell-muted' }}">{{ $row['por_sede'][$s->id] }}</td>
+                        @endif
+                    @endforeach
+                    <td class="cell-right cell-strong">{{ $row['total'] }}</td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+        @else
+        <div class="empty-state" style="margin-bottom: 14px;">
+            <p>Sin stock registrado para los filtros seleccionados.</p>
+        </div>
+        @endif
+
+        {{-- Sin stock --}}
+        @if(($alertas['sinStock'] ?? collect())->count())
+        <div class="section-title">Productos sin stock</div>
+        <table class="data-table w-100" style="margin-bottom: 14px;">
+            <thead>
+                <tr>
+                    <th style="width: 70%;">Producto</th>
+                    <th style="width: 30%; text-align: center;">Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($alertas['sinStock'] as $item)
+                <tr>
+                    <td class="cell-strong">{{ $item['nombre'] }}</td>
+                    <td class="cell-center"><span class="badge badge-red">SIN STOCK</span></td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+        @endif
+
+        {{-- Stock bajo --}}
+        @if(($stockBajo ?? collect())->count())
+        <div class="section-title">Stock bajo — Sede: {{ $sedeLabel }}</div>
+        <table class="data-table w-100" style="margin-bottom: 14px;">
+            <thead>
+                <tr>
+                    <th style="width: 50%;">Producto</th>
+                    <th style="width: 20%; text-align: right;">Disponible</th>
+                    <th style="width: 15%; text-align: right;">Mínimo</th>
+                    <th style="width: 15%; text-align: center;">Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($stockBajo as $p)
+                <tr>
+                    <td class="cell-strong">{{ $p->nombre }}</td>
+                    <td class="cell-right cell-strong text-red"> {{ $p->stockSueltoEnSede( $filtroSede ?? null ) }} </td>
+                    <td class="cell-right cell-muted">{{ $p->stock_minimo }}</td>
+                    <td class="cell-center"><span class="badge badge-amber">STOCK BAJO</span></td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+        @endif
+
+        <div class="spacer-lg">&nbsp;</div>
+        <div class="closing-rule">&nbsp;</div>
+        <div class="spacer-sm">&nbsp;</div>
+        <div class="closing-text">Fin del reporte &mdash; Arturo Motors · Documento de uso interno</div>
+
     </div>
 
 </body>

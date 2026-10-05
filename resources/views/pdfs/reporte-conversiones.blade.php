@@ -1,134 +1,257 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Reporte de Conversiones GNV - Arturo Motors</title>
+    <meta charset="utf-8">
+    <title>Reporte de Conversiones GNV — Arturo Motors</title>
     <style>
-        body { font-family: sans-serif; margin: 0; padding: 30px; color: #1e293b; font-size: 12px; }
-        .header { text-align: center; margin-bottom: 25px; padding: 20px; background: #1e40af; color: #ffffff; border-radius: 8px; }
-        .header h1 { font-size: 22px; margin-bottom: 5px; color: #ffffff; }
-        .header p { font-size: 12px; color: #ffffff; }
-        .kpi-table { width: 100%; border-collapse: collapse; margin-bottom: 25px; }
-        .kpi-table td { width: 25%; text-align: center; padding: 12px; background: #ffffff; border: 1px solid #e2e8f0; }
-        .kpi-value { font-size: 24px; font-weight: bold; color: #1e293b; }
-        .kpi-value-blue { color: #2563eb; }
-        .kpi-value-green { color: #16a34a; }
-        .kpi-value-amber { color: #d97706; }
-        .kpi-label { font-size: 10px; color: #64748b; text-transform: uppercase; margin-top: 5px; }
-        .section-title { font-size: 14px; font-weight: bold; color: #1e293b; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 2px solid #e2e8f0; margin-top: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        th { background: #f1f5f9; padding: 8px 10px; text-align: left; font-size: 10px; font-weight: bold; color: #475569; text-transform: uppercase; border-bottom: 2px solid #cbd5e1; }
-        td { padding: 8px 10px; font-size: 11px; border-bottom: 1px solid #e2e8f0; }
-        tr:nth-child(even) { background: #f8fafc; }
-        .text-right { text-align: right; }
-        .text-center { text-align: center; }
-        .font-bold { font-weight: bold; }
-        .text-green { color: #16a34a; }
-        .text-amber { color: #d97706; }
-        .text-gray { color: #94a3b8; }
-        .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; }
-        .badge-green { background: #dcfce7; color: #16a34a; }
-        .badge-amber { background: #fef3c7; color: #d97706; }
-        .footer { text-align: center; margin-top: 30px; color: #94a3b8; font-size: 10px; border-top: 1px solid #e2e8f0; padding-top: 15px; }
+        @page { margin: 10px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+        html, body {
+            font-family: 'DejaVu Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 8.5px; color: #1c2d42; line-height: 1.35;
+        }
+        .page-wrap { padding: 26px 34px 40px 34px; }
+        table { width: 100%; border-collapse: collapse; }
+        .w-100 { width: 100%; }
+        .spacer-sm { height: 6px; line-height: 6px; font-size: 1px; }
+        .spacer-md { height: 10px; line-height: 10px; font-size: 1px; }
+        .spacer-lg { height: 16px; line-height: 16px; font-size: 1px; }
+
+        .header-table td { vertical-align: middle; }
+        .logo-cell { width: 46%; padding-right: 16px; }
+        .title-cell { width: 54%; }
+        .logo { max-height: 36px; width: auto; display: block; }
+        .company-title { font-family: 'Georgia', serif; font-size: 13px; font-weight: 700; color: #1e3a5f; letter-spacing: 0.4px; margin-top: 5px; }
+        .company-subtitle { font-size: 7.3px; color: #3b82f6; font-weight: 700; letter-spacing: 0.6px; margin-top: 2px; }
+        .company-info { font-size: 7px; color: #64748b; line-height: 1.5; margin-top: 4px; }
+        .report-title-box { background-color: #2563eb; color: #ffffff; padding: 10px 16px; text-align: center; }
+        .report-title { font-family: 'Georgia', serif; font-size: 11.5px; font-weight: 700; letter-spacing: 1.2px; }
+        .report-subtitle { font-size: 7px; color: #bfdbfe; margin-top: 3px; }
+        .header-rule { border-top: 2px solid #2563eb; font-size: 1px; line-height: 1px; }
+
+        .meta-table td { font-size: 7.3px; padding: 7px 11px; background-color: #f7f9fc; border: 1px solid #e2e8f0; }
+        .meta-label { display: block; font-size: 6.5px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 2px; }
+        .meta-value { font-size: 8px; color: #0d1b30; font-weight: 700; }
+
+        .kpi-box { text-align: center; padding: 10px; background-color: #f7f9fc; border: 1px solid #e2e8f0; border-radius: 4px; }
+        .kpi-box .value { font-size: 16px; font-weight: 700; }
+        .kpi-box .label { font-size: 6.5px; color: #64748b; text-transform: uppercase; margin-top: 3px; letter-spacing: 0.3px; }
+        .kpi-green .value { color: #059669; }
+        .kpi-blue .value { color: #2563eb; }
+        .kpi-amber .value { color: #d97706; }
+        .kpi-navy .value { color: #2563eb; }
+
+        .data-table { border: 1px solid #94a3b8; }
+        .data-table thead th {
+            background-color: #2563eb; color: #ffffff; font-size: 7px; font-weight: 700;
+            padding: 7px 8px; text-transform: uppercase; letter-spacing: 0.3px;
+            border-right: 1px solid #3b82f6; text-align: left;
+        }
+        .data-table thead th:last-child { border-right: none; }
+        .data-table tbody td {
+            padding: 6px 8px; font-size: 7.5px; border-bottom: 1px solid #e2e8f0;
+            border-right: 1px solid #e2e8f0; vertical-align: middle; color: #1c2d42;
+        }
+        .data-table tbody td:last-child { border-right: none; }
+        .data-table tbody tr:nth-child(even) { background-color: #f7f9fc; }
+        .cell-strong { font-weight: 700; color: #0d1b30; }
+        .cell-muted { color: #64748b; }
+        .cell-right { text-align: right; }
+        .cell-center { text-align: center; }
+
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 8px; font-size: 6.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
+        .badge-completada { background-color: #dcfce7; color: #166534; border: 1px solid #86efac; }
+        .badge-enproceso { background-color: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+        .badge-evaluacion { background-color: #dbeafe; color: #1d4ed8; border: 1px solid #93c5fd; }
+        .badge-aprobado { background-color: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; }
+        .badge-entregado { background-color: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+
+        .empty-state { text-align: center; padding: 40px 20px; color: #94a3b8; border: 1px dashed #cbd5e1; background-color: #f7f9fc; }
+        .empty-state p { font-size: 10px; font-weight: 600; }
+
+        .closing-rule { border-top: 1px solid #cbd5e1; font-size: 1px; line-height: 1px; }
+        .closing-text { text-align: center; font-size: 6.5px; color: #94a3b8; letter-spacing: 0.4px; text-transform: uppercase; }
+
+        .page-footer { position: fixed; bottom: -32px; left: 34px; right: 34px; }
+        .page-footer table td { border-top: 1px solid #cbd5e1; padding-top: 5px; font-size: 6.5px; color: #94a3b8; }
+        .fright { text-align: right; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>Reporte de Conversiones GNV</h1>
-        <p>Arturo Motors — Kits instalados, componentes y balance de almacén</p>
+    <div class="page-footer">
+        <table class="w-100">
+            <tr>
+                <td>Arturo Motors &mdash; Documento generado automáticamente por el sistema</td>
+                <td class="fright">Página <script type="text/php">
+                    if (isset($pdf)) {
+                        $text = "{PAGE_NUM} de {PAGE_COUNT}";
+                        $font = $fontMetrics->get_font("Helvetica", "normal");
+                        $pdf->page_text(520, 800, $text, $font, 6.5, array(0.58, 0.64, 0.72));
+                    }
+                </script></td>
+            </tr>
+        </table>
     </div>
 
-    <table class="kpi-table">
-        <tr>
-            <td>
-                <div class="kpi-value kpi-value-blue">{{ number_format($totalConversiones) }}</div>
-                <div class="kpi-label">Total Conversiones</div>
-            </td>
-            <td>
-                <div class="kpi-value kpi-value-green">{{ number_format($completadas) }}</div>
-                <div class="kpi-label">Completadas</div>
-            </td>
-            <td>
-                <div class="kpi-value kpi-value-amber">{{ number_format($enProceso) }}</div>
-                <div class="kpi-label">En Proceso</div>
-            </td>
-            <td>
-                <div class="kpi-value">{{ number_format($itemsInstalados) }}</div>
-                <div class="kpi-label">Piezas Instaladas</div>
-            </td>
-        </tr>
-    </table>
+    <div class="page-wrap">
 
-    <table class="kpi-table">
-        <tr>
-            <td>
-                <div class="kpi-value">{{ number_format($kitsEnStock) }}</div>
-                <div class="kpi-label">Kits en Almacén</div>
-            </td>
-            <td>
-                <div class="kpi-value">{{ number_format($stockPiezasSueltas) }}</div>
-                <div class="kpi-label">Piezas Sueltas</div>
-            </td>
-        </tr>
-    </table>
-
-    <div class="section-title">Detalle de Conversiones</div>
-    <table>
-        <thead>
+        <table class="header-table w-100">
             <tr>
-                <th>#</th>
-                <th>Cliente</th>
-                <th>Placa</th>
-                <th>Vehículo</th>
-                <th>Técnico</th>
-                <th>Kit</th>
-                <th>Items Serializados</th>
-                <th style="text-align: center;">Gen.</th>
-                <th style="text-align: center;">Comp.</th>
-                <th style="text-align: center;">Inst.</th>
-                <th>Inicio</th>
-                <th>Fin</th>
-                <th style="text-align: center;">Estado</th>
-            </tr>
-        </thead>
-        <tbody>
-        @forelse ($detalleOrdenes as $d)
-            <tr>
-                <td class="font-bold">{{ $d['orden']->id }}</td>
-                <td>{{ $d['cliente'] }}</td>
-                <td class="font-bold">{{ $d['placa'] }}</td>
-                <td>{{ $d['vehiculo'] }}</td>
-                <td>{{ $d['tecnico'] }}</td>
-                <td>{{ $d['kit'] }}</td>
-                <td>
-                    @forelse ($d['items_serializados'] ?? [] as $item)
-                        {{ $item['nombre'] }}: {{ $item['serie'] }}@if(!$loop->last)<br>@endif
-                    @empty
-                        —
-                    @endforelse
+                <td class="logo-cell">
+                    <img src="{{ public_path('images/LOGOFINAL.jpg') }}" class="logo">
+                    <div class="company-title">ARTURO MOTORS</div>
+                    <div class="company-subtitle">ASESOR AUTOMOTRIZ — CENTRO DE INSPECCIÓN TÉCNICA VEHICULAR</div>
+                    <div class="company-info">
+                        Av. Perú N.° 5176, Callao, Perú<br>
+                        Tel: 987 288 504 / 943 694 464&nbsp;&nbsp;·&nbsp;&nbsp;contacto@empresa.com.pe
+                    </div>
                 </td>
-                <td class="text-center">{{ $d['generacion'] }}</td>
-                <td class="text-center">{{ $d['total_componentes'] }}</td>
-                <td class="text-center">{{ $d['instalados'] }}</td>
-                <td>{{ $d['fecha_inicio'] ?? '—' }}</td>
-                <td>{{ $d['fecha_fin'] ?? '—' }}</td>
-                <td class="text-center">
-                    @if($d['orden']->estado === 'conversion_completada')
-                        <span class="badge badge-green">Completada</span>
-                    @else
-                        <span class="badge badge-amber">En proceso</span>
-                    @endif
+                <td class="title-cell">
+                    <div class="report-title-box">
+                        <div class="report-title">REPORTE DE CONVERSIONES GNV</div>
+                        <div class="report-subtitle">Documento generado el {{ now()->format('d/m/Y') }} a las {{ now()->format('H:i') }} hrs.{{ $filtroEstado && $filtroEstado !== 'todos' ? '  ·  Estado: ' . ucfirst(str_replace('_', ' ', $filtroEstado)) : '' }}{{ $filtroSede ? '  ·  Sede: ' . ($sedeNombre ?? '') : '' }}</div>
+                    </div>
                 </td>
             </tr>
-        @empty
-            <tr><td colspan="12" class="text-center text-gray">No hay conversiones registradas para los filtros seleccionados.</td></tr>
-        @endforelse
-        </tbody>
-    </table>
+        </table>
 
-    <div class="footer">
-        Documento generado el {{ now()->format('d/m/Y H:i') }} — Arturo Motors
+        <div class="spacer-md">&nbsp;</div>
+        <div class="header-rule">&nbsp;</div>
+        <div class="spacer-md">&nbsp;</div>
+
+        <table class="meta-table w-100">
+            <tr>
+                <td style="width: 25%;">
+                    <span class="meta-label">Período</span>
+                    <span class="meta-value">{{ $desde }} al {{ $hasta }}</span>
+                </td>
+                <td style="width: 25%;">
+                    <span class="meta-label">Fecha de emisión</span>
+                    <span class="meta-value">{{ now()->format('d/m/Y') }}</span>
+                </td>
+                <td style="width: 25%;">
+                    <span class="meta-label">Hora de emisión</span>
+                    <span class="meta-value">{{ now()->format('H:i') }} hrs.</span>
+                </td>
+                <td style="width: 25%;">
+                    <span class="meta-label">Emitido por</span>
+                    <span class="meta-value">Sistema Arturo Motors</span>
+                </td>
+            </tr>
+        </table>
+
+        <div class="spacer-lg">&nbsp;</div>
+
+        <table class="w-100" style="margin-bottom: 8px;">
+            <tr>
+                <td style="width: 25%; padding: 0 4px;">
+                    <div class="kpi-box kpi-blue">
+                        <div class="value">{{ number_format($totalConversiones) }}</div>
+                        <div class="label">Total Conversiones</div>
+                    </div>
+                </td>
+                <td style="width: 25%; padding: 0 4px;">
+                    <div class="kpi-box kpi-green">
+                        <div class="value">{{ number_format($completadas) }}</div>
+                        <div class="label">Completadas</div>
+                    </div>
+                </td>
+                <td style="width: 25%; padding: 0 4px;">
+                    <div class="kpi-box kpi-amber">
+                        <div class="value">{{ number_format($enProceso) }}</div>
+                        <div class="label">En Proceso</div>
+                    </div>
+                </td>
+                <td style="width: 25%; padding: 0 4px;">
+                    <div class="kpi-box kpi-navy">
+                        <div class="value">{{ number_format($itemsInstalados) }}</div>
+                        <div class="label">Piezas Instaladas</div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <div class="spacer-md">&nbsp;</div>
+
+        @if($detalleOrdenes->count())
+        <div class="cell-strong" style="font-size: 8px; margin-bottom: 6px;">DETALLE DE CONVERSIONES</div>
+        <table class="data-table w-100" style="margin-bottom: 14px;">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">#</th>
+                    <th style="width: 15%;">Cliente</th>
+                    <th style="width: 10%;">Placa</th>
+                    <th style="width: 12%;">Vehículo</th>
+                    <th style="width: 10%;">Técnico</th>
+                    <th style="width: 12%;">Kit</th>
+                    <th style="width: 15%;">Items Serializados</th>
+                    <th style="width: 5%; text-align: center;">Gen.</th>
+                    <th style="width: 5%; text-align: center;">Comp.</th>
+                    <th style="width: 5%; text-align: center;">Inst.</th>
+                    <th style="width: 8%;">Inicio</th>
+                    <th style="width: 8%;">Fin</th>
+                    <th style="width: 5%; text-align: center;">Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($detalleOrdenes as $d)
+                <tr>
+                    <td class="cell-strong">{{ $d['orden']->id }}</td>
+                    <td>{{ $d['cliente'] }}</td>
+                    <td class="cell-strong">{{ $d['placa'] }}</td>
+                    <td>{{ $d['vehiculo'] }}</td>
+                    <td>{{ $d['tecnico'] }}</td>
+                    <td>{{ $d['kit_nombre'] ?? $d['kit'] ?? 'N/A' }}</td>
+                    <td>
+                        @forelse ($d['items_serializados'] ?? [] as $item)
+                            {{ $item['nombre'] }}: {{ $item['serie'] }}@if(!$loop->last)<br>@endif
+                        @empty
+                            —
+                        @endforelse
+                    </td>
+                    <td class="cell-center">{{ $d['kit_generacion'] ?? $d['generacion'] ?? '' }}</td>
+                    <td class="cell-center">{{ $d['total_componentes'] }}</td>
+                    <td class="cell-center">{{ $d['instalados'] }}</td>
+                    <td>{{ $d['fecha_inicio'] ?? '—' }}</td>
+                    <td>{{ $d['fecha_fin'] ?? '—' }}</td>
+                    <td class="cell-center">
+                        @php
+                            $estado = $d['orden']->estado ?? $d['estado'] ?? '';
+                            $badgeClass = match($estado) {
+                                'conversion_completada' => 'badge-completada',
+                                'en_conversion' => 'badge-enproceso',
+                                'en_evaluacion' => 'badge-evaluacion',
+                                'aprobado_conversion' => 'badge-aprobado',
+                                'entregado' => 'badge-entregado',
+                                default => 'badge-enproceso',
+                            };
+                            $label = match($estado) {
+                                'conversion_completada' => 'Completada',
+                                'en_conversion' => 'En proceso',
+                                'en_evaluacion' => 'En evaluación',
+                                'aprobado_conversion' => 'Aprobado',
+                                'entregado' => 'Entregado',
+                                default => ucfirst(str_replace('_', ' ', $estado)),
+                            };
+                        @endphp
+                        <span class="badge {{ $badgeClass }}">{{ $label }}</span>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+        @else
+        <div class="empty-state" style="margin-bottom: 14px;">
+            <p>No hay conversiones registradas para los filtros seleccionados.</p>
+        </div>
+        @endif
+
+        <div class="spacer-lg">&nbsp;</div>
+        <div class="closing-rule">&nbsp;</div>
+        <div class="spacer-sm">&nbsp;</div>
+        <div class="closing-text">Fin del reporte &mdash; {{ $totalConversiones }} conversión(es) en el período</div>
+
     </div>
 
 </body>

@@ -257,11 +257,12 @@
         const ctx = document.getElementById(id);
         if (!ctx || !labels || !labels.length) return;
         destroyChart(key);
-        const has = ticketData.some(v => v !== null && v !== undefined);
+        const has = (ticketData || []).some(v => v !== null && v !== undefined);
         if (!has) return;
-        const cajaMoney = v => 'S/ ' + Number(v || 0).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        const opsDia = Array.isArray(opts.opsDia) ? opts.opsDia : [];
-        window[key] = new Chart(document.getElementById(id).getContext('2d'), {
+        const opsDia = Array.isArray(opsData)
+            ? opsData
+            : (opts && Array.isArray(opts.opsDia) ? opts.opsDia : []);
+        window[key] = new Chart(ctx.getContext('2d'), {
             type: 'scatter',
             data: {
                 labels: labels,
@@ -283,7 +284,7 @@
                     legend: { display: false },
                     tooltip: { callbacks: {
                         label: ctx => {
-                            const ops = Array.isArray(opts.opsDia) ? opts.opsDia[ctx.dataIndex] : undefined;
+                            const ops = opsDia[ctx.dataIndex];
                             if (ops === null || ops === undefined) return 'Día aún no ocurrido';
                             if (ops === 0) return 'Sin operaciones';
                             return 'S/ ' + Number(ctx.parsed.y || 0).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' · ' + (ops || 0) + ' operación' + (ops === 1 ? '' : 'es');

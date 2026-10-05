@@ -4,6 +4,9 @@ import './bootstrap';
 import './components/reportes/charts.js';
 import './components/reportes/exportar.js';
 
+// Conversiones (reportes)
+import './components/conversiones/reporte-charts.js';
+
 // Recepción (Almacén)
 import './components/recepcion/recepcion-swal.js';
 

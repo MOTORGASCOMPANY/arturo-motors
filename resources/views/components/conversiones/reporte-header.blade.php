@@ -16,13 +16,13 @@
         </div>
 
         <div class="flex items-center gap-3 w-full lg:w-auto justify-end">
-            <button type="button" onclick="exportarPDF()"
-                class="inline-flex items-center gap-2 px-4 py-2 rounded-card text-sm font-semibold text-white bg-red-600 hover:bg-red-700 border border-red-700 shadow-sm transition-colors">
+            <button type="button" wire:click="descargarPdf" wire:loading.attr="disabled"
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-card text-sm font-semibold text-white bg-red-600 hover:bg-red-700 border border-red-700 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                 <i class="fas fa-file-pdf text-[14px]"></i>
                 <span>PDF</span>
             </button>
-            <button type="button" onclick="exportarExcel()"
-                class="inline-flex items-center gap-2 px-4 py-2 rounded-card text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 border border-emerald-700 shadow-sm transition-colors">
+            <button type="button" wire:click="descargarExcel" wire:loading.attr="disabled"
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-card text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 border border-emerald-700 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                 <i class="fas fa-file-excel text-[14px]"></i>
                 <span>Excel</span>
             </button>
