@@ -35,21 +35,25 @@ class PdfController extends Controller
     // Genera manual y mantenimiento de un vehículo específico
     public function generaPdfManual($id)
     {
-        $vehiculo = Vehiculo::with(['clientes', 'cita'])->findOrFail($id);
+        $vehiculo = Vehiculo::with(['clientePrincipal', 'serviceOrders.service', 'serviceOrders.tecnico', 'cita'])->findOrFail($id);
 
-        $meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-        $fechaCert = is_string($vehiculo->created_at) ? new DateTime($vehiculo->created_at) : $vehiculo->created_at;
-        $fechaForma = $fechaCert->format('d').' de '.$meses[$fechaCert->format('m') - 1].' del '.$fechaCert->format('Y');
+        $propietario = $vehiculo->clientePrincipal->first();
+        $servicios = $vehiculo->serviceOrders()->latest()->get();
+        $ultimaCita = $vehiculo->cita()->latest()->first();
+        $proximoMantenimiento = $ultimaCita?->fecha_cita?->addMonths(6)->format('d/m/Y');
 
         $data = [
             'vehiculo' => $vehiculo,
-            'fecha' => $fechaForma,
+            'propietario' => $propietario,
+            'servicios' => $servicios,
+            'ultimaCita' => $ultimaCita,
+            'proximoMantenimiento' => $proximoMantenimiento,
+            'fechaEmision' => now()->format('d de F de Y'),
         ];
         $pdf = App::make('dompdf.wrapper');
         $pdf->loadView('pdfs.manual', $data);
 
-        // Mostrar el PDF en el navegador
-        return $pdf->stream('manual'.$id.'.pdf');
+        return $pdf->stream('manual-'.$vehiculo->placa.'.pdf');
     }
 
     // Genera una orden de trabajo con el detalle de repuestos y accesorios de una conversión
