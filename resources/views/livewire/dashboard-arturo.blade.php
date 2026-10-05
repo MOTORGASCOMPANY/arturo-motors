@@ -213,7 +213,9 @@
                 </h3>
             </div>
             <div class="relative h-60 w-full">
-                <canvas id="chartIngresos"></canvas>
+                <canvas id="chartIngresos"
+                    data-labels='@json($ingresosLabels)'
+                    data-data='@json($ingresosData)'></canvas>
             </div>
         </div>
 
@@ -225,48 +227,41 @@
                 </h3>
             </div>
             <div class="relative h-60 w-full">
-                <canvas id="chartConversiones"></canvas>
+                <canvas id="chartConversiones"
+                    data-labels='@json($conversionesLabels)'
+                    data-data='@json($conversionesData)'></canvas>
             </div>
         </div>
     </div>
     @endrole
 
-    <!-- Script Chart.js (Solo Admin) -->
     @role('Administrador del sistema')
     <script>
         function renderDashboardCharts() {
-            // Gráfico 1: Ingresos
+            // Gráfico 1: Ingresos (line chart)
             const ctxIngresos = document.getElementById('chartIngresos');
-            if (ctxIngresos) {
-                if (window.chartIngresosInstance) window.chartIngresosInstance.destroy();
+            if (ctxIngresos && window.CHART_DEFS) {
+                const labels = JSON.parse(ctxIngresos.dataset.labels || '[]');
+                const data = JSON.parse(ctxIngresos.dataset.data || '[]');
                 
                 const gradientBlue = ctxIngresos.getContext('2d').createLinearGradient(0, 0, 0, 200);
                 gradientBlue.addColorStop(0, 'rgba(37, 99, 235, 0.25)');
                 gradientBlue.addColorStop(1, 'rgba(37, 99, 235, 0.0)');
 
-                window.chartIngresosInstance = new Chart(ctxIngresos, {
-                    type: 'line',
-                    data: {
-                        labels: @json($ingresosLabels),
-                        datasets: [{
-                            label: 'Ingresos (S/)',
-                            data: @json($ingresosData),
-                            borderColor: '#2563eb',
-                            borderWidth: 2.5,
-                            backgroundColor: gradientBlue,
-                            tension: 0.4,
-                            fill: true,
-                            pointBackgroundColor: '#2563eb',
-                            pointRadius: 2,
-                            pointHoverRadius: 5
-                        }]
-                    },
-                    options: { 
-                        responsive: true, 
-                        maintainAspectRatio: false,
-                        plugins: { 
-                            legend: { display: false } 
-                        },
+                window.CHART_DEFS.renderConvLine('chartIngresos', 'chartIngresosInstance', labels, [{
+                    label: 'Ingresos (S/)',
+                    data: data,
+                    borderColor: '#2563eb',
+                    borderWidth: 2.5,
+                    backgroundColor: gradientBlue,
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#2563eb',
+                    pointRadius: 2,
+                    pointHoverRadius: 5
+                }], {
+                    options: {
+                        plugins: { legend: { display: false } },
                         scales: {
                             x: { grid: { display: false }, ticks: { font: { size: 10 } } },
                             y: { grid: { color: '#f3f4f6' }, ticks: { font: { size: 10 } } }
@@ -275,36 +270,25 @@
                 });
             }
 
-            // Gráfico 2: Conversiones
+            // Gráfico 2: Conversiones (bar chart)
             const ctxConversiones = document.getElementById('chartConversiones');
-            if (ctxConversiones) {
-                if (window.chartConversionesInstance) window.chartConversionesInstance.destroy();
+            if (ctxConversiones && window.CHART_DEFS) {
+                const labels = JSON.parse(ctxConversiones.dataset.labels || '[]');
+                const data = JSON.parse(ctxConversiones.dataset.data || '[]');
                 
-                window.chartConversionesInstance = new Chart(ctxConversiones, {
-                    type: 'bar',
-                    data: {
-                        labels: @json($conversionesLabels),
-                        datasets: [{
-                            label: 'Conversiones',
-                            data: @json($conversionesData),
-                            backgroundColor: '#8b5cf6',
-                            borderRadius: 6,
-                            borderSkipped: false
-                        }]
-                    },
-                    options: { 
-                        responsive: true, 
-                        maintainAspectRatio: false,
-                        plugins: { 
-                            legend: { display: false } 
-                        },
+                window.CHART_DEFS.renderConvBar('chartConversiones', 'chartConversionesInstance', labels, [{
+                    label: 'Conversiones',
+                    data: data,
+                    backgroundColor: '#8b5cf6',
+                    borderRadius: 6,
+                    borderSkipped: false
+                }], {
+                    options: {
+                        plugins: { legend: { display: false } },
                         scales: { 
                             x: { grid: { display: false }, ticks: { font: { size: 10 } } },
-                            y: { 
-                                grid: { color: '#f3f4f6' }, 
-                                ticks: { stepSize: 1, font: { size: 10 } } 
-                            } 
-                        } 
+                            y: { grid: { color: '#f3f4f6' }, ticks: { stepSize: 1, font: { size: 10 } } }
+                        }
                     }
                 });
             }

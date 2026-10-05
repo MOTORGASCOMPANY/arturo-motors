@@ -42,27 +42,79 @@
     <x-conversiones.reporte-tabla :detalle-ordenes="$detalleOrdenes" :filtro-badge="$filtroBadge" />
     <div id="reporteConvPayload" class="hidden" aria-hidden="true">@json($charts)</div>
 
-    @push('js')
-        <script src="{{ asset('js/components/reporte-conversiones-charts.js') }}"></script>
-    @endpush
-
     @script
     <script>
-        (function () {
-            function go() {
-                if (typeof window.renderReporteConvCharts === 'function') {
-                    window.renderReporteConvCharts();
-                    return true;
+        window.renderReporteConvCharts = function () {
+            if (!window.CHART_DEFS) return;
+            const payload = document.getElementById('reporteConvPayload');
+            if (!payload) return;
+            let d;
+            try { d = JSON.parse(payload.textContent || '{}'); } catch (e) { return; }
+            if (!d.labels) return;
+
+            // 1. Kits sellados vs completados (doughnut)
+            try {
+                const ctx = document.getElementById('chartKitsSelladosVsCompletados');
+                if (ctx && window.chartKitsSelladosVsCompletadosInstance) window.chartKitsSelladosVsCompletadosInstance.destroy();
+                window.chartKitsSelladosVsCompletadosInstance = window.CHART_DEFS.renderConvDoughnut(
+                    'chartKitsSelladosVsCompletados',
+                    'chartKitsSelladosVsCompletadosInstance',
+                    ['Sellados', 'Completados'],
+                    [d.kitsSellados || 0, d.kitsCompletados || 0],
+                    ['#2563eb', '#10b981']
+                );
+            } catch (e) { console.error('[conversiones] chart1', e); }
+
+            // 2. Kits completados por tipo (GNV/GLP) - doughnut
+            try {
+                const ctx = document.getElementById('chartKitsCompletadosTipo');
+                if (ctx && window.chartKitsCompletadosTipoInstance) window.chartKitsCompletadosTipoInstance.destroy();
+                window.chartKitsCompletadosTipoInstance = window.CHART_DEFS.renderConvDoughnut(
+                    'chartKitsCompletadosTipo',
+                    'chartKitsCompletadosTipoInstance',
+                    ['GNV', 'GLP'],
+                    [d.kitsCompletadosGNV || 0, d.kitsCompletadosGLP || 0],
+                    ['#2563eb', '#f59e0b']
+                );
+            } catch (e) { console.error('[conversiones] chart2', e); }
+
+            // 3. Kits asignados por técnico (horizontal bar)
+            try {
+                const ctx = document.getElementById('chartKitsAsignadosTecnico');
+                if (ctx && window.chartKitsAsignadosTecnicoInstance) window.chartKitsAsignadosTecnicoInstance.destroy();
+                const labels = d.kitsAsignadosTecnicoLabels || [];
+                const data = d.kitsAsignadosTecnicoData || [];
+                if (labels.length) {
+                    window.chartKitsAsignadosTecnicoInstance = window.CHART_DEFS.renderConvBar(
+                        'chartKitsAsignadosTecnico',
+                        'chartKitsAsignadosTecnicoInstance',
+                        labels,
+                        [{ label: 'Kits asignados', data: data, backgroundColor: '#8b5cf6', borderRadius: 6, maxBarThickness: 28 }],
+                        { indexAxis: 'y' }
+                    );
                 }
-                return false;
+            } catch (e) { console.error('[conversiones] chart3', e); }
+        };
+
+        window.renderReporteConvCharts();
+
+        document.addEventListener('livewire:navigated', window.renderReporteConvCharts);
+
+        $wire.on('chart-data-updated', (payload) => {
+            const el = document.getElementById('reporteConvPayload');
+            if (el && payload && payload.charts) {
+                el.textContent = JSON.stringify(payload.charts);
             }
-            if (!go()) {
-                var tries = 0;
-                var wait = setInterval(function () {
-                    if (go() || ++tries > 50) clearInterval(wait);
-                }, 40);
-            }
-        })();
+            window.renderReporteConvCharts();
+        });
+
+        // Export alerts
+        Livewire.on('descargar-pdf', (params) => {
+            AppSwal.exportar({ url: params.url, titulo: 'Exportando PDF', texto: 'Generando el reporte, por favor espera...', archivo: 'PDF' });
+        });
+        Livewire.on('descargar-excel', (params) => {
+            AppSwal.exportar({ url: params.url, titulo: 'Exportando Excel', texto: 'Generando el reporte, por favor espera...', archivo: 'Excel' });
+        });
     </script>
     @endscript
 </div>
