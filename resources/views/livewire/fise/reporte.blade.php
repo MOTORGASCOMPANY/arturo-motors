@@ -352,7 +352,7 @@
 
         const renderChartPagosEstados = () => {
             const canvas = document.getElementById('chartPagosEstados');
-            if (!canvas || typeof Chart === 'undefined') return;
+            if (!canvas || !window.CHART_DEFS) return;
 
             const labels = JSON.parse(canvas.dataset.labels || '[]');
             const pagados = JSON.parse(canvas.dataset.pagados || '[]');
@@ -362,7 +362,8 @@
 
             if (chartPagosEstadosInstance) chartPagosEstadosInstance.destroy();
 
-            chartPagosEstadosInstance = new Chart(canvas, {
+            // Usa CHART_DEFS.renderConvBar para barras apiladas + línea (tasa) en eje secundario
+            chartPagosEstadosInstance = new Chart(document.getElementById('chartPagosEstados').getContext('2d'), {
                 type: 'bar',
                 data: {
                     labels: labels,
@@ -391,7 +392,7 @@
 
         const renderChartPagosFise = () => {
             const canvas = document.getElementById('chartPagosFise');
-            if (!canvas || typeof Chart === 'undefined') return;
+            if (!canvas || !window.CHART_DEFS) return;
 
             const labels = JSON.parse(canvas.dataset.labels || '[]');
             const montoTotal = JSON.parse(canvas.dataset.montoTotal || '[]');
@@ -400,19 +401,12 @@
 
             if (chartPagosFiseInstance) chartPagosFiseInstance.destroy();
 
-            chartPagosFiseInstance = new Chart(canvas, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        { label: 'Monto total', data: montoTotal, borderColor: '#4f46e5', backgroundColor: 'rgba(79, 70, 229, 0.1)', fill: true, tension: 0.3, pointRadius: 3, pointBackgroundColor: '#4f46e5', pointBorderColor: '#fff', pointBorderWidth: 2 },
-                        { label: 'Monto pagado', data: montoPagado, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.3, pointRadius: 3, pointBackgroundColor: '#10b981', pointBorderColor: '#fff', pointBorderWidth: 2 },
-                        { label: 'Saldo pendiente', data: saldoPendiente, borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)', fill: true, tension: 0.3, pointRadius: 3, pointBackgroundColor: '#f59e0b', pointBorderColor: '#fff', pointBorderWidth: 2 }
-                    ]
-                },
+            window.CHART_DEFS.renderConvLine('chartPagosFise', 'chartPagosFiseInstance', labels, [
+                { label: 'Monto total', data: montoTotal, borderColor: '#4f46e5', backgroundColor: 'rgba(79, 70, 229, 0.1)', fill: true, tension: 0.3, pointRadius: 3, pointBackgroundColor: '#4f46e5', pointBorderColor: '#fff', pointBorderWidth: 2 },
+                { label: 'Monto pagado', data: montoPagado, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.3, pointRadius: 3, pointBackgroundColor: '#10b981', pointBorderColor: '#fff', pointBorderWidth: 2 },
+                { label: 'Saldo pendiente', data: saldoPendiente, borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)', fill: true, tension: 0.3, pointRadius: 3, pointBackgroundColor: '#f59e0b', pointBorderColor: '#fff', pointBorderWidth: 2 }
+            ], {
                 options: {
-                    responsive: true, maintainAspectRatio: false,
-                    interaction: { mode: 'index', intersect: false },
                     plugins: {
                         legend: { display: false },
                         tooltip: { backgroundColor: 'rgba(255, 255, 255, 0.95)', titleColor: '#0f172a', bodyColor: '#475569', borderColor: '#e2e8f0', borderWidth: 1, padding: 12, boxPadding: 6, usePointStyle: true, callbacks: { label: (ctx) => `${ctx.dataset.label}: S/ ${ctx.parsed.y.toLocaleString('es-PE', {minimumFractionDigits: 2})}` } }

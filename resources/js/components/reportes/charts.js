@@ -192,6 +192,32 @@
         });
     }
 
+    // ====== LINE CHART (para montos, tendencias) ======
+    function renderConvLine(id, key, labels, datasets, opts) {
+        const ctx = document.getElementById(id);
+        if (!ctx || !labels || !labels.length) return;
+        destroyChart(key);
+        window[key] = new Chart(ctx.getContext('2d'), {
+            type: 'line',
+            data: { labels: labels, datasets: datasets },
+            options: Object.assign({
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { boxWidth: 10, padding: 12, font: { size: 11, family: "'Inter', sans-serif" } }
+                    }
+                },
+                scales: {
+                    x: { grid: { display: false, drawBorder: false }, ticks: { color: '#64748b' } },
+                    y: { beginAtZero: true, ticks: { color: '#94a3b8' }, grid: { color: '#f1f5f9', drawBorder: false, borderDash: [5, 5] } }
+                }
+            }, (opts && opts.options) || {})
+        });
+    }
+
     // ====== REGISTRO GLOBAL ======
     window.CHART_DEFS = {
         // Reportes almacen
@@ -201,6 +227,7 @@
         // Reportes conversiones
         renderConvBar: renderConvBar,
         renderConvDoughnut: renderConvDoughnut,
+        renderConvLine: renderConvLine,
         // Utilidades
         destroyChart: destroyChart
     };
