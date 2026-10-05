@@ -183,6 +183,9 @@
                 data-aceptadas='@json($aceptadasPorPeriodo ?? [])'
                 data-noaceptadas='@json($noAceptadasPorPeriodo ?? [])'
                 data-conversion='@json($conversionPorPeriodo ?? [])'></canvas>
+            <div id="empty-chartCitas" class="hidden flex flex-col items-center justify-center py-10 text-center h-full">
+                <x-ui.empty-state icon="fa-calendar-check" message="No hay citas en el rango seleccionado" />
+            </div>
         </div>
         <div class="flex flex-wrap gap-5 mt-4 justify-center text-xs font-semibold text-gray-600">
             <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-sm border-2 border-emerald-500 bg-emerald-400"></span> Aceptadas</div>
@@ -223,6 +226,9 @@
                         data-valores='@json($ratioAceptadas)'
                         data-color="#10b981"
                         data-fillcolor="rgba(16, 185, 129, 0.15)"></canvas>
+                    <div id="empty-chartRatioAceptadas" class="hidden flex flex-col items-center justify-center py-10 text-center h-full">
+                        <x-ui.empty-state icon="fa-chart-line" message="Sin datos de aceptación en el período" />
+                    </div>
                 </div>
             </div>
 
@@ -237,6 +243,9 @@
                         data-valores='@json($ratioRechazadas)'
                         data-color="#ef4444"
                         data-fillcolor="rgba(239, 68, 68, 0.12)"></canvas>
+                    <div id="empty-chartRatioRechazadas" class="hidden flex flex-col items-center justify-center py-10 text-center h-full">
+                        <x-ui.empty-state icon="fa-chart-line" message="Sin datos de rechazo en el período" />
+                    </div>
                 </div>
             </div>
         </div>
@@ -276,6 +285,9 @@
                 data-rechazadas='@json($asesorRechazadas)'
                 data-canceladas='@json($asesorCanceladas)'
                 data-seleccionado="{{ $asesorKey }}"></canvas>
+            <div id="empty-chartAsesores" class="hidden flex flex-col items-center justify-center py-10 text-center h-full">
+                <x-ui.empty-state icon="fa-users" message="Sin vendedores con citas en el rango" />
+            </div>
         </div>
 
         @if($labelsAsesores->isEmpty())

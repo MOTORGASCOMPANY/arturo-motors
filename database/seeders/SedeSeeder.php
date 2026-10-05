@@ -10,13 +10,31 @@ class SedeSeeder extends Seeder
     public function run(): void
     {
         $sedes = [
-            ['nombre' => 'Sede Principal - San Isidro', 'direccion' => 'Av. Javier Prado Este 4200, San Isidro', 'telefono' => '01-555-1001', 'estado' => true],
-            ['nombre' => 'Sede Sur - Chorrillos', 'direccion' => 'Av. Walter Bruenger 1450, Chorrillos', 'telefono' => '01-555-1002', 'estado' => true],
-            ['nombre' => 'Sede Norte - Comas', 'direccion' => 'Av. Túpac Amaru 3200, Comas', 'telefono' => '01-555-1003', 'estado' => true],
+            [
+                'nombre' => 'Callao',
+                'direccion' => 'Av. Perú N.° 5176, Callao',
+                'telefono' => '01-555-1001',
+                'estado' => true,
+            ],
+            [
+                'nombre' => 'Ancón',
+                'direccion' => 'Panamericana Norte Km 35, Ancón',
+                'telefono' => '01-555-1002',
+                'estado' => true,
+            ],
+            [
+                'nombre' => 'Villa María',
+                'direccion' => 'Av. Los Precursores 1200, Villa María del Triunfo',
+                'telefono' => '01-555-1003',
+                'estado' => true,
+            ],
         ];
 
         foreach ($sedes as $sede) {
-            Sede::create($sede);
+            Sede::updateOrCreate(
+                ['nombre' => $sede['nombre']],
+                $sede
+            );
         }
     }
 }

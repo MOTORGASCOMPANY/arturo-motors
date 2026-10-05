@@ -21,6 +21,10 @@
     }
 
     function getCtxWithEmpty(canvasId, emptyId, hasData) {
+        // Si no se pasa emptyId, usar convención: 'empty-' + canvasId
+        if (arguments.length < 2 || emptyId === undefined || emptyId === null) {
+            emptyId = 'empty-' + canvasId;
+        }
         const canvas = document.getElementById(canvasId);
         const empty = document.getElementById(emptyId);
         if (empty) empty.classList.toggle('hidden', !!hasData);
@@ -390,6 +394,7 @@
         renderCajaEgresosCat: renderCajaEgresosCat,
         renderCajaIngresosSemana: renderCajaIngresosSemana,
         // Utilidades
-        destroyChart: destroyChart
+        destroyChart: destroyChart,
+        getCtxWithEmpty: getCtxWithEmpty
     };
 })();

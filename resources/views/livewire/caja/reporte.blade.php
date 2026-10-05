@@ -67,111 +67,69 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {{-- 1. Ingresos vs egresos (barras agrupadas) --}}
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6" wire:ignore wire:key="caja-c1">
-            <h3 class="text-sm font-bold text-gray-500 uppercase mb-4">
-                <i class="fas fa-exchange-alt mr-1.5 text-emerald-500"></i>Ingresos vs. egresos por día
-            </h3>
-            <div class="relative w-full" style="height: 280px;">
-                <canvas id="chartIngresosEgresos"></canvas>
-            </div>
-            <div id="emptyIE" class="hidden flex flex-col items-center justify-center py-10 text-center">
-                <i class="fas fa-chart-bar text-3xl text-gray-300 mb-2"></i>
-                <p class="text-sm text-gray-400 font-medium">No hay datos para este gráfico</p>
-            </div>
-            <div class="flex flex-wrap gap-4 mt-3 justify-center text-xs font-semibold text-gray-600">
-                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-emerald-500"></span> Ingresos</span>
-                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-red-500"></span> Egresos</span>
-            </div>
-        </div>
+        <x-ui.chart
+            id="chartIngresosEgresos"
+            title="Ingresos vs. egresos por día"
+            icon="fa-exchange-alt"
+            iconColor="text-emerald-500"
+            emptyId="emptyIE"
+            height="280px"
+            :legend="['Ingresos' => '#10b981', 'Egresos' => '#ef4444']"
+        />
 
         {{-- 2. Ticket promedio por día (reemplaza al flujo acumulado) --}}
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6" wire:ignore wire:key="caja-c2">
-            <div class="flex flex-wrap items-start justify-between gap-x-3 gap-y-2 mb-4">
-                <h3 class="min-w-0 text-sm font-bold text-gray-500 uppercase">
-                    <i class="fas fa-ticket-alt mr-1.5 text-indigo-500"></i>Ticket promedio por día
-                </h3>
-                <span class="max-w-full text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-full px-2.5 py-1 break-words">
-                    {{ $operacionesPeriodo > 0 ? 'Promedio S/ ' . number_format($ticketPeriodo, 2) : 'Sin operaciones' }}
-                </span>
-            </div>
-            <div class="relative w-full" style="height: 280px;">
-                <canvas id="chartTicketDia"></canvas>
-            </div>
-            <div id="emptyTicket" class="hidden flex flex-col items-center justify-center py-10 text-center">
-                <i class="fas fa-ticket-alt text-3xl text-gray-300 mb-2"></i>
-                <p class="text-sm text-gray-400 font-medium">No hay datos para este gráfico</p>
-                <p class="text-xs text-gray-300 mt-1">Sin operaciones en el período seleccionado</p>
-            </div>
-            <p class="text-center text-xs text-gray-400 mt-2">Ingresos ÷ operaciones de cada día del período</p>
-        </div>
+        <x-ui.chart
+            id="chartTicketDia"
+            title="Ticket promedio por día"
+            icon="fa-ticket-alt"
+            iconColor="text-indigo-500"
+            emptyId="emptyTicket"
+            height="280px"
+            :subtitle="$operacionesPeriodo > 0 ? 'Promedio S/ ' . number_format($ticketPeriodo, 2) : 'Sin operaciones'"
+        />
+        {{-- Nota: descripcion adicional se mantiene en JS --}}
 
         {{-- 3. Distribución por método de pago (dona) --}}
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6" wire:ignore wire:key="caja-c3">
-            <h3 class="text-sm font-bold text-gray-500 uppercase mb-4">
-                <i class="fas fa-credit-card mr-1.5 text-violet-500"></i>Distribución por método de pago
-            </h3>
-            <div class="relative w-full" style="height: 280px;">
-                <canvas id="chartMetodosPago"></canvas>
-            </div>
-            <div id="emptyMetodos" class="hidden flex flex-col items-center justify-center py-10 text-center">
-                <i class="fas fa-credit-card text-3xl text-gray-300 mb-2"></i>
-                <p class="text-sm text-gray-400 font-medium">No hay datos para este gráfico</p>
-                <p class="text-xs text-gray-300 mt-1">Sin ingresos por método en el período</p>
-            </div>
-        </div>
+        <x-ui.chart
+            id="chartMetodosPago"
+            title="Distribución por método de pago"
+            icon="fa-credit-card"
+            iconColor="text-violet-500"
+            emptyId="emptyMetodos"
+            height="280px"
+        />
 
         {{-- 6. FISE vs no FISE por día --}}
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6" wire:ignore wire:key="caja-c6">
-            <div class="flex flex-wrap items-start justify-between gap-x-3 gap-y-2 mb-4">
-                <h3 class="min-w-0 text-sm font-bold text-gray-500 uppercase">
-                    <i class="fas fa-hand-holding-usd mr-1.5 text-amber-500"></i>Ingresos FISE vs. no FISE
-                </h3>
-                <span class="max-w-full text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-1 break-words">
-                    FISE S/ {{ number_format($fiseTotal, 2) }} · Otros S/ {{ number_format($noFiseTotal, 2) }}
-                </span>
-            </div>
-            <div class="relative w-full" style="height: 260px;">
-                <canvas id="chartFiseNoFise"></canvas>
-            </div>
-            <div id="emptyFise" class="hidden flex flex-col items-center justify-center py-10 text-center">
-                <i class="fas fa-chart-bar text-3xl text-gray-300 mb-2"></i>
-                <p class="text-sm text-gray-400 font-medium">No hay datos para este gráfico</p>
-            </div>
-            <div class="flex flex-wrap gap-4 mt-3 justify-center text-xs font-semibold text-gray-600">
-                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-amber-500"></span> FISE</span>
-                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-emerald-500"></span> No FISE</span>
-            </div>
-        </div>
+        <x-ui.chart
+            id="chartFiseNoFise"
+            title="Ingresos FISE vs. no FISE"
+            icon="fa-hand-holding-usd"
+            iconColor="text-amber-500"
+            emptyId="emptyFise"
+            height="260px"
+            :subtitle="'FISE S/ ' . number_format($fiseTotal, 2) . ' · Otros S/ ' . number_format($noFiseTotal, 2)"
+            :legend="['FISE' => '#f59e0b', 'No FISE' => '#10b981']"
+        />
 
         {{-- 4. Egresos por categoría (barras horizontales) --}}
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6" wire:ignore wire:key="caja-c4">
-            <h3 class="text-sm font-bold text-gray-500 uppercase mb-4">
-                <i class="fas fa-file-invoice-dollar mr-1.5 text-red-500"></i>Egresos
-            </h3>
-            <div class="relative w-full" style="height: 280px;">
-                <canvas id="chartEgresosCat"></canvas>
-            </div>
-            <div id="emptyEgresosCat" class="hidden flex flex-col items-center justify-center py-10 text-center">
-                <i class="fas fa-file-invoice-dollar text-3xl text-gray-300 mb-2"></i>
-                <p class="text-sm text-gray-400 font-medium">No hay datos para este gráfico</p>
-                <p class="text-xs text-gray-300 mt-1">Sin egresos en el período seleccionado</p>
-            </div>
-        </div>
+        <x-ui.chart
+            id="chartEgresosCat"
+            title="Egresos"
+            icon="fa-file-invoice-dollar"
+            iconColor="text-red-500"
+            emptyId="emptyEgresosCat"
+            height="280px"
+        />
 
         {{-- 5. Ingresos de la semana (Lun–Sáb, se corta en el día actual) --}}
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6" wire:ignore wire:key="caja-c5">
-            <h3 class="text-sm font-bold text-gray-500 uppercase mb-4">
-                <i class="fas fa-calendar-day mr-1.5 text-sky-500"></i>Ingresos de la semana
-            </h3>
-            <div class="relative w-full" style="height: 280px;">
-                <canvas id="chartIngresosSemana"></canvas>
-            </div>
-            <div id="emptySemana" class="hidden flex flex-col items-center justify-center py-10 text-center">
-                <i class="fas fa-calendar-day text-3xl text-gray-300 mb-2"></i>
-                <p class="text-sm text-gray-400 font-medium">No hay datos para este gráfico</p>
-                <p class="text-xs text-gray-300 mt-1">Aún no hay ingresos esta semana</p>
-            </div>
-        </div>
+        <x-ui.chart
+            id="chartIngresosSemana"
+            title="Ingresos de la semana"
+            icon="fa-calendar-day"
+            iconColor="text-sky-500"
+            emptyId="emptySemana"
+            height="280px"
+        />
     </div>
 
     {{-- Extra: Top 5 ingresos --}}

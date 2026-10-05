@@ -127,57 +127,19 @@
     </div>
 
     {{-- Gráfico de servicios por día --}}
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-6 lg:p-8" wire:ignore wire:key="reporte-servicios-chart">
-        <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 mb-6">
-            <h3 class="min-w-0 flex items-center gap-2 text-sm font-bold text-gray-600 uppercase tracking-wider">
-                <i class="fas fa-chart-column text-gray-400 shrink-0"></i>
-                <span>Órdenes por semana</span>
-            </h3>
-            <span class="text-xs font-medium text-gray-400">Agrupadas en bloques de 7 días</span>
-        </div>
-
-        <div class="relative w-full" style="height: 360px;">
-            <canvas id="chartReporteServicios"
-                data-labels='@json($labels)'
-                data-conversion-pendientes='@json($conversionPendientes)'
-                data-conversion-completadas='@json($conversionCompletadas)'
-                data-simple-completadas='@json($simpleCompletadas)'></canvas>
-        </div>
-        
-        @if ($hayDatos)
-            <div class="flex flex-wrap gap-4 mt-6 justify-center">
-                @if ($totalConversionesPendientes > 0)
-                    <div class="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-full border border-gray-100 shadow-sm text-sm">
-                        <span class="w-3.5 h-3.5 rounded-full shadow-inner" style="background: #d97706"></span>
-                        <span class="font-semibold text-gray-600">Pendientes</span>
-                        <span class="text-gray-400 font-medium">({{ $totalConversionesPendientes }})</span>
-                    </div>
-                @endif
-                @if ($totalConversionesCompletadas > 0)
-                    <div class="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-full border border-gray-100 shadow-sm text-sm">
-                        <span class="w-3.5 h-3.5 rounded-full shadow-inner" style="background: #059669"></span>
-                        <span class="font-semibold text-gray-600">Completadas</span>
-                        <span class="text-gray-400 font-medium">({{ $totalConversionesCompletadas }})</span>
-                    </div>
-                @endif
-                @if ($totalSimplesCompletadas > 0)
-                    <div class="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-full border border-gray-100 shadow-sm text-sm">
-                        <span class="w-3.5 h-3.5 rounded-full shadow-inner" style="background: #6b7280"></span>
-                        <span class="font-semibold text-gray-600">Simples</span>
-                        <span class="text-gray-400 font-medium">({{ $totalSimplesCompletadas }})</span>
-                    </div>
-                @endif
-            </div>
-        @else
-            <div class="flex flex-col items-center justify-center py-16 text-center bg-gray-50/50 rounded-xl mt-4 border border-dashed border-gray-200">
-                <div class="w-16 h-16 bg-white shadow-sm rounded-full flex items-center justify-center mb-4">
-                    <i class="fas fa-clipboard-list text-gray-400 text-2xl"></i>
-                </div>
-                <p class="text-gray-600 font-semibold text-lg">Todavía no hay movimiento registrado</p>
-                <p class="text-gray-400 text-sm mt-1">Las órdenes de servicio aparecerán aquí cuando se creen en el rango de fechas.</p>
-            </div>
-        @endif
-    </div>
+    <x-ui.chart
+        id="chartReporteServicios"
+        title="Órdenes por semana"
+        icon="fa-chart-column"
+        iconColor="text-gray-400"
+        height="360px"
+        subtitle="Agrupadas en bloques de 7 días"
+        :legend="[
+            'Conversión pendiente' => '#d97706',
+            'Conversión completada' => '#059669',
+            'Simple completado' => '#6b7280',
+        ]"
+    />
 
     {{-- Layout de 2 columnas para las Tablas --}}
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -282,6 +244,15 @@
             const conversionCompletadas = JSON.parse(canvas.dataset.conversionCompletadas || '[]');
             const simpleCompletadas = JSON.parse(canvas.dataset.simpleCompletadas || '[]');
 
+            // Verificar si hay datos
+            const hasData = conversionPendientes.some(v => Number(v) > 0) ||
+                          conversionCompletadas.some(v => Number(v) > 0) ||
+                          simpleCompletadas.some(v => Number(v) > 0);
+
+            // Usar getCtxWithEmpty para manejar estado vacío
+            const ctx = window.CHART_DEFS?.getCtxWithEmpty?.('chartReporteServicios', 'empty-chartReporteServicios', hasData);
+            if (!ctx) return;
+
             if (!window.CHART_DEFS) return;
 
             window.CHART_DEFS.renderConvBar('chartReporteServicios', 'chartReporteServicios', labels, [
@@ -325,14 +296,16 @@
             }
         });
 
-        // Update canvas data-* attrs cuando servidor envía nuevos datos
-        $wire.on('chart-data-updated', (data) => {
-            const canvas = document.getElementById('chartReporteServicios');
-            if (!canvas) return;
-            canvas.dataset.labels = JSON.stringify(data.labels);
-            canvas.dataset.conversionPendientes = JSON.stringify(data.conversionPendientes);
-            canvas.dataset.conversionCompletadas = JSON.stringify(data.conversionCompletadas);
-            canvas.dataset.simpleCompletadas = JSON.stringify(data.simpleCompletadas);
+        // Update payload cuando servidor envía nuevos datos
+        $wire.on('chart-data-updated', (payload) => {
+            const data = Array.isArray(payload) ? payload[0] : payload;
+            const el = document.getElementById('chartReporteServicios');
+            if (el) {
+                el.dataset.labels = JSON.stringify(data.labels || []);
+                el.dataset.conversionPendientes = JSON.stringify(data.conversionPendientes || []);
+                el.dataset.conversionCompletadas = JSON.stringify(data.conversionCompletadas || []);
+                el.dataset.simpleCompletadas = JSON.stringify(data.simpleCompletadas || []);
+            }
             window.renderReporteServiciosChart();
         });
 

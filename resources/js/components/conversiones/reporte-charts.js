@@ -1,12 +1,26 @@
 import '../reportes/charts.js';
 
+function hasData(arr) {
+    return Array.isArray(arr) && arr.some(v => Number(v) > 0);
+}
+
+function hasAnyData(...arrays) {
+    return arrays.some(hasData);
+}
+
 function renderChart1(d) {
     try {
+        const labels = d.labelsKits || [];
+        const data = d.dataKits || [];
+        const emptyId = 'empty-chartKitsUsados';
+        const has = hasData(data);
+        const ctx = window.CHART_DEFS.getCtxWithEmpty('chartKitsUsados', emptyId, has);
+        if (!ctx) return;
         window.CHART_DEFS.renderConvDoughnut(
             'chartKitsUsados',
             'chartKitsUsadosInstance',
-            d.labelsKits || [],
-            d.dataKits || [],
+            labels,
+            data,
             ['#2563eb', '#10b981', '#8b5cf6']
         );
     } catch (e) { console.error('[conversiones] chart1', e); }
@@ -14,11 +28,17 @@ function renderChart1(d) {
 
 function renderChart2(d) {
     try {
+        const labels = d.labelsEstado || [];
+        const data = d.dataEstado || [];
+        const emptyId = 'empty-chartConvEstado';
+        const has = hasData(data);
+        const ctx = window.CHART_DEFS.getCtxWithEmpty('chartConvEstado', emptyId, has);
+        if (!ctx) return;
         window.CHART_DEFS.renderConvDoughnut(
             'chartConvEstado',
             'chartConvEstadoInstance',
-            d.labelsEstado || [],
-            d.dataEstado || [],
+            labels,
+            data,
             d.coloresEstado
         );
     } catch (e) { console.error('[conversiones] chart2', e); }
@@ -26,10 +46,16 @@ function renderChart2(d) {
 
 function renderChart3(d) {
     try {
+        const labels = d.labelsMes || [];
         const estados = d.estadosMes || [];
+        const datos = d.dataMesPorEstado || {};
+        const has = hasAnyData(...Object.values(datos));
+        const emptyId = 'empty-chartConvMes';
+        const ctx = window.CHART_DEFS.getCtxWithEmpty('chartConvMes', emptyId, has);
+        if (!ctx) return;
+
         const nombres = d.labelsEstadosMes || [];
         const colores = d.coloresMesEstados || [];
-        const datos = d.dataMesPorEstado || {};
         const datasets = estados.map((estado, i) => ({
             label: nombres[i] || estado,
             data: datos[estado] || [],
@@ -40,7 +66,7 @@ function renderChart3(d) {
         window.CHART_DEFS.renderConvBar(
             'chartConvMes',
             'chartConvMesInstance',
-            d.labelsMes || [],
+            labels,
             datasets,
             { stacked: true }
         );
@@ -49,11 +75,17 @@ function renderChart3(d) {
 
 function renderChart4(d) {
     try {
+        const labels = d.labelsComponentes || [];
+        const data = d.dataComponentes || [];
+        const emptyId = 'empty-chartComponentes';
+        const has = hasData(data);
+        const ctx = window.CHART_DEFS.getCtxWithEmpty('chartComponentes', emptyId, has);
+        if (!ctx) return;
         window.CHART_DEFS.renderConvBar(
             'chartComponentes',
             'chartComponentesInstance',
-            d.labelsComponentes || [],
-            [{ label: 'Componentes instalados', data: d.dataComponentes || [], backgroundColor: '#f59e0b', borderRadius: 6, maxBarThickness: 28 }],
+            labels,
+            [{ label: 'Componentes instalados', data, backgroundColor: '#f59e0b', borderRadius: 6, maxBarThickness: 28 }],
             { options: { indexAxis: 'y' } }
         );
     } catch (e) { console.error('[conversiones] chart4', e); }
@@ -61,11 +93,17 @@ function renderChart4(d) {
 
 function renderChart5(d) {
     try {
+        const labels = d.labelsDespachados || [];
+        const data = d.dataDespachados || [];
+        const emptyId = 'empty-chartDespachados';
+        const has = hasData(data);
+        const ctx = window.CHART_DEFS.getCtxWithEmpty('chartDespachados', emptyId, has);
+        if (!ctx) return;
         window.CHART_DEFS.renderConvDoughnut(
             'chartDespachados',
             'chartDespachadosInstance',
-            d.labelsDespachados || [],
-            d.dataDespachados || [],
+            labels,
+            data,
             ['#8b5cf6', '#10b981']
         );
     } catch (e) { console.error('[conversiones] chart5', e); }
@@ -73,15 +111,21 @@ function renderChart5(d) {
 
 function renderChart6(d) {
     try {
+        const labels = d.labelsStockSedes || [];
+        const datasets = [
+            { label: 'Kits', data: d.dataStockKits || [], backgroundColor: '#2563eb', borderRadius: 6, maxBarThickness: 48 },
+            { label: 'Sueltos con serie', data: d.dataStockSerie || [], backgroundColor: '#8b5cf6', borderRadius: 6, maxBarThickness: 48 },
+            { label: 'Sueltos por cantidad', data: d.dataStockCantidad || [], backgroundColor: '#10b981', borderRadius: 6, maxBarThickness: 48 }
+        ];
+        const has = hasAnyData(...datasets.map(ds => ds.data));
+        const emptyId = 'empty-chartBalanceSedes';
+        const ctx = window.CHART_DEFS.getCtxWithEmpty('chartBalanceSedes', emptyId, has);
+        if (!ctx) return;
         window.CHART_DEFS.renderConvBar(
             'chartBalanceSedes',
             'chartBalanceSedesInstance',
-            d.labelsStockSedes || [],
-            [
-                { label: 'Kits', data: d.dataStockKits || [], backgroundColor: '#2563eb', borderRadius: 6, maxBarThickness: 48 },
-                { label: 'Sueltos con serie', data: d.dataStockSerie || [], backgroundColor: '#8b5cf6', borderRadius: 6, maxBarThickness: 48 },
-                { label: 'Sueltos por cantidad', data: d.dataStockCantidad || [], backgroundColor: '#10b981', borderRadius: 6, maxBarThickness: 48 }
-            ],
+            labels,
+            datasets,
             {}
         );
     } catch (e) { console.error('[conversiones] chart6', e); }
