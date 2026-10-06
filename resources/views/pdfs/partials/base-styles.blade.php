@@ -1,4 +1,5 @@
 {{-- Estilos base compartidos para todos los reportes PDF --}}
+<style>
 @page { margin: 10px; }
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
 html, body {
@@ -88,3 +89,4 @@ table { width: 100%; border-collapse: collapse; }
 .fright { text-align: right; }
 
 .section-title { font-size: 8px; font-weight: 700; color: #0d1b30; text-transform: uppercase; letter-spacing: 0.5px; margin: 12px 0 6px 0; padding-bottom: 4px; border-bottom: 2px solid #2563eb; }
+</style>
