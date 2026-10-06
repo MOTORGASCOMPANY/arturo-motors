@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <title>Comprobante {{ $orden->comprobante->folio }}</title>
+    @include('pdfs._marca')
     <style>
         @page {
             margin: 20px 25px;
@@ -10,9 +11,12 @@
         body {
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             font-size: 11px;
-            color: #1e293b;
             line-height: 1.3;
         }
+
+        /* Marca de agua: position: fixed = fija y centrada, no sube ni baja */
+        table.watermark { width: 100%; height: 100%; position: fixed; top: 0; left: 0; z-index: -1; }
+        table.watermark img { width: 400px; opacity: 0.12; }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -48,7 +52,7 @@
 
         /* CUADRO RUC */
         .ruc-box {
-            border: 2px solid #1e3a8a;
+            border: 2px solid #1565c0;
             border-radius: 8px;
             padding: 8px;
             text-align: center;
@@ -63,7 +67,7 @@
         .ruc-type {
             font-size: 12px;
             font-weight: bold;
-            color: #1e3a8a;
+            color: #1565c0;
             margin: 4px 0;
         }
         .ruc-folio {
@@ -83,7 +87,7 @@
         .section-title {
             font-size: 9.5px;
             font-weight: bold;
-            color: #1e3a8a;
+            color: #1565c0;
             border-bottom: 1px solid #e2e8f0;
             padding-bottom: 3px;
             margin-bottom: 6px;
@@ -154,8 +158,8 @@
 <body>
 
     <!-- Marca de agua -->
-    <table width="100%" height="100%" style="position: fixed; top: 0; left: 0; z-index: -1;">
-        <tr><td align="center" valign="middle"><img src="{{ public_path('images/LOGOFINAL.jpg') }}" style="width: 400px; opacity: 0.12;"></td></tr>
+    <table class="watermark">
+        <tr><td align="center" valign="middle"><img src="{{ public_path('images/LOGOFINAL.jpg') }}"></td></tr>
     </table>
 
     <!-- CABECERA PRINCIPAL -->
@@ -165,7 +169,7 @@
             <td style="width: 58%; padding-right: 10px;">
                 <img src="{{ public_path('images/LOGOFINAL.jpg') }}" class="logo">
                 <div class="company-title uppercase">ARTURO MOTORS — ASESOR AUTOMOTRIZ</div>
-                <div class="company-title uppercase" style="color: #1e3a8a;">CENTRO DE INSPECCIÓN TÉCNICA VEHICULAR</div>
+                <div class="company-title uppercase" style="color: #1565c0;">CENTRO DE INSPECCIÓN TÉCNICA VEHICULAR</div>
                 
                 <div class="company-info" style="margin-top: 4px;">
                     <strong>DIRECCIÓN:</strong> Av. Perú N° 5176 - Callao, Perú<br>
@@ -203,7 +207,7 @@
             </tr>
             <tr>
                 <td class="label">Placa Vehículo:</td>
-                <td class="val"><strong style="font-size: 11px; color: #1e3a8a;">{{ strtoupper($orden->vehiculo->placa) }}</strong></td>
+                <td class="val"><strong style="font-size: 11px; color: #1565c0;">{{ strtoupper($orden->vehiculo->placa) }}</strong></td>
                 <td class="label">Marca/Modelo:</td>
                 <td class="val">{{ $orden->vehiculo->marca }} {{ $orden->vehiculo->modelo }}</td>
             </tr>
@@ -283,7 +287,7 @@
                     @endif
                     <tr class="total-row">
                         <td class="text-right font-bold" style="padding: 5px 4px; color: #0f172a;">TOTAL A PAGAR:</td>
-                        <td class="text-right font-bold" style="padding: 5px 4px; color: #1e3a8a;">S/ {{ number_format($orden->comprobante->monto, 2) }}</td>
+                        <td class="text-right font-bold" style="padding: 5px 4px; color: #1565c0;">S/ {{ number_format($orden->comprobante->monto, 2) }}</td>
                     </tr>
                 </table>
             </td>

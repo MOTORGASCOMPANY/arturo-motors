@@ -1,142 +1,134 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
 <meta charset="UTF-8">
+<title>Hoja de Recepción del Vehículo</title>
+@include('pdfs._marca')
 <style>
-    @page { margin: 15px 20px 20px 20px; }
+    /* Documento denso: calibrado para caber en UNA sola hoja */
+    @page { margin: 20px 30px 34px 30px; }
 
-    * { box-sizing: border-box; }
+    body { font-size: 8px; line-height: 1.3; }
 
-    body { font-family: 'DejaVu Sans', sans-serif; font-size: 8px; color: #4a4a4a; line-height: 1.3; margin: 0; padding: 0; }
+    table.watermark img { width: 280px; }
 
-    table.watermark { width: 100%; height: 100%; position: fixed; top: 0; left: 0; z-index: -1; }
-    table.watermark img { width: 280px; opacity: 0.06; }
+    .logo-cell img { height: 36px; width: auto; }
+    .brand-title { font-size: 15px; }
+    .brand-subtitle { font-size: 6.5px; }
+    .ruc-value { font-size: 9px; }
+    .rd-value { font-size: 6.5px; }
+    .header-divider { margin: 5px 0 7px 0; }
 
-    table.header { width: 100%; border-collapse: collapse; margin-bottom: 2px; }
-    table.header td { vertical-align: middle; padding: 0; }
-    .logo-cell { width: 12%; }
-    .logo-cell img { width: 36px; height: 36px; }
-    .brand-cell { width: 58%; padding-left: 6px; }
-    .brand-title { font-size: 16px; font-weight: bold; color: #1565c0; margin: 0; letter-spacing: 1px; }
-    .brand-subtitle { font-size: 7px; color: #9a9a9a; margin: 1px 0 0 0; letter-spacing: 2.5px; text-transform: uppercase; }
-    .ruc-cell { text-align: right; width: 30%; }
-    .ruc-label { font-size: 7px; color: #9a9a9a; letter-spacing: 1px; text-transform: uppercase; }
-    .ruc-value { font-size: 9px; font-weight: bold; color: #1565c0; }
-    .rd-value { font-size: 6.5px; color: #aaaaaa; margin-top: 1px; }
+    table.doc-title-box { margin-bottom: 7px; }
+    table.doc-title-box td { padding-bottom: 4px; }
+    .doc-title-main { font-size: 11.5px; }
+    .doc-title-sub { font-size: 6.5px; }
+    .doc-title-tag { text-align: right; font-size: 8.5px; font-weight: bold; color: #1565c0; }
 
-    .header-divider { border: none; border-top: 2px solid #1565c0; margin: 4px 0 1px 0; }
-    .header-divider-thin { border: none; border-top: 0.75px solid #cfcfcf; margin: 0 0 5px 0; }
-
-    table.doc-title-box { width: 100%; border-collapse: collapse; background: #1565c0; margin-bottom: 6px; }
-    table.doc-title-box td { padding: 4px 10px; vertical-align: middle; }
-    .doc-title-main { color: #ffffff; font-size: 11px; font-weight: bold; letter-spacing: 0.5px; margin: 0; }
-    .doc-title-sub { color: #d6e6fb; font-size: 7px; letter-spacing: 1.2px; text-transform: uppercase; margin: 1px 0 0 0; }
-    .doc-title-tag { color: #ffffff; text-align: right; font-size: 8px; font-weight: bold; }
-
-    table.fechas { width: 100%; border-collapse: collapse; margin-bottom: 5px; }
-    table.fechas td { padding: 3px 8px; color: #46586b; font-size: 8px; background: #f4f8fd; border: 1px solid #c7d7ee; }
+    table.fechas { width: 100%; border-collapse: collapse; margin-bottom: 2px; }
+    table.fechas td { padding: 3px 4px; font-size: 8px; color: #46586b; border-bottom: 0.75px solid #e2e6ea; }
     table.fechas td strong { color: #1565c0; }
 
-    table.section-title { width: 100%; border-collapse: collapse; margin: 5px 0 2px 0; }
-    table.section-title td { padding: 0; }
-    .section-bar { width: 4px; background: #1565c0; }
-    .section-label { background: #eef2f7; color: #2c3e50; padding: 2px 6px; font-size: 8px; font-weight: bold; letter-spacing: 0.4px; text-transform: uppercase; }
+    .section-title { margin: 8px 0 3px 0; padding-bottom: 2px; font-size: 8px; }
 
-    table.datos { width: 100%; border-collapse: collapse; border: 1px solid #d6dde5; margin-bottom: 2px; }
-    table.datos td { padding: 2px 6px; border-bottom: 1px solid #e2e6ea; color: #333333; font-size: 8px; }
-    table.datos tr:last-child td { border-bottom: none; }
-    table.datos td.label { font-weight: bold; width: 25%; color: #46586b; text-transform: uppercase; font-size: 7px; letter-spacing: 0.3px; background: #f7f9fb; border-right: 1px solid #e2e6ea; }
+    table.info th { width: 16%; padding: 3px 5px; font-size: 6.5px; }
+    table.info td { width: 34%; padding: 3px 5px; font-size: 8px; }
 
     table.recepcion { width: 100%; border-collapse: collapse; }
-    table.recepcion td.esquema { width: 42%; border: 1px solid #d6dde5; padding: 0; background-color: #ffffff; background-repeat: no-repeat; background-position: center center; background-size: contain; }
+    table.recepcion td.esquema {
+        width: 42%;
+        border: 0.75px solid #d6dde5;
+        padding: 0;
+        background-color: #ffffff;
+        background-repeat: no-repeat;
+        background-position: center center;
+        background-size: contain;
+    }
     table.recepcion td.accesorios { width: 58%; vertical-align: top; padding: 0 0 0 6px; }
 
-    table.acc-table { width: 100%; border-collapse: collapse; border: 1px solid #d6dde5; }
-    table.acc-table th { background: #eef2f7; border: 1px solid #d6dde5; padding: 2px 3px; font-size: 7px; color: #46586b; text-transform: uppercase; }
-    table.acc-table td { border: 1px solid #d6dde5; padding: 2px 3px; color: #4a4a4a; font-size: 7.5px; }
-    table.acc-table td.chk { text-align: center; width: 14px; color: #1565c0; font-weight: bold; }
+    table.acc-table { width: 100%; border-collapse: collapse; }
+    table.acc-table th {
+        padding: 2px 3px;
+        font-size: 6.5px;
+        color: #46586b;
+        text-transform: uppercase;
+        border-bottom: 1px solid #1565c0;
+    }
+    table.acc-table td { padding: 2px 3px; font-size: 7.5px; color: #4a4a4a; border-bottom: 0.75px solid #e2e6ea; }
+    table.acc-table th.chk, table.acc-table td.chk { text-align: center; width: 14px; }
+    table.acc-table td.chk { color: #1565c0; font-weight: bold; }
 
-    .obs-box { border: 1px solid #d6dde5; margin-top: 4px; padding: 5px; min-height: 30px; color: #4a4a4a; font-size: 8px; background: #fbfcfd; }
-    .obs-box em { color: #6f88a8; }
+    .obs-box { border: 0.75px solid #d6dde5; margin-top: 2px; padding: 5px; min-height: 30px; color: #4a4a4a; font-size: 8px; }
+    .obs-box em { color: #46586b; }
 
-    table.firmas { width: 100%; border-collapse: collapse; margin-top: 25px; }
-    table.firmas td { width: 50%; text-align: center; color: #46586b; font-size: 8px; padding-top: 40px; font-weight: bold; }
-    .firma-linea { border-top: 1px solid #9aa8b8; width: 78%; margin: 0 auto 4px auto; }
-    .firma-cell span { display: block; font-weight: normal; font-size: 7px; color: #9aa8b8; margin-top: 1px; }
+    table.firmas { margin-top: 18px; }
+    table.firmas td { padding-top: 34px; }
+    table.firmas strong { font-size: 8px; }
+    table.firmas span { font-size: 7px; }
 
-    .footer-note { margin-top: 8px; text-align: center; font-size: 6.5px; color: #b3b3b3; letter-spacing: 0.4px; border-top: 0.75px solid #e2e6ea; padding-top: 4px; }
+    .footer-note { bottom: -28px; font-size: 6.5px; }
 </style>
 </head>
 <body>
+
     <table class="watermark">
         <tr><td align="center" valign="middle"><img src="{{ public_path('images/LOGOFINAL.jpg') }}"></td></tr>
     </table>
 
+    <!-- ENCABEZADO -->
     <table class="header">
         <tr>
             <td class="logo-cell"><img src="{{ public_path('images/LOGOFINAL.jpg') }}"></td>
             <td class="brand-cell">
                 <p class="brand-title">ARTURO MOTORS</p>
-                <p class="brand-subtitle">Tecnolog&iacute;a Automotriz</p>
+                <p class="brand-subtitle">Tecnología Automotriz</p>
             </td>
             <td class="ruc-cell">
                 <div class="ruc-label">R.U.C.</div>
                 <div class="ruc-value">{{ $ruc ?? '20610295321' }}</div>
-                <div class="rd-value">R.D. N&deg; {{ $rd_numero ?? '0224-2025-MTC/17.03' }}</div>
+                <div class="rd-value">R.D. N° {{ $rd_numero ?? '0224-2025-MTC/17.03' }}</div>
             </td>
         </tr>
     </table>
     <hr class="header-divider">
-    <hr class="header-divider-thin">
 
+    <!-- TÍTULO -->
     <table class="doc-title-box">
         <tr>
             <td style="width: 70%;">
-                <p class="doc-title-main">HOJA DE RECEPCI&Oacute;N DEL VEH&Iacute;CULO</p>
+                <p class="doc-title-main">Hoja de Recepción del Vehículo</p>
                 <p class="doc-title-sub">Registro de ingreso, estado y accesorios</p>
             </td>
-            <td class="doc-title-tag" style="width: 30%;">{!! $tipo_inspeccion ?? 'PRE INSPECCI&Oacute;N' !!}</td>
+            <td class="doc-title-tag" style="width: 30%;">{!! $tipo_inspeccion ?? 'PRE INSPECCIÓN' !!}</td>
         </tr>
     </table>
 
     <table class="fechas">
         <tr>
-            <td style="width:50%; border-right: none;"><strong>Fecha de ingreso al taller:</strong> {{ $fecha_ingreso }}</td>
+            <td style="width:50%;"><strong>Fecha de ingreso al taller:</strong> {{ $fecha_ingreso }}</td>
             <td style="width:50%;"><strong>Fecha de salida del taller:</strong> {{ $fecha_salida }}</td>
         </tr>
     </table>
 
-    <table class="section-title">
-        <tr>
-            <td class="section-bar"></td>
-            <td class="section-label">Datos del Due&ntilde;o</td>
-        </tr>
-    </table>
-    <table class="datos">
-        <tr><td class="label">Nombre</td><td colspan="3">{{ $nombre_dueno }}</td></tr>
-        <tr><td class="label">DNI</td><td style="width:25%;">{{ $dni }}</td><td class="label" style="width:25%;">Tel&eacute;fono</td><td style="width:25%;">{{ $telefono }}</td></tr>
+    <!-- DUEÑO -->
+    <div class="section-title">Datos del Dueño</div>
+    <table class="info">
+        <tr><th>Nombre</th><td colspan="3">{{ $nombre_dueno }}</td></tr>
+        <tr><th>DNI</th><td>{{ $dni }}</td><th>Teléfono</th><td>{{ $telefono }}</td></tr>
     </table>
 
-    <table class="section-title">
-        <tr>
-            <td class="section-bar"></td>
-            <td class="section-label">Datos y Caracter&iacute;sticas del Veh&iacute;culo</td>
-        </tr>
-    </table>
-    <table class="datos">
-        <tr><td class="label">Placa Actual</td><td>{{ $placa_actual }}</td><td class="label">Marca</td><td>{{ $marca }}</td></tr>
-        <tr><td class="label">Placa Anterior</td><td>{{ $placa_anterior ?? 'NE' }}</td><td class="label">Modelo</td><td>{{ $modelo }}</td></tr>
-        <tr><td class="label">N&deg; Motor</td><td>{{ $motor_num }}</td><td class="label">Color</td><td>{{ $color }}</td></tr>
-        <tr><td class="label">A&ntilde;o</td><td>{{ $anio }}</td><td class="label">Combustible</td><td>{{ $combustible ?? 'BI-COMBUSTIBLE GNV' }}</td></tr>
-        <tr><td class="label">Kilometraje</td><td colspan="3">{{ $kilometraje ?? 'NE' }}</td></tr>
+    <!-- VEHÍCULO -->
+    <div class="section-title">Datos y Características del Vehículo</div>
+    <table class="info">
+        <tr><th>Placa actual</th><td>{{ $placa_actual }}</td><th>Marca</th><td>{{ $marca }}</td></tr>
+        <tr><th>Placa anterior</th><td>{{ $placa_anterior ?? 'NE' }}</td><th>Modelo</th><td>{{ $modelo }}</td></tr>
+        <tr><th>N° Motor</th><td>{{ $motor_num }}</td><th>Color</th><td>{{ $color }}</td></tr>
+        <tr><th>Año</th><td>{{ $anio }}</td><th>Combustible</th><td>{{ $combustible ?? 'BI-COMBUSTIBLE GNV' }}</td></tr>
+        <tr><th>Kilometraje</th><td colspan="3">{{ $kilometraje ?? 'NE' }}</td></tr>
     </table>
 
-    <table class="section-title">
-        <tr>
-            <td class="section-bar"></td>
-            <td class="section-label">Recepci&oacute;n del Veh&iacute;culo</td>
-        </tr>
-    </table>
+    <!-- RECEPCIÓN -->
+    <div class="section-title">Recepción del Vehículo</div>
     @php
         $fichaAbs = null;
         if (!empty($orden->ficha_dano)) {
@@ -194,7 +186,7 @@
         <tr>
             <td class="esquema" style="{{ $imgFinal ? 'background-image: url(' . $imgFinal . ');' : '' }}">
                 @if(!$imgFinal)
-                    <div style="text-align: center; padding: 8px; color: #999; font-style: italic; font-size: 9px;">
+                    <div style="text-align: center; padding: 8px; color: #8a8a8a; font-style: italic; font-size: 9px;">
                         No disponible
                     </div>
                 @else
@@ -203,7 +195,10 @@
             </td>
             <td class="accesorios">
                 <table class="acc-table" style="height: {{ $altoCaja }}px;">
-                    <tr style="height: {{ $altoCabecera }}px;"><th style="width:44%; text-align:left;">Accesorios</th><th class="chk">SI</th><th class="chk">NO</th><th style="width:44%; text-align:left;">Accesorios</th><th class="chk">SI</th><th class="chk">NO</th></tr>
+                    <tr style="height: {{ $altoCabecera }}px;">
+                        <th style="width:44%; text-align:left;">Accesorios</th><th class="chk">SI</th><th class="chk">NO</th>
+                        <th style="width:44%; text-align:left;">Accesorios</th><th class="chk">SI</th><th class="chk">NO</th>
+                    </tr>
                     @php $izq = $accesorios_izq ?? []; $der = $accesorios_der ?? []; $maxRows = max(count($izq), count($der)); @endphp
                     @for ($i = 0; $i < $maxRows; $i++)
                     <tr style="height: {{ $altoFila }}px;">
@@ -222,31 +217,30 @@
         </tr>
     </table>
 
-    <table class="section-title">
-        <tr>
-            <td class="section-bar"></td>
-            <td class="section-label">Observaciones</td>
-        </tr>
-    </table>
+    <!-- OBSERVACIONES -->
+    <div class="section-title">Observaciones</div>
     <div class="obs-box">
         {!! nl2br(e($observaciones ?? '')) !!}
-        <br><br><em>Con la presente yo y/o en representaci&oacute;n autorizo el trabajo a realizarse en mi veh&iacute;culo.</em>
+        <br><br><em>Con la presente yo y/o en representación autorizo el trabajo a realizarse en mi vehículo.</em>
     </div>
 
+    <!-- FIRMAS -->
     <table class="firmas">
         <tr>
-            <td class="firma-cell">
+            <td>
                 <div class="firma-linea"></div>
-                Firma del Cliente
-                <span>Conformidad de Recepci&oacute;n</span>
+                <strong>Firma del Cliente</strong>
+                <span>Conformidad de Recepción</span>
             </td>
-            <td class="firma-cell">
+            <td>
                 <div class="firma-linea"></div>
-                Firma Representante del Taller
+                <strong>Firma Representante del Taller</strong>
                 <span>ARTURO MOTORS</span>
             </td>
         </tr>
     </table>
+
+    <p class="footer-note">DOCUMENTO GENERADO POR EL SISTEMA DE GESTIÓN DE ARTURO MOTORS</p>
 
 </body>
 </html>
