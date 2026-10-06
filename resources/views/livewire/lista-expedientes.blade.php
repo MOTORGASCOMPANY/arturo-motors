@@ -86,7 +86,7 @@
                                                 </div>
                                             @endhasanyrole
                                             <div class="relative group">
-                                                <a href="{{ route('expedientesEvaluacion.pdf', $expe->id) }}" target="__blank"
+                                                <a href="{{ route('expedientes.evaluacion.pdf', $expe->id) }}" target="__blank"
                                                     class="py-1 px-2 text-center rounded-md bg-red-400 font-bold text-black cursor-pointer hover:bg-red-500">
                                                     <i class="fas fa-print"></i>
                                                 </a>

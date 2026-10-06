@@ -93,12 +93,12 @@ class Reporte extends Component
 
     public function exportPdfUrl(): string
     {
-        return route('ReporteConversiones.Pdf', $this->getFiltros());
+        return route('conversiones.reporte.pdf', $this->getFiltros());
     }
 
     public function exportExcelUrl(): string
     {
-        return route('ReporteConversiones.Excel', $this->getFiltros());
+        return route('conversiones.reporte.excel', $this->getFiltros());
     }
 
     public function descargarPdf(): void

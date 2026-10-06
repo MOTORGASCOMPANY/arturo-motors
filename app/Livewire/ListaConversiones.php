@@ -117,7 +117,7 @@ class ListaConversiones extends Component
     // Redirecciona a la página de SolicitudRepuestos con el ID de la conversión.
     public function redirectToSolicitudRepuestos($conversionId)
     {
-        return redirect()->route('SolicitudRepuestos', ['conversionId' => $conversionId]);
+        return redirect()->route('conversiones.solicitud-repuestos', ['conversionId' => $conversionId]);
     }
 
     public function updatedFilterTecnico(): void { $this->resetPage(); }

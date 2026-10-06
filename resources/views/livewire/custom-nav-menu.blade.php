@@ -149,8 +149,8 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                                             aria-label="submenu">
 
                                             <li class="transition-colors duration-150">
-                                                <x-responsive-nav-link class="text-sm" href="{{ route('ListaCitas') }}"
-                                                    :active="request()->routeIs('ListaCitas')">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('citas.lista') }}"
+                                                    :active="request()->routeIs('citas.lista')">
                                                     Lista citas
                                                 </x-responsive-nav-link>
                                             </li>
@@ -288,8 +288,8 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                                             </li>
                                             {{-- 
                                                 <li class="transition-colors duration-150">
-                                                    <x-responsive-nav-link class="text-sm" href="{{ route('ListaCitas') }}"
-                                                        :active="request()->routeIs('ListaCitas')">
+                                                    <x-responsive-nav-link class="text-sm" href="{{ route('citas.lista') }}"
+                                                        :active="request()->routeIs('citas.lista')">
                                                         Lista citas
                                                     </x-responsive-nav-link>
                                                 </li>
@@ -354,14 +354,12 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                                                 </li>
                                             @endcan
 
-                                            {{-- 
-                                                <li class="transition-colors duration-150">
-                                                    <x-responsive-nav-link class="text-sm" href="{{ route('ListaConversiones') }}"
-                                                        :active="request()->routeIs('ListaConversiones')">
-                                                        Conversiones
-                                                    </x-responsive-nav-link>
-                                                </li>
-                                            --}}
+                                            <li class="transition-colors duration-150">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('conversiones.lista') }}"
+                                                    :active="request()->routeIs('conversiones.lista')">
+                                                    Conversiones
+                                                </x-responsive-nav-link>
+                                            </li>
                                         </ul>
                                     </div>
                                 </li>
@@ -582,14 +580,14 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                                             aria-label="submenu">
 
                                             <li class="transition-colors duration-150">
-                                                <x-responsive-nav-link class="text-sm" href="{{ route('ListaVehiculos') }}"
-                                                    :active="request()->routeIs('ListaVehiculos')">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('vehiculos.lista') }}"
+                                                    :active="request()->routeIs('vehiculos.lista')">
                                                     Lista Vehiculos
                                                 </x-responsive-nav-link>
                                             </li>
                                             <li class="transition-colors duration-150">
-                                                <x-responsive-nav-link class="text-sm" href="{{ route('ListaClientes') }}"
-                                                    :active="request()->routeIs('ListaClientes')">
+                                                <x-responsive-nav-link class="text-sm" href="{{ route('clientes.lista') }}"
+                                                    :active="request()->routeIs('clientes.lista')">
                                                     Lista Clientes
                                                 </x-responsive-nav-link>
                                             </li>

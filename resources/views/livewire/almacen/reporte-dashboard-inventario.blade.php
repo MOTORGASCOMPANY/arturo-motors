@@ -14,13 +14,13 @@
             </div>
             <div class="flex items-center gap-3 w-full lg:w-auto justify-end">
                 {{-- Alertas de exportación. --}}
-                <a href="{{ route('ReporteAlmacen.Pdf', ['sede_id' => $sedeActual]) }}"
+                <a href="{{ route('almacen.reporte.pdf', ['sede_id' => $sedeActual]) }}"
                    onclick="AppSwal.exportar({ url: this.href, titulo: 'Exportando PDF', texto: 'Generando el reporte, por favor espera...', archivo: 'PDF' }); return false;"
                    class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-red-600 hover:bg-red-700 border border-red-700 shadow-sm transition-colors">
                     <i class="fas fa-file-pdf text-[14px]"></i>
                     <span>PDF</span>
                 </a>
-                <a href="{{ route('ReporteAlmacen.Excel', ['sede_id' => $sedeActual]) }}"
+                <a href="{{ route('almacen.reporte.excel', ['sede_id' => $sedeActual]) }}"
                    onclick="AppSwal.exportar({ url: this.href, titulo: 'Exportando Excel', texto: 'Generando el reporte, por favor espera...', archivo: 'Excel' }); return false;"
                    class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 border border-emerald-700 shadow-sm transition-colors">
                     <i class="fas fa-file-excel text-[14px]"></i>

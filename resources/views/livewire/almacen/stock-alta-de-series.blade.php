@@ -10,7 +10,7 @@
                     </h1>
                     <p class="text-sm text-gray-500 mt-1">Kits con componentes pendientes de serie</p>
                 </div>
-                <a href="{{ route('almacen.stock') }}"
+                <a href="{{ route('almacen.productos.listado') }}"
                    class="text-sm text-gray-500 hover:text-gray-700">
                     ← Volver al stock
                 </a>

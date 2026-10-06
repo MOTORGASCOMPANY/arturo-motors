@@ -123,7 +123,7 @@ class KitRearmar extends Component
                 if ($this->kit->estado === 'en_stock') {
                     $this->dispatch('swal', tipo: 'success', titulo: '¡Kit completo!',
                         mensaje: 'El kit fue rearmando exitosamente y está listo para usar.');
-                    $this->redirect(route('almacen.stock'));
+                    $this->redirect(route('almacen.productos.listado'));
                 }
             }
         } catch (\Exception $e) {

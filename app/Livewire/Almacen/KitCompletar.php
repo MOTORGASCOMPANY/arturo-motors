@@ -247,7 +247,7 @@ class KitCompletar extends Component
         }
 
         $this->dispatch('minToast', titulo: '¡Kit completado!', mensaje: 'Se agregaron ' . count($agregados) . ' pieza(s) al kit.', icono: 'success');
-        $this->redirect(route('almacen.stock'));
+        $this->redirect(route('almacen.productos.listado'));
     }
 
     public function render()

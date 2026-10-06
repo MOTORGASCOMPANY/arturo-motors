@@ -166,14 +166,15 @@ class SolicitudRepuestos extends Component
 
     public function redirectToRegresar()
     {
-        return redirect()->route('ListaConversiones');
+        // Volver al listado principal de conversiones
+        return redirect()->route('conversiones.lista');
     }
 
     // Nuevo método para abrir el PDF en una nueva pestaña
     public function openPdf()
     {
         // Obtenemos la URL del PDF usando el helper route() y el ID de la conversión
-        $pdfUrl = route('ordenRepuestos.pdf', ['id' => $this->conversionId]);
+        $pdfUrl = route('repuestos.orden.pdf', ['id' => $this->conversionId]);
 
         // Emitir un evento para que el frontend abra la URL en una nueva pestaña
         $this->dispatch('open-pdf', url: $pdfUrl);

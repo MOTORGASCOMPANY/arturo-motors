@@ -10,7 +10,7 @@
                     </h1>
                     <p class="text-sm text-gray-500 mt-1">Devolver pieza de repuesto al kit abierto para completarlo</p>
                 </div>
-                <a href="{{ route('almacen.stock') }}" class="text-sm text-gray-500 hover:text-gray-700">← Volver al stock</a>
+                <a href="{{ route('almacen.productos.listado') }}" class="text-sm text-gray-500 hover:text-gray-700">← Volver al stock</a>
             </div>
 
             @if ($kit)
@@ -42,7 +42,7 @@
                         <div class="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
                             <i class="fas fa-check-circle text-green-500 text-xl mb-2"></i>
                             <p class="text-sm font-semibold text-green-700">¡El kit está completo! No hay piezas faltantes.</p>
-                            <a href="{{ route('almacen.stock') }}" class="mt-3 inline-block px-4 py-2 bg-green-600 text-white text-sm font-bold rounded-lg hover:bg-green-700 transition">
+                            <a href="{{ route('almacen.productos.listado') }}" class="mt-3 inline-block px-4 py-2 bg-green-600 text-white text-sm font-bold rounded-lg hover:bg-green-700 transition">
                                 Volver al stock
                             </a>
                         </div>
@@ -119,7 +119,7 @@
                     @endif
 
                     <div class="flex justify-end gap-3 mt-6 pt-4 border-t">
-                        <a href="{{ route('almacen.stock') }}"
+                        <a href="{{ route('almacen.productos.listado') }}"
                            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
                             Cancelar
                         </a>

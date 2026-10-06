@@ -189,7 +189,7 @@
                                                     <i class="fa-solid fa-clipboard-list text-teal-500"></i>
                                                     Manual y Mantenimiento
                                                 </a>
-                                                <a href="{{ route('ordenRepuestos.pdf', ['id' => $conve->id]) }}" target="_blank" rel="noopener noreferrer"
+                                                <a href="{{ route('repuestos.orden.pdf', ['id' => $conve->id]) }}" target="_blank" rel="noopener noreferrer"
                                                     class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors" role="menuitem">
                                                     <i class="fa-solid fa-clipboard-list text-teal-500"></i>
                                                     Orden Repuestos y Acces

@@ -20,6 +20,9 @@ class DatabaseSeeder extends Seeder
             // Autorización (reemplaza a RoleSeeder)
             RolesPermissionsSeeder::class,   // 29 permisos + 7 roles + 51 relaciones pivote
 
+            // Contenido editable de la landing / CMS
+            CmsCustomizationSeeder::class,   // Bloques de la landing (hero, servicios, etc.)
+
             // Sedes reales (producción)
             SedeSeeder::class,               // Callao, Ancón, Villa María
         ]);
