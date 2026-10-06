@@ -42,7 +42,7 @@
 
                     <div class="flex gap-2">
                         @if($docSubido)
-                            @hasanyrole('Administrador del sistema|administrador')
+                            @can('rrhh.contratos')
                                 @if($docSubido->estado == 'Pendiente')
                                     <button wire:click="cambiarEstado({{ $docSubido->id }}, 'Aprobado')"
                                             class="p-2 bg-green-100 text-green-600 rounded-md hover:bg-green-200" title="Aprobar">
@@ -53,7 +53,7 @@
                                         <i class="fas fa-times"></i>
                                     </button>
                                 @endif
-                            @endhasanyrole
+                            @endcan
 
                             {{-- Botón para Ver/Descargar --}}
                             <a href="{{ Storage::url($docSubido->ruta) }}" target="_blank"
@@ -61,7 +61,7 @@
                                 <i class="fas fa-eye"></i>
                             </a>
 
-                            @hasanyrole('Administrador del sistema|administrador')
+                            @can('rrhh.contratos')
                                 <button x-data
                                         @click="
                                             Livewire.dispatch('swal:confirmar', {
@@ -77,7 +77,7 @@
                                         class="p-2 bg-red-100 text-red-600 rounded-md hover:bg-red-200" title="Eliminar">
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
-                            @endhasanyrole
+                            @endcan
                         @endif
 
                         {{-- Botón para Subir (Solo el dueño o admin si es necesario) --}}

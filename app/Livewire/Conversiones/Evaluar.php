@@ -24,8 +24,9 @@ class Evaluar extends Component
     {
         $this->orden = ServiceOrder::with(['cliente', 'vehiculo', 'service'])->findOrFail($ordenId);
 
-        $esAdminOJefe = Auth::user()->hasAnyRole(['Administrador del sistema', 'Jefe de Taller']);
-        abort_unless($esAdminOJefe || $this->orden->tecnico_id === Auth::id(), 403, 'Esta orden no está asignada a ti.');
+        // Los supervisores (quienes pueden asignar técnicos) ven cualquier orden; el técnico solo las suyas.
+        $esSupervisor = Auth::user()->can('conversiones.asignar');
+        abort_unless($esSupervisor || $this->orden->tecnico_id === Auth::id(), 403, 'Esta orden no está asignada a ti.');
         abort_unless($this->orden->estado === 'en_evaluacion', 403, 'Esta orden no está en etapa de evaluación.');
 
         $this->gruposChecklist = ChecklistEvaluacion::grupos();

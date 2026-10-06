@@ -7,12 +7,12 @@
                 </h2>
                 <p class="text-sm text-gray-500 mt-1">Todos los usuarios registrados</p>
             </div>
-            @if(auth()->user()->hasRole('Administrador del sistema'))
+            @can('usuarios')
             <button wire:click="abrirModalCrear"
                 class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors flex items-center gap-2">
                 <i class="fas fa-plus text-xs"></i> Crear usuario
             </button>
-            @endif
+            @endcan
         </div>
 
         <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden" x-data="{ expandir: false }">
@@ -134,7 +134,7 @@
     
 
     <!-- Modal para crear usuario -->
-    @if(auth()->user()->hasRole('Administrador del sistema'))
+    @can('usuarios')
     <x-dialog-modal wire:model.live="creando" wire:loading.attr="disabled">
         <x-slot name="title" class="font-bold">
             <h1 class="text-xl font-bold"><i class="fa-solid fa-user-plus text-white"></i> &nbsp;Crear Nuevo Usuario</h1>
@@ -180,7 +180,7 @@
             </x-button>
         </x-slot>
     </x-dialog-modal>
-    @endif
+    @endcan
 
     <!-- Modal para editar usuario -->
     <x-dialog-modal wire:model.live="editando" wire:loading.attr="disabled">

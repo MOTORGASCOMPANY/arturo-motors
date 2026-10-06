@@ -64,8 +64,8 @@ class DashboardArturo extends Component
         $user = auth()->user();
         $data = [];
 
-        // Caja (Solo Admin y Jefe de Taller)
-        if ($user->hasAnyRole(['Administrador del sistema', 'Jefe de Taller'])) {
+        // Caja (quien tiene el módulo de caja: Admin, Jefe de Taller, Cajero)
+        if ($user->can('opciones.caja')) {
             $sesionCaja = SesionCaja::abierta()->with('abiertaPor')->orderByDesc('abierta_en')->first();
             $data['sesionCaja'] = $sesionCaja;
 
@@ -75,8 +75,8 @@ class DashboardArturo extends Component
             }
         }
 
-        // Gráficos: ingresos de los últimos 30 días (Solo Admin)
-        if ($user->hasRole('Administrador del sistema')) {
+        // Gráficos: ingresos de los últimos 30 días (Admin y Jefe de Taller)
+        if ($user->can('dashboard.graficos')) {
             $ingresosPorDia = MovimientoCaja::where('tipo', 'ingreso')
                 ->where('created_at', '>=', now()->subDays(29)->startOfDay())
                 ->selectRaw('DATE(created_at) as fecha, SUM(monto) as total')
@@ -95,8 +95,8 @@ class DashboardArturo extends Component
             [$data['conversionesLabels'], $data['conversionesData']] = $this->serieUltimos30Dias($conversionesPorDia);
         }
 
-        // Contadores de conversiones (No Clientes)
-        if (! $user->hasRole('Cliente')) {
+        // Contadores de conversiones (quien participa del flujo de conversiones)
+        if ($user->can('dashboard.metricas')) {
             $data['conversionesHoy'] = ServiceOrder::whereHas('service', fn ($q) => $q->where('tipo', 'conversion'))
                 ->whereDate('created_at', today())->count();
 
@@ -107,28 +107,32 @@ class DashboardArturo extends Component
                 ->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
         }
 
-        // Roles específicos
-        if ($user->hasAnyRole(['Jefe de Taller', 'Administrador del sistema'])) {
+        if ($user->can('conversiones.asignar')) {
             $data['pendientesAsignarTecnico'] = ServiceOrder::whereHas('service', fn ($q) => $q->where('tipo', 'conversion'))
                 ->where('estado', 'creada')->count();
+        }
+
+        if ($user->can('conversiones.entregas-pendientes')) {
             $data['pendientesEntrega'] = ServiceOrder::where('estado', 'conversion_completada')->count();
         }
 
-        if ($user->hasAnyRole(['Tecnico', 'Administrador del sistema'])) {
+        if ($user->can('conversiones.mis-asignadas')) {
             $data['misPendientes'] = ServiceOrder::where('tecnico_id', $user->id)
                 ->whereIn('estado', ['en_evaluacion', 'aprobado_conversion', 'en_conversion'])->count();
         }
 
-        if ($user->hasAnyRole(['Almacen', 'Administrador del sistema'])) {
+        if ($user->can('opciones.almacen')) {
             $data['pendientesAlmacen'] = ServiceOrder::where('estado', 'aprobado_conversion')->count();
         }
 
         // FISE pendientes
-        if ($user->hasAnyRole(['Administrador del sistema', 'Jefe de Taller'])) {
+        if ($user->can('opciones.fise')) {
             $data['fisePendientes'] = FisePago::where('estado', 'pendiente')->count();
         }
 
-        $data['ordenesHoy'] = ServiceOrder::whereDate('created_at', today())->count();
+        if ($user->can('ordenes.listado')) {
+            $data['ordenesHoy'] = ServiceOrder::whereDate('created_at', today())->count();
+        }
 
         $data['rolPrincipal'] = $this->getRolPrincipal($user);
 

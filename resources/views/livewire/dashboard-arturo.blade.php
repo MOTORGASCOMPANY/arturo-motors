@@ -17,7 +17,7 @@
                 </p>
             </div>
 
-        @role('Vendedor|Jefe de Taller|Administrador del sistema')
+        @can('opciones.servicios')
             <div class="flex flex-wrap items-center gap-2">
                 <a href="{{ route('ordenes.simple.crear') }}" 
                    class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-xs font-semibold px-3.5 py-2 rounded-xl shadow-sm transition-all duration-150">
@@ -28,13 +28,13 @@
                     <i class="fas fa-wrench text-xs"></i> Orden Conversión
                 </a>
             </div>
-        @endrole
+        @endcan
     </div>
 
     <!-- Grid Principal de Módulo de Caja y Métricas Operativas -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">        
-        <!-- Tarjeta Prominente: Caja (Solo Admin y Jefe de Taller) -->
-        @role('Administrador del sistema|Jefe de Taller')
+        <!-- Tarjeta Prominente: Caja (quien tiene el módulo de caja: Admin, Jefe, Cajero) -->
+        @can('opciones.caja')
         <a href="{{ $sesionCaja ? route('caja.historial') : route('caja.abrir') }}"
            class="md:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-200/80 p-4 hover:shadow-md transition-all duration-150 flex flex-col justify-between relative overflow-hidden group">
             
@@ -79,9 +79,10 @@
                 @endif
             </div>
         </a>
-        @endrole
+        @endcan
 
         <!-- Órdenes de hoy -->
+        @can('ordenes.listado')
         <a href="{{ route('ordenes.listado') }}"
            class="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-4 hover:shadow-md transition-all duration-150 flex items-center justify-between">
             <div>
@@ -93,9 +94,10 @@
                 <i class="fas fa-file-alt text-lg"></i>
             </div>
         </a>
+        @endcan
 
-        @role('Jefe de Taller|Administrador del sistema')
-            <!-- Pendientes de asignar técnico -->
+        <!-- Pendientes de asignar técnico -->
+        @can('conversiones.asignar')
             <a href="{{ route('conversiones.asignar') }}"
                class="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-4 hover:shadow-md transition-all duration-150 flex items-center justify-between">
                 <div>
@@ -109,7 +111,9 @@
                     <i class="fas fa-user-clock text-lg"></i>
                 </div>
             </a>
-            <!-- Pendientes de entrega -->
+        @endcan
+        <!-- Pendientes de entrega -->
+        @can('conversiones.entregas-pendientes')
             <a href="{{ route('conversiones.entregas-pendientes') }}"
                class="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-4 hover:shadow-md transition-all duration-150 flex items-center justify-between">
                 <div>
@@ -123,9 +127,9 @@
                     <i class="fas fa-key text-lg"></i>
                 </div>
             </a>
-        @endrole
+        @endcan
 
-        @role('Tecnico|Administrador del sistema')
+        @can('conversiones.mis-asignadas')
             <!-- Mis conversiones -->
             <a href="{{ route('conversiones.mis-asignadas') }}"
                class="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-4 hover:shadow-md transition-all duration-150 flex items-center justify-between">
@@ -140,9 +144,9 @@
                     <i class="fas fa-wrench text-lg"></i>
                 </div>
             </a>
-        @endrole
+        @endcan
 
-        @role('Almacen|Administrador del sistema')
+        @can('opciones.almacen')
             <!-- Esperando equipos -->
             <a href="{{ route('conversiones.almacen-pendientes') }}"
                class="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-4 hover:shadow-md transition-all duration-150 flex items-center justify-between">
@@ -157,9 +161,9 @@
                     <i class="fas fa-boxes text-lg"></i>
                 </div>
             </a>
-        @endrole
+        @endcan
 
-        @role('Administrador del sistema|Jefe de Taller')
+        @can('opciones.fise')
             <!-- FISEs pendientes -->
             <a href="{{ route('fise.control') }}"
                class="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-4 hover:shadow-md transition-all duration-150 flex items-center justify-between">
@@ -174,12 +178,12 @@
                     <i class="fas fa-landmark text-lg"></i>
                 </div>
             </a>
-        @endrole
+        @endcan
 
     </div>
 
-    <!-- Conversiones: Resumen Estadístico Integrado (No Clientes) -->
-    @unless(auth()->user()->hasRole('Cliente'))
+    <!-- Conversiones: Resumen Estadístico Integrado (quien participa del flujo de conversiones) -->
+    @can('dashboard.metricas')
     <div class="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-4">
         <div class="flex items-center gap-2 mb-3">
             <div class="w-2 h-2 rounded-full bg-purple-600"></div>
@@ -200,10 +204,10 @@
             </div>
         </div>
     </div>
-    @endunless
+    @endcan
 
-    <!-- Gráficos del Sistema (Solo Admin) -->
-    @role('Administrador del sistema')
+    <!-- Gráficos del Sistema (Admin y Jefe de Taller) -->
+    @can('dashboard.graficos')
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <!-- Gráfico 1: Ingresos -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-5" wire:ignore>
@@ -233,9 +237,9 @@
             </div>
         </div>
     </div>
-    @endrole
+    @endcan
 
-    @role('Administrador del sistema')
+    @can('dashboard.graficos')
     <script>
         function renderDashboardCharts() {
             // Gráfico 1: Ingresos (line chart)
@@ -296,5 +300,5 @@
 
         document.addEventListener('livewire:navigated', renderDashboardCharts);
     </script>
-    @endrole
+    @endcan
 </div>

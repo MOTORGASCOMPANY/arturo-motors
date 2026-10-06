@@ -40,8 +40,8 @@ class GestionDocumentos extends Component
         // Obtenemos el usuario buscando por el modelo, así Intelephense sabe que es un User
         $usuarioAutenticado = User::find($userId);
 
-        // Verificamos que exista y que tenga el rol
-        if (! $usuarioAutenticado || ! $usuarioAutenticado->hasAnyRole(['Administrador del sistema', 'administrador'])) {
+        // Verificamos que exista y que tenga el permiso del módulo RRHH
+        if (! $usuarioAutenticado || ! $usuarioAutenticado->can('rrhh.contratos')) {
             return;
         }
 

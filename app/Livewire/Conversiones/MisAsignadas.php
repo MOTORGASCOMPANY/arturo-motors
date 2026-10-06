@@ -25,11 +25,12 @@ class MisAsignadas extends Component
 
     public function render()
     {
-        $esAdminOJefe = Auth::user()->hasAnyRole(['Administrador del sistema', 'Jefe de Taller']);
-        
+        // Los supervisores (quienes pueden asignar técnicos) ven todas las órdenes; el técnico solo las suyas.
+        $esSupervisor = Auth::user()->can('conversiones.asignar');
+
         $query = ServiceOrder::with(['cliente', 'vehiculo', 'service']);
 
-        if (! $esAdminOJefe) {
+        if (! $esSupervisor) {
             $query->where('tecnico_id', Auth::id());
         }
 

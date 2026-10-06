@@ -64,10 +64,20 @@ class RolesPermissionsSeeder extends Seeder
         'fise' => [
             ['name' => 'opciones.fise', 'descripcion' => ''],
         ],
+        'ordenes' => [
+            ['name' => 'ordenes.listado', 'descripcion' => 'Ver la tarjeta de órdenes de hoy en el dashboard y acceder al listado general de órdenes'],
+        ],
+        'dashboard' => [
+            ['name' => 'dashboard.metricas', 'descripcion' => 'Ver las métricas de conversiones (hoy/semana/mes) en el dashboard'],
+            ['name' => 'dashboard.graficos', 'descripcion' => 'Ver los gráficos de ingresos y conversiones (últimos 30 días) en el dashboard'],
+        ],
     ];
 
     /**
-     * Roles con sus permisos asignados
+     *Roles con sus permisos asignados.
+     *
+     *REGLA: "Administrador del sistema" y "Jefe de Taller" ven EXACTAMENTE lo mismo,
+     * con una única diferencia: el módulo de Usuarios y Roles es exclusivo del admin.
      *
      * @var array<string, array{name: string, permissions: array<int, string>}>
      */
@@ -75,7 +85,7 @@ class RolesPermissionsSeeder extends Seeder
         'admin' => [
             'name' => 'Administrador del sistema',
             'permissions' => [
-                // usuarios
+                // usuarios (exclusivo del admin)
                 'opciones.usuarios', 'usuarios', 'usuarios.roles', 'usuarios.permisos',
                 // citas
                 'opciones.citas',
@@ -99,6 +109,8 @@ class RolesPermissionsSeeder extends Seeder
                 'opciones.cms', 'cms.contenido', 'cms.servicios', 'cms.pasos', 'cms.contacto', 'cms.redes', 'cms.porque',
                 // fise
                 'opciones.fise',
+                // ordenes + dashboard
+                'ordenes.listado', 'dashboard.metricas', 'dashboard.graficos',
             ],
         ],
         'cliente' => [
@@ -111,27 +123,27 @@ class RolesPermissionsSeeder extends Seeder
                 'opciones.citas',
                 'opciones.expedientes',
                 'opciones.servicios',
+                'ordenes.listado',
+                'dashboard.metricas',
             ],
         ],
         'jefe_taller' => [
             'name' => 'Jefe de Taller',
+            // Mismo listado que 'admin' SIN el módulo de usuarios.
+            // Si agregas un permiso arriba, agrégalo aquí también (excepto usuarios.*).
             'permissions' => [
                 'opciones.citas',
                 'opciones.expedientes',
                 'opciones.mantenimientotables',
-                'opciones.conversiones',
+                'opciones.conversiones', 'conversiones.asignar', 'conversiones.mis-asignadas', 'conversiones.entregas-pendientes',
                 'opciones.almacen',
                 'opciones.reportes',
-                'opciones.rrhh',
+                'opciones.rrhh', 'rrhh.contratos', 'rrhh.planillas',
                 'opciones.caja',
                 'opciones.servicios',
-                'rrhh.contratos',
-                'rrhh.planillas',
-                'conversiones.asignar',
-                'conversiones.mis-asignadas',
-                'conversiones.entregas-pendientes',
-                'opciones.cms',
+                'opciones.cms', 'cms.contenido', 'cms.servicios', 'cms.pasos', 'cms.contacto', 'cms.redes', 'cms.porque',
                 'opciones.fise',
+                'ordenes.listado', 'dashboard.metricas', 'dashboard.graficos',
             ],
         ],
         'tecnico' => [
@@ -140,12 +152,15 @@ class RolesPermissionsSeeder extends Seeder
                 'opciones.conversiones',
                 'conversiones.mis-asignadas',
                 'conversiones.entregas-pendientes',
+                'ordenes.listado',
+                'dashboard.metricas',
             ],
         ],
         'almacen' => [
             'name' => 'Almacen',
             'permissions' => [
                 'opciones.almacen',
+                'ordenes.listado',
             ],
         ],
         'cajero' => [
@@ -153,6 +168,11 @@ class RolesPermissionsSeeder extends Seeder
             'permissions' => [
                 'opciones.caja',
                 'opciones.fise',
+                // P7: entrega y cobro de conversiones (documentado en routes/web.php)
+                'opciones.conversiones',
+                'conversiones.entregas-pendientes',
+                'ordenes.listado',
+                'dashboard.metricas',
             ],
         ],
     ];

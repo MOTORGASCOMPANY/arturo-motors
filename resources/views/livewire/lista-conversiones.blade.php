@@ -212,7 +212,7 @@
                                                 Editar
                                             </span>
                                         </div>
-                                        @hasanyrole('Administrador del sistema|Tecnico')
+                                        @can('opciones.conversiones')
                                             <div class="relative group">
                                                 <a wire:click="redirectToSolicitudRepuestos({{ $conve->id }})"
                                                     class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-green-100 text-green-700 hover:bg-green-200 transition-colors cursor-pointer">
@@ -222,7 +222,7 @@
                                                     Repuestos
                                                 </span>
                                             </div>
-                                        @endhasanyrole
+                                        @endcan
                                     </div>
                                 </td>
                             </tr>

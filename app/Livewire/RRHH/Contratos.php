@@ -56,7 +56,7 @@ class Contratos extends Component
         $query = Contrato::with('user');
 
         // --- FILTRO DE SEGURIDAD POR ROL ---
-        if ($user->hasRole('tecnico')) {
+        if ($user->hasRole('Tecnico')) {
             $query->where('user_id', $user->id);
         } else {
             // El administrador ve todo y puede usar el buscador
