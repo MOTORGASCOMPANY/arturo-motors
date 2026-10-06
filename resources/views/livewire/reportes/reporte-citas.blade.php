@@ -227,33 +227,26 @@
                             data-valores='@json($ratioAceptadas)'
                             data-color="#10b981"
                             data-fillcolor="rgba(16, 185, 129, 0.15)"></canvas>
+                        <div id="empty-chartRatioAceptadas" class="hidden absolute inset-0 z-10 flex flex-col items-center justify-center p-4 text-center bg-white">
+                            <x-reportes.empty-state icon="fa-chart-line" titulo="Sin datos de aceptación en el período" />
+                        </div>
                     </div>
                 </div>
-                <div class="relative w-full" style="height: 240px;" wire:ignore>
-                    <canvas id="chartRatioAceptadas"
-                        data-labels='@json($labels)'
-                        data-valores='@json($ratioAceptadas)'
-                        data-color="#10b981"
-                        data-fillcolor="rgba(16, 185, 129, 0.15)"></canvas>
-                    <div id="empty-chartRatioAceptadas" class="hidden absolute inset-0 z-10 flex flex-col items-center justify-center p-4 text-center bg-white">
-                        <x-reportes.empty-state icon="fa-chart-line" titulo="Sin datos de aceptación en el período" />
-                    </div>
-                </div>
-            </div>
 
-            <div>
-                <div class="flex items-center justify-between mb-3">
-                    <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Ratio de rechazo</span>
-                    <span class="text-xs font-extrabold text-red-500">{{ $porcentajeRechazo }}%</span>
-                </div>
-                <div class="relative w-full" style="height: 240px;" wire:ignore>
-                    <canvas id="chartRatioRechazadas"
-                        data-labels='@json($labels)'
-                        data-valores='@json($ratioRechazadas)'
-                        data-color="#ef4444"
-                        data-fillcolor="rgba(239, 68, 68, 0.12)"></canvas>
-                    <div id="empty-chartRatioRechazadas" class="hidden absolute inset-0 z-10 flex flex-col items-center justify-center p-4 text-center bg-white">
-                        <x-reportes.empty-state icon="fa-chart-line" titulo="Sin datos de rechazo en el período" />
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Ratio de rechazo</span>
+                        <span class="text-xs font-extrabold text-red-500">{{ $porcentajeRechazo }}%</span>
+                    </div>
+                    <div class="relative w-full" style="height: 240px;" wire:ignore>
+                        <canvas id="chartRatioRechazadas"
+                            data-labels='@json($labels)'
+                            data-valores='@json($ratioRechazadas)'
+                            data-color="#ef4444"
+                            data-fillcolor="rgba(239, 68, 68, 0.12)"></canvas>
+                        <div id="empty-chartRatioRechazadas" class="hidden absolute inset-0 z-10 flex flex-col items-center justify-center p-4 text-center bg-white">
+                            <x-reportes.empty-state icon="fa-chart-line" titulo="Sin datos de rechazo en el período" />
+                        </div>
                     </div>
                 </div>
             </div>

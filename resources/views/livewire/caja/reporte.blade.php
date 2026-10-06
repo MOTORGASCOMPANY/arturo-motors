@@ -72,7 +72,6 @@
             title="Ingresos vs. egresos por día"
             icon="fa-exchange-alt"
             iconColor="text-emerald-500"
-            emptyId="emptyIE"
             height="280px"
             :legend="['Ingresos' => '#10b981', 'Egresos' => '#ef4444']"
             emptyMessage="Sin ingresos ni egresos en el período seleccionado"
@@ -85,7 +84,6 @@
             title="Ticket promedio por día"
             icon="fa-ticket-alt"
             iconColor="text-indigo-500"
-            emptyId="emptyTicket"
             height="280px"
             :subtitle="$operacionesPeriodo > 0 ? 'Promedio S/ ' . number_format($ticketPeriodo, 2) : 'Sin operaciones'"
             emptyMessage="Sin operaciones en el período seleccionado"
@@ -101,7 +99,6 @@
             title="Distribución por método de pago"
             icon="fa-credit-card"
             iconColor="text-violet-500"
-            emptyId="emptyMetodos"
             height="280px"
             emptyMessage="Sin ingresos por método en el período"
             emptyIcon="fa-credit-card"
@@ -113,7 +110,6 @@
             title="Ingresos FISE vs. no FISE"
             icon="fa-hand-holding-usd"
             iconColor="text-amber-500"
-            emptyId="emptyFise"
             height="260px"
             :subtitle="'FISE S/ ' . number_format($fiseTotal, 2) . ' · Otros S/ ' . number_format($noFiseTotal, 2)"
             :legend="['FISE' => '#f59e0b', 'No FISE' => '#10b981']"
@@ -127,7 +123,6 @@
             title="Egresos"
             icon="fa-file-invoice-dollar"
             iconColor="text-red-500"
-            emptyId="emptyEgresosCat"
             height="280px"
             emptyMessage="Sin egresos en el período seleccionado"
             emptyIcon="fa-file-invoice-dollar"
@@ -139,7 +134,6 @@
             title="Ingresos de la semana"
             icon="fa-calendar-day"
             iconColor="text-sky-500"
-            emptyId="emptySemana"
             height="280px"
             emptyMessage="Aún no hay ingresos esta semana"
             emptyIcon="fa-calendar-day"
@@ -270,84 +264,55 @@
 
 @script
     <script>
-        function cajaMoney(v) {
-            return 'S/ ' + Number(v || 0).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
-
+        // IMPORTANTE: el cuerpo va en IIFE. Alpine evalúa el contenido del
+        // bloque como `with(scope){ __self.result = BLOQUE }`, así que una
+        // `function` en el primer statement se vuelve una function expression
+        // (nombre visible solo dentro de sí misma) y el resto no la verá → ReferenceError.
+        // OJO: no escribir directivas de Blade dentro de este bloque; Blade las
+        // compila aunque estén en comentarios JS y desbalancean los buffers ob_start.
+        (function () {
         function cajaReadPayload() {
             const el = document.getElementById('cajaReportPayload');
             if (!el) return null;
             try { return JSON.parse(el.textContent || 'null'); } catch (e) { return null; }
         }
 
-        function cajaDestroy(key) {
-            if (window[key]) { window[key].destroy(); window[key] = null; }
-        }
-
         window.renderReporteCajaCharts = function () {
             if (!window.CHART_DEFS) return;
             const d = cajaReadPayload();
-            if (!d || !d.labels) return;
+            if (!d) return;
+            const labels = d.labels || [];
 
-            // 1. Ingresos vs Egresos (barras apiladas)
+            // Los render* de CHART_DEFS calculan su propio hasData y activan el
+            // estado vacío (div empty-<id>) vía getCtxWithEmpty: por eso SIEMPRE
+            // se les pasa la data, sin condicionales if (hasX).
             try {
-                cajaDestroy('chartIE');
-                const hasIE = (d.ingresosData || []).some(v => Number(v) > 0) || (d.egresosData || []).some(v => Number(v) > 0);
-                if (hasIE) {
-                    window.CHART_DEFS.renderCajaIngresosEgresos('chartIngresosEgresos', 'chartIE', d.labels, d.ingresosData, d.egresosData);
-                }
+                window.CHART_DEFS.renderCajaIngresosEgresos('chartIngresosEgresos', 'chartIE', labels, d.ingresosData, d.egresosData);
             } catch (e) { console.error('[caja] chart1', e); }
 
-            // 2. Ticket promedio por día (scatter)
             try {
-                cajaDestroy('chartTicket');
-                const ticketDia = d.ticketDiaData || [];
-                const opsDia = d.operacionesDia || [];
-                const hasTicket = ticketDia.some(v => v !== null && v !== undefined);
-                if (hasTicket) {
-                    window.CHART_DEFS.renderCajaTicketDia('chartTicketDia', 'chartTicket', d.labels, ticketDia, opsDia);
-                }
+                window.CHART_DEFS.renderCajaTicketDia('chartTicketDia', 'chartTicket', labels, d.ticketDiaData, d.operacionesDia);
             } catch (e) { console.error('[caja] chart2', e); }
 
-            // 3. Métodos de pago (dona)
             try {
-                cajaDestroy('chartMetodos');
                 const totals = d.metodosTotales || {};
                 const metodos = (d.metodos || []).filter(m => Number(totals[m]) > 0);
                 const labelsM = metodos.map(m => (d.metodosLabels && d.metodosLabels[m]) || m);
                 const dataM = metodos.map(m => Number(totals[m]) || 0);
                 const colorsM = metodos.map(m => (d.colores && d.colores[m]) || '#6b7280');
-                const hasMetodos = dataM.length > 0;
-                if (hasMetodos) {
-                    window.CHART_DEFS.renderCajaMetodosPago('chartMetodosPago', 'chartMetodos', labelsM, dataM, colorsM);
-                }
+                window.CHART_DEFS.renderCajaMetodosPago('chartMetodosPago', 'chartMetodos', labelsM, dataM, colorsM);
             } catch (e) { console.error('[caja] chart3', e); }
 
-            // 6. FISE vs no FISE (barras apiladas)
             try {
-                cajaDestroy('chartFise');
-                const hasFise = (d.fiseDiaData || []).some(v => Number(v) > 0) || (d.noFiseDiaData || []).some(v => Number(v) > 0);
-                if (hasFise) {
-                    window.CHART_DEFS.renderCajaFiseNoFise('chartFiseNoFise', 'chartFise', d.labels, d.fiseDiaData, d.noFiseDiaData);
-                }
+                window.CHART_DEFS.renderCajaFiseNoFise('chartFiseNoFise', 'chartFise', labels, d.fiseDiaData, d.noFiseDiaData);
             } catch (e) { console.error('[caja] chart6', e); }
 
-            // 4. Egresos por categoría (barras horizontales)
             try {
-                cajaDestroy('chartEgCat');
-                const hasCat = (d.egresosLabels || []).length > 0 && (d.egresosDataCat || []).some(v => Number(v) > 0);
-                if (hasCat) {
-                    window.CHART_DEFS.renderCajaEgresosCat('chartEgresosCat', 'chartEgCat', d.egresosLabels, d.egresosDataCat);
-                }
+                window.CHART_DEFS.renderCajaEgresosCat('chartEgresosCat', 'chartEgCat', d.egresosLabels, d.egresosDataCat);
             } catch (e) { console.error('[caja] chart4', e); }
 
-            // 5. Ingresos de la semana (line con spanGaps)
             try {
-                cajaDestroy('chartSemana');
-                const hasSemana = (d.ingresosSemanaData || []).some(v => v !== null && v !== undefined && Number(v) > 0);
-                if (hasSemana) {
-                    window.CHART_DEFS.renderCajaIngresosSemana('chartIngresosSemana', 'chartSemana', d.labelsSemana, d.ingresosSemanaData);
-                }
+                window.CHART_DEFS.renderCajaIngresosSemana('chartIngresosSemana', 'chartSemana', d.labelsSemana || labels, d.ingresosSemanaData);
             } catch (e) { console.error('[caja] chart5', e); }
         };
 
@@ -383,6 +348,7 @@
                 archivo: 'Excel'
             });
         });
+        })();
     </script>
     @endscript
 </div>
