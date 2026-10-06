@@ -50,7 +50,7 @@
                     </div>
                 @endif
                 @if ($this->categoria)
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <x-label for="precioReferencial" value="Precio referencial (S/)" />
                             <x-input type="number" step="0.01" wire:model="precioReferencial" class="w-full rounded-lg border-gray-300" />

@@ -10,12 +10,12 @@
                         </h3>
                         <p class="text-xs text-gray-400 mt-0.5">Control de periodos laborales, remuneraciones y documentos</p>
                     </div>
-                    @hasanyrole('Administrador del sistema|administrador')
+                    @can('rrhh.contratos')
                         <button wire:click="$dispatch('abrir-modal-crear')"
                             class="bg-orange-500 px-5 py-2.5 rounded-lg text-white text-sm font-semibold tracking-wide cursor-pointer hover:bg-orange-600 transition flex items-center gap-2 shadow-sm">
                             <i class="fas fa-plus-circle"></i> Nuevo Contrato
                         </button>
-                    @endhasanyrole
+                    @endcan
                 </div>
             </div>
 
@@ -70,7 +70,8 @@
         <!-- Tabla de contratos -->
         @if ($contratos->count())
             <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mt-4">
-                <table class="w-full text-sm border-collapse">
+                <div class="overflow-x-auto">
+                    <table class="w-full min-w-[760px] text-sm border-collapse">
                     <thead>
                         <tr class="bg-gray-50 border-b border-gray-200">
                             <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">
@@ -189,7 +190,7 @@
                                                 <i class="fas fa-folder-open w-5 mr-3 text-orange-500"></i> Documentos
                                             </a>
                                             <div class="border-t border-gray-100 my-1"></div>
-                                            @hasanyrole('Administrador del sistema|administrador')
+                                            @can('rrhh.contratos')
                                                 <button wire:click="$dispatch('editar-contrato', { id: {{ $item->id }} })" @click="open = false"
                                                     class="w-full text-left flex items-center px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-lime-50 hover:text-lime-700 transition rounded-lg mx-2">
                                                     <i class="fas fa-pencil-alt w-5 mr-3 text-lime-600"></i> Editar Datos
@@ -199,14 +200,15 @@
                                                     class="w-full text-left flex items-center px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 hover:text-red-700 transition rounded-lg mx-2">
                                                     <i class="fas fa-trash-alt w-5 mr-3"></i> Eliminar
                                                 </button>
-                                            @endhasanyrole
+                                            @endcan
                                         </div>
                                     </div>
                                 </td>
                             </tr>
                         @endforeach
                     </tbody>
-                </table>
+                    </table>
+                </div>
                 <div class="px-5 py-3 border-t border-gray-100">
                     {{ $contratos->links('pagination::tailwind') }}
                 </div>

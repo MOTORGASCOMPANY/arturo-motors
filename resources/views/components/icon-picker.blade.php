@@ -99,7 +99,7 @@
             @foreach($icons as $category => $iconList)
                 <div>
                     <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 mt-3 first:mt-0">{{ $category }}</p>
-                    <div class="grid grid-cols-4 gap-1.5">
+                    <div class="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
                         @foreach($iconList as $iconClass => $iconLabel)
                             <button type="button"
                                     x-show="!search || '{{ strtolower($iconLabel) }}'.includes(search.toLowerCase()) || '{{ strtolower($iconClass) }}'.includes(search.toLowerCase())"

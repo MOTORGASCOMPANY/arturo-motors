@@ -12,7 +12,7 @@
             <!-- Cliente -->
             <div class="bg-gray-50 p-4 rounded-lg shadow">
                 <h3 class="text-lg font-semibold text-blue-800 border-b pb-1 mb-3">👤 Datos del Cliente</h3>
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                         <x-input label="Nombres" type="text" class="w-full" placeholder="Nombre completo"
                             wire:model="nombre" />
@@ -49,7 +49,7 @@
             <!-- Vehículo -->
             <div class="bg-gray-50 p-4 rounded-lg shadow mt-4">
                 <h3 class="text-lg font-semibold text-green-800 border-b pb-1 mb-3">🚗 Datos del Vehículo</h3>
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                         <x-input label="Marca" placeholder="Ej. Toyota" class="w-full" type="text"
                             wire:model="marca" />
@@ -99,7 +99,7 @@
             <div class="bg-gray-50 p-4 rounded-lg shadow mt-4">
                 <h3 class="text-lg font-semibold text-yellow-800 border-b pb-1 mb-3">📅 Datos de la Cita</h3>
                 <!-- Fecha y motivo -->
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                         <x-input label="Fecha de Cita" type="datetime-local" class="w-full" wire:model="fecha_cita" />
                         <x-input-error for="fecha_cita" class="mt-1" />

@@ -51,7 +51,8 @@
                 </div>
 
                 <div class="mt-4 shadow-sm rounded-xl border border-gray-200 overflow-hidden">
-                    <table class="min-w-full table-fixed divide-y divide-gray-200">
+                    <div class="overflow-x-auto">
+                        <table class="w-full min-w-[980px] table-fixed divide-y divide-gray-200">
                         <thead class="bg-slate-600 text-xs font-bold text-white uppercase tracking-wider">
                             <tr>
                                 {{-- Empleado: Ancho reducido --}}
@@ -135,7 +136,8 @@
                                 </tr>
                             @endforeach
                         </tbody>
-                    </table>
+                        </table>
+                    </div>
                 </div>
             @else
                 <div class="flex flex-col items-center justify-center py-10 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 mt-2">

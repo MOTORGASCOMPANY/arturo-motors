@@ -26,7 +26,7 @@
                             <i class="fas fa-info-circle text-gray-400"></i> Detalle del servicio
                         </h3>
 
-                        <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                             <div>
                                 <span class="text-xs text-gray-500 uppercase font-bold block">Cliente</span>
                                 <span class="text-gray-800 font-medium">{{ $orden->cliente->nombre }} {{ $orden->cliente->apellido }}</span>

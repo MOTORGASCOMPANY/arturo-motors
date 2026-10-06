@@ -173,7 +173,8 @@
 
         {{-- Tabla --}}
         <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-            <table class="w-full text-sm border-collapse">
+            <div class="overflow-x-auto">
+                <table class="w-full min-w-[760px] text-sm border-collapse">
                 <thead>
                     <tr class="bg-gray-50 border-b border-gray-200">
                         <th wire:click="order('id')"
@@ -372,7 +373,8 @@
                         </tr>
                     @endif
                 </tbody>
-            </table>
+                </table>
+            </div>
 
             {{-- Paginación --}}
             @if ($vehiculos->hasPages())

@@ -33,18 +33,19 @@
     </div>
 
     <!-- Botón para Nueva Asignación -->
-    @hasanyrole('Administrador del sistema|administrador')
+    @can('rrhh.contratos')
         <div class="flex justify-end mb-4">
             <button wire:click="$dispatch('abrir-asignar-vacacion', { idContrato: {{ $idContrato }} })"
                     class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-bold shadow-sm transition flex items-center">
                 <i class="fas fa-calendar-plus mr-2"></i> Asignar Vacaciones
             </button>
         </div>
-    @endhasanyrole
+    @endcan
 
     <!-- Tabla de Historial (Vacaciones Asignadas) -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-        <table class="w-full text-sm border-collapse">
+        <div class="overflow-x-auto">
+            <table class="w-full min-w-[760px] text-sm border-collapse">
             <thead>
                 <tr class="bg-gray-50 border-b border-gray-200">
                     <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">F. Inicio</th>
@@ -52,9 +53,9 @@
                     <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">Tipo / Razón</th>
                     <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">Observación</th>
                     <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-100">Estado</th>
-                    @hasanyrole('Administrador del sistema|administrador')
+                    @can('rrhh.contratos')
                         <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Acciones</th>
-                    @endhasanyrole
+                    @endcan
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
@@ -74,7 +75,7 @@
                                 <span class="bg-accent text-white px-2 py-1 rounded-full text-[10px] font-bold">REGULAR</span>
                             @endif
                         </td>
-                        @hasanyrole('Administrador del sistema|administrador')
+                        @can('rrhh.contratos')
                             <td class="px-4 py-3 text-center">
                                 <div class="flex justify-center gap-2">
                                     <button wire:click="$dispatch('editar-asignacion', { id: {{ $asig->id }} })"
@@ -98,7 +99,7 @@
                                     </button>
                                 </div>
                             </td>
-                        @endhasanyrole
+                        @endcan
                     </tr>
                 @empty
                     <tr>
@@ -108,7 +109,8 @@
                     </tr>
                 @endforelse
             </tbody>
-        </table>
+            </table>
+        </div>
         <div class="p-4">
             {{ $asignaciones->links('pagination::tailwind') }}
         </div>
