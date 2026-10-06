@@ -84,6 +84,10 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                         {{ __('Perfil') }}
                     </x-dropdown-link>
 
+                    <x-dropdown-link href="{{ route('rrhh.mis-planillas') }}">
+                        {{ __('Mis Boletas') }}
+                    </x-dropdown-link>
+
                     @if (Laravel\Jetstream\Jetstream::hasApiFeatures())
                         <x-dropdown-link href="{{ route('api-tokens.index') }}">
                             {{ __('API Tokens') }}
@@ -323,10 +327,6 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                                             aria-label="submenu">
 
                                             <!-- Asignar técnicos (Administrador del sistema, Jefe de Taller) -->
-                                            {{-- 
-                                            @hasanyrole('Administrador del sistema|Jefe de Taller')
-                                            @endhasanyrole
-                                            --}}
                                             @can('conversiones.asignar')
                                                 <li class="transition-colors duration-150">
                                                     <x-responsive-nav-link class="text-sm" href="{{ route('conversiones.asignar') }}"
@@ -478,13 +478,6 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                                                     </x-responsive-nav-link>
                                                 </li>
                                             @endcan
-
-                                            <li class="transition-colors duration-150">
-                                                <x-responsive-nav-link class="text-sm" href="{{ route('rrhh.mis-planillas') }}"
-                                                    :active="request()->routeIs('rrhh.mis-planillas')">
-                                                    {{ __('Boletas') }}
-                                                </x-responsive-nav-link>
-                                            </li>
                                         </ul>
 
                                     </div>
@@ -725,6 +718,13 @@ Change class "fixed" to "sticky" in "navbar" (l. 33) so the navbar doesn't hide 
                             Opciones de la cuenta
                         </h3>
                         <ul class="mb-2 text-sm font-medium ">
+                            <li>
+                                <a class="flex items-center rounded py-3 pl-3 pr-4  space-x-6 text-gray-50 hover:bg-gray-600 "
+                                    href="{{ route('rrhh.mis-planillas') }}">
+                                    <i class="fas fa-file-invoice-dollar -mt-1"></i>
+                                    <span class="select-none">Mis Boletas</span>
+                                </a>
+                            </li>
                             <li>
                                 <a class="flex items-center rounded py-3 pl-3 pr-4  space-x-6 text-gray-50 hover:bg-gray-600 "
                                     href="{{ route('profile.show') }}">
