@@ -38,13 +38,12 @@
     <div class="relative w-full" style="height: {{ $height }};">
         <canvas id="{{ $canvasId }}"></canvas>
 
-        {{-- Empty State (inicialmente oculto, charts.js lo muestra si no hay datos) --}}
-        <div id="{{ $emptyId }}" class="hidden flex flex-col items-center justify-center py-10 text-center h-full">
-            <x-ui.empty-state
+        {{-- Empty State: superpuesto al canvas (absolute), oculto hasta que charts.js lo muestre --}}
+        <div id="{{ $emptyId }}" class="hidden absolute inset-0 z-10 flex flex-col items-center justify-center p-4 text-center bg-white rounded-xl">
+            <x-reportes.empty-state
                 :icon="$emptyIcon"
-                :message="$defaultMessage"
-                size="md"
-                variant="default"
+                :titulo="$defaultMessage"
+                class="w-full max-w-lg mx-auto"
             />
         </div>
     </div>

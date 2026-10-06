@@ -152,7 +152,7 @@
                     </div>
                 </div>
             @else
-                <x-ui.empty-state icon="fa-file-circle-question" title="Sin datos" message="No hay pagos FISE en este periodo" class="flex-grow" />
+                <x-reportes.empty-state icon="fa-file-circle-question" titulo="Sin datos" mensaje="No hay pagos FISE en este periodo" class="flex-grow" />
             @endif
 
         </div>
@@ -191,7 +191,7 @@
                     </div>
                 </div>
             @else
-                <x-ui.empty-state icon="fa-chart-line" title="Sin datos" message="No hay pagos FISE en este periodo" class="flex-grow" />
+                <x-reportes.empty-state icon="fa-chart-line" titulo="Sin datos" mensaje="No hay pagos FISE en este periodo" class="flex-grow" />
             @endif
 
         </div>

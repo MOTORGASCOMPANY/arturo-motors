@@ -30,10 +30,10 @@
             <span class="flex items-center gap-1.5"><i class="fas fa-circle text-red-500 text-[10px]"></i> Consumidos</span>
         </div>
     @else
-        <x-ui.empty-state
+        <x-reportes.empty-state
             icon="fa-chart-bar"
-            title="Sin kits por sede"
-            message="No hay kits registrados para mostrar con el filtro aplicado." />
+            titulo="Sin kits por sede"
+            mensaje="No hay kits registrados para mostrar con el filtro aplicado." />
     @endif
 </div>
 
