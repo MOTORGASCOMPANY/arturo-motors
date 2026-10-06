@@ -222,27 +222,60 @@
                 </h3>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                    <div>
-                        <p class="text-gray-600 text-xs font-medium">Cliente</p>
-                        <p class="font-bold text-gray-900">
-                            {{ $orden->cliente->nombre }} {{ $orden->cliente->apellido }}
-                        </p>
-                        <p class="text-gray-700 text-xs">
-                            {{ $orden->cliente->documento }} —
-                            {{ $orden->cliente->telefono ?? 'sin teléfono' }}
-                        </p>
-                    </div>
+                    @php
+                        // Sólo se pintan los datos que existen: si falta el documento,
+                        // el teléfono o el año no se imprime el "—" ni el texto de
+                        // relleno, y el separador sólo aparece ENTRE valores reales
+                        // (filter() descarta null y cadena vacía).
+                        $nombreCliente = trim(($orden->cliente?->nombre ?? '') . ' ' . ($orden->cliente?->apellido ?? ''));
+                        $datosCliente = collect([
+                            $orden->cliente?->documento,
+                            $orden->cliente?->telefono,
+                        ])->filter()->values();
 
-                    <div>
-                        <p class="text-gray-600 text-xs font-medium">Vehículo</p>
-                        <p class="font-bold text-gray-900">
-                            {{ $orden->vehiculo->placa }} —
-                            {{ $orden->vehiculo->marca }} {{ $orden->vehiculo->modelo }}
-                        </p>
-                        <p class="text-gray-700 text-xs">
-                            Año: {{ $orden->vehiculo->anio ?? '—' }}
-                        </p>
-                    </div>
+                        $datosVehiculo = collect([
+                            $orden->vehiculo?->placa,
+                            trim(($orden->vehiculo?->marca ?? '') . ' ' . ($orden->vehiculo?->modelo ?? '')),
+                        ])->filter()->values();
+
+                        $anioVehiculo = $orden->vehiculo?->anio;
+                    @endphp
+
+                    @if ($nombreCliente !== '' || $datosCliente->isNotEmpty())
+                        <div>
+                            <p class="text-gray-600 text-xs font-medium">Cliente</p>
+
+                            @if ($nombreCliente !== '')
+                                <p class="font-bold text-gray-900">
+                                    {{ $nombreCliente }}
+                                </p>
+                            @endif
+
+                            @if ($datosCliente->isNotEmpty())
+                                <p class="text-gray-700 text-xs">
+                                    {{ $datosCliente->implode(' — ') }}
+                                </p>
+                            @endif
+                        </div>
+                    @endif
+
+                    @if ($datosVehiculo->isNotEmpty() || $anioVehiculo)
+                        <div>
+                            <p class="text-gray-600 text-xs font-medium">Vehículo</p>
+
+                            @if ($datosVehiculo->isNotEmpty())
+                                <p class="font-bold text-gray-900">
+                                    {{ $datosVehiculo->implode(' — ') }}
+                                </p>
+                            @endif
+
+                            @if ($anioVehiculo)
+                                <p class="text-gray-700 text-xs">
+                                    Año: {{ $anioVehiculo }}
+                                </p>
+                            @endif
+                        </div>
+                    @endif
                 </div>
             </div>
 
@@ -799,31 +832,36 @@
             <div x-data="visorArchivos">
 
                 @php
+                    // Estilo corporativo para los PDFs del sistema: la tarjeta es
+                    // neutra y el color queda SÓLO como acento (barra izquierda +
+                    // chip del ícono). Se conservan los 5 colores originales.
+                    // Ojo: las clases van escritas literalmente, Tailwind no compila
+                    // clases construidas por interpolación (bg-{{ $x }}-50 falla).
                     $estilosSistema = [
                         'Comprobante' => [
                             'icon' => 'fa-file-invoice-dollar',
-                            'bgClass' => 'bg-blue-600',
-                            'borderClass' => 'border-blue-200 hover:border-blue-400',
+                            'bar' => 'border-l-blue-600',
+                            'chip' => 'bg-blue-50 text-blue-700 ring-blue-100',
                         ],
                         'Carta garantía' => [
                             'icon' => 'fa-stamp',
-                            'bgClass' => 'bg-emerald-600',
-                            'borderClass' => 'border-emerald-200 hover:border-emerald-400',
+                            'bar' => 'border-l-emerald-600',
+                            'chip' => 'bg-emerald-50 text-emerald-700 ring-emerald-100',
                         ],
                         'Manual' => [
                             'icon' => 'fa-book-open',
-                            'bgClass' => 'bg-amber-600',
-                            'borderClass' => 'border-amber-200 hover:border-amber-400',
+                            'bar' => 'border-l-amber-600',
+                            'chip' => 'bg-amber-50 text-amber-700 ring-amber-100',
                         ],
                         'Hoja de recepción' => [
                             'icon' => 'fa-clipboard-check',
-                            'bgClass' => 'bg-indigo-600',
-                            'borderClass' => 'border-indigo-200 hover:border-indigo-400',
+                            'bar' => 'border-l-indigo-600',
+                            'chip' => 'bg-indigo-50 text-indigo-700 ring-indigo-100',
                         ],
                         'Constancia de entrega' => [
                             'icon' => 'fa-file-signature',
-                            'bgClass' => 'bg-teal-600',
-                            'borderClass' => 'border-teal-200 hover:border-teal-400',
+                            'bar' => 'border-l-teal-600',
+                            'chip' => 'bg-teal-50 text-teal-700 ring-teal-100',
                         ],
                     ];
 
@@ -975,21 +1013,22 @@
                     @if ($sistemaDocs->count())
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
                             @foreach ($sistemaDocs as $doc)
+                                @php $esDocInhabilitado = $doc['disabled'] ?? false; @endphp
                                 <div wire:key="sysdoc-{{ Str::slug($doc['label']) }}"
-                                    class="flex items-center justify-between p-3 bg-white border {{ $doc['borderClass'] }} rounded-xl shadow-sm hover:shadow-md transition-all group">
+                                    class="flex items-center justify-between p-3 bg-white border border-slate-200 border-l-4 {{ $esDocInhabilitado ? 'border-l-slate-300 bg-slate-50/60' : $doc['bar'] . ' hover:bg-slate-50' }} rounded-lg transition-colors group">
 
-                                    @if($doc['disabled'] ?? false)
+                                    @if($esDocInhabilitado)
                                         <div class="flex items-center gap-3 flex-1 min-w-0 opacity-50 cursor-not-allowed">
                                             <div
-                                                class="w-10 h-10 rounded-lg bg-gray-400 text-white flex items-center justify-center shrink-0">
+                                                class="w-9 h-9 rounded-md bg-slate-100 text-slate-400 ring-1 ring-inset ring-slate-200 flex items-center justify-center shrink-0">
                                                 <i class="fa-solid fa-ban text-sm"></i>
                                             </div>
 
                                             <div class="min-w-0">
-                                                <p class="text-xs font-bold text-gray-500 truncate">
+                                                <p class="text-[13px] font-semibold text-slate-500 truncate">
                                                     {{ $doc['label'] }}
                                                 </p>
-                                                <p class="text-[10px] text-gray-400 font-medium">
+                                                <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
                                                     <i class="fa-solid fa-lock mr-1"></i>{{ $doc['badge'] }}
                                                 </p>
                                             </div>
@@ -1000,15 +1039,15 @@
                                             class="flex items-center gap-3 flex-1 min-w-0 text-left">
 
                                             <div
-                                                class="w-10 h-10 rounded-lg {{ $doc['bgClass'] }} text-white flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-sm">
+                                                class="w-9 h-9 rounded-md {{ $doc['chip'] }} ring-1 ring-inset flex items-center justify-center shrink-0">
                                                 <i class="fa-solid {{ $doc['icon'] }} text-sm"></i>
                                             </div>
 
                                             <div class="min-w-0">
-                                                <p class="text-xs font-bold text-gray-800 truncate">
+                                                <p class="text-[13px] font-semibold text-slate-800 truncate">
                                                     {{ $doc['label'] }}
                                                 </p>
-                                                <p class="text-[10px] text-gray-400 font-medium">
+                                                <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
                                                     {{ $doc['badge'] }}
                                                 </p>
                                             </div>
@@ -1226,7 +1265,7 @@
                                         <div
                                             class="w-full h-full p-2 sm:p-4 flex items-center justify-center bg-slate-950">
                                             <iframe
-                                                :src="url + '#toolbar=1&view=FitH'"
+                                                :src="url + '#toolbar=1&zoom=100'"
                                                 class="w-full h-full rounded-2xl border-0 shadow-2xl bg-white"
                                                 title="Previsualizador de contenido PDF"
                                                 loading="lazy">
@@ -1405,7 +1444,21 @@
                                         class="w-full bg-white border border-slate-200 rounded-2xl text-sm px-4 py-3.5 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition shadow-sm">
 
                                     <datalist id="tiposDoc">
-                                        @foreach (collect($tiposDocumento)->reject(fn($t) => in_array(strtolower($t), ['comprobante', 'carta garantía', 'carta garantia', 'manual'])) as $t)
+                                        {{-- No se sugieren los tipos que ya tienen tarjeta de sistema
+                                             (comprobante, carta de garantía, manual): subirlos aquí
+                                             duplicaría un documento que se genera automáticamente.
+                                             Se comparan literalmente: los valores del array difieren
+                                             de las claves que se usaban antes ('comprobante' vs
+                                             'Comprobante de pago'), por eso el filtro anterior no
+                                             descartaba nada. El campo sigue siendo texto libre. --}}
+                                        @php
+                                            $tiposExcluidos = ['Comprobante de pago', 'Carta de garantía', 'Manual del vehículo'];
+                                            $tiposSugeridos = collect($tiposDocumento)->reject(
+                                                fn ($t) => in_array($t, $tiposExcluidos, true)
+                                            );
+                                        @endphp
+
+                                        @foreach ($tiposSugeridos as $t)
                                             <option value="{{ $t }}"></option>
                                         @endforeach
                                     </datalist>
