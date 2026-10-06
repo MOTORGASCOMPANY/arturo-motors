@@ -30,6 +30,11 @@
         @endif
     </div>
 
+    {{-- Slot opcional: métricas/notas informativas sobre el chart --}}
+    @if($slot->isNotEmpty())
+        <div class="mb-4">{{ $slot }}</div>
+    @endif
+
     <div class="relative w-full" style="height: {{ $height }};">
         <canvas id="{{ $canvasId }}"></canvas>
 

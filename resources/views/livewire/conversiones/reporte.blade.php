@@ -37,7 +37,8 @@
         :kits-total="$kitsTotal"
         :kits-sellados-chart="$kitsSelladosChart"
         :kits-completados-chart="$kitsCompletadosChart"
-        :kits-asignados-chart="$kitsAsignadosChart" />
+        :kits-asignados-chart="$kitsAsignadosChart"
+        :charts="$charts" />
 
 <x-conversiones.reporte-tabla :detalle-ordenes="$detalleOrdenes" :filtro-badge="$filtroBadge" />
     <div id="reporteConvPayload" class="hidden" aria-hidden="true">@json($charts)</div>

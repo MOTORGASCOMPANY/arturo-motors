@@ -75,6 +75,8 @@
             emptyId="emptyIE"
             height="280px"
             :legend="['Ingresos' => '#10b981', 'Egresos' => '#ef4444']"
+            emptyMessage="Sin ingresos ni egresos en el período seleccionado"
+            emptyIcon="fa-exchange-alt"
         />
 
         {{-- 2. Ticket promedio por día (reemplaza al flujo acumulado) --}}
@@ -86,7 +88,11 @@
             emptyId="emptyTicket"
             height="280px"
             :subtitle="$operacionesPeriodo > 0 ? 'Promedio S/ ' . number_format($ticketPeriodo, 2) : 'Sin operaciones'"
-        />
+            emptyMessage="Sin operaciones en el período seleccionado"
+            emptyIcon="fa-ticket-alt"
+        >
+            <p class="text-center text-xs text-gray-400">Ingresos ÷ operaciones de cada día del período</p>
+        </x-ui.chart>
         {{-- Nota: descripcion adicional se mantiene en JS --}}
 
         {{-- 3. Distribución por método de pago (dona) --}}
@@ -97,6 +103,8 @@
             iconColor="text-violet-500"
             emptyId="emptyMetodos"
             height="280px"
+            emptyMessage="Sin ingresos por método en el período"
+            emptyIcon="fa-credit-card"
         />
 
         {{-- 6. FISE vs no FISE por día --}}
@@ -109,6 +117,8 @@
             height="260px"
             :subtitle="'FISE S/ ' . number_format($fiseTotal, 2) . ' · Otros S/ ' . number_format($noFiseTotal, 2)"
             :legend="['FISE' => '#f59e0b', 'No FISE' => '#10b981']"
+            emptyMessage="Sin ingresos FISE ni de otros métodos en el período"
+            emptyIcon="fa-hand-holding-usd"
         />
 
         {{-- 4. Egresos por categoría (barras horizontales) --}}
@@ -119,6 +129,8 @@
             iconColor="text-red-500"
             emptyId="emptyEgresosCat"
             height="280px"
+            emptyMessage="Sin egresos en el período seleccionado"
+            emptyIcon="fa-file-invoice-dollar"
         />
 
         {{-- 5. Ingresos de la semana (Lun–Sáb, se corta en el día actual) --}}
@@ -129,6 +141,8 @@
             iconColor="text-sky-500"
             emptyId="emptySemana"
             height="280px"
+            emptyMessage="Aún no hay ingresos esta semana"
+            emptyIcon="fa-calendar-day"
         />
     </div>
 
@@ -266,15 +280,6 @@
             try { return JSON.parse(el.textContent || 'null'); } catch (e) { return null; }
         }
 
-        function cajaToggle(idCanvas, idEmpty, showEmpty) {
-            const canvas = document.getElementById(idCanvas);
-            const empty = document.getElementById(idEmpty);
-            const wrap = canvas ? canvas.parentElement : null;
-            if (wrap) wrap.classList.toggle('hidden', !!showEmpty);
-            if (empty) empty.classList.toggle('hidden', !showEmpty);
-            if (empty) empty.classList.toggle('flex', !!showEmpty);
-        }
-
         function cajaDestroy(key) {
             if (window[key]) { window[key].destroy(); window[key] = null; }
         }
@@ -288,7 +293,6 @@
             try {
                 cajaDestroy('chartIE');
                 const hasIE = (d.ingresosData || []).some(v => Number(v) > 0) || (d.egresosData || []).some(v => Number(v) > 0);
-                cajaToggle('chartIngresosEgresos', 'emptyIE', !hasIE);
                 if (hasIE) {
                     window.CHART_DEFS.renderCajaIngresosEgresos('chartIngresosEgresos', 'chartIE', d.labels, d.ingresosData, d.egresosData);
                 }
@@ -300,7 +304,6 @@
                 const ticketDia = d.ticketDiaData || [];
                 const opsDia = d.operacionesDia || [];
                 const hasTicket = ticketDia.some(v => v !== null && v !== undefined);
-                cajaToggle('chartTicketDia', 'emptyTicket', !hasTicket);
                 if (hasTicket) {
                     window.CHART_DEFS.renderCajaTicketDia('chartTicketDia', 'chartTicket', d.labels, ticketDia, opsDia);
                 }
@@ -315,7 +318,6 @@
                 const dataM = metodos.map(m => Number(totals[m]) || 0);
                 const colorsM = metodos.map(m => (d.colores && d.colores[m]) || '#6b7280');
                 const hasMetodos = dataM.length > 0;
-                cajaToggle('chartMetodosPago', 'emptyMetodos', !hasMetodos);
                 if (hasMetodos) {
                     window.CHART_DEFS.renderCajaMetodosPago('chartMetodosPago', 'chartMetodos', labelsM, dataM, colorsM);
                 }
@@ -325,7 +327,6 @@
             try {
                 cajaDestroy('chartFise');
                 const hasFise = (d.fiseDiaData || []).some(v => Number(v) > 0) || (d.noFiseDiaData || []).some(v => Number(v) > 0);
-                cajaToggle('chartFiseNoFise', 'emptyFise', !hasFise);
                 if (hasFise) {
                     window.CHART_DEFS.renderCajaFiseNoFise('chartFiseNoFise', 'chartFise', d.labels, d.fiseDiaData, d.noFiseDiaData);
                 }
@@ -335,7 +336,6 @@
             try {
                 cajaDestroy('chartEgCat');
                 const hasCat = (d.egresosLabels || []).length > 0 && (d.egresosDataCat || []).some(v => Number(v) > 0);
-                cajaToggle('chartEgresosCat', 'emptyEgresosCat', !hasCat);
                 if (hasCat) {
                     window.CHART_DEFS.renderCajaEgresosCat('chartEgresosCat', 'chartEgCat', d.egresosLabels, d.egresosDataCat);
                 }
@@ -345,7 +345,6 @@
             try {
                 cajaDestroy('chartSemana');
                 const hasSemana = (d.ingresosSemanaData || []).some(v => v !== null && v !== undefined && Number(v) > 0);
-                cajaToggle('chartIngresosSemana', 'emptySemana', !hasSemana);
                 if (hasSemana) {
                     window.CHART_DEFS.renderCajaIngresosSemana('chartIngresosSemana', 'chartSemana', d.labelsSemana, d.ingresosSemanaData);
                 }

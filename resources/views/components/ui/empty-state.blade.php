@@ -1,6 +1,8 @@
 @props([
     'icon' => 'fa-circle-info',
     'message' => 'No hay datos disponibles para mostrar en este momento',
+    'title' => null,           // opcional: título principal sobre el mensaje
+    'hint' => null,            // opcional: nota secundaria (admite HTML)
     'size' => 'md',           // sm | md | lg
     'variant' => 'default',   // default | dashed | card
     'class' => '',
@@ -36,5 +38,11 @@
     <div class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
         <i class="fas {{ $icon }} text-gray-400 {{ $iconSizeClasses[$size] ?? 'text-xl' }}"></i>
     </div>
-    <p class="text-gray-500 font-medium {{ $textSizeClasses[$size] ?? 'text-sm' }}">{{ $message }}</p>
+    @if($title)
+        <p class="text-gray-700 font-semibold {{ $textSizeClasses[$size] ?? 'text-sm' }}">{{ $title }}</p>
+    @endif
+    <p class="text-gray-500 font-medium {{ $textSizeClasses[$size] ?? 'text-sm' }} {{ $title ? 'mt-0.5' : '' }}">{{ $message }}</p>
+    @if($hint)
+        <p class="text-gray-400 text-xs mt-3">{!! $hint !!}</p>
+    @endif
 </div>

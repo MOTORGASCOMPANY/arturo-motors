@@ -134,6 +134,8 @@
         iconColor="text-gray-400"
         height="360px"
         subtitle="Agrupadas en bloques de 7 días"
+        emptyMessage="Sin órdenes en el período seleccionado"
+        emptyIcon="fa-chart-column"
         :legend="[
             'Conversión pendiente' => '#d97706',
             'Conversión completada' => '#059669',

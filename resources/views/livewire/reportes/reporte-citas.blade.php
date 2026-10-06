@@ -214,11 +214,20 @@
             </span>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-                <div class="flex items-center justify-between mb-3">
-                    <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Ratio de aceptación</span>
-                    <span class="text-xs font-extrabold text-emerald-600">{{ $porcentajeAceptacion }}%</span>
+        @if ($total > 0)
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Ratio de aceptación</span>
+                        <span class="text-xs font-extrabold text-emerald-600">{{ $porcentajeAceptacion }}%</span>
+                    </div>
+                    <div class="relative w-full" style="height: 240px;" wire:ignore>
+                        <canvas id="chartRatioAceptadas"
+                            data-labels='@json($labels)'
+                            data-valores='@json($ratioAceptadas)'
+                            data-color="#10b981"
+                            data-fillcolor="rgba(16, 185, 129, 0.15)"></canvas>
+                    </div>
                 </div>
                 <div class="relative w-full" style="height: 240px;" wire:ignore>
                     <canvas id="chartRatioAceptadas"
@@ -248,7 +257,9 @@
                     </div>
                 </div>
             </div>
-        </div>
+        @else
+            <x-ui.empty-state icon="fa-percent" title="Sin datos para este período" message="No hay citas en el rango seleccionado." />
+        @endif
     </div>
 
     {{-- Citas por vendedor: barras apiladas por estado (versión visual de la

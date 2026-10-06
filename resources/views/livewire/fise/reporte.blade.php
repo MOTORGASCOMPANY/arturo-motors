@@ -152,13 +152,7 @@
                     </div>
                 </div>
             @else
-                <div class="flex flex-col items-center justify-center py-16 text-center flex-grow bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
-                    <div class="w-16 h-16 bg-white shadow-sm rounded-full flex items-center justify-center mb-4">
-                        <i class="fas fa-file-circle-question text-slate-300 text-2xl"></i>
-                    </div>
-                    <p class="text-slate-600 font-semibold text-lg">Sin datos</p>
-                    <p class="text-slate-400 text-sm mt-1">No hay pagos FISE en este periodo</p>
-                </div>
+                <x-ui.empty-state icon="fa-file-circle-question" title="Sin datos" message="No hay pagos FISE en este periodo" class="flex-grow" />
             @endif
 
         </div>
@@ -197,13 +191,7 @@
                     </div>
                 </div>
             @else
-                <div class="flex flex-col items-center justify-center py-16 text-center flex-grow bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
-                    <div class="w-16 h-16 bg-white shadow-sm rounded-full flex items-center justify-center mb-4">
-                        <i class="fas fa-chart-line text-slate-300 text-2xl"></i>
-                    </div>
-                    <p class="text-slate-600 font-semibold text-lg">Sin datos</p>
-                    <p class="text-slate-400 text-sm mt-1">No hay pagos FISE en este periodo</p>
-                </div>
+                <x-ui.empty-state icon="fa-chart-line" title="Sin datos" message="No hay pagos FISE en este periodo" class="flex-grow" />
             @endif
 
         </div>
