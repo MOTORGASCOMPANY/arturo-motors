@@ -36,11 +36,11 @@
     </div>
 
     @if ($sesiones->count() === 0 && $totalIngresos == 0 && $totalEgresos == 0)
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-16 text-center">
-            <i class="fas fa-inbox text-4xl text-gray-300 mb-4"></i>
-            <p class="text-gray-500 font-medium">{{ $soloFise ? 'No hay movimientos FISE' : 'No hay movimientos actuales' }}</p>
-            <p class="text-gray-400 text-sm mt-1">{{ $soloFise ? 'No se encontraron movimientos FISE en el período seleccionado.' : 'No se encontraron ingresos, egresos ni sesiones en el período seleccionado.' }}</p>
-        </div>
+        <x-reportes.empty-state
+            icon="fa-inbox"
+            titulo="{{ $soloFise ? 'No hay datos FISE para este período' : 'No hay datos suficientes' }}"
+            mensaje="{{ $soloFise ? 'No se encontraron movimientos FISE en el período seleccionado.' : 'No se encontraron ingresos, egresos ni sesiones en el período seleccionado.' }}"
+            class="py-16" />
     @else
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
             <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-5 text-center">
