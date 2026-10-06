@@ -230,16 +230,19 @@
 
     // 1. Ingresos vs Egresos (barra agrupada/apilada)
     function renderCajaIngresosEgresos(id, key, labels, ingresosData, egresosData, opts) {
-        const ctx = document.getElementById(id);
-        if (!ctx || !labels || !labels.length) return;
         destroyChart(key);
-        window[key] = new Chart(ctx.getContext('2d'), {
+        const ing = Array.isArray(ingresosData) ? ingresosData : [];
+        const eg = Array.isArray(egresosData) ? egresosData : [];
+        const has = !!(labels && labels.length) && (ing.some(v => Number(v) > 0) || eg.some(v => Number(v) > 0));
+        const ctx = getCtxWithEmpty(id, null, has);
+        if (!ctx) return;
+        window[key] = new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: labels,
                 datasets: [
-                    { label: 'Ingresos', data: ingresosData, backgroundColor: '#10b981', borderRadius: 4, barPercentage: 0.85, categoryPercentage: 0.7 },
-                    { label: 'Egresos', data: egresosData, backgroundColor: '#ef4444', borderRadius: 4, barPercentage: 0.85, categoryPercentage: 0.7 }
+                    { label: 'Ingresos', data: ing, backgroundColor: '#10b981', borderRadius: 4, barPercentage: 0.85, categoryPercentage: 0.7 },
+                    { label: 'Egresos', data: eg, backgroundColor: '#ef4444', borderRadius: 4, barPercentage: 0.85, categoryPercentage: 0.7 }
                 ]
             },
             options: {
@@ -250,7 +253,7 @@
                 },
                 scales: {
                     x: { grid: { display: false, drawBorder: false }, ticks: { color: '#94a3b8', font: { size: 10 }, maxRotation: 45, autoSkip: true }, border: { display: false } },
-                    y: { beginAtZero: true, stacked: true, ticks: { callback: v => 'S/ ' + v.toLocaleString(), color: '#94a3b8', font: { size: 10 } }, grid: { color: '#f1f5f9' }, border: { display: false } }
+                    y: { beginAtZero: true, stacked: false, ticks: { callback: v => 'S/ ' + v.toLocaleString(), color: '#94a3b8', font: { size: 10 } }, grid: { color: '#f1f5f9' }, border: { display: false } }
                 }
             }
         });
@@ -258,11 +261,11 @@
 
     // 2. Ticket promedio por día (scatter)
     function renderCajaTicketDia(id, key, labels, ticketData, opsData, opts) {
-        const ctx = document.getElementById(id);
-        if (!ctx || !labels || !labels.length) return;
         destroyChart(key);
-        const has = (ticketData || []).some(v => v !== null && v !== undefined);
-        if (!has) return;
+        const tickets = Array.isArray(ticketData) ? ticketData : [];
+        const has = !!(labels && labels.length) && tickets.some(v => v !== null && v !== undefined);
+        const ctx = getCtxWithEmpty(id, null, has);
+        if (!ctx) return;
         const opsDia = Array.isArray(opsData)
             ? opsData
             : (opts && Array.isArray(opts.opsDia) ? opts.opsDia : []);
@@ -272,7 +275,7 @@
                 labels: labels,
                 datasets: [{
                     label: 'Ticket promedio',
-                    data: Array.from({length: ticketData.length}, (_, i) => ({ x: i, y: ticketData[i] })),
+                    data: Array.from({length: tickets.length}, (_, i) => ({ x: i, y: tickets[i] })),
                     backgroundColor: '#4f46e5',
                     pointRadius: 5,
                     pointHoverRadius: 7,
@@ -305,12 +308,14 @@
 
     // 3. Métodos de pago (dona)
     function renderCajaMetodosPago(id, key, labels, data, colors, opts) {
-        const ctx = document.getElementById(id);
-        if (!ctx || !labels || !labels.length) return;
         destroyChart(key);
-        window[key] = new Chart(ctx.getContext('2d'), {
+        const arr = Array.isArray(data) ? data : [];
+        const has = !!(labels && labels.length) && arr.some(v => Number(v) > 0);
+        const ctx = getCtxWithEmpty(id, null, has);
+        if (!ctx) return;
+        window[key] = new Chart(ctx, {
             type: 'doughnut',
-            data: { labels: labels, datasets: [{ data: data, backgroundColor: colors, borderWidth: 2, borderColor: '#fff' }] },
+            data: { labels: labels, datasets: [{ data: arr, backgroundColor: colors, borderWidth: 2, borderColor: '#fff' }] },
             options: {
                 responsive: true, maintainAspectRatio: false, animation: false, cutout: '58%',
                 plugins: {
@@ -323,16 +328,19 @@
 
     // 6. FISE vs No FISE (barras apiladas)
     function renderCajaFiseNoFise(id, key, labels, fiseData, noFiseData, opts) {
-        const ctx = document.getElementById(id);
-        if (!ctx || !labels || !labels.length) return;
         destroyChart(key);
-        window[key] = new Chart(ctx.getContext('2d'), {
+        const fise = Array.isArray(fiseData) ? fiseData : [];
+        const noFise = Array.isArray(noFiseData) ? noFiseData : [];
+        const has = !!(labels && labels.length) && (fise.some(v => Number(v) > 0) || noFise.some(v => Number(v) > 0));
+        const ctx = getCtxWithEmpty(id, null, has);
+        if (!ctx) return;
+        window[key] = new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: labels,
                 datasets: [
-                    { label: 'FISE', data: fiseData, backgroundColor: '#f59e0b', borderRadius: 3, barPercentage: 0.9, categoryPercentage: 0.75 },
-                    { label: 'No FISE', data: noFiseData, backgroundColor: '#10b981', borderRadius: 3, barPercentage: 0.9, categoryPercentage: 0.75 }
+                    { label: 'FISE', data: fise, backgroundColor: '#f59e0b', borderRadius: 3, barPercentage: 0.9, categoryPercentage: 0.75 },
+                    { label: 'No FISE', data: noFise, backgroundColor: '#10b981', borderRadius: 3, barPercentage: 0.9, categoryPercentage: 0.75 }
                 ]
             },
             options: {
@@ -345,12 +353,14 @@
 
     // 4. Egresos por categoría (barras horizontales)
     function renderCajaEgresosCat(id, key, labels, data, opts) {
-        const ctx = document.getElementById(id);
-        if (!ctx || !labels || !labels.length) return;
         destroyChart(key);
-        window[key] = new Chart(ctx.getContext('2d'), {
+        const arr = Array.isArray(data) ? data : [];
+        const has = !!(labels && labels.length) && arr.some(v => Number(v) > 0);
+        const ctx = getCtxWithEmpty(id, null, has);
+        if (!ctx) return;
+        window[key] = new Chart(ctx, {
             type: 'bar',
-            data: { labels: labels, datasets: [{ label: 'Egresos', data: data, backgroundColor: '#ef4444', borderRadius: 6, maxBarThickness: 28 }] },
+            data: { labels: labels, datasets: [{ label: 'Egresos', data: arr, backgroundColor: '#ef4444', borderRadius: 6, maxBarThickness: 28 }] },
             options: {
                 responsive: true, maintainAspectRatio: false, animation: false, indexAxis: 'y',
                 plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => 'S/ ' + Number(ctx.parsed.x || 0).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) } } },
@@ -361,12 +371,14 @@
 
     // 5. Ingresos de la semana (line con spanGaps)
     function renderCajaIngresosSemana(id, key, labels, data, opts) {
-        const ctx = document.getElementById(id);
-        if (!ctx || !labels || !labels.length) return;
         destroyChart(key);
-        window[key] = new Chart(ctx.getContext('2d'), {
+        const arr = Array.isArray(data) ? data : [];
+        const has = !!(labels && labels.length) && arr.some(v => v !== null && v !== undefined && Number(v) > 0);
+        const ctx = getCtxWithEmpty(id, null, has);
+        if (!ctx) return;
+        window[key] = new Chart(ctx, {
             type: 'line',
-            data: { labels: labels, datasets: [{ label: 'Ingresos', data: data, borderColor: '#0ea5e9', backgroundColor: 'rgba(14, 165, 233, 0.12)', borderWidth: 2.5, fill: true, tension: 0.4, spanGaps: false, pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: '#fff', pointBorderColor: '#0ea5e9', pointBorderWidth: 2 }] },
+            data: { labels: labels, datasets: [{ label: 'Ingresos', data: arr, borderColor: '#0ea5e9', backgroundColor: 'rgba(14, 165, 233, 0.12)', borderWidth: 2.5, fill: true, tension: 0.4, spanGaps: false, pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: '#fff', pointBorderColor: '#0ea5e9', pointBorderWidth: 2 }] },
             options: {
                 responsive: true, maintainAspectRatio: false, animation: false,
                 interaction: { mode: 'index', intersect: false },
