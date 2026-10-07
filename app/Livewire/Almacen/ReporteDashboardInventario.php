@@ -38,7 +38,7 @@ class ReporteDashboardInventario extends Component
 
     public function sedes(): \Illuminate\Database\Eloquent\Collection
     {
-        return Sede::activas()->orderBy('id')->get();
+        return once(fn () => Sede::activas()->orderBy('id')->get());
     }
 
     // ── 1. TASA DE CONSUMO ──────────────────────────────────────────

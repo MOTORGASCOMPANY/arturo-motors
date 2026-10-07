@@ -106,7 +106,7 @@ class ReporteCitas extends Component
 
     protected function baseQuery($desde, $hasta)
     {
-        return Cita::whereBetween('fecha_cita', [$desde, $hasta])
+        return Cita::enRango($desde, $hasta)
             ->when($this->sedeId !== 'todos', fn ($q) => $q->where('sede_id', $this->sedeId))
             ->when($this->estado !== 'todos', fn ($q) => $q->where('estado', $this->estado));
     }

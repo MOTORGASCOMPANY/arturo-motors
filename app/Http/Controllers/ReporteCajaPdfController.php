@@ -14,25 +14,23 @@ class ReporteCajaPdfController extends Controller
         $desde = $request->desde ?? now()->startOfMonth()->format('Y-m-d');
         $hasta = $request->hasta ?? now()->format('Y-m-d');
 
+        $desdeDt = $desde . ' 00:00:00';
+        $hastaDt = $hasta . ' 23:59:59';
+
         $sesiones = SesionCaja::with('abiertaPor')
-            ->whereBetween('abierta_en', [$desde . ' 00:00:00', $hasta . ' 23:59:59'])
+            ->whereBetween('abierta_en', [$desdeDt, $hastaDt])
             ->orderByDesc('abierta_en')
             ->get();
 
-        $totalIngresos = MovimientoCaja::whereBetween('created_at', [$desde . ' 00:00:00', $hasta . ' 23:59:59'])
-            ->where('tipo', 'ingreso')
-            ->sum('monto');
-
-        $totalEgresos = MovimientoCaja::whereBetween('created_at', [$desde . ' 00:00:00', $hasta . ' 23:59:59'])
-            ->where('tipo', 'egreso')->sum('monto');
+        $totalIngresos = MovimientoCaja::ingresos()->enRango($desdeDt, $hastaDt)->sum('monto');
+        $totalEgresos = MovimientoCaja::egresos()->enRango($desdeDt, $hastaDt)->sum('monto');
 
         $sesionesConDescuadre = $sesiones->filter(fn ($s) => $s->diferencia !== null && (float) $s->diferencia != 0);
 
-        $ultimaSesion = SesionCaja::where('estado', 'cerrada')->orderByDesc('cerrada_en')->first();
-        $efectivoAnterior = $ultimaSesion ? (float) $ultimaSesion->monto_cierre : 0;
+        $efectivoAnterior = SesionCaja::getLastCierre() ?? 0;
 
-        $ingresosPorMetodo = MovimientoCaja::where('tipo', 'ingreso')
-            ->whereBetween('created_at', [$desde . ' 00:00:00', $hasta . ' 23:59:59'])
+        $ingresosPorMetodo = MovimientoCaja::ingresos()
+            ->enRango($desdeDt, $hastaDt)
             ->whereNotNull('metodo_pago')
             ->selectRaw('metodo_pago, SUM(monto) as total')
             ->groupBy('metodo_pago')

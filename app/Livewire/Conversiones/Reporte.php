@@ -6,6 +6,7 @@ use App\Models\ItemSerializado;
 use App\Models\ProductoStockSede;
 use App\Models\ServiceOrder;
 use App\Models\Sede;
+use App\Models\User;
 use Livewire\Component;
 
 class Reporte extends Component
@@ -148,23 +149,10 @@ class Reporte extends Component
             ->all();
     }
 
-    /** Rendimiento por técnico (órdenes asignadas / completadas / items / duración / reportes). */
-    public function getRendimientoTecnicosProperty()
+    private function aplicarFiltros($query)
     {
-        $tecnicoId = $this->filtroTecnico;
-
-        // Órdenes base con los filtros aplicados (sede, estado, fecha)
-        $query = ServiceOrder::with(['tecnico', 'items.producto.categoria'])
-            ->whereIn('estado', ['en_conversion', 'conversion_completada']);
-
-        if ($tecnicoId) {
-            $query->where('tecnico_id', $tecnicoId);
-        }
-
-        // Aplicar sede y estado/fecha igual que el query principal
-        $sedeId = $this->filtroSede;
-        if ($sedeId) {
-            $query->whereHas('items', fn ($q) => $q->where('sede_id', $sedeId));
+        if ($this->filtroSede) {
+            $query->whereHas('items', fn ($q) => $q->where('sede_id', $this->filtroSede));
         }
 
         if ($this->filtroEstado !== 'todos') {
@@ -184,6 +172,25 @@ class Reporte extends Component
                     ->orWhereDate('fecha_inicio_conversion', '<=', $this->filtroFechaHasta);
             });
         }
+
+        return $query;
+    }
+
+    /** Rendimiento por técnico (órdenes asignadas / completadas / items / duración / reportes). */
+    public function getRendimientoTecnicosProperty()
+    {
+        $tecnicoId = $this->filtroTecnico;
+
+        // Órdenes base con los filtros aplicados (sede, estado, fecha)
+        $query = ServiceOrder::with(['tecnico', 'items.producto.categoria'])
+            ->whereIn('estado', ['en_conversion', 'conversion_completada']);
+
+        if ($tecnicoId) {
+            $query->where('tecnico_id', $tecnicoId);
+        }
+
+        $sedeId = $this->filtroSede;
+        $this->aplicarFiltros($query);
 
         $ordenes = $query->orderByDesc('created_at')->get();
         $ordenIds = $ordenes->pluck('id');
@@ -215,10 +222,10 @@ class Reporte extends Component
                 ->avg(fn ($o) => $o->fecha_inicio_conversion->diffInHours($o->fecha_fin_conversion));
             $duracionProm = round($duracionProm ?? 0, 1);
 
-            // Reportes pendientes en las órdenes de este técnico (subquery simple)
             $reportesPend = ServiceOrder::whereIn('id', $ordenIds)
                 ->where('tecnico_id', $t->id)
-                ->sum(DB::raw('(SELECT COUNT(*) FROM reportes_pendientes WHERE servicio_order_id = service_orders.id)'));
+                ->withCount('reportesPendientes')
+                ->sum('reportes_pendientes_count');
 
             $ranking[] = [
                 'tecnico' => $t,
@@ -276,28 +283,8 @@ class Reporte extends Component
         ])->tipoConversion()
             ->whereIn('estado', $this->estadosConversion());
 
-        if ($sedeId) {
-            $query->whereHas('items', fn ($q) => $q->where('sede_id', $sedeId));
-        }
-
-        if ($this->filtroEstado !== 'todos') {
-            $query->where('estado', $this->filtroEstado);
-        }
-
         // Mismo criterio de fecha que /ordenes: created_at; fallback a inicio de conversión.
-        if ($this->filtroFechaDesde) {
-            $query->where(function ($q) {
-                $q->whereDate('created_at', '>=', $this->filtroFechaDesde)
-                    ->orWhereDate('fecha_inicio_conversion', '>=', $this->filtroFechaDesde);
-            });
-        }
-
-        if ($this->filtroFechaHasta) {
-            $query->where(function ($q) {
-                $q->whereDate('created_at', '<=', $this->filtroFechaHasta)
-                    ->orWhereDate('fecha_inicio_conversion', '<=', $this->filtroFechaHasta);
-            });
-        }
+        $this->aplicarFiltros($query);
 
         $ordenes = $query->orderByDesc('created_at')->get();
         $ordenIds = $ordenes->pluck('id');
@@ -341,19 +328,21 @@ class Reporte extends Component
         // ─── Kits instalados en las órdenes filtradas ───
         // Un kit por orden: es el padre (kit_padre_id NULL) ya instalado o consumido.
         // Sede y fechas ya vienen aplicadas en $ordenes (=> $ordenIds).
-        $kitsInstaladosRows = ItemSerializado::whereNull('kit_padre_id')
-            ->whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true))
+        $kitsInstaladosRows = ItemSerializado::sueltos()
+            ->esKit()
             ->whereIn('estado', ['instalado', 'consumido'])
             ->whereIn('service_order_id', $ordenIds)
-            ->with('serviceOrder.service')
             ->get();
 
         $kitsInstalados = $kitsInstaladosRows->count();
 
         // Sub-datos: esos kits agrupados por el tipo de conversión (GNV / GLP).
         // Si sólo hay un tipo se muestra una sola celda; si hay varios, se distribuyen.
+        $ordenPorId = $ordenes->keyBy('id');
         $instaladosPorCombustible = $kitsInstaladosRows
-            ->countBy(fn ($k) => self::tipoConversionLabel($k->serviceOrder?->service?->nombre))
+            ->countBy(fn ($k) => self::tipoConversionLabel(
+                $ordenPorId[$k->service_order_id]?->service?->nombre
+            ))
             ->toArray();
         uksort(
             $instaladosPorCombustible,
@@ -364,42 +353,29 @@ class Reporte extends Component
         // ─── Balance de almacén (misma lógica que /almacen/productos) ───
         // Solo el filtro de sede aplica al stock (estado/fecha no inventan stock).
         $kitsDisponibles = ItemSerializado::kitDisponible()
-            ->whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true))
-            ->when($sedeId, fn ($q) => $q->where('sede_id', $sedeId))
+            ->esKit()
+            ->enSede($sedeId)
             ->count();
 
         $kitsSellados = ItemSerializado::where('estado', 'en_stock')
-            ->whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true))
-            ->when($sedeId, fn ($q) => $q->where('sede_id', $sedeId))
+            ->esKit()
+            ->enSede($sedeId)
             ->count();
 
         $kitsCompletados = ItemSerializado::where('estado', 'completado')
-            ->whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true))
-            ->when($sedeId, fn ($q) => $q->where('sede_id', $sedeId))
+            ->esKit()
+            ->enSede($sedeId)
             ->count();
 
         // Piezas sueltas con serie (productos: sueltosSerializados).
-        $sueltosSerializados = ItemSerializado::whereHas(
-            'producto.categoria',
-            fn ($q) => $q->where('es_kit', false)->where('es_serializado', true)
-        )
-            ->whereNull('kit_padre_id')
-            ->where('estado', 'en_stock')
-            ->when($sedeId, fn ($q) => $q->where('sede_id', $sedeId))
+        $sueltosSerializados = ItemSerializado::piezaSerializada()
+            ->sueltos()
+            ->enStock()
+            ->enSede($sedeId)
             ->count();
 
         // Piezas sueltas por cantidad REAL (ProductoStockSede − componentes en kits de esa sede).
-        $sueltosCantidadRows = ProductoStockSede::with('producto.categoria')
-            ->whereHas('producto.categoria', fn ($q) => $q->where('es_serializado', false)->where('es_kit', false))
-            ->when($sedeId, fn ($q) => $q->where('sede_id', $sedeId))
-            ->where('cantidad', '>', 0)
-            ->get()
-            ->map(function ($stock) use ($sedeId) {
-                $enKits = ItemSerializado::montadasEnKit($stock->producto_id, $stock->sede_id);
-                $stock->cantidad_suelta_real = max(0, $stock->cantidad - $enKits);
-                return $stock;
-            })
-            ->filter(fn ($s) => $s->cantidad_suelta_real > 0);
+        $sueltosCantidadRows = ProductoStockSede::sueltosPorCantidadEn($sedeId);
 
         $sueltosCantidadTotal = (int) $sueltosCantidadRows->sum('cantidad_suelta_real');
         $piezasSueltas = $sueltosSerializados + $sueltosCantidadTotal;
@@ -441,8 +417,8 @@ class Reporte extends Component
 
         // 3. Estado de kits en almacén: sellados / completados / asignados a clientes
         // Asignados = consumido o con orden/vehículo (no son "disponibles" en stock).
-        $kitsEstadoQuery = ItemSerializado::whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true))
-            ->when($sedeId, fn ($q) => $q->where('sede_id', $sedeId));
+        $kitsEstadoQuery = ItemSerializado::esKit()
+            ->enSede($sedeId);
         $kitsAll = $kitsEstadoQuery->get();
         $kitsSelladosChart = $kitsAll->where('estado', 'en_stock')->count();
         $kitsCompletadosChart = $kitsAll->where('estado', 'completado')->count();
@@ -481,32 +457,22 @@ class Reporte extends Component
             ->toArray();
 
         // 5. Balance de almacén (kits disponibles vs sueltos) por sede o global
-        $stockPorSede = $sedes->map(function ($s) use ($sedeId) {
+        $stockPorSede = $sedes->map(function ($s) use ($sedeId, $kitsDisponibles, $sueltosSerializados, $sueltosCantidadTotal) {
             if ($sedeId && $s->id !== $sedeId) {
                 return null;
             }
-            $kits = ItemSerializado::kitDisponible()
-                ->whereHas('producto.categoria', fn ($q) => $q->where('es_kit', true))
-                ->where('sede_id', $s->id)
-                ->count();
-            $serie = ItemSerializado::whereHas(
-                'producto.categoria',
-                fn ($q) => $q->where('es_kit', false)->where('es_serializado', true)
-            )
-                ->whereNull('kit_padre_id')
-                ->where('estado', 'en_stock')
-                ->where('sede_id', $s->id)
-                ->count();
-            $cantidad = (int) ProductoStockSede::with('producto.categoria')
-                ->whereHas('producto.categoria', fn ($q) => $q->where('es_serializado', false)->where('es_kit', false))
-                ->where('sede_id', $s->id)
-                ->where('cantidad', '>', 0)
-                ->get()
-                ->map(function ($stock) {
-                    $enKits = ItemSerializado::montadasEnKit($stock->producto_id, $stock->sede_id);
-                    return max(0, $stock->cantidad - $enKits);
-                })
-                ->sum();
+            $mismaSede = (bool) $sedeId && $s->id === $sedeId;
+
+            $kits = $mismaSede
+                ? $kitsDisponibles
+                : ItemSerializado::kitDisponible()->esKit()->enSede($s->id)->count();
+            $serie = $mismaSede
+                ? $sueltosSerializados
+                : ItemSerializado::piezaSerializada()->sueltos()->enStock()->enSede($s->id)->count();
+            $cantidad = $mismaSede
+                ? $sueltosCantidadTotal
+                : (int) ProductoStockSede::sueltosPorCantidadEn($s->id)
+                    ->sum('cantidad_suelta_real');
 
             return [
                 'sede' => $s->nombre,

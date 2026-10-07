@@ -25,11 +25,12 @@ class Reporte extends Component
 
     public function cargarEfectivoAnterior(): void
     {
-        $ultimaSesion = SesionCaja::where('estado', 'cerrada')
-            ->orderByDesc('cerrada_en')
-            ->first();
+        $this->efectivoAnterior = (float) ($this->ultimaSesionCerrada()?->monto_cierre ?? 0);
+    }
 
-        $this->efectivoAnterior = $ultimaSesion ? (float) $ultimaSesion->monto_cierre : 0;
+    protected function ultimaSesionCerrada(): ?SesionCaja
+    {
+        return once(fn () => SesionCaja::ultimaCerrada());
     }
 
     protected function rangoValido(): array
@@ -89,10 +90,7 @@ class Reporte extends Component
     {
         [$desde, $hasta] = $this->rangoValido();
 
-        $ultimaSesion = SesionCaja::where('estado', 'cerrada')
-            ->with(['movimientos'])
-            ->orderByDesc('cerrada_en')
-            ->first();
+        $ultimaSesion = $this->ultimaSesionCerrada()?->load('movimientos');
 
         $sesiones = SesionCaja::with('abiertaPor')
             ->whereBetween('abierta_en', [$desde, $hasta])
@@ -101,22 +99,15 @@ class Reporte extends Component
 
         // Si solo FISE, filtrar sesiones que tengan movimientos FISE
         if ($this->soloFise) {
-            $sesionesIds = MovimientoCaja::where('metodo_pago', 'fise')
-                ->whereBetween('created_at', [$desde, $hasta])
+            $sesionesIds = MovimientoCaja::soloFise(true)
+                ->enRango($desde, $hasta)
                 ->pluck('sesion_caja_id')
                 ->unique();
             $sesiones = $sesiones->filter(fn ($s) => $sesionesIds->contains($s->id));
         }
 
-        $queryIngresos = MovimientoCaja::whereBetween('created_at', [$desde, $hasta])
-            ->where('tipo', 'ingreso');
-        $queryEgresos = MovimientoCaja::whereBetween('created_at', [$desde, $hasta])
-            ->where('tipo', 'egreso');
-
-        if ($this->soloFise) {
-            $queryIngresos->where('metodo_pago', 'fise');
-            $queryEgresos->where('metodo_pago', 'fise');
-        }
+        $queryIngresos = MovimientoCaja::ingresos()->enRango($desde, $hasta)->soloFise($this->soloFise);
+        $queryEgresos = MovimientoCaja::egresos()->enRango($desde, $hasta)->soloFise($this->soloFise);
 
         $totalIngresos = (clone $queryIngresos)->sum('monto');
         $totalEgresos = (clone $queryEgresos)->sum('monto');
@@ -148,24 +139,24 @@ class Reporte extends Component
             $chartData[$metodo] = [];
         }
 
-        $ingresosPorDia = MovimientoCaja::where('tipo', 'ingreso')
-            ->whereBetween('created_at', [$desde, $hasta])
-            ->when($this->soloFise, fn ($q) => $q->where('metodo_pago', 'fise'))
+        $ingresosPorDia = MovimientoCaja::ingresos()
+            ->enRango($desde, $hasta)
+            ->soloFise($this->soloFise)
             ->selectRaw('DATE(created_at) as fecha, SUM(monto) as total')
             ->groupBy('fecha')->pluck('total', 'fecha');
 
-        $egresosPorDia = MovimientoCaja::where('tipo', 'egreso')
-            ->whereBetween('created_at', [$desde, $hasta])
-            ->when($this->soloFise, fn ($q) => $q->where('metodo_pago', 'fise'))
+        $egresosPorDia = MovimientoCaja::egresos()
+            ->enRango($desde, $hasta)
+            ->soloFise($this->soloFise)
             ->selectRaw('DATE(created_at) as fecha, SUM(monto) as total')
             ->groupBy('fecha')->pluck('total', 'fecha');
 
         // Desglose por método de pago por día
         $ingresosPorMetodoPorDia = [];
         foreach ($metodos as $metodo) {
-            $ingresosPorMetodoPorDia[$metodo] = MovimientoCaja::where('tipo', 'ingreso')
+            $ingresosPorMetodoPorDia[$metodo] = MovimientoCaja::ingresos()
                 ->where('metodo_pago', $metodo)
-                ->whereBetween('created_at', [$desde, $hasta])
+                ->enRango($desde, $hasta)
                 ->selectRaw('DATE(created_at) as fecha, SUM(monto) as total')
                 ->groupBy('fecha')->pluck('total', 'fecha');
         }
@@ -181,17 +172,18 @@ class Reporte extends Component
             }
         }
 
-        $ingresosPorMetodo = MovimientoCaja::where('tipo', 'ingreso')
-            ->whereBetween('created_at', [$desde, $hasta])
-            ->when($this->soloFise, fn ($q) => $q->where('metodo_pago', 'fise'))
+        $ingresosPorMetodo = MovimientoCaja::ingresos()
+            ->enRango($desde, $hasta)
+            ->soloFise($this->soloFise)
             ->whereNotNull('metodo_pago')
             ->selectRaw('metodo_pago, SUM(monto) as total')
             ->groupBy('metodo_pago')
             ->pluck('total', 'metodo_pago');
 
         // Egresos por concepto
-        $egresosPorConcepto = MovimientoCaja::where('tipo', 'egreso')
-            ->whereBetween('created_at', [$desde, $hasta])
+        $egresosPorConcepto = MovimientoCaja::egresos()
+            ->enRango($desde, $hasta)
+            ->soloFise($this->soloFise)
             ->selectRaw('concepto, COUNT(*) as cantidad, SUM(monto) as total')
             ->groupBy('concepto')
             ->orderByDesc('total')
@@ -202,9 +194,9 @@ class Reporte extends Component
         // (un ticket de S/0 mientería: no hubo movimientos ese día).
         $hoy = Carbon::today();
 
-        $operacionesPorDia = MovimientoCaja::where('tipo', 'ingreso')
-            ->whereBetween('created_at', [$desde, $hasta])
-            ->when($this->soloFise, fn ($q) => $q->where('metodo_pago', 'fise'))
+        $operacionesPorDia = MovimientoCaja::ingresos()
+            ->enRango($desde, $hasta)
+            ->soloFise($this->soloFise)
             ->selectRaw('DATE(created_at) as fecha, SUM(monto) as total, COUNT(*) as operaciones')
             ->groupBy('fecha')
             ->get()
@@ -231,9 +223,9 @@ class Reporte extends Component
         $inicioSemana = Carbon::parse($this->hasta)->startOfWeek(Carbon::MONDAY)->startOfDay();
         $finSemana = $inicioSemana->copy()->addDays(5)->endOfDay(); // sábado
 
-        $ingresosPorDiaSemana = MovimientoCaja::where('tipo', 'ingreso')
-            ->whereBetween('created_at', [$inicioSemana, $finSemana])
-            ->when($this->soloFise, fn ($q) => $q->where('metodo_pago', 'fise'))
+        $ingresosPorDiaSemana = MovimientoCaja::ingresos()
+            ->enRango($inicioSemana, $finSemana)
+            ->soloFise($this->soloFise)
             ->selectRaw('DATE(created_at) as fecha, SUM(monto) as total')
             ->groupBy('fecha')->pluck('total', 'fecha');
 
@@ -249,14 +241,14 @@ class Reporte extends Component
         }
 
         // FISE vs no FISE por día
-        $fisePorDia = MovimientoCaja::where('tipo', 'ingreso')
+        $fisePorDia = MovimientoCaja::ingresos()
             ->where('metodo_pago', 'fise')
-            ->whereBetween('created_at', [$desde, $hasta])
+            ->enRango($desde, $hasta)
             ->selectRaw('DATE(created_at) as fecha, SUM(monto) as total')
             ->groupBy('fecha')->pluck('total', 'fecha');
-        $noFisePorDia = MovimientoCaja::where('tipo', 'ingreso')
+        $noFisePorDia = MovimientoCaja::ingresos()
             ->where('metodo_pago', '!=', 'fise')
-            ->whereBetween('created_at', [$desde, $hasta])
+            ->enRango($desde, $hasta)
             ->selectRaw('DATE(created_at) as fecha, SUM(monto) as total')
             ->groupBy('fecha')->pluck('total', 'fecha');
 
@@ -270,9 +262,9 @@ class Reporte extends Component
         }
 
         // Top 5 ingresos del período
-        $topIngresos = MovimientoCaja::where('tipo', 'ingreso')
-            ->whereBetween('created_at', [$desde, $hasta])
-            ->when($this->soloFise, fn ($q) => $q->where('metodo_pago', 'fise'))
+        $topIngresos = MovimientoCaja::ingresos()
+            ->enRango($desde, $hasta)
+            ->soloFise($this->soloFise)
             ->with('usuario')
             ->orderByDesc('monto')
             ->limit(5)

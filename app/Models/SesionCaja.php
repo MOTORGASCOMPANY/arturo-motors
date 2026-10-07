@@ -132,14 +132,19 @@ class SesionCaja extends Model
         return self::calcularEsperado($this->id);
     }
 
+    public static function ultimaCerrada(): ?self
+    {
+        return static::where('estado', 'cerrada')
+            ->orderByDesc('cerrada_en')
+            ->first();
+    }
+
     /**
      * Obtiene el cierre de la última sesión cerrada (para encadenar aperturas).
      */
     public static function getLastCierre(): ?float
     {
-        $ultima = static::where('estado', 'cerrada')
-            ->orderByDesc('cerrada_en')
-            ->first();
+        $ultima = static::ultimaCerrada();
 
         return $ultima ? (float) $ultima->monto_cierre : null;
     }

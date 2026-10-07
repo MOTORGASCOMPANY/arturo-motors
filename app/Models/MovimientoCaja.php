@@ -65,6 +65,16 @@ class MovimientoCaja extends Model
         return $query->where('metodo_pago', 'efectivo');
     }
 
+    public function scopeEnRango($query, $desde, $hasta)
+    {
+        return $query->whereBetween('created_at', [$desde, $hasta]);
+    }
+
+    public function scopeSoloFise($query, bool $aplicar)
+    {
+        return $query->when($aplicar, fn ($q) => $q->where('metodo_pago', 'fise'));
+    }
+
     // ─── Boot: Reglas de integridad ────────────────────────────────────
 
     protected static function boot(): void

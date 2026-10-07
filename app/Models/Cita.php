@@ -85,6 +85,11 @@ class Cita extends Model
             $query->where('sede_id', $sedeId);
         }
     }
+
+    public function scopeEnRango($query, $desde, $hasta)
+    {
+        return $query->whereBetween('fecha_cita', [$desde, $hasta]);
+    }
     
     public function scopeBuscar($query, $search)
     {
