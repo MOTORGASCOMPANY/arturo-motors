@@ -1,4 +1,4 @@
-<div wire:loading.class="opacity-50 pointer-events-none transition-opacity duration-300" class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8 font-sans">
+﻿<div wire:loading.class="opacity-50 pointer-events-none transition-opacity duration-300" class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8 font-sans">
 
     {{-- Header --}}
     <div class="bg-white border border-gray-200 p-6 sm:p-8 rounded-2xl w-full shadow-sm">
@@ -335,77 +335,15 @@
 
     @script
     <script>
-        let chartPagosEstadosInstance = null;
-        let chartPagosFiseInstance = null;
+        function renderChartPagosEstados() {
+            if (!window.CHART_DEFS) { console.error('[fise] window.CHART_DEFS no disponible'); return; }
+            window.CHART_DEFS.renderFisePagosEstados();
+        }
 
-        const renderChartPagosEstados = () => {
-            const canvas = document.getElementById('chartPagosEstados');
-            if (!canvas || !window.CHART_DEFS) return;
-
-            const labels = JSON.parse(canvas.dataset.labels || '[]');
-            const pagados = JSON.parse(canvas.dataset.pagados || '[]');
-            const parciales = JSON.parse(canvas.dataset.parciales || '[]');
-            const pendientes = JSON.parse(canvas.dataset.pendientes || '[]');
-            const tasa = JSON.parse(canvas.dataset.tasa || '[]');
-
-            if (chartPagosEstadosInstance) chartPagosEstadosInstance.destroy();
-
-            // Usa CHART_DEFS.renderConvBar para barras apiladas + línea (tasa) en eje secundario
-            chartPagosEstadosInstance = new Chart(document.getElementById('chartPagosEstados').getContext('2d'), {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        { label: 'Pagados', data: pagados, backgroundColor: '#10b981', borderRadius: 4, barPercentage: 0.6, categoryPercentage: 0.8 },
-                        { label: 'Parciales', data: parciales, backgroundColor: '#6366f1', borderRadius: 4, barPercentage: 0.6, categoryPercentage: 0.8 },
-                        { label: 'Pendientes', data: pendientes, backgroundColor: '#f59e0b', borderRadius: 4, barPercentage: 0.6, categoryPercentage: 0.8 },
-                        { label: 'Tasa de pago', data: tasa, type: 'line', yAxisID: 'yTasa', borderColor: '#8b5cf6', backgroundColor: 'transparent', borderWidth: 2, tension: 0.3, pointRadius: 2, pointBackgroundColor: '#8b5cf6', fill: false }
-                    ]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    interaction: { mode: 'index', intersect: false },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { backgroundColor: 'rgba(255, 255, 255, 0.95)', titleColor: '#0f172a', bodyColor: '#475569', borderColor: '#e2e8f0', borderWidth: 1, padding: 12, boxPadding: 6, usePointStyle: true, callbacks: { label: (ctx) => ctx.dataset.yAxisID === 'yTasa' ? `${ctx.dataset.label}: ${ctx.parsed.y}%` : `${ctx.dataset.label}: ${ctx.parsed.y}` } }
-                    },
-                    scales: {
-                        x: { stacked: true, grid: { display: false, drawBorder: false }, ticks: { color: '#64748b' } },
-                        y: { stacked: true, beginAtZero: true, ticks: { stepSize: 1, color: '#94a3b8' }, grid: { color: '#f1f5f9', drawBorder: false, borderDash: [5, 5] } },
-                        yTasa: { position: 'right', min: 0, max: 100, grid: { display: false, drawBorder: false }, ticks: { color: '#a78bfa', maxTicksLimit: 6, callback: (value) => value + '%' } }
-                    }
-                }
-            });
-        };
-
-        const renderChartPagosFise = () => {
-            const canvas = document.getElementById('chartPagosFise');
-            if (!canvas || !window.CHART_DEFS) return;
-
-            const labels = JSON.parse(canvas.dataset.labels || '[]');
-            const montoTotal = JSON.parse(canvas.dataset.montoTotal || '[]');
-            const montoPagado = JSON.parse(canvas.dataset.montoPagado || '[]');
-            const saldoPendiente = JSON.parse(canvas.dataset.saldoPendiente || '[]');
-
-            if (chartPagosFiseInstance) chartPagosFiseInstance.destroy();
-
-            window.CHART_DEFS.renderConvLine('chartPagosFise', 'chartPagosFiseInstance', labels, [
-                { label: 'Monto total', data: montoTotal, borderColor: '#4f46e5', backgroundColor: 'rgba(79, 70, 229, 0.1)', fill: true, tension: 0.3, pointRadius: 3, pointBackgroundColor: '#4f46e5', pointBorderColor: '#fff', pointBorderWidth: 2 },
-                { label: 'Monto pagado', data: montoPagado, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.3, pointRadius: 3, pointBackgroundColor: '#10b981', pointBorderColor: '#fff', pointBorderWidth: 2 },
-                { label: 'Saldo pendiente', data: saldoPendiente, borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)', fill: true, tension: 0.3, pointRadius: 3, pointBackgroundColor: '#f59e0b', pointBorderColor: '#fff', pointBorderWidth: 2 }
-            ], {
-                options: {
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { backgroundColor: 'rgba(255, 255, 255, 0.95)', titleColor: '#0f172a', bodyColor: '#475569', borderColor: '#e2e8f0', borderWidth: 1, padding: 12, boxPadding: 6, usePointStyle: true, callbacks: { label: (ctx) => `${ctx.dataset.label}: S/ ${ctx.parsed.y.toLocaleString('es-PE', {minimumFractionDigits: 2})}` } }
-                    },
-                    scales: {
-                        x: { grid: { display: false, drawBorder: false }, ticks: { color: '#64748b' } },
-                        y: { beginAtZero: true, ticks: { color: '#94a3b8', callback: (value) => 'S/ ' + value.toLocaleString('es-PE') }, grid: { color: '#f1f5f9', drawBorder: false, borderDash: [5, 5] } }
-                    }
-                }
-            });
-        };
+        function renderChartPagosFise() {
+            if (!window.CHART_DEFS) { console.error('[fise] window.CHART_DEFS no disponible'); return; }
+            window.CHART_DEFS.renderFisePagosMonto();
+        }
 
         renderChartPagosEstados();
         renderChartPagosFise();

@@ -2,7 +2,7 @@
                 @php $piezas = $this->piezasSueltas; @endphp
 
                 @if ($piezas->isEmpty())
-                    <x-almacen.empty-state icon="fa-puzzle-piece" message="No hay piezas sueltas disponibles" />
+                    <x-ui.empty-state icon="fa-puzzle-piece" message="No hay piezas sueltas disponibles" />
                 @else
                     <div class="space-y-2 max-h-[500px] overflow-y-auto pr-1 -mr-1">
                         @foreach ($piezas as $pieza)

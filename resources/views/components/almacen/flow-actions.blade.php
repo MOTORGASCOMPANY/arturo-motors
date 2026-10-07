@@ -1,4 +1,4 @@
-@props([
+﻿@props([
     'method',
     'label',
     'icon' => 'fa-truck',
@@ -18,14 +18,14 @@
         <button type="button" wire:click="{{ $cancelAction }}"
             class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Cancelar</button>
     @else
-        <button type="button" x-on:click="recepcionSwal.cancelarComponentes($wire)"
+        <button type="button" x-on:click="almacenAcciones.cancelarComponentes($wire)"
             class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Cancelar</button>
     @endif
 
     <button type="button" wire:loading.attr="disabled"
         data-metodo="{{ $method }}"
         @foreach ($data as $k => $v){{ $k }}="{{ $v }}" @endforeach
-        x-on:click="recepcionSwal.accionConfirmada($wire, $el.dataset)"
+        x-on:click="almacenAcciones.accionConfirmada($wire, $el.dataset)"
         class="px-6 py-2.5 text-sm font-bold text-white {{ $bg }} rounded-lg transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
         <span wire:loading.remove wire:target="{{ $method }}">
             <i class="fas {{ $icon }} mr-1"></i> {{ $label }}

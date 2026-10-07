@@ -1,4 +1,4 @@
-@props(['idx', 'comp'])
+﻿@props(['idx', 'comp'])
 
 <div wire:key="comp-ser-{{ $idx }}" class="p-3 rounded-xl border bg-indigo-50 border-indigo-200">
     <div class="flex items-center gap-2 mb-2">
@@ -9,7 +9,7 @@
         <span class="text-[10px] px-1.5 py-0.5 bg-indigo-100 text-indigo-700 rounded font-semibold">{{ count($comp['unidades'] ?? []) }} uds</span>
         <button type="button"
                 data-idx="{{ $idx }}" data-nombre="{{ $comp['nombre'] }}"
-                x-on:click="recepcionSwal.quitarComponente($wire, $el.dataset)"
+                x-on:click="almacenAcciones.quitarComponente($wire, $el.dataset)"
                 class="w-7 h-7 rounded-lg bg-red-100 hover:bg-red-200 text-red-600 flex items-center justify-center shrink-0 transition" title="Quitar componente">
             <i class="fas fa-times text-xs"></i>
         </button>

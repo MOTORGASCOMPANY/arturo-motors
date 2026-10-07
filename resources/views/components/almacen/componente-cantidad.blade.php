@@ -1,4 +1,4 @@
-@props(['idx', 'comp'])
+﻿@props(['idx', 'comp'])
 
 <div wire:key="comp-cant-{{ $idx }}" class="flex items-center gap-2 p-2.5 rounded-xl border bg-amber-50 border-amber-200">
     <div class="w-7 h-7 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
@@ -15,7 +15,7 @@
     </div>
     <button type="button"
             data-idx="{{ $idx }}" data-nombre="{{ $comp['nombre'] }}"
-            x-on:click="recepcionSwal.quitarComponente($wire, $el.dataset)"
+            x-on:click="almacenAcciones.quitarComponente($wire, $el.dataset)"
             class="w-7 h-7 rounded-lg bg-red-100 hover:bg-red-200 text-red-600 flex items-center justify-center shrink-0 transition" title="Quitar componente">
         <i class="fas fa-times text-xs"></i>
     </button>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
     <head>
@@ -63,46 +63,35 @@
                     Swal.close();
                 },
 
-                // Alerta de éxito.
-                exito: function(titulo, texto, opts) {
+                aviso: function(tipo, titulo, texto, opts) {
                     opts = opts || {};
+                    var conLista = !!(opts.lista && opts.lista.length);
+                    var colores = { success: '#16a34a', error: '#dc2626', warning: '#f59e0b', info: '#2563eb' };
                     return Swal.fire({
-                        icon: 'success',
+                        icon: tipo,
                         title: titulo,
-                        text: texto || '',
-                        confirmButtonColor: opts.confirmButtonColor || '#16a34a',
-                        confirmButtonText: opts.confirmText || 'OK',
+                        text: conLista ? '' : (texto || ''),
+                        html: conLista ? window.AppSwal.htmlConLista(texto, opts.lista) : undefined,
+                        confirmButtonColor: opts.confirmButtonColor || colores[tipo],
+                        confirmButtonText: opts.confirmText || (tipo === 'info' ? 'Entendido' : 'OK'),
                         allowOutsideClick: false,
                         allowEscapeKey: false
                     });
+                },
+
+                // Alerta de éxito.
+                exito: function(titulo, texto, opts) {
+                    return window.AppSwal.aviso('success', titulo, texto, opts);
                 },
 
                 // Alerta de error.
                 error: function(titulo, texto, opts) {
-                    opts = opts || {};
-                    return Swal.fire({
-                        icon: 'error',
-                        title: titulo,
-                        text: texto || '',
-                        confirmButtonColor: opts.confirmButtonColor || '#dc2626',
-                        confirmButtonText: opts.confirmText || 'OK',
-                        allowOutsideClick: false,
-                        allowEscapeKey: false
-                    });
+                    return window.AppSwal.aviso('error', titulo, texto, opts);
                 },
 
                 // Alerta de advertencia.
                 alerta: function(titulo, texto, opts) {
-                    opts = opts || {};
-                    return Swal.fire({
-                        icon: 'warning',
-                        title: titulo,
-                        text: texto || '',
-                        confirmButtonColor: opts.confirmButtonColor || '#f59e0b',
-                        confirmButtonText: opts.confirmText || 'OK',
-                        allowOutsideClick: false,
-                        allowEscapeKey: false
-                    });
+                    return window.AppSwal.aviso('warning', titulo, texto, opts);
                 },
 
                 // Alerta de confirmación.
@@ -139,7 +128,7 @@
                     });
                 },
 
-                toast: function(icono, titulo, posicion) {
+                toast: function(icono, titulo, posicion, texto) {
                     posicion = posicion || 'top-end';
                     var Toast = Swal.mixin({
                         toast: true,
@@ -152,21 +141,12 @@
                             toast.addEventListener('mouseleave', Swal.resumeTimer);
                         }
                     });
-                    Toast.fire({ icon: icono, title: titulo });
+                    Toast.fire({ icon: icono, title: titulo, text: texto || '' });
                 },
 
                 // Alerta informativa.
                 nota: function(titulo, texto, opts) {
-                    opts = opts || {};
-                    return Swal.fire({
-                        title: titulo,
-                        text: texto || '',
-                        icon: 'info',
-                        confirmButtonText: opts.confirmText || 'Entendido',
-                        confirmButtonColor: opts.confirmButtonColor || '#2563eb',
-                        allowOutsideClick: false,
-                        allowEscapeKey: false
-                    });
+                    return window.AppSwal.aviso('info', titulo, texto, opts);
                 },
 
               
@@ -200,6 +180,63 @@
                     }, 3000);
                 }
             };
+
+
+            window.AppSwal.htmlConLista = function(texto, items) {
+                var cont = document.createElement('div');
+                if (texto) {
+                    var p = document.createElement('p');
+                    p.textContent = texto;
+                    cont.appendChild(p);
+                }
+                var ul = document.createElement('ul');
+                ul.style.cssText = 'text-align:left;margin:.5rem auto 0;max-width:24rem;list-style:disc;padding-left:1.25rem;font-size:.9rem;';
+                (items || []).forEach(function(t) {
+                    var li = document.createElement('li');
+                    li.textContent = t;
+                    ul.appendChild(li);
+                });
+                cont.appendChild(ul);
+                return cont.outerHTML;
+            };
+
+            window.AppSwal.formulario = function(cfg) {
+                return Swal.fire(Object.assign({
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    confirmButtonColor: '#16a34a',
+                    cancelButtonColor: '#6b7280',
+                    denyButtonColor: '#f59e0b',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonText: 'OK',
+                    customClass: { popup: 'rounded-2xl' }
+                }, cfg || {}));
+            };
+
+            window.AppSwal.validacion = function(msg) {
+                Swal.showValidationMessage(msg);
+            };
+
+            window.AppSwal.engancharErrores = function() {
+                if (window.__appSwalErroresHook || !window.Livewire || typeof Livewire.hook !== 'function') return;
+                window.__appSwalErroresHook = true;
+                Livewire.hook('request', function(ctx) {
+                    if (!ctx || typeof ctx.fail !== 'function') return;
+                    ctx.fail(function(r) {
+                        if (r.status === 419) {
+                            r.preventDefault();
+                            window.AppSwal.alerta('Tu sesión expiró', 'Recarga la página para continuar.', { confirmText: 'Recargar' })
+                                .then(function() { location.reload(); });
+                        } else if (r.status >= 500) {
+                            r.preventDefault();
+                            console.error('Error de servidor en Livewire:', r.content);
+                            window.AppSwal.error('No se pudo completar la acción', 'Ocurrió un error inesperado. Presiona OK y vuelve a intentarlo.');
+                        }
+                    });
+                });
+            };
+            if (window.Livewire) window.AppSwal.engancharErrores();
+            else document.addEventListener('livewire:init', function() { window.AppSwal.engancharErrores(); });
 
             // Alerta desde payload { tipo, titulo, mensaje }.
             window.AppSwal.mostrar = function(data) {
@@ -326,22 +363,12 @@
             @if (session()->has('swal'))
                 (function() {
                     var swalData = @json(session('swal'));
-                    var Toast = Swal.mixin({
-                        toast: true,
-                        position: 'top-end',
-                        showConfirmButton: false,
-                        timer: 3000,
-                        timerProgressBar: true,
-                        didOpen: function(toast) {
-                            toast.addEventListener('mouseenter', Swal.stopTimer);
-                            toast.addEventListener('mouseleave', Swal.resumeTimer);
-                        }
-                    });
-                    Toast.fire({
-                        icon: swalData.icono || swalData.icon || 'success',
-                        title: swalData.titulo || swalData.title || '',
-                        text: swalData.mensaje || swalData.text || ''
-                    });
+                    window.AppSwal.toast(
+                        swalData.icono || swalData.icon || 'success',
+                        swalData.titulo || swalData.title || '',
+                        'top-end',
+                        swalData.mensaje || swalData.text || ''
+                    );
                 })();
             @endif
         </script>

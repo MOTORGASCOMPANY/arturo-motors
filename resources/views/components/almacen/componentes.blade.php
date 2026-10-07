@@ -1,4 +1,4 @@
-@php
+﻿@php
     $serializados = collect($this->modalComponentes)->filter(fn ($c) => $c['es_serializado']);
     $porCantidad  = collect($this->modalComponentes)->filter(fn ($c) => ! $c['es_serializado']);
     $totalCola    = count($this->colaKits);
@@ -13,7 +13,7 @@
             <i class="fas fa-clipboard-list mr-1.5"></i>
             Componentes de <strong>{{ $this->modalKitNombre }}</strong> — Recibiendo <strong>{{ $this->modalKitCantidad }}</strong> unidad(es)
         </p>
-        <button type="button" x-on:click="recepcionSwal.cancelarComponentes($wire)"
+        <button type="button" x-on:click="almacenAcciones.cancelarComponentes($wire)"
                 class="text-xs font-semibold text-indigo-600 hover:underline whitespace-nowrap">
             <i class="fas fa-times mr-1"></i> Cancelar
         </button>
@@ -92,7 +92,7 @@
                     @endforeach
                 </select>
                 <button type="button"
-                    x-on:click="recepcionSwal.validarYLlamar($wire, [['productoExistenteId', 'El producto a agregar']], 'agregarComponenteExistente')"
+                    x-on:click="almacenAcciones.validarYLlamar($wire, [['productoExistenteId', 'El producto a agregar']], 'agregarComponenteExistente')"
                     class="px-3 py-2 bg-indigo-600 text-white text-sm font-bold rounded-lg hover:bg-indigo-700 transition whitespace-nowrap">
                     <i class="fas fa-plus mr-1"></i> Agregar
                 </button>

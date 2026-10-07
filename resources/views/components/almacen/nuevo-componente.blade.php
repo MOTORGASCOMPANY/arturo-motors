@@ -1,4 +1,4 @@
-<div class="border-t border-dashed border-gray-300 pt-4 mt-4">
+﻿<div class="border-t border-dashed border-gray-300 pt-4 mt-4">
     @if (! $this->mostrandoFormNuevo)
         <x-almacen.dashed-toggle label="Registrar componente nuevo" toggle="toggleFormNuevo" />
     @else
@@ -41,7 +41,7 @@
                 @endif
             </div>
             <x-almacen.wire-submit target="registrarComponenteNuevo" label="Registrar y agregar"
-                onclick="recepcionSwal.registrarComponenteNuevo($wire)" />
+                onclick="almacenAcciones.registrarComponenteNuevo($wire)" />
         </x-almacen.panel-form>
     @endif
 </div>

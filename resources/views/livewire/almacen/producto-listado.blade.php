@@ -146,7 +146,7 @@
                 </div>
                 <div class="mt-4">{{ $productos->links('pagination::tailwind') }}</div>
             @else
-                <x-almacen.empty-state icon="fa-box-open" message="No hay productos registrados" />
+                <x-ui.empty-state icon="fa-box-open" message="No hay productos registrados" />
             @endif
         @endif
 

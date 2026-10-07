@@ -1,4 +1,4 @@
-<div>
+﻿<div>
     <x-almacen.info-banner icon="fa-box" color="indigo"
         :title="'Registrando <strong>Kits</strong>'"
         action-label="Cambiar" action-method="volverAEleccion" />
@@ -25,13 +25,13 @@
                         <div class="flex items-center gap-2">
                             <button type="button"
                                 data-id="{{ $kit->id }}" data-nombre="{{ $kit->nombre }}" data-gen="{{ $gen === '—' ? '' : $gen }}"
-                                x-on:click="recepcionSwal.editarKit($wire, $el.dataset)"
+                                x-on:click="almacenAcciones.editarKit($wire, $el.dataset)"
                                 class="w-8 h-8 rounded-lg bg-gray-200 hover:bg-gray-300 flex items-center justify-center text-gray-600 transition" title="Editar kit">
                                 <i class="fas fa-pen text-xs"></i>
                             </button>
                             <button type="button"
                                 data-id="{{ $kit->id }}" data-nombre="{{ $kit->nombre }}"
-                                x-on:click="recepcionSwal.eliminarKit($wire, $el.dataset)"
+                                x-on:click="almacenAcciones.eliminarKit($wire, $el.dataset)"
                                 class="w-8 h-8 rounded-lg bg-red-100 hover:bg-red-200 flex items-center justify-center text-red-600 transition" title="Desactivar kit">
                                 <i class="fas fa-trash text-xs"></i>
                             </button>
@@ -63,7 +63,7 @@
                     </div>
                 </div>
                 <x-almacen.wire-submit target="registrarKitNuevo" label="Registrar kit"
-                    onclick="recepcionSwal.validarYLlamar($wire, [['nuevoKitNombre', 'El nombre del kit']], 'registrarKitNuevo')" />
+                    onclick="almacenAcciones.validarYLlamar($wire, [['nuevoKitNombre', 'El nombre del kit']], 'registrarKitNuevo')" />
             </x-almacen.panel-form>
         @endif
     </div>

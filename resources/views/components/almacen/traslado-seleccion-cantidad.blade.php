@@ -45,6 +45,6 @@
                         @endforeach
                     </ul>
                 @else
-                    <x-almacen.empty-state icon="fa-cubes" message="Aún no agregaste piezas por cantidad" />
+                    <x-ui.empty-state icon="fa-cubes" message="Aún no agregaste piezas por cantidad" />
                 @endif
             @endif

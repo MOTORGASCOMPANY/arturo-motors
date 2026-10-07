@@ -370,6 +370,6 @@
                 @endif
 
                 @if ($sellados->isEmpty() && $incompletos->isEmpty() && $completados->isEmpty() && $consumidos->isEmpty() && $sueltosS->isEmpty() && $sueltosC->isEmpty() && $sinStock->isEmpty())
-                    <x-almacen.empty-state icon="fa-boxes-stacked" message="No hay inventario para mostrar" />
+                    <x-ui.empty-state icon="fa-boxes-stacked" message="No hay inventario para mostrar" />
                 @endif
             @endif

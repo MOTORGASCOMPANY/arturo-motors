@@ -38,7 +38,7 @@
                 </span>
             </button>
         @empty
-            <x-almacen.empty-state :icon="$icon" :message="$emptyMessage ?? 'Sin ' . strtolower($title)" />
+            <x-ui.empty-state :icon="$icon" :message="$emptyMessage ?? 'Sin ' . strtolower($title)" />
         @endforelse
     </div>
 </section>

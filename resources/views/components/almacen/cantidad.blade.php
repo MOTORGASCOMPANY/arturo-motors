@@ -1,4 +1,4 @@
-<div>
+﻿<div>
     <x-almacen.info-banner icon="fa-cubes" color="amber"
         :title="'Registrando <strong>Productos por cantidad</strong>'"
         action-label="Volver" action-method="volverAProductos" />
@@ -45,7 +45,7 @@
             <div class="flex justify-end gap-2 mt-3">
                 <button type="button" wire:click="toggleFormNuevoCantidad" class="px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">Cancelar</button>
                 <button type="button"
-                    x-on:click="recepcionSwal.validarYLlamar($wire, [['nuevoCantidadNombre', 'El nombre'], ['nuevoCantidadCategoriaId', 'La categoría'], ['nuevoCantidadStockInicial', 'El stock inicial']], 'crearProductoCantidad')"
+                    x-on:click="almacenAcciones.validarYLlamar($wire, [['nuevoCantidadNombre', 'El nombre'], ['nuevoCantidadCategoriaId', 'La categoría'], ['nuevoCantidadStockInicial', 'El stock inicial']], 'crearProductoCantidad')"
                     class="px-4 py-1.5 text-xs font-bold text-white bg-amber-600 rounded-lg hover:bg-amber-700 transition">
                     <i class="fas fa-plus mr-1"></i> Crear y agregar
                 </button>

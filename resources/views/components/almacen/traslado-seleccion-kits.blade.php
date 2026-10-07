@@ -2,7 +2,7 @@
                 @php $kits = $this->kitsDisponibles; @endphp
 
                 @if ($kits->isEmpty())
-                    <x-almacen.empty-state icon="fa-box-open" message="No hay kits disponibles en esta sede" />
+                    <x-ui.empty-state icon="fa-box-open" message="No hay kits disponibles en esta sede" />
                 @else
                     <p class="text-[11px] text-gray-400 mb-3 flex items-start gap-1.5">
                         <i class="fas fa-circle-info text-indigo-300 mt-0.5 shrink-0"></i>
