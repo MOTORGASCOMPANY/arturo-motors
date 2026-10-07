@@ -335,15 +335,18 @@
 
     @script
     <script>
-        function renderChartPagosEstados() {
+        // `function` en el primer statement se vuelve una function expression
+        // (nombre visible solo dentro de sí misma) y el resto no la verá → ReferenceError.
+        (function () {
+        const renderChartPagosEstados = () => {
             if (!window.CHART_DEFS) { console.error('[fise] window.CHART_DEFS no disponible'); return; }
             window.CHART_DEFS.renderFisePagosEstados();
-        }
+        };
 
-        function renderChartPagosFise() {
+        const renderChartPagosFise = () => {
             if (!window.CHART_DEFS) { console.error('[fise] window.CHART_DEFS no disponible'); return; }
             window.CHART_DEFS.renderFisePagosMonto();
-        }
+        };
 
         renderChartPagosEstados();
         renderChartPagosFise();
@@ -374,6 +377,7 @@
 
             renderChartPagosFise();
         });
+        })();
     </script>
     @endscript
 
